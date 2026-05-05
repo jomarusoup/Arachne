@@ -1,3 +1,12 @@
+---
+Title: workflow
+creation: 2026-05-05
+modification: 2026-05-05
+tags:
+aliases:
+---
+> FROM::
+
 ## AI 역할 분담 (Claude / Gemini)
 
 | 작업 | 담당 |

@@ -11,11 +11,11 @@ aliases:
 
 실제 Global로 사용에 바로 적용 가능한 Agent, Skill, Hooks, Commands, Rule 및 MCP등 여러 세팅이다.
 
-@rules/workflow.md
+@rules/common/workflow.md
 @rules/common/coding-style.md
 @rules/common/patterns.md
-@rules/issue-workflow.md
-@rules/ui-layout.md
+@rules/common/issue-workflow.md
+@rules/common/ui-layout.md
 
 ## Architecture
 

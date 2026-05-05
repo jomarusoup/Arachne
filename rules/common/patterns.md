@@ -1,3 +1,12 @@
+---
+Title: patterns
+creation: 2026-05-05
+modification: 2026-05-05
+tags:
+aliases:
+---
+> FROM::
+
 ## 불변성 (매우 중요)
 항상 새로운 객체를 생성하고, 기존 객체를 절대 변경하지 마십시오.
 

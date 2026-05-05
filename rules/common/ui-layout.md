@@ -1,9 +1,15 @@
 ---
+Title: ui-layout
+creation: 2026-05-05
+modification: 2026-05-05
+tags:
+aliases:
 paths:
   - "src/css/*.css"
   - "src/index.html"
   - "src/js/*.js"
 ---
+> FROM::
 # UI 레이아웃 기준
 
 사용자는 열 폭·버튼 간격·컴포넌트 크기에 민감하다. 아래 기준을 UI 수정 시 기본값으로 삼는다.

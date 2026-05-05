@@ -1,3 +1,12 @@
+---
+Title: issue-workflow
+creation: 2026-05-05
+modification: 2026-05-05
+tags:
+aliases:
+---
+> FROM::
+
 # GitHub 이슈 처리 워크플로
 
 ## 이슈 제목 형식
