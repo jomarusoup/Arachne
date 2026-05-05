@@ -1,6 +1,10 @@
 #!/bin/bash
-# PreCompact Hook — 컨텍스트 압축 전 자동 실행
-# 현재 파일 상태를 임시 저장 (auto-* 파일은 .gitignore 제외됨)
+################################################################################
+# FILE NAME   : pre-compact.sh
+# DESCRIPTION : PreCompact Hook — 컨텍스트 압축 전 현재 파일 상태 임시 저장
+# DATA        : 2026-05-05
+# Modification: 2026-05-05
+################################################################################
 
 SESSION_DIR="$(pwd)/.claude/sessions"
 mkdir -p "$SESSION_DIR"
