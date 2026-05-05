@@ -1,3 +1,12 @@
+---
+Title: coding-style
+creation: 2026-05-05
+modification: 2026-05-05
+tags:
+aliases:
+---
+> FROM::
+
 ## 파일 헤더 / 함수 주석
 
 1. 모든 소스 파일 맨 위에 헤더 블록 작성. 
