@@ -1,8 +1,10 @@
 #!/bin/bash
+################################################################################
 # FILE NAME   : install.sh
 # DESCRIPTION : Arachne -> ~/.claude 심볼릭 링크 설치 스크립트
 # DATA        : 2026-05-05
 # Modification: 2026-05-05
+################################################################################
 
 set -e
 
@@ -18,6 +20,10 @@ SYMLINK_TARGETS=(
     "hooks"
 )
 
+################################################################################
+# FUNCTION    : usage
+# DESCRIPTION : 사용법 출력
+################################################################################
 usage() {
     echo "Usage: $0 [--export-settings]"
     echo ""
@@ -25,10 +31,12 @@ usage() {
     echo "  --export-settings  : ~/.claude/settings.json -> settings.template.json 으로 내보내기"
 }
 
+################################################################################
 # FUNCTION    : backup_and_link
-# DESCRIPTION : 기존 파일 백업 후 심볼릭 링크 생성
+# DESCRIPTION : 기존 파일/디렉터리 백업 후 심볼릭 링크 생성
 # PARAMETERS  : string src - 레포 내 원본 경로
 #               string dst - ~/.claude/ 내 대상 경로
+################################################################################
 backup_and_link() {
     local src="$1"
     local dst="$2"
@@ -44,8 +52,10 @@ backup_and_link() {
     echo "  링크: $dst -> $src"
 }
 
+################################################################################
 # FUNCTION    : install
 # DESCRIPTION : 심볼릭 링크 설치 및 settings.json 생성
+################################################################################
 install() {
     echo "[Arachne] 설치 시작: $REPO_DIR -> $CLAUDE_DIR"
     mkdir -p "$CLAUDE_DIR"
@@ -66,8 +76,10 @@ install() {
     echo "[Arachne] 설치 완료"
 }
 
+################################################################################
 # FUNCTION    : export_settings
 # DESCRIPTION : ~/.claude/settings.json -> settings.template.json 내보내기
+################################################################################
 export_settings() {
     local settings_src="$CLAUDE_DIR/settings.json"
     local template_dst="$REPO_DIR/settings.template.json"
