@@ -1,0 +1,30 @@
+# 런타임 / 세션 데이터 (추적 불필요)
+*.bak
+*.jsonl
+
+# 민감 정보
+.credentials.json
+
+# Claude Code 런타임 파일
+usage_*.json
+mcp-needs-auth-cache.json
+usage_last.json
+
+# 플러그인 마켓플레이스 (설치 시 자동 다운로드)
+plugins/
+
+# 프로젝트별 세션·캐시 (기기마다 다름)
+projects/
+cache/
+sessions/
+backups/
+downloads/
+file-history/
+shell-snapshots/
+plans/
+history.jsonl
+session-env/
+
+# 생성 파일 (settings.template.json 에서 생성)
+# settings.json 은 install.sh 가 생성하므로 추적 불필요
+# (settings.template.json 만 추적)
