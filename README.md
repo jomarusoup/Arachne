@@ -1,11 +1,18 @@
-# 🕷️ Arachne
+---
+Title: README
+creation: 2026-05-05
+modification: 2026-05-05
+Description: Claude Code 글로벌 설정을 Git으로 버전 관리하는 dotfiles 레포
+tags:
+aliases:
+---
+> MOC::
+> FROM::
 
-> **Claude Code 글로벌 설정을 Git으로 버전 관리하는 dotfiles 레포**
+# 🕷️ Arachne
 
 `~/.claude/` 디렉터리를 심볼릭 링크로 이 레포와 연결합니다.
 레포를 수정하면 글로벌 설정에 즉시 반영되고, `git push/pull`로 모든 머신을 동기화할 수 있습니다.
-
----
 
 ## 📁 디렉터리 구조
 
@@ -47,25 +54,21 @@ Arachne/
     └── pre-compact.sh               # PreCompact   — 압축 전 상태 임시 저장
 ```
 
----
-
 ## 🔗 심볼릭 링크 매핑
 
 `install.sh` 실행 시 아래와 같이 연결됩니다.
 
-| 레포 경로 | `~/.claude/` 경로 | 방식 |
-|---|---|---|
-| `CLAUDE.md` | `~/.claude/CLAUDE.md` | 심볼릭 링크 |
-| `rules/` | `~/.claude/rules/` | 심볼릭 링크 |
-| `commands/` | `~/.claude/commands/` | 심볼릭 링크 |
-| `agents/` | `~/.claude/agents/` | 심볼릭 링크 |
-| `hooks/` | `~/.claude/hooks/` | 심볼릭 링크 |
-| `statusline-command.sh` | `~/.claude/statusline-command.sh` | 심볼릭 링크 |
-| `settings.template.json` | `~/.claude/settings.json` | 생성 (`__HOME__` 치환) |
+| 레포 경로                | `~/.claude/` 경로                 | 방식                   |
+| ------------------------ | --------------------------------- | ---------------------- |
+| `CLAUDE.md`              | `~/.claude/CLAUDE.md`             | 심볼릭 링크            |
+| `rules/`                 | `~/.claude/rules/`                | 심볼릭 링크            |
+| `commands/`              | `~/.claude/commands/`             | 심볼릭 링크            |
+| `agents/`                | `~/.claude/agents/`               | 심볼릭 링크            |
+| `hooks/`                 | `~/.claude/hooks/`                | 심볼릭 링크            |
+| `statusline-command.sh`  | `~/.claude/statusline-command.sh` | 심볼릭 링크            |
+| `settings.template.json` | `~/.claude/settings.json`         | 생성 (`__HOME__` 치환) |
 
 > `settings.json`은 절대경로가 포함되므로 심볼릭 링크 대신 치환 후 생성합니다.
-
----
 
 ## 🚀 설치 (신규 머신)
 
@@ -80,8 +83,6 @@ cd ~/Arachne
 1. 기존 `~/.claude/` 파일·디렉터리 자동 백업 (`.bak` 확장자)
 2. 레포 → `~/.claude/` 심볼릭 링크 생성
 3. `settings.template.json`의 `__HOME__` → 실제 홈 경로로 치환하여 `settings.json` 생성
-
----
 
 ## 🔄 동기화
 
@@ -116,8 +117,6 @@ git pull
 ./install.sh
 ```
 
----
-
 ## ✏️ 규칙·커맨드·에이전트 추가
 
 ### 새 규칙 추가
@@ -144,18 +143,16 @@ vi ~/Arachne/commands/my-command.md
 vi ~/Arachne/agents/my-agent.md
 ```
 
----
-
 ## 🚫 Git 추적 제외 항목
 
 레포에는 설정 파일만 추적하며, 아래 항목은 `.gitignore`로 제외됩니다.
 
-| 항목 | 이유 |
-|---|---|
-| `projects/` | 대화 기록·세션 데이터 (기기별 상이) |
-| `cache/`, `sessions/`, `backups/` | 런타임 생성 파일 |
-| `history.jsonl` | 대화 히스토리 |
-| `plugins/` | 설치 시 자동 다운로드 |
-| `.credentials.json` | API 키 등 민감 정보 |
-| `usage_*.json` | 사용량 추적 파일 |
-| `*.bak` | 설치 시 생성되는 백업 파일 |
+| 항목                              | 이유                                |
+| --------------------------------- | ----------------------------------- |
+| `projects/`                       | 대화 기록·세션 데이터 (기기별 상이) |
+| `cache/`, `sessions/`, `backups/` | 런타임 생성 파일                    |
+| `history.jsonl`                   | 대화 히스토리                       | 
+| `plugins/`                        | 설치 시 자동 다운로드               |
+| `.credentials.json`               | API 키 등 민감 정보                 |
+| `usage_*.json`                    | 사용량 추적 파일                    |
+| `*.bak`                           | 설치 시 생성되는 백업 파일          |
