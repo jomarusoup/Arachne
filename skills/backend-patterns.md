@@ -1,561 +1,250 @@
 ---
 name: backend-patterns
-description: Backend architecture patterns, API design, database optimization, and server-side best practices for Node.js, Express, and Next.js API routes.
+description: 확장 가능한 서버사이드 애플리케이션을 위한 백엔드 아키텍처 패턴·API 설계·DB 최적화·Node.js/Express/Next.js 모범 사례.
 origin: ECC
 ---
 
-# Backend Development Patterns
+# 백엔드 개발 패턴
 
-Backend architecture patterns and best practices for scalable server-side applications.
+확장 가능한 서버사이드 애플리케이션을 위한 백엔드 아키텍처 패턴과 모범 사례.
 
-## When to Activate
+## 언제 활성화하나
 
-- Designing REST or GraphQL API endpoints
-- Implementing repository, service, or controller layers
-- Optimizing database queries (N+1, indexing, connection pooling)
-- Adding caching (Redis, in-memory, HTTP cache headers)
-- Setting up background jobs or async processing
-- Structuring error handling and validation for APIs
-- Building middleware (auth, logging, rate limiting)
+- REST 또는 GraphQL API 엔드포인트 설계
+- 레포지토리·서비스·컨트롤러 레이어 구현
+- DB 쿼리 최적화 (N+1, 인덱싱, 연결 풀링)
+- 캐싱 추가 (Redis, 인메모리, HTTP 캐시 헤더)
+- 백그라운드 작업 또는 비동기 처리 설정
+- API의 에러 처리 및 검증 구조화
+- 미들웨어 구축 (인증, 로깅, 레이트 리미팅)
 
-## API Design Patterns
+## API 설계 패턴
 
-### RESTful API Structure
+### RESTful API 구조
 
 ```typescript
-// PASS: Resource-based URLs
-GET    /api/markets                 # List resources
-GET    /api/markets/:id             # Get single resource
-POST   /api/markets                 # Create resource
-PUT    /api/markets/:id             # Replace resource
-PATCH  /api/markets/:id             # Update resource
-DELETE /api/markets/:id             # Delete resource
-
-// PASS: Query parameters for filtering, sorting, pagination
-GET /api/markets?status=active&sort=volume&limit=20&offset=0
+/* 올바름: 리소스 기반 URL */
+GET    /api/markets                 /* 리소스 목록 */
+GET    /api/markets/:id             /* 단일 리소스 */
+POST   /api/markets                 /* 리소스 생성 */
+PUT    /api/markets/:id             /* 리소스 교체 */
+PATCH  /api/markets/:id             /* 리소스 업데이트 */
+DELETE /api/markets/:id             /* 리소스 삭제 */
 ```
 
-### Repository Pattern
+### 레포지토리 패턴
 
 ```typescript
-// Abstract data access logic
+/* 데이터 접근 로직 추상화 */
 interface MarketRepository {
-  findAll(filters?: MarketFilters): Promise<Market[]>
-  findById(id: string): Promise<Market | null>
-  create(data: CreateMarketDto): Promise<Market>
-  update(id: string, data: UpdateMarketDto): Promise<Market>
-  delete(id: string): Promise<void>
+    findAll(filters?: MarketFilters): Promise<Market[]>
+    findById(id: string): Promise<Market | null>
+    create(data: CreateMarketDto): Promise<Market>
+    update(id: string, data: UpdateMarketDto): Promise<Market>
+    delete(id: string): Promise<void>
 }
 
 class SupabaseMarketRepository implements MarketRepository {
-  async findAll(filters?: MarketFilters): Promise<Market[]> {
-    let query = supabase.from('markets').select('*')
-
-    if (filters?.status) {
-      query = query.eq('status', filters.status)
+    async findAll(filters?: MarketFilters): Promise<Market[]> {
+        let query = supabase.from('markets').select('*')
+        if (filters?.status) query = query.eq('status', filters.status)
+        if (filters?.limit) query = query.limit(filters.limit)
+        const { data, error } = await query
+        if (error) throw new Error(error.message)
+        return data
     }
-
-    if (filters?.limit) {
-      query = query.limit(filters.limit)
-    }
-
-    const { data, error } = await query
-
-    if (error) throw new Error(error.message)
-    return data
-  }
-
-  // Other methods...
 }
 ```
 
-### Service Layer Pattern
+### 서비스 레이어 패턴
 
 ```typescript
-// Business logic separated from data access
+/* 데이터 접근과 분리된 비즈니스 로직 */
 class MarketService {
-  constructor(private marketRepo: MarketRepository) {}
+    constructor(private marketRepo: MarketRepository) {}
 
-  async searchMarkets(query: string, limit: number = 10): Promise<Market[]> {
-    // Business logic
-    const embedding = await generateEmbedding(query)
-    const results = await this.vectorSearch(embedding, limit)
-
-    // Fetch full data
-    const markets = await this.marketRepo.findByIds(results.map(r => r.id))
-
-    // Sort by similarity
-    return markets.sort((a, b) => {
-      const scoreA = results.find(r => r.id === a.id)?.score || 0
-      const scoreB = results.find(r => r.id === b.id)?.score || 0
-      return scoreA - scoreB
-    })
-  }
-
-  private async vectorSearch(embedding: number[], limit: number) {
-    // Vector search implementation
-  }
+    async searchMarkets(query: string, limit: number = 10): Promise<Market[]> {
+        const embedding = await generateEmbedding(query)
+        const results = await this.vectorSearch(embedding, limit)
+        const markets = await this.marketRepo.findByIds(results.map(r => r.id))
+        return markets.sort((a, b) => {
+            const scoreA = results.find(r => r.id === a.id)?.score || 0
+            const scoreB = results.find(r => r.id === b.id)?.score || 0
+            return scoreA - scoreB
+        })
+    }
 }
 ```
 
-### Middleware Pattern
+## 데이터베이스 패턴
+
+### N+1 쿼리 방지
 
 ```typescript
-// Request/response processing pipeline
-export function withAuth(handler: NextApiHandler): NextApiHandler {
-  return async (req, res) => {
-    const token = req.headers.authorization?.replace('Bearer ', '')
-
-    if (!token) {
-      return res.status(401).json({ error: 'Unauthorized' })
-    }
-
-    try {
-      const user = await verifyToken(token)
-      req.user = user
-      return handler(req, res)
-    } catch (error) {
-      return res.status(401).json({ error: 'Invalid token' })
-    }
-  }
-}
-
-// Usage
-export default withAuth(async (req, res) => {
-  // Handler has access to req.user
-})
-```
-
-## Database Patterns
-
-### Query Optimization
-
-```typescript
-// PASS: GOOD: Select only needed columns
-const { data } = await supabase
-  .from('markets')
-  .select('id, name, status, volume')
-  .eq('status', 'active')
-  .order('volume', { ascending: false })
-  .limit(10)
-
-// FAIL: BAD: Select everything
-const { data } = await supabase
-  .from('markets')
-  .select('*')
-```
-
-### N+1 Query Prevention
-
-```typescript
-// FAIL: BAD: N+1 query problem
-const markets = await getMarkets()
+/* 잘못됨: N+1 쿼리 */
+const markets = await db.markets.findAll()
 for (const market of markets) {
-  market.creator = await getUser(market.creator_id)  // N queries
+    market.creator = await db.users.findOne(market.creatorId) /* N개의 추가 쿼리 */
 }
 
-// PASS: GOOD: Batch fetch
-const markets = await getMarkets()
-const creatorIds = markets.map(m => m.creator_id)
-const creators = await getUsers(creatorIds)  // 1 query
-const creatorMap = new Map(creators.map(c => [c.id, c]))
-
-markets.forEach(market => {
-  market.creator = creatorMap.get(market.creator_id)
+/* 올바름: 조인 또는 배치 */
+const markets = await db.markets.findAll({
+    include: [{ model: db.users, as: 'creator' }]
 })
 ```
 
-### Transaction Pattern
+### 트랜잭션
 
 ```typescript
-async function createMarketWithPosition(
-  marketData: CreateMarketDto,
-  positionData: CreatePositionDto
-) {
-  // Use Supabase transaction
-  const { data, error } = await supabase.rpc('create_market_with_position', {
-    market_data: marketData,
-    position_data: positionData
-  })
-
-  if (error) throw new Error('Transaction failed')
-  return data
+async function transferFunds(fromId: string, toId: string, amount: number) {
+    return await db.transaction(async (trx) => {
+        await trx.query('UPDATE accounts SET balance = balance - $1 WHERE id = $2', [amount, fromId])
+        await trx.query('UPDATE accounts SET balance = balance + $1 WHERE id = $2', [amount, toId])
+        return { success: true }
+    })
 }
-
-// SQL function in Supabase
-CREATE OR REPLACE FUNCTION create_market_with_position(
-  market_data jsonb,
-  position_data jsonb
-)
-RETURNS jsonb
-LANGUAGE plpgsql
-AS $$
-BEGIN
-  -- Start transaction automatically
-  INSERT INTO markets VALUES (market_data);
-  INSERT INTO positions VALUES (position_data);
-  RETURN jsonb_build_object('success', true);
-EXCEPTION
-  WHEN OTHERS THEN
-    -- Rollback happens automatically
-    RETURN jsonb_build_object('success', false, 'error', SQLERRM);
-END;
-$$;
 ```
 
-## Caching Strategies
+## 캐싱 전략
 
-### Redis Caching Layer
+### Redis 캐싱
 
 ```typescript
-class CachedMarketRepository implements MarketRepository {
-  constructor(
-    private baseRepo: MarketRepository,
-    private redis: RedisClient
-  ) {}
+async function getCachedMarket(id: string): Promise<Market> {
+    const cacheKey = `market:${id}`
+    const cached = await redis.get(cacheKey)
+    if (cached) return JSON.parse(cached)
 
-  async findById(id: string): Promise<Market | null> {
-    // Check cache first
-    const cached = await this.redis.get(`market:${id}`)
-
-    if (cached) {
-      return JSON.parse(cached)
-    }
-
-    // Cache miss - fetch from database
-    const market = await this.baseRepo.findById(id)
-
-    if (market) {
-      // Cache for 5 minutes
-      await this.redis.setex(`market:${id}`, 300, JSON.stringify(market))
-    }
-
+    const market = await db.markets.findById(id)
+    await redis.setex(cacheKey, 300, JSON.stringify(market)) /* 5분 TTL */
     return market
-  }
-
-  async invalidateCache(id: string): Promise<void> {
-    await this.redis.del(`market:${id}`)
-  }
 }
 ```
 
-### Cache-Aside Pattern
+### 캐시 무효화
 
 ```typescript
-async function getMarketWithCache(id: string): Promise<Market> {
-  const cacheKey = `market:${id}`
-
-  // Try cache
-  const cached = await redis.get(cacheKey)
-  if (cached) return JSON.parse(cached)
-
-  // Cache miss - fetch from DB
-  const market = await db.markets.findUnique({ where: { id } })
-
-  if (!market) throw new Error('Market not found')
-
-  // Update cache
-  await redis.setex(cacheKey, 300, JSON.stringify(market))
-
-  return market
+async function updateMarket(id: string, data: UpdateMarketDto) {
+    const updated = await db.markets.update(id, data)
+    await redis.del(`market:${id}`)          /* 특정 캐시 무효화 */
+    await redis.del(`markets:list:*`)         /* 패턴 기반 무효화 */
+    return updated
 }
 ```
 
-## Error Handling Patterns
+## 미들웨어 패턴
 
-### Centralized Error Handler
-
-```typescript
-class ApiError extends Error {
-  constructor(
-    public statusCode: number,
-    public message: string,
-    public isOperational = true
-  ) {
-    super(message)
-    Object.setPrototypeOf(this, ApiError.prototype)
-  }
-}
-
-export function errorHandler(error: unknown, req: Request): Response {
-  if (error instanceof ApiError) {
-    return NextResponse.json({
-      success: false,
-      error: error.message
-    }, { status: error.statusCode })
-  }
-
-  if (error instanceof z.ZodError) {
-    return NextResponse.json({
-      success: false,
-      error: 'Validation failed',
-      details: error.errors
-    }, { status: 400 })
-  }
-
-  // Log unexpected errors
-  console.error('Unexpected error:', error)
-
-  return NextResponse.json({
-    success: false,
-    error: 'Internal server error'
-  }, { status: 500 })
-}
-
-// Usage
-export async function GET(request: Request) {
-  try {
-    const data = await fetchData()
-    return NextResponse.json({ success: true, data })
-  } catch (error) {
-    return errorHandler(error, request)
-  }
-}
-```
-
-### Retry with Exponential Backoff
+### 인증 미들웨어
 
 ```typescript
-async function fetchWithRetry<T>(
-  fn: () => Promise<T>,
-  maxRetries = 3
-): Promise<T> {
-  let lastError: Error
+export function requireAuth() {
+    return async (request: Request, next: NextFunction) => {
+        const token = request.headers.get('Authorization')?.replace('Bearer ', '')
+        if (!token) throw new ApiError(401, '인증이 필요합니다')
 
-  for (let i = 0; i < maxRetries; i++) {
-    try {
-      return await fn()
-    } catch (error) {
-      lastError = error as Error
+        const user = await verifyToken(token)
+        if (!user) throw new ApiError(401, '유효하지 않은 토큰')
 
-      if (i < maxRetries - 1) {
-        // Exponential backoff: 1s, 2s, 4s
-        const delay = Math.pow(2, i) * 1000
-        await new Promise(resolve => setTimeout(resolve, delay))
-      }
+        return next(request, user)
     }
-  }
-
-  throw lastError!
-}
-
-// Usage
-const data = await fetchWithRetry(() => fetchFromAPI())
-```
-
-## Authentication & Authorization
-
-### JWT Token Validation
-
-```typescript
-import jwt from 'jsonwebtoken'
-
-interface JWTPayload {
-  userId: string
-  email: string
-  role: 'admin' | 'user'
-}
-
-export function verifyToken(token: string): JWTPayload {
-  try {
-    const payload = jwt.verify(token, process.env.JWT_SECRET!) as JWTPayload
-    return payload
-  } catch (error) {
-    throw new ApiError(401, 'Invalid token')
-  }
-}
-
-export async function requireAuth(request: Request) {
-  const token = request.headers.get('authorization')?.replace('Bearer ', '')
-
-  if (!token) {
-    throw new ApiError(401, 'Missing authorization token')
-  }
-
-  return verifyToken(token)
-}
-
-// Usage in API route
-export async function GET(request: Request) {
-  const user = await requireAuth(request)
-
-  const data = await getDataForUser(user.userId)
-
-  return NextResponse.json({ success: true, data })
 }
 ```
 
-### Role-Based Access Control
+### 권한 미들웨어
 
 ```typescript
-type Permission = 'read' | 'write' | 'delete' | 'admin'
-
-interface User {
-  id: string
-  role: 'admin' | 'moderator' | 'user'
-}
-
-const rolePermissions: Record<User['role'], Permission[]> = {
-  admin: ['read', 'write', 'delete', 'admin'],
-  moderator: ['read', 'write', 'delete'],
-  user: ['read', 'write']
-}
-
-export function hasPermission(user: User, permission: Permission): boolean {
-  return rolePermissions[user.role].includes(permission)
-}
-
-export function requirePermission(permission: Permission) {
-  return (handler: (request: Request, user: User) => Promise<Response>) => {
-    return async (request: Request) => {
-      const user = await requireAuth(request)
-
-      if (!hasPermission(user, permission)) {
-        throw new ApiError(403, 'Insufficient permissions')
-      }
-
-      return handler(request, user)
+export function requirePermission(permission: string) {
+    return (handler: AuthenticatedHandler) => {
+        return async (request: Request) => {
+            const user = await authenticate(request)
+            if (!hasPermission(user, permission)) {
+                throw new ApiError(403, '권한이 부족합니다')
+            }
+            return handler(request, user)
+        }
     }
-  }
 }
 
-// Usage - HOF wraps the handler
 export const DELETE = requirePermission('delete')(
-  async (request: Request, user: User) => {
-    // Handler receives authenticated user with verified permission
-    return new Response('Deleted', { status: 200 })
-  }
+    async (request: Request, user: User) => {
+        return new Response('삭제됨', { status: 200 })
+    }
 )
 ```
 
-## Rate Limiting
+## 레이트 리미팅
 
-Rate limiting must use a shared store such as Redis, a gateway, or the
-platform's native limiter. Do not use per-process in-memory counters for
-production APIs: they reset on deploy, split across replicas, and fail open in
-serverless or multi-instance environments.
+레이트 리미팅은 반드시 Redis, 게이트웨이, 또는 플랫폼의 네이티브 리미터 같은 공유 저장소를 사용해야 한다.
+운영 API에서 프로세스별 인메모리 카운터 사용 금지 — 배포 시 리셋되고, 레플리카 간 분리되며, 서버리스 환경에서 실패한다.
 
-Keep the backend layer responsible for choosing the integration point and error
-shape; use `api-design` for the HTTP contract and `security-review` for abuse
-case review.
-
-## Background Jobs & Queues
-
-### Simple Queue Pattern
+## 백그라운드 작업 & 큐
 
 ```typescript
 class JobQueue<T> {
-  private queue: T[] = []
-  private processing = false
+    private queue: T[] = []
+    private processing = false
 
-  async add(job: T): Promise<void> {
-    this.queue.push(job)
-
-    if (!this.processing) {
-      this.process()
-    }
-  }
-
-  private async process(): Promise<void> {
-    this.processing = true
-
-    while (this.queue.length > 0) {
-      const job = this.queue.shift()!
-
-      try {
-        await this.execute(job)
-      } catch (error) {
-        console.error('Job failed:', error)
-      }
+    async add(job: T): Promise<void> {
+        this.queue.push(job)
+        if (!this.processing) this.process()
     }
 
-    this.processing = false
-  }
-
-  private async execute(job: T): Promise<void> {
-    // Job execution logic
-  }
+    private async process(): Promise<void> {
+        this.processing = true
+        while (this.queue.length > 0) {
+            const job = this.queue.shift()!
+            try {
+                await this.execute(job)
+            } catch (error) {
+                console.error('작업 실패:', error)
+            }
+        }
+        this.processing = false
+    }
 }
 
-// Usage for indexing markets
-interface IndexJob {
-  marketId: string
-}
-
-const indexQueue = new JobQueue<IndexJob>()
+/* 사용 예시 */
+const indexQueue = new JobQueue<{ marketId: string }>()
 
 export async function POST(request: Request) {
-  const { marketId } = await request.json()
-
-  // Add to queue instead of blocking
-  await indexQueue.add({ marketId })
-
-  return NextResponse.json({ success: true, message: 'Job queued' })
+    const { marketId } = await request.json()
+    await indexQueue.add({ marketId })        /* 블로킹 대신 큐에 추가 */
+    return NextResponse.json({ success: true, message: '작업 대기 중' })
 }
 ```
 
-## Logging & Monitoring
+## 로깅 & 모니터링
 
-### Structured Logging
+### 구조화된 로깅
 
 ```typescript
-interface LogContext {
-  userId?: string
-  requestId?: string
-  method?: string
-  path?: string
-  [key: string]: unknown
-}
-
 class Logger {
-  log(level: 'info' | 'warn' | 'error', message: string, context?: LogContext) {
-    const entry = {
-      timestamp: new Date().toISOString(),
-      level,
-      message,
-      ...context
+    log(level: 'info' | 'warn' | 'error', message: string, context?: object) {
+        console.log(JSON.stringify({
+            timestamp: new Date().toISOString(),
+            level,
+            message,
+            ...context
+        }))
     }
-
-    console.log(JSON.stringify(entry))
-  }
-
-  info(message: string, context?: LogContext) {
-    this.log('info', message, context)
-  }
-
-  warn(message: string, context?: LogContext) {
-    this.log('warn', message, context)
-  }
-
-  error(message: string, error: Error, context?: LogContext) {
-    this.log('error', message, {
-      ...context,
-      error: error.message,
-      stack: error.stack
-    })
-  }
 }
 
 const logger = new Logger()
 
-// Usage
 export async function GET(request: Request) {
-  const requestId = crypto.randomUUID()
+    const requestId = crypto.randomUUID()
+    logger.log('info', '시장 목록 조회', { requestId, path: '/api/markets' })
 
-  logger.info('Fetching markets', {
-    requestId,
-    method: 'GET',
-    path: '/api/markets'
-  })
-
-  try {
-    const markets = await fetchMarkets()
-    return NextResponse.json({ success: true, data: markets })
-  } catch (error) {
-    logger.error('Failed to fetch markets', error as Error, { requestId })
-    return NextResponse.json({ error: 'Internal error' }, { status: 500 })
-  }
+    try {
+        const markets = await fetchMarkets()
+        return NextResponse.json({ success: true, data: markets })
+    } catch (error) {
+        logger.log('error', '시장 조회 실패', { requestId, error: (error as Error).message })
+        return NextResponse.json({ error: '내부 오류' }, { status: 500 })
+    }
 }
 ```
 
-**Remember**: Backend patterns enable scalable, maintainable server-side applications. Choose patterns that fit your complexity level.
+---
+
+**기억**: 백엔드 패턴은 확장 가능하고 유지 보수가 쉬운 서버사이드 애플리케이션을 가능하게 한다. 현재 복잡도 수준에 맞는 패턴을 선택한다.
