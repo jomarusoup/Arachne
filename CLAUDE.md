@@ -76,7 +76,11 @@
 │   ├── bash_profile                 # → ~/.bash_profile (sgrep 등 유틸 포함)
 │   └── vimrc                        # → ~/.vimrc
 │
-├── skills/                          # (예정) 워크플로·도메인 스킬
+├── skills/                          # 워크플로·도메인 스킬
+│   ├── build-debug.md               # C/C++ 빌드·GDB 디버그 절차
+│   ├── memory-check.md              # valgrind·ASan·TSan 메모리 검사
+│   ├── git-flow.md                  # 브랜치·커밋·PR 워크플로
+│   └── refactor.md                  # SRP 기반 리팩터링 절차
 ├── mcp-configs/                     # (예정) MCP 서버 설정 템플릿
 └── tests/                           # (예정) Arachne 자체 테스트
 ```
