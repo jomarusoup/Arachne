@@ -1,28 +1,28 @@
 ---
 name: golang-patterns
-description: Idiomatic Go patterns, best practices, and conventions for building robust, efficient, and maintainable Go applications.
+description: 강력하고 효율적이며 유지 보수하기 쉬운 Go 애플리케이션을 구축하기 위한 이디엄틱 Go 패턴·모범 사례·컨벤션.
 origin: ECC
 ---
 
-# Go Development Patterns
+# Go 개발 패턴
 
-Idiomatic Go patterns and best practices for building robust, efficient, and maintainable applications.
+강력하고 효율적이며 유지 보수하기 쉬운 애플리케이션을 구축하기 위한 이디엄틱 Go 패턴과 모범 사례.
 
-## When to Activate
+## 언제 활성화하나
 
-- Writing new Go code
-- Reviewing Go code
-- Refactoring existing Go code
-- Designing Go packages/modules
+- 새 Go 코드 작성
+- Go 코드 검토
+- 기존 Go 코드 리팩터링
+- Go 패키지/모듈 설계
 
-## Core Principles
+## 핵심 원칙
 
-### 1. Simplicity and Clarity
+### 1. 단순성과 명확성
 
-Go favors simplicity over cleverness. Code should be obvious and easy to read.
+Go는 영리함보다 단순함을 선호한다. 코드는 명백하고 읽기 쉬워야 한다.
 
 ```go
-// Good: Clear and direct
+/* 올바름: 명확하고 직접적 */
 func GetUser(id string) (*User, error) {
     user, err := db.FindUser(id)
     if err != nil {
@@ -31,7 +31,7 @@ func GetUser(id string) (*User, error) {
     return user, nil
 }
 
-// Bad: Overly clever
+/* 잘못됨: 과도하게 영리함 */
 func GetUser(id string) (*User, error) {
     return func() (*User, error) {
         if u, e := db.FindUser(id); e == nil {
@@ -43,15 +43,15 @@ func GetUser(id string) (*User, error) {
 }
 ```
 
-### 2. Make the Zero Value Useful
+### 2. 제로 값을 유용하게 만들기
 
-Design types so their zero value is immediately usable without initialization.
+타입을 설계할 때 제로 값이 초기화 없이 바로 사용 가능하도록 한다.
 
 ```go
-// Good: Zero value is useful
+/* 올바름: 제로 값이 유용함 */
 type Counter struct {
     mu    sync.Mutex
-    count int // zero value is 0, ready to use
+    count int /* 제로 값은 0, 바로 사용 가능 */
 }
 
 func (c *Counter) Inc() {
@@ -60,42 +60,30 @@ func (c *Counter) Inc() {
     c.mu.Unlock()
 }
 
-// Good: bytes.Buffer works with zero value
-var buf bytes.Buffer
-buf.WriteString("hello")
-
-// Bad: Requires initialization
+/* 잘못됨: 초기화 필요 */
 type BadCounter struct {
-    counts map[string]int // nil map will panic
+    counts map[string]int /* nil 맵은 패닉 발생 */
 }
 ```
 
-### 3. Accept Interfaces, Return Structs
+### 3. 인터페이스 수락, 구조체 반환
 
-Functions should accept interface parameters and return concrete types.
+함수는 인터페이스 매개변수를 수락하고 구체적인 타입을 반환해야 한다.
 
 ```go
-// Good: Accepts interface, returns concrete type
+/* 올바름: 인터페이스 수락, 구체적 타입 반환 */
 func ProcessData(r io.Reader) (*Result, error) {
     data, err := io.ReadAll(r)
-    if err != nil {
-        return nil, err
-    }
+    if err != nil { return nil, err }
     return &Result{Data: data}, nil
-}
-
-// Bad: Returns interface (hides implementation details unnecessarily)
-func ProcessData(r io.Reader) (io.Reader, error) {
-    // ...
 }
 ```
 
-## Error Handling Patterns
+## 에러 처리 패턴
 
-### Error Wrapping with Context
+### 컨텍스트가 있는 에러 래핑
 
 ```go
-// Good: Wrap errors with context
 func LoadConfig(path string) (*Config, error) {
     data, err := os.ReadFile(path)
     if err != nil {
@@ -106,79 +94,68 @@ func LoadConfig(path string) (*Config, error) {
     if err := json.Unmarshal(data, &cfg); err != nil {
         return nil, fmt.Errorf("parse config %s: %w", path, err)
     }
-
     return &cfg, nil
 }
 ```
 
-### Custom Error Types
+### 커스텀 에러 타입
 
 ```go
-// Define domain-specific errors
+/* 도메인별 에러 정의 */
 type ValidationError struct {
     Field   string
     Message string
 }
 
 func (e *ValidationError) Error() string {
-    return fmt.Sprintf("validation failed on %s: %s", e.Field, e.Message)
+    return fmt.Sprintf("필드 %s 검증 실패: %s", e.Field, e.Message)
 }
 
-// Sentinel errors for common cases
+/* 일반적인 케이스를 위한 센티넬 에러 */
 var (
-    ErrNotFound     = errors.New("resource not found")
-    ErrUnauthorized = errors.New("unauthorized")
-    ErrInvalidInput = errors.New("invalid input")
+    ErrNotFound     = errors.New("리소스 없음")
+    ErrUnauthorized = errors.New("권한 없음")
+    ErrInvalidInput = errors.New("유효하지 않은 입력")
 )
 ```
 
-### Error Checking with errors.Is and errors.As
+### errors.Is와 errors.As로 에러 확인
 
 ```go
 func HandleError(err error) {
-    // Check for specific error
     if errors.Is(err, sql.ErrNoRows) {
-        log.Println("No records found")
+        log.Println("레코드 없음")
         return
     }
 
-    // Check for error type
     var validationErr *ValidationError
     if errors.As(err, &validationErr) {
-        log.Printf("Validation error on field %s: %s",
-            validationErr.Field, validationErr.Message)
+        log.Printf("필드 %s 검증 에러: %s", validationErr.Field, validationErr.Message)
         return
     }
 
-    // Unknown error
-    log.Printf("Unexpected error: %v", err)
+    log.Printf("예기치 않은 에러: %v", err)
 }
 ```
 
-### Never Ignore Errors
+### 에러 절대 무시 금지
 
 ```go
-// Bad: Ignoring error with blank identifier
+/* 잘못됨: 블랭크 식별자로 에러 무시 */
 result, _ := doSomething()
 
-// Good: Handle or explicitly document why it's safe to ignore
+/* 올바름: 처리하거나 안전하게 무시할 수 있는 이유 명시 */
 result, err := doSomething()
-if err != nil {
-    return err
-}
-
-// Acceptable: When error truly doesn't matter (rare)
-_ = writer.Close() // Best-effort cleanup, error logged elsewhere
+if err != nil { return err }
 ```
 
-## Concurrency Patterns
+## 동시성 패턴
 
-### Worker Pool
+### 워커 풀
 
 ```go
 func WorkerPool(jobs <-chan Job, results chan<- Result, numWorkers int) {
     var wg sync.WaitGroup
-
     for i := 0; i < numWorkers; i++ {
         wg.Add(1)
         go func() {
@@ -188,13 +165,12 @@ func WorkerPool(jobs <-chan Job, results chan<- Result, numWorkers int) {
             }
         }()
     }
-
     wg.Wait()
     close(results)
 }
 ```
 
-### Context for Cancellation and Timeouts
+### 취소 및 타임아웃을 위한 Context
 
 ```go
 func FetchWithTimeout(ctx context.Context, url string) ([]byte, error) {
@@ -203,41 +179,38 @@ func FetchWithTimeout(ctx context.Context, url string) ([]byte, error) {
 
     req, err := http.NewRequestWithContext(ctx, "GET", url, nil)
     if err != nil {
-        return nil, fmt.Errorf("create request: %w", err)
+        return nil, fmt.Errorf("요청 생성: %w", err)
     }
 
     resp, err := http.DefaultClient.Do(req)
     if err != nil {
-        return nil, fmt.Errorf("fetch %s: %w", url, err)
+        return nil, fmt.Errorf("가져오기 %s: %w", url, err)
     }
     defer resp.Body.Close()
-
     return io.ReadAll(resp.Body)
 }
 ```
 
-### Graceful Shutdown
+### 우아한 종료
 
 ```go
 func GracefulShutdown(server *http.Server) {
     quit := make(chan os.Signal, 1)
     signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
-
     <-quit
-    log.Println("Shutting down server...")
+    log.Println("서버 종료 중...")
 
     ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
     defer cancel()
 
     if err := server.Shutdown(ctx); err != nil {
-        log.Fatalf("Server forced to shutdown: %v", err)
+        log.Fatalf("서버 강제 종료: %v", err)
     }
-
-    log.Println("Server exited")
+    log.Println("서버 종료됨")
 }
 ```
 
-### errgroup for Coordinated Goroutines
+### 조율된 고루틴을 위한 errgroup
 
 ```go
 import "golang.org/x/sync/errgroup"
@@ -247,45 +220,29 @@ func FetchAll(ctx context.Context, urls []string) ([][]byte, error) {
     results := make([][]byte, len(urls))
 
     for i, url := range urls {
-        i, url := i, url // Capture loop variables
+        i, url := i, url /* 루프 변수 캡처 */
         g.Go(func() error {
             data, err := FetchWithTimeout(ctx, url)
-            if err != nil {
-                return err
-            }
+            if err != nil { return err }
             results[i] = data
             return nil
         })
     }
 
-    if err := g.Wait(); err != nil {
-        return nil, err
-    }
+    if err := g.Wait(); err != nil { return nil, err }
     return results, nil
 }
 ```
 
-### Avoiding Goroutine Leaks
+### 고루틴 누수 방지
 
 ```go
-// Bad: Goroutine leak if context is cancelled
-func leakyFetch(ctx context.Context, url string) <-chan []byte {
-    ch := make(chan []byte)
-    go func() {
-        data, _ := fetch(url)
-        ch <- data // Blocks forever if no receiver
-    }()
-    return ch
-}
-
-// Good: Properly handles cancellation
+/* 올바름: 취소를 제대로 처리 */
 func safeFetch(ctx context.Context, url string) <-chan []byte {
-    ch := make(chan []byte, 1) // Buffered channel
+    ch := make(chan []byte, 1) /* 버퍼 있는 채널 */
     go func() {
         data, err := fetch(url)
-        if err != nil {
-            return
-        }
+        if err != nil { return }
         select {
         case ch <- data:
         case <-ctx.Done():
@@ -295,133 +252,83 @@ func safeFetch(ctx context.Context, url string) <-chan []byte {
 }
 ```
 
-## Interface Design
+## 인터페이스 설계
 
-### Small, Focused Interfaces
+### 작고 집중된 인터페이스
 
 ```go
-// Good: Single-method interfaces
-type Reader interface {
-    Read(p []byte) (n int, err error)
-}
+/* 올바름: 단일 메서드 인터페이스 */
+type Reader interface { Read(p []byte) (n int, err error) }
+type Writer interface { Write(p []byte) (n int, err error) }
+type Closer interface { Close() error }
 
-type Writer interface {
-    Write(p []byte) (n int, err error)
-}
-
-type Closer interface {
-    Close() error
-}
-
-// Compose interfaces as needed
-type ReadWriteCloser interface {
-    Reader
-    Writer
-    Closer
-}
+/* 필요에 따라 인터페이스 조합 */
+type ReadWriteCloser interface { Reader; Writer; Closer }
 ```
 
-### Define Interfaces Where They're Used
+### 사용하는 곳에서 인터페이스 정의
 
 ```go
-// In the consumer package, not the provider
+/* 제공자가 아닌 소비자 패키지에서 정의 */
 package service
 
-// UserStore defines what this service needs
 type UserStore interface {
     GetUser(id string) (*User, error)
     SaveUser(user *User) error
 }
 
-type Service struct {
-    store UserStore
-}
-
-// Concrete implementation can be in another package
-// It doesn't need to know about this interface
+type Service struct { store UserStore }
 ```
 
-### Optional Behavior with Type Assertions
+### 타입 단언으로 선택적 동작
 
 ```go
-type Flusher interface {
-    Flush() error
-}
-
 func WriteAndFlush(w io.Writer, data []byte) error {
-    if _, err := w.Write(data); err != nil {
-        return err
-    }
+    if _, err := w.Write(data); err != nil { return err }
 
-    // Flush if supported
-    if f, ok := w.(Flusher); ok {
+    if f, ok := w.(interface{ Flush() error }); ok {
         return f.Flush()
     }
     return nil
 }
 ```
 
-## Package Organization
+## 패키지 구성
 
-### Standard Project Layout
+### 표준 프로젝트 레이아웃
 
 ```text
 myproject/
 ├── cmd/
 │   └── myapp/
-│       └── main.go           # Entry point
+│       └── main.go           # 진입점
 ├── internal/
-│   ├── handler/              # HTTP handlers
-│   ├── service/              # Business logic
-│   ├── repository/           # Data access
-│   └── config/               # Configuration
+│   ├── handler/              # HTTP 핸들러
+│   ├── service/              # 비즈니스 로직
+│   ├── repository/           # 데이터 접근
+│   └── config/               # 설정
 ├── pkg/
-│   └── client/               # Public API client
-├── api/
-│   └── v1/                   # API definitions (proto, OpenAPI)
-├── testdata/                 # Test fixtures
+│   └── client/               # 공개 API 클라이언트
+├── testdata/                 # 테스트 픽스처
 ├── go.mod
-├── go.sum
 └── Makefile
 ```
 
-### Package Naming
+### 패키지 전역 상태 금지
 
 ```go
-// Good: Short, lowercase, no underscores
-package http
-package json
-package user
-
-// Bad: Verbose, mixed case, or redundant
-package httpHandler
-package json_parser
-package userService // Redundant 'Service' suffix
-```
-
-### Avoid Package-Level State
-
-```go
-// Bad: Global mutable state
+/* 잘못됨: 전역 가변 상태 */
 var db *sql.DB
+func init() { db, _ = sql.Open("postgres", os.Getenv("DATABASE_URL")) }
 
-func init() {
-    db, _ = sql.Open("postgres", os.Getenv("DATABASE_URL"))
-}
-
-// Good: Dependency injection
-type Server struct {
-    db *sql.DB
-}
-
-func NewServer(db *sql.DB) *Server {
-    return &Server{db: db}
-}
+/* 올바름: 의존성 주입 */
+type Server struct { db *sql.DB }
+func NewServer(db *sql.DB) *Server { return &Server{db: db} }
 ```
 
-## Struct Design
+## 구조체 설계
 
-### Functional Options Pattern
+### Functional Options 패턴
 
 ```go
 type Server struct {
@@ -433,242 +340,147 @@ type Server struct {
 type Option func(*Server)
 
 func WithTimeout(d time.Duration) Option {
-    return func(s *Server) {
-        s.timeout = d
-    }
-}
-
-func WithLogger(l *log.Logger) Option {
-    return func(s *Server) {
-        s.logger = l
-    }
+    return func(s *Server) { s.timeout = d }
 }
 
 func NewServer(addr string, opts ...Option) *Server {
-    s := &Server{
-        addr:    addr,
-        timeout: 30 * time.Second, // default
-        logger:  log.Default(),    // default
-    }
-    for _, opt := range opts {
-        opt(s)
-    }
+    s := &Server{addr: addr, timeout: 30 * time.Second, logger: log.Default()}
+    for _, opt := range opts { opt(s) }
     return s
 }
 
-// Usage
+/* 사용 */
 server := NewServer(":8080",
     WithTimeout(60*time.Second),
     WithLogger(customLogger),
 )
 ```
 
-### Embedding for Composition
+### 임베딩으로 컴포지션
 
 ```go
-type Logger struct {
-    prefix string
-}
-
-func (l *Logger) Log(msg string) {
-    fmt.Printf("[%s] %s\n", l.prefix, msg)
-}
+type Logger struct { prefix string }
+func (l *Logger) Log(msg string) { fmt.Printf("[%s] %s\n", l.prefix, msg) }
 
 type Server struct {
-    *Logger // Embedding - Server gets Log method
+    *Logger /* 임베딩 — Server가 Log 메서드를 가짐 */
     addr    string
 }
-
-func NewServer(addr string) *Server {
-    return &Server{
-        Logger: &Logger{prefix: "SERVER"},
-        addr:   addr,
-    }
-}
-
-// Usage
-s := NewServer(":8080")
-s.Log("Starting...") // Calls embedded Logger.Log
 ```
 
-## Memory and Performance
+## 메모리 및 성능
 
-### Preallocate Slices When Size is Known
+### 크기를 알면 슬라이스 미리 할당
 
 ```go
-// Bad: Grows slice multiple times
-func processItems(items []Item) []Result {
-    var results []Result
-    for _, item := range items {
-        results = append(results, process(item))
-    }
-    return results
-}
-
-// Good: Single allocation
+/* 올바름: 단일 할당 */
 func processItems(items []Item) []Result {
     results := make([]Result, 0, len(items))
-    for _, item := range items {
-        results = append(results, process(item))
-    }
+    for _, item := range items { results = append(results, process(item)) }
     return results
 }
 ```
 
-### Use sync.Pool for Frequent Allocations
+### 빈번한 할당에 sync.Pool 사용
 
 ```go
-var bufferPool = sync.Pool{
-    New: func() interface{} {
-        return new(bytes.Buffer)
-    },
-}
+var bufferPool = sync.Pool{New: func() interface{} { return new(bytes.Buffer) }}
 
 func ProcessRequest(data []byte) []byte {
     buf := bufferPool.Get().(*bytes.Buffer)
-    defer func() {
-        buf.Reset()
-        bufferPool.Put(buf)
-    }()
-
+    defer func() { buf.Reset(); bufferPool.Put(buf) }()
     buf.Write(data)
-    // Process...
     return buf.Bytes()
 }
 ```
 
-### Avoid String Concatenation in Loops
+### 루프에서 문자열 연결 금지
 
 ```go
-// Bad: Creates many string allocations
-func join(parts []string) string {
-    var result string
-    for _, p := range parts {
-        result += p + ","
-    }
-    return result
-}
-
-// Good: Single allocation with strings.Builder
+/* 올바름: strings.Builder 사용 */
 func join(parts []string) string {
     var sb strings.Builder
     for i, p := range parts {
-        if i > 0 {
-            sb.WriteString(",")
-        }
+        if i > 0 { sb.WriteString(",") }
         sb.WriteString(p)
     }
     return sb.String()
 }
 
-// Best: Use standard library
-func join(parts []string) string {
-    return strings.Join(parts, ",")
-}
+/* 최선: 표준 라이브러리 사용 */
+func join(parts []string) string { return strings.Join(parts, ",") }
 ```
 
-## Go Tooling Integration
-
-### Essential Commands
+## Go 도구 통합
 
 ```bash
-# Build and run
+# 빌드 및 실행
 go build ./...
 go run ./cmd/myapp
 
-# Testing
+# 테스팅
 go test ./...
 go test -race ./...
 go test -cover ./...
 
-# Static analysis
+# 정적 분석
 go vet ./...
 staticcheck ./...
 golangci-lint run
 
-# Module management
+# 모듈 관리
 go mod tidy
 go mod verify
 
-# Formatting
+# 포매팅
 gofmt -w .
 goimports -w .
 ```
 
-### Recommended Linter Configuration (.golangci.yml)
+## 빠른 참조: Go 이디엄
 
-```yaml
-linters:
-  enable:
-    - errcheck
-    - gosimple
-    - govet
-    - ineffassign
-    - staticcheck
-    - unused
-    - gofmt
-    - goimports
-    - misspell
-    - unconvert
-    - unparam
+| 이디엄 | 설명 |
+|---|---|
+| 인터페이스 수락, 구조체 반환 | 함수는 인터페이스 매개변수 수락, 구체적 타입 반환 |
+| 에러는 값이다 | 에러를 예외가 아닌 일급 값으로 취급 |
+| 공유 메모리로 통신하지 않기 | 고루틴 간 조율에 채널 사용 |
+| 제로 값을 유용하게 | 타입은 명시적 초기화 없이 작동해야 함 |
+| 조금 복사하는 것이 조금 의존하는 것보다 낫다 | 불필요한 외부 의존성 금지 |
+| 명확함이 영리함보다 낫다 | 영리함보다 가독성 우선 |
+| gofmt로 항상 포매팅 | gofmt/goimports로 항상 포매팅 |
+| 조기 반환 | 에러 먼저 처리, 행복 경로 들여쓰기 최소화 |
 
-linters-settings:
-  errcheck:
-    check-type-assertions: true
-  govet:
-    check-shadowing: true
-
-issues:
-  exclude-use-default: false
-```
-
-## Quick Reference: Go Idioms
-
-| Idiom | Description |
-|-------|-------------|
-| Accept interfaces, return structs | Functions accept interface params, return concrete types |
-| Errors are values | Treat errors as first-class values, not exceptions |
-| Don't communicate by sharing memory | Use channels for coordination between goroutines |
-| Make the zero value useful | Types should work without explicit initialization |
-| A little copying is better than a little dependency | Avoid unnecessary external dependencies |
-| Clear is better than clever | Prioritize readability over cleverness |
-| gofmt is no one's favorite but everyone's friend | Always format with gofmt/goimports |
-| Return early | Handle errors first, keep happy path unindented |
-
-## Anti-Patterns to Avoid
+## 피해야 할 안티패턴
 
 ```go
-// Bad: Naked returns in long functions
+/* 잘못됨: 긴 함수에서 naked return */
 func process() (result int, err error) {
-    // ... 50 lines ...
-    return // What is being returned?
+    return /* 무엇이 반환되는지? */
 }
 
-// Bad: Using panic for control flow
+/* 잘못됨: 제어 흐름에 panic 사용 */
 func GetUser(id string) *User {
     user, err := db.Find(id)
-    if err != nil {
-        panic(err) // Don't do this
-    }
+    if err != nil { panic(err) /* 하지 않는다 */ }
     return user
 }
 
-// Bad: Passing context in struct
+/* 잘못됨: 구조체에 context 포함 */
 type Request struct {
-    ctx context.Context // Context should be first param
+    ctx context.Context /* 첫 번째 매개변수여야 함 */
     ID  string
 }
 
-// Good: Context as first parameter
-func ProcessRequest(ctx context.Context, id string) error {
-    // ...
-}
+/* 올바름: context는 첫 번째 매개변수 */
+func ProcessRequest(ctx context.Context, id string) error { }
 
-// Bad: Mixing value and pointer receivers
+/* 잘못됨: 값 수신자와 포인터 수신자 혼용 */
 type Counter struct{ n int }
-func (c Counter) Value() int { return c.n }    // Value receiver
-func (c *Counter) Increment() { c.n++ }        // Pointer receiver
-// Pick one style and be consistent
+func (c Counter) Value() int { return c.n }    /* 값 수신자 */
+func (c *Counter) Increment() { c.n++ }        /* 포인터 수신자 */
+/* 하나를 선택하고 일관되게 */
 ```
 
-**Remember**: Go code should be boring in the best way - predictable, consistent, and easy to understand. When in doubt, keep it simple.
+---
+
+**기억**: Go 코드는 최선의 의미에서 지루해야 한다 — 예측 가능하고, 일관되고, 이해하기 쉽게. 의심스러울 때는 단순하게.
