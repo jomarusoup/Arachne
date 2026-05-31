@@ -1,750 +1,348 @@
 ---
 name: python-patterns
-description: Pythonic idioms, PEP 8 standards, type hints, and best practices for building robust, efficient, and maintainable Python applications.
+description: 강력하고 효율적이며 유지 보수하기 쉬운 Python 애플리케이션을 구축하기 위한 파이썬닉 이디엄·PEP 8 표준·타입 힌트·모범 사례.
 origin: ECC
 ---
 
-# Python Development Patterns
+# Python 개발 패턴
 
-Idiomatic Python patterns and best practices for building robust, efficient, and maintainable applications.
+깔끔하고 유지 보수하기 쉬운 Python 코드를 위한 파이썬닉 이디엄과 모범 사례.
 
-## When to Activate
+## 언제 활성화하나
 
-- Writing new Python code
-- Reviewing Python code
-- Refactoring existing Python code
-- Designing Python packages/modules
+- 새 Python 코드 작성
+- Python 코드 검토
+- 더 파이썬닉하게 리팩터링
+- Python 프로젝트 구조 설정
 
-## Core Principles
+## 핵심 원칙
 
-### 1. Readability Counts
-
-Python prioritizes readability. Code should be obvious and easy to understand.
+### 1. PEP 8 및 PEP 20 (Zen of Python) 준수
 
 ```python
-# Good: Clear and readable
-def get_active_users(users: list[User]) -> list[User]:
-    """Return only active users from the provided list."""
-    return [user for user in users if user.is_active]
+# 올바름: 명확하고, 명시적이고, 읽기 쉬움
+def calculate_total(items: list[Item]) -> Decimal:
+    return sum(item.price * item.quantity for item in items)
 
-
-# Bad: Clever but confusing
-def get_active_users(u):
-    return [x for x in u if x.a]
+# 잘못됨: 불명확하고 암묵적
+def calc(x):
+    return sum(i.p * i.q for i in x)
 ```
 
-### 2. Explicit is Better Than Implicit
-
-Avoid magic; be clear about what your code does.
+### 2. 타입 힌트 사용 (PEP 484+)
 
 ```python
-# Good: Explicit configuration
-import logging
+# 올바름: 완전히 타입화
+def process_user(user_id: int, name: str) -> dict[str, Any]:
+    return {"id": user_id, "name": name}
 
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
-)
-
-# Bad: Hidden side effects
-import some_module
-some_module.setup()  # What does this do?
+# 현대 유니온 구문 (Python 3.10+)
+def find_user(id: int) -> User | None:
+    ...
 ```
 
-### 3. EAFP - Easier to Ask Forgiveness Than Permission
-
-Python prefers exception handling over checking conditions.
+### 3. 컴포지션과 명시성 선호
 
 ```python
-# Good: EAFP style
-def get_value(dictionary: dict, key: str) -> Any:
-    try:
-        return dictionary[key]
-    except KeyError:
-        return default_value
-
-# Bad: LBYL (Look Before You Leap) style
-def get_value(dictionary: dict, key: str) -> Any:
-    if key in dictionary:
-        return dictionary[key]
-    else:
-        return default_value
+# 올바름: 명시적 의존성
+class OrderService:
+    def __init__(self, db: Database, cache: Cache) -> None:
+        self._db = db
+        self._cache = cache
 ```
 
-## Type Hints
+## 타입 힌트
 
-### Basic Type Annotations
-
-```python
-from typing import Optional, List, Dict, Any
-
-def process_user(
-    user_id: str,
-    data: Dict[str, Any],
-    active: bool = True
-) -> Optional[User]:
-    """Process a user and return the updated User or None."""
-    if not active:
-        return None
-    return User(user_id, data)
-```
-
-### Modern Type Hints (Python 3.9+)
+### 포괄적 타입 힌트
 
 ```python
-# Python 3.9+ - Use built-in types
-def process_items(items: list[str]) -> dict[str, int]:
-    return {item: len(item) for item in items}
+from typing import Any, Callable, TypeVar
+from collections.abc import Sequence, Mapping, Iterator
 
-# Python 3.8 and earlier - Use typing module
-from typing import List, Dict
+# 기본 타입
+def greet(name: str) -> str:
+    return f"Hello, {name}"
 
-def process_items(items: List[str]) -> Dict[str, int]:
-    return {item: len(item) for item in items}
-```
+# 컬렉션 (Python 3.9+)
+def process(items: list[int]) -> dict[str, int]:
+    return {"count": len(items)}
 
-### Type Aliases and TypeVar
+# Optional과 Union (3.10+ 구문)
+def find(id: int) -> User | None:
+    ...
 
-```python
-from typing import TypeVar, Union
+# Callable
+Handler = Callable[[Request], Response]
 
-# Type alias for complex types
-JSON = Union[dict[str, Any], list[Any], str, int, float, bool, None]
-
-def parse_json(data: str) -> JSON:
-    return json.loads(data)
-
-# Generic types
-T = TypeVar('T')
-
-def first(items: list[T]) -> T | None:
-    """Return the first item or None if list is empty."""
+# 제네릭을 위한 TypeVar
+T = TypeVar("T")
+def first(items: Sequence[T]) -> T | None:
     return items[0] if items else None
 ```
 
-### Protocol-Based Duck Typing
+### 제네릭 (Python 3.12+)
 
 ```python
-from typing import Protocol
+# 새로운 제네릭 구문
+class Container[T]:
+    def __init__(self, item: T) -> None:
+        self._item = item
 
-class Renderable(Protocol):
-    def render(self) -> str:
-        """Render the object to a string."""
+    def get(self) -> T:
+        return self._item
 
-def render_all(items: list[Renderable]) -> str:
-    """Render all items that implement the Renderable protocol."""
-    return "\n".join(item.render() for item in items)
+def first[T](items: list[T]) -> T | None:
+    return items[0] if items else None
 ```
 
-## Error Handling Patterns
+## 데이터클래스와 모델
 
-### Specific Exception Handling
+### 데이터클래스
 
 ```python
-# Good: Catch specific exceptions
-def load_config(path: str) -> Config:
-    try:
-        with open(path) as f:
-            return Config.from_json(f.read())
-    except FileNotFoundError as e:
-        raise ConfigError(f"Config file not found: {path}") from e
-    except json.JSONDecodeError as e:
-        raise ConfigError(f"Invalid JSON in config: {path}") from e
+from dataclasses import dataclass, field
 
-# Bad: Bare except
-def load_config(path: str) -> Config:
-    try:
-        with open(path) as f:
-            return Config.from_json(f.read())
-    except:
-        return None  # Silent failure!
+@dataclass
+class Point:
+    x: float
+    y: float
+
+    def distance(self, other: "Point") -> float:
+        return ((self.x - other.x) ** 2 + (self.y - other.y) ** 2) ** 0.5
+
+@dataclass(frozen=True)  # 불변
+class Config:
+    debug: bool = False
+    timeout: int = 30
+    tags: list[str] = field(default_factory=list)
 ```
 
-### Exception Chaining
+### Pydantic 모델
 
 ```python
-def process_data(data: str) -> Result:
-    try:
-        parsed = json.loads(data)
-    except json.JSONDecodeError as e:
-        # Chain exceptions to preserve the traceback
-        raise ValueError(f"Failed to parse data: {data}") from e
+from pydantic import BaseModel, Field, validator
+
+class User(BaseModel):
+    id: int
+    name: str = Field(..., min_length=1, max_length=100)
+    email: str
+    age: int = Field(ge=0, le=150)
+
+    @validator("email")
+    def validate_email(cls, v: str) -> str:
+        if "@" not in v:
+            raise ValueError("유효하지 않은 이메일")
+        return v
 ```
 
-### Custom Exception Hierarchy
+## 에러 처리
+
+### 예외 계층
 
 ```python
 class AppError(Exception):
-    """Base exception for all application errors."""
-    pass
-
-class ValidationError(AppError):
-    """Raised when input validation fails."""
-    pass
+    """기본 애플리케이션 예외."""
 
 class NotFoundError(AppError):
-    """Raised when a requested resource is not found."""
-    pass
+    """리소스 없음."""
 
-# Usage
-def get_user(user_id: str) -> User:
-    user = db.find_user(user_id)
-    if not user:
-        raise NotFoundError(f"User not found: {user_id}")
+class ValidationError(AppError):
+    """검증 실패."""
+
+# 사용
+def get_user(id: int) -> User:
+    user = db.query(id)
+    if user is None:
+        raise NotFoundError(f"User {id} not found")
     return user
 ```
 
-## Context Managers
-
-### Resource Management
+### 컨텍스트별 예외
 
 ```python
-# Good: Using context managers
-def process_file(path: str) -> str:
-    with open(path, 'r') as f:
-        return f.read()
-
-# Bad: Manual resource management
-def process_file(path: str) -> str:
-    f = open(path, 'r')
-    try:
-        return f.read()
-    finally:
-        f.close()
+try:
+    result = risky_operation()
+except (ValueError, KeyError) as e:
+    logger.error(f"작업 실패: {e}")
+    raise ProcessingError("처리 실패") from e
+finally:
+    cleanup()
 ```
 
-### Custom Context Managers
+## 비동기 패턴
+
+### Async/Await
+
+```python
+import asyncio
+
+async def fetch_data(url: str) -> dict:
+    async with aiohttp.ClientSession() as session:
+        async with session.get(url) as response:
+            return await response.json()
+
+async def fetch_all(urls: list[str]) -> list[dict]:
+    tasks = [fetch_data(url) for url in urls]
+    return await asyncio.gather(*tasks)
+```
+
+### 비동기 컨텍스트 매니저
+
+```python
+class AsyncResource:
+    async def __aenter__(self):
+        await self.connect()
+        return self
+
+    async def __aexit__(self, *args):
+        await self.disconnect()
+
+async def use_resource():
+    async with AsyncResource() as res:
+        await res.process()
+```
+
+## 함수형 패턴
+
+### 컴프리헨션
+
+```python
+# 리스트 컴프리헨션
+squares = [x**2 for x in range(10)]
+
+# 딕셔너리 컴프리헨션
+user_map = {user.id: user for user in users}
+
+# 셋 컴프리헨션
+unique_tags = {tag for post in posts for tag in post.tags}
+
+# 제너레이터 표현식 (메모리 효율적)
+total = sum(x**2 for x in range(1000000))
+```
+
+### 고차 함수
+
+```python
+from functools import reduce, partial, lru_cache
+
+# 메모이제이션을 위한 lru_cache
+@lru_cache(maxsize=128)
+def fibonacci(n: int) -> int:
+    if n < 2:
+        return n
+    return fibonacci(n - 1) + fibonacci(n - 2)
+
+# 부분 적용을 위한 partial
+def multiply(x: int, y: int) -> int:
+    return x * y
+
+double = partial(multiply, 2)
+```
+
+## 컨텍스트 매니저
 
 ```python
 from contextlib import contextmanager
 
 @contextmanager
 def timer(name: str):
-    """Context manager to time a block of code."""
-    start = time.perf_counter()
-    yield
-    elapsed = time.perf_counter() - start
-    print(f"{name} took {elapsed:.4f} seconds")
+    start = time.time()
+    try:
+        yield
+    finally:
+        elapsed = time.time() - start
+        print(f"{name} took {elapsed:.2f}s")
 
-# Usage
-with timer("data processing"):
-    process_large_dataset()
+# 사용
+with timer("processing"):
+    process_data()
 ```
 
-### Context Manager Classes
+## 테스팅 패턴
+
+포괄적인 테스팅 패턴은 `python-testing` 스킬 참고.
+
+## 성능
+
+### 내장 함수 사용
 
 ```python
-class DatabaseTransaction:
-    def __init__(self, connection):
-        self.connection = connection
+# 올바름: 내장 함수는 최적화되어 있음
+total = sum(numbers)
+maximum = max(numbers)
 
-    def __enter__(self):
-        self.connection.begin_transaction()
-        return self
-
-    def __exit__(self, exc_type, exc_val, exc_tb):
-        if exc_type is None:
-            self.connection.commit()
-        else:
-            self.connection.rollback()
-        return False  # Don't suppress exceptions
-
-# Usage
-with DatabaseTransaction(conn):
-    user = conn.create_user(user_data)
-    conn.create_profile(user.id, profile_data)
+# 잘못됨: 수동 루프
+total = 0
+for n in numbers:
+    total += n
 ```
 
-## Comprehensions and Generators
-
-### List Comprehensions
-
-```python
-# Good: List comprehension for simple transformations
-names = [user.name for user in users if user.is_active]
-
-# Bad: Manual loop
-names = []
-for user in users:
-    if user.is_active:
-        names.append(user.name)
-
-# Complex comprehensions should be expanded
-# Bad: Too complex
-result = [x * 2 for x in items if x > 0 if x % 2 == 0]
-
-# Good: Use a generator function
-def filter_and_transform(items: Iterable[int]) -> list[int]:
-    result = []
-    for x in items:
-        if x > 0 and x % 2 == 0:
-            result.append(x * 2)
-    return result
-```
-
-### Generator Expressions
-
-```python
-# Good: Generator for lazy evaluation
-total = sum(x * x for x in range(1_000_000))
-
-# Bad: Creates large intermediate list
-total = sum([x * x for x in range(1_000_000)])
-```
-
-### Generator Functions
-
-```python
-def read_large_file(path: str) -> Iterator[str]:
-    """Read a large file line by line."""
-    with open(path) as f:
-        for line in f:
-            yield line.strip()
-
-# Usage
-for line in read_large_file("huge.txt"):
-    process(line)
-```
-
-## Data Classes and Named Tuples
-
-### Data Classes
-
-```python
-from dataclasses import dataclass, field
-from datetime import datetime
-
-@dataclass
-class User:
-    """User entity with automatic __init__, __repr__, and __eq__."""
-    id: str
-    name: str
-    email: str
-    created_at: datetime = field(default_factory=datetime.now)
-    is_active: bool = True
-
-# Usage
-user = User(
-    id="123",
-    name="Alice",
-    email="alice@example.com"
-)
-```
-
-### Data Classes with Validation
-
-```python
-@dataclass
-class User:
-    email: str
-    age: int
-
-    def __post_init__(self):
-        # Validate email format
-        if "@" not in self.email:
-            raise ValueError(f"Invalid email: {self.email}")
-        # Validate age range
-        if self.age < 0 or self.age > 150:
-            raise ValueError(f"Invalid age: {self.age}")
-```
-
-### Named Tuples
-
-```python
-from typing import NamedTuple
-
-class Point(NamedTuple):
-    """Immutable 2D point."""
-    x: float
-    y: float
-
-    def distance(self, other: 'Point') -> float:
-        return ((self.x - other.x) ** 2 + (self.y - other.y) ** 2) ** 0.5
-
-# Usage
-p1 = Point(0, 0)
-p2 = Point(3, 4)
-print(p1.distance(p2))  # 5.0
-```
-
-## Decorators
-
-### Function Decorators
-
-```python
-import functools
-import time
-
-def timer(func: Callable) -> Callable:
-    """Decorator to time function execution."""
-    @functools.wraps(func)
-    def wrapper(*args, **kwargs):
-        start = time.perf_counter()
-        result = func(*args, **kwargs)
-        elapsed = time.perf_counter() - start
-        print(f"{func.__name__} took {elapsed:.4f}s")
-        return result
-    return wrapper
-
-@timer
-def slow_function():
-    time.sleep(1)
-
-# slow_function() prints: slow_function took 1.0012s
-```
-
-### Parameterized Decorators
-
-```python
-def repeat(times: int):
-    """Decorator to repeat a function multiple times."""
-    def decorator(func: Callable) -> Callable:
-        @functools.wraps(func)
-        def wrapper(*args, **kwargs):
-            results = []
-            for _ in range(times):
-                results.append(func(*args, **kwargs))
-            return results
-        return wrapper
-    return decorator
-
-@repeat(times=3)
-def greet(name: str) -> str:
-    return f"Hello, {name}!"
-
-# greet("Alice") returns ["Hello, Alice!", "Hello, Alice!", "Hello, Alice!"]
-```
-
-### Class-Based Decorators
-
-```python
-class CountCalls:
-    """Decorator that counts how many times a function is called."""
-    def __init__(self, func: Callable):
-        functools.update_wrapper(self, func)
-        self.func = func
-        self.count = 0
-
-    def __call__(self, *args, **kwargs):
-        self.count += 1
-        print(f"{self.func.__name__} has been called {self.count} times")
-        return self.func(*args, **kwargs)
-
-@CountCalls
-def process():
-    pass
-
-# Each call to process() prints the call count
-```
-
-## Concurrency Patterns
-
-### Threading for I/O-Bound Tasks
-
-```python
-import concurrent.futures
-import threading
-
-def fetch_url(url: str) -> str:
-    """Fetch a URL (I/O-bound operation)."""
-    import urllib.request
-    with urllib.request.urlopen(url) as response:
-        return response.read().decode()
-
-def fetch_all_urls(urls: list[str]) -> dict[str, str]:
-    """Fetch multiple URLs concurrently using threads."""
-    with concurrent.futures.ThreadPoolExecutor(max_workers=10) as executor:
-        future_to_url = {executor.submit(fetch_url, url): url for url in urls}
-        results = {}
-        for future in concurrent.futures.as_completed(future_to_url):
-            url = future_to_url[future]
-            try:
-                results[url] = future.result()
-            except Exception as e:
-                results[url] = f"Error: {e}"
-    return results
-```
-
-### Multiprocessing for CPU-Bound Tasks
-
-```python
-def process_data(data: list[int]) -> int:
-    """CPU-intensive computation."""
-    return sum(x ** 2 for x in data)
-
-def process_all(datasets: list[list[int]]) -> list[int]:
-    """Process multiple datasets using multiple processes."""
-    with concurrent.futures.ProcessPoolExecutor() as executor:
-        results = list(executor.map(process_data, datasets))
-    return results
-```
-
-### Async/Await for Concurrent I/O
-
-```python
-import asyncio
-
-async def fetch_async(url: str) -> str:
-    """Fetch a URL asynchronously."""
-    import aiohttp
-    async with aiohttp.ClientSession() as session:
-        async with session.get(url) as response:
-            return await response.text()
-
-async def fetch_all(urls: list[str]) -> dict[str, str]:
-    """Fetch multiple URLs concurrently."""
-    tasks = [fetch_async(url) for url in urls]
-    results = await asyncio.gather(*tasks, return_exceptions=True)
-    return dict(zip(urls, results))
-```
-
-## Package Organization
-
-### Standard Project Layout
+## 패키지 구조
 
 ```
-myproject/
-├── src/
-│   └── mypackage/
-│       ├── __init__.py
-│       ├── main.py
-│       ├── api/
-│       │   ├── __init__.py
-│       │   └── routes.py
-│       ├── models/
-│       │   ├── __init__.py
-│       │   └── user.py
-│       └── utils/
-│           ├── __init__.py
-│           └── helpers.py
-├── tests/
+mypackage/
+├── __init__.py
+├── __main__.py          # python -m mypackage 진입점
+├── core/
 │   ├── __init__.py
-│   ├── conftest.py
-│   ├── test_api.py
-│   └── test_models.py
-├── pyproject.toml
-├── README.md
-└── .gitignore
+│   ├── models.py
+│   └── services.py
+├── utils/
+│   ├── __init__.py
+│   └── helpers.py
+└── tests/
+    ├── __init__.py
+    └── test_core.py
 ```
 
-### Import Conventions
+## 빠른 참조
+
+| 패턴 | 사용 케이스 |
+|---|---|
+| Dataclass | 단순 데이터 컨테이너 |
+| Pydantic | 검증 및 직렬화 |
+| Protocol | 구조적 타이핑/인터페이스 |
+| Context manager | 자원 관리 |
+| Generator | 메모리 효율적 반복 |
+| `lru_cache` | 메모이제이션 |
+| Comprehension | 컬렉션 변환 |
+
+## 피해야 할 안티패턴
 
 ```python
-# Good: Import order - stdlib, third-party, local
-import os
-import sys
-from pathlib import Path
-
-import requests
-from fastapi import FastAPI
-
-from mypackage.models import User
-from mypackage.utils import format_name
-
-# Good: Use isort for automatic import sorting
-# pip install isort
-```
-
-### __init__.py for Package Exports
-
-```python
-# mypackage/__init__.py
-"""mypackage - A sample Python package."""
-
-__version__ = "1.0.0"
-
-# Export main classes/functions at package level
-from mypackage.models import User, Post
-from mypackage.utils import format_name
-
-__all__ = ["User", "Post", "format_name"]
-```
-
-## Memory and Performance
-
-### Using __slots__ for Memory Efficiency
-
-```python
-# Bad: Regular class uses __dict__ (more memory)
-class Point:
-    def __init__(self, x: float, y: float):
-        self.x = x
-        self.y = y
-
-# Good: __slots__ reduces memory usage
-class Point:
-    __slots__ = ['x', 'y']
-
-    def __init__(self, x: float, y: float):
-        self.x = x
-        self.y = y
-```
-
-### Generator for Large Data
-
-```python
-# Bad: Returns full list in memory
-def read_lines(path: str) -> list[str]:
-    with open(path) as f:
-        return [line.strip() for line in f]
-
-# Good: Yields lines one at a time
-def read_lines(path: str) -> Iterator[str]:
-    with open(path) as f:
-        for line in f:
-            yield line.strip()
-```
-
-### Avoid String Concatenation in Loops
-
-```python
-# Bad: O(n²) due to string immutability
-result = ""
-for item in items:
-    result += str(item)
-
-# Good: O(n) using join
-result = "".join(str(item) for item in items)
-
-# Good: Using StringIO for building
-from io import StringIO
-
-buffer = StringIO()
-for item in items:
-    buffer.write(str(item))
-result = buffer.getvalue()
-```
-
-## Python Tooling Integration
-
-### Essential Commands
-
-```bash
-# Code formatting
-black .
-isort .
-
-# Linting
-ruff check .
-pylint mypackage/
-
-# Type checking
-mypy .
-
-# Testing
-pytest --cov=mypackage --cov-report=html
-
-# Security scanning
-bandit -r .
-
-# Dependency management
-pip-audit
-safety check
-```
-
-### pyproject.toml Configuration
-
-```toml
-[project]
-name = "mypackage"
-version = "1.0.0"
-requires-python = ">=3.9"
-dependencies = [
-    "requests>=2.31.0",
-    "pydantic>=2.0.0",
-]
-
-[project.optional-dependencies]
-dev = [
-    "pytest>=7.4.0",
-    "pytest-cov>=4.1.0",
-    "black>=23.0.0",
-    "ruff>=0.1.0",
-    "mypy>=1.5.0",
-]
-
-[tool.black]
-line-length = 88
-target-version = ['py39']
-
-[tool.ruff]
-line-length = 88
-select = ["E", "F", "I", "N", "W"]
-
-[tool.mypy]
-python_version = "3.9"
-warn_return_any = true
-warn_unused_configs = true
-disallow_untyped_defs = true
-
-[tool.pytest.ini_options]
-testpaths = ["tests"]
-addopts = "--cov=mypackage --cov-report=term-missing"
-```
-
-## Quick Reference: Python Idioms
-
-| Idiom | Description |
-|-------|-------------|
-| EAFP | Easier to Ask Forgiveness than Permission |
-| Context managers | Use `with` for resource management |
-| List comprehensions | For simple transformations |
-| Generators | For lazy evaluation and large datasets |
-| Type hints | Annotate function signatures |
-| Dataclasses | For data containers with auto-generated methods |
-| `__slots__` | For memory optimization |
-| f-strings | For string formatting (Python 3.6+) |
-| `pathlib.Path` | For path operations (Python 3.4+) |
-| `enumerate` | For index-element pairs in loops |
-
-## Anti-Patterns to Avoid
-
-```python
-# Bad: Mutable default arguments
-def append_to(item, items=[]):
+# 잘못됨: 가변 기본 인자
+def add_item(item, items=[]):  # 위험!
     items.append(item)
     return items
 
-# Good: Use None and create new list
-def append_to(item, items=None):
+# 올바름: None 사용
+def add_item(item, items: list | None = None):
     if items is None:
         items = []
     items.append(item)
     return items
 
-# Bad: Checking type with type()
-if type(obj) == list:
-    process(obj)
-
-# Good: Use isinstance
-if isinstance(obj, list):
-    process(obj)
-
-# Bad: Comparing to None with ==
-if value == None:
-    process()
-
-# Good: Use is
-if value is None:
-    process()
-
-# Bad: from module import *
-from os.path import *
-
-# Good: Explicit imports
-from os.path import join, exists
-
-# Bad: Bare except
+# 잘못됨: 빈 except
 try:
-    risky_operation()
-except:
+    risky()
+except:  # KeyboardInterrupt까지 모든 것을 잡음
     pass
 
-# Good: Specific exception
+# 올바름: 특정 예외
 try:
-    risky_operation()
-except SpecificError as e:
-    logger.error(f"Operation failed: {e}")
+    risky()
+except ValueError as e:
+    handle(e)
+
+# 잘못됨: type()으로 타입 검사
+if type(obj) == dict:  # isinstance 사용
+    ...
+
+# 올바름: isinstance
+if isinstance(obj, dict):
+    ...
 ```
 
-__Remember__: Python code should be readable, explicit, and follow the principle of least surprise. When in doubt, prioritize clarity over cleverness.
+---
+
+**기억**: 명시적이고, 읽기 쉽고, 커뮤니티 컨벤션을 따르는 파이썬닉 코드를 작성한다. 의심스러울 때는 PEP 8과 Zen of Python을 따른다.
