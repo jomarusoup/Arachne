@@ -7,6 +7,9 @@
 @rules/common/patterns.md
 @rules/common/issue-workflow.md
 @rules/common/ui-layout.md
+@rules/common/hooks.md
+@rules/common/security.md
+@rules/common/testing.md
 
 @rules/c/coding-style.md
 @rules/cpp/coding-style.md
