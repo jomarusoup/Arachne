@@ -10,6 +10,10 @@
 @rules/common/hooks.md
 @rules/common/security.md
 @rules/common/testing.md
+@rules/common/agents.md
+@rules/common/development-workflow.md
+@rules/common/git-workflow.md
+@rules/common/performance.md
 
 @rules/c/coding-style.md
 @rules/cpp/coding-style.md

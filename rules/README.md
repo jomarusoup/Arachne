@@ -14,7 +14,11 @@ rules/
 │   ├── ui-layout.md             — UI 레이아웃 기준
 │   ├── hooks.md                 — 훅 유형·등록 방법·공통 권장 훅
 │   ├── security.md              — 커밋 전 보안 체크리스트, 비밀값 관리
-│   └── testing.md               — TDD 워크플로, AAA 패턴, 메모리 테스트
+│   ├── testing.md               — TDD 워크플로, AAA 패턴, 메모리 테스트
+│   ├── agents.md                — 에이전트 목록·활성화 기준·병렬 실행
+│   ├── development-workflow.md  — 조사→설계→TDD→리뷰→커밋 파이프라인
+│   ├── git-workflow.md          — 커밋 메시지 형식, 브랜치 전략, PR
+│   └── performance.md           — 모델 선택 전략, 컨텍스트 창 관리
 │
 ├── c/                           # C 시스템 프로그래밍
 │   ├── coding-style.md          — Allman, 포인터, 인클루드 순서
