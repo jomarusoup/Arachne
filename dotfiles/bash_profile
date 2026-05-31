@@ -1,6 +1,6 @@
-#==========================================================================
+###########################################################################
 # .bash_profile
-#==========================================================================
+###########################################################################
 
 # Get the aliases and functions
 if [ -f ~/.bashrc ]; then
@@ -9,12 +9,12 @@ fi
 
 # User specific environment and startup programs
 
-#--------------------------------------------------------------------------
+###########################################################################
 # COMMON
-#--------------------------------------------------------------------------
+###########################################################################
 
 export LD_LIBRARY_PATH=/lib64:/lib:/usr/local/lib64:
-export GITHUB_PERSONAL_ACCESS_TOKEN="__GITHUB_PAT__"  # 실제 값은 로컬에서 직접 입력
+export GITHUB_PERSONAL_ACCESS_TOKEN="GITHUB_CODE"
 
 export EXINIT='set ai ts=4 sw=4'
 set -o vi
@@ -36,86 +36,138 @@ alias rm='rm -i'
 alias cp='cp -i'
 alias mv='mv -i'
 
-#--------------------------------------------------------------------------
+#===============================================================================
 # COMMAND
-#--------------------------------------------------------------------------
-#--- [search file]
+#===============================================================================
+#-------------------------------------------------------------------------------
+# FUNCTION    : sgrep
+# DESCRIPTION : 현재 디렉터리 이하 전체 소스 파일에서 키워드 검색
+# PARAMETERS  : string keyword - 검색할 키워드
+# RETURNED    : 파일명:행번호:내용 형식으로 출력
+#-------------------------------------------------------------------------------
 sgrep()
 {
-        find . -name '*.[h|c]' -print | xargs grep -H "$*"
-        find . -name '*.cc' -print | xargs grep -H "$*"
-        find . -name '*.pc' -print | xargs grep -H "$*"
-        find . -name '*.sc' -print | xargs grep -H "$*"
-        find . -name '*.gc' -print | xargs grep -H "$*"
-        find . -name '*.cp' -print | xargs grep -H "$*"
-        find . -name '*.res' -print | xargs grep -H "$*"
-        find . -name '*.pgc' -print | xargs grep -H "$*"
-        find . -name '*.hpp' -print | xargs grep -H "$*"
-        find . -name '*.cpp' -print | xargs grep -H "$*"
-        find . -name '*.rs' -print | xargs grep -H "$*"
-        find . -name '*.py' -print | xargs grep -H "$*"
-        find . -name '*.html' -print | xargs grep -H "$*"
-        find . -name '*.css' -print | xargs grep -H "$*"
-        find . -name '*.js' -print | xargs grep -H "$*"
-        find . -name '*.ts' -print | xargs grep -H "$*"
-        find . -name '*.go' -print | xargs grep -H "$*"
-        find . -name 'Dockerfile' -print | xargs grep -H "$*"
+        #--- C / C++ header & source
+        find . -name '*.[h|c]'      -print | xargs grep -H "$*"
+        find . -name '*.cc'         -print | xargs grep -H "$*"
+        find . -name '*.pc'         -print | xargs grep -H "$*"
+        find . -name '*.sc'         -print | xargs grep -H "$*"
+        find . -name '*.gc'         -print | xargs grep -H "$*"
+        find . -name '*.cp'         -print | xargs grep -H "$*"
+        find . -name '*.res'        -print | xargs grep -H "$*"
+        find . -name '*.pgc'        -print | xargs grep -H "$*"
+        find . -name '*.hpp'        -print | xargs grep -H "$*"
+        find . -name '*.cpp'        -print | xargs grep -H "$*"
+        #--- Rust
+        find . -name '*.rs'         -print | xargs grep -H "$*"
+        #--- Python
+        find . -name '*.py'         -print | xargs grep -H "$*"
+        #--- Web (HTML / CSS / JS / TS)
+        find . -name '*.html'       -print | xargs grep -H "$*"
+        find . -name '*.css'        -print | xargs grep -H "$*"
+        find . -name '*.js'         -print | xargs grep -H "$*"
+        find . -name '*.ts'         -print | xargs grep -H "$*"
+        #--- Go
+        find . -name '*.go'         -print | xargs grep -H "$*"
+        #--- Docker
+        find . -name 'Dockerfile'   -print | xargs grep -H "$*"
         find . -name 'Dockerfile.*' -print | xargs grep -H "$*"
+        #--- Makefile
         find . -name '[M|m]akefile' -print | xargs grep -H "$*"
-        find . -name '*.mk' -print | xargs grep -H "$*"
-        find . -name '*.sh' -print | xargs grep -H "$*"
-        find . -name '*.bash' -print | xargs grep -H "$*"
-        find . -name '*.sql' -print | xargs grep -H "$*"
-        find . -name '*.toml' -print | xargs grep -H "$*"
-        find . -name '*.yaml' -print | xargs grep -H "$*"
-        find . -name '*.yml' -print | xargs grep -H "$*"
-        find . -name '*.json' -print | xargs grep -H "$*"
-        find . -name '*.md' -print | xargs grep -H "$*"
+        find . -name '*.mk'         -print | xargs grep -H "$*"
+        #--- Shell script
+        find . -name '*.sh'         -print | xargs grep -H "$*"
+        find . -name '*.bash'       -print | xargs grep -H "$*"
+        #--- SQL
+        find . -name '*.sql'        -print | xargs grep -H "$*"
+        #--- Config / Manifest
+        find . -name '*.toml'       -print | xargs grep -H "$*"
+        find . -name '*.yaml'       -print | xargs grep -H "$*"
+        find . -name '*.yml'        -print | xargs grep -H "$*"
+        find . -name '*.json'       -print | xargs grep -H "$*"
+        #--- Markdown
+        find . -name '*.md'         -print | xargs grep -H "$*"
 }
 
+#===============================================================================
+# FUNCTION    : lgrep
+# DESCRIPTION : sgrep와 동일하되 매칭 행 앞뒤 2줄씩 컨텍스트 포함 출력
+# PARAMETERS  : string keyword - 검색할 키워드
+# RETURNED    : 파일명:행번호:내용 + 전후 2줄 컨텍스트
+#===============================================================================
 lgrep()
 {
-        find . -name '*.[h|c]' -print | xargs grep -H -A2 -B2 "$*"
-        find . -name '*.cc' -print | xargs grep -H -A2 -B2 "$*"
-        find . -name '*.pc' -print | xargs grep -H -A2 -B2 "$*"
-        find . -name '*.sc' -print | xargs grep -H -A2 -B2 "$*"
-        find . -name '*.gc' -print | xargs grep -H -A2 -B2 "$*"
-        find . -name '*.cp' -print | xargs grep -H -A2 -B2 "$*"
-        find . -name '*.res' -print | xargs grep -H -A2 -B2 "$*"
-        find . -name '*.pgc' -print | xargs grep -H -A2 -B2 "$*"
-        find . -name '*.hpp' -print | xargs grep -H -A2 -B2 "$*"
-        find . -name '*.cpp' -print | xargs grep -H -A2 -B2 "$*"
-        find . -name '*.rs' -print | xargs grep -H -A2 -B2 "$*"
-        find . -name '*.py' -print | xargs grep -H -A2 -B2 "$*"
-        find . -name '*.html' -print | xargs grep -H -A2 -B2 "$*"
-        find . -name '*.css' -print | xargs grep -H -A2 -B2 "$*"
-        find . -name '*.js' -print | xargs grep -H -A2 -B2 "$*"
-        find . -name '*.ts' -print | xargs grep -H -A2 -B2 "$*"
-        find . -name '*.go' -print | xargs grep -H -A2 -B2 "$*"
-        find . -name 'Dockerfile' -print | xargs grep -H -A2 -B2 "$*"
+        #--- C / C++ header & source
+        find . -name '*.[h|c]'      -print | xargs grep -H -A2 -B2 "$*"
+        find . -name '*.cc'         -print | xargs grep -H -A2 -B2 "$*"
+        find . -name '*.pc'         -print | xargs grep -H -A2 -B2 "$*"
+        find . -name '*.sc'         -print | xargs grep -H -A2 -B2 "$*"
+        find . -name '*.gc'         -print | xargs grep -H -A2 -B2 "$*"
+        find . -name '*.cp'         -print | xargs grep -H -A2 -B2 "$*"
+        find . -name '*.res'        -print | xargs grep -H -A2 -B2 "$*"
+        find . -name '*.pgc'        -print | xargs grep -H -A2 -B2 "$*"
+        find . -name '*.hpp'        -print | xargs grep -H -A2 -B2 "$*"
+        find . -name '*.cpp'        -print | xargs grep -H -A2 -B2 "$*"
+        #--- Rust
+        find . -name '*.rs'         -print | xargs grep -H -A2 -B2 "$*"
+        #--- Python
+        find . -name '*.py'         -print | xargs grep -H -A2 -B2 "$*"
+        #--- Web (HTML / CSS / JS / TS)
+        find . -name '*.html'       -print | xargs grep -H -A2 -B2 "$*"
+        find . -name '*.css'        -print | xargs grep -H -A2 -B2 "$*"
+        find . -name '*.js'         -print | xargs grep -H -A2 -B2 "$*"
+        find . -name '*.ts'         -print | xargs grep -H -A2 -B2 "$*"
+        #--- Go
+        find . -name '*.go'         -print | xargs grep -H -A2 -B2 "$*"
+        #--- Docker
+        find . -name 'Dockerfile'   -print | xargs grep -H -A2 -B2 "$*"
         find . -name 'Dockerfile.*' -print | xargs grep -H -A2 -B2 "$*"
+        #--- Makefile
         find . -name '[M|m]akefile' -print | xargs grep -H -A2 -B2 "$*"
-        find . -name '*.mk' -print | xargs grep -H -A2 -B2 "$*"
-        find . -name '*.sh' -print | xargs grep -H -A2 -B2 "$*"
-        find . -name '*.bash' -print | xargs grep -H -A2 -B2 "$*"
-        find . -name '*.sql' -print | xargs grep -H -A2 -B2 "$*"
-        find . -name '*.toml' -print | xargs grep -H -A2 -B2 "$*"
-        find . -name '*.yaml' -print | xargs grep -H -A2 -B2 "$*"
-        find . -name '*.yml' -print | xargs grep -H -A2 -B2 "$*"
-        find . -name '*.json' -print | xargs grep -H -A2 -B2 "$*"
-        find . -name '*.md' -print | xargs grep -H -A2 -B2 "$*"
+        find . -name '*.mk'         -print | xargs grep -H -A2 -B2 "$*"
+        #--- Shell script
+        find . -name '*.sh'         -print | xargs grep -H -A2 -B2 "$*"
+        find . -name '*.bash'       -print | xargs grep -H -A2 -B2 "$*"
+        #--- SQL
+        find . -name '*.sql'        -print | xargs grep -H -A2 -B2 "$*"
+        #--- Config / Manifest
+        find . -name '*.toml'       -print | xargs grep -H -A2 -B2 "$*"
+        find . -name '*.yaml'       -print | xargs grep -H -A2 -B2 "$*"
+        find . -name '*.yml'        -print | xargs grep -H -A2 -B2 "$*"
+        find . -name '*.json'       -print | xargs grep -H -A2 -B2 "$*"
+        #--- Markdown
+        find . -name '*.md'         -print | xargs grep -H -A2 -B2 "$*"
 }
 
+#-------------------------------------------------------------------------------
+# FUNCTION    : rgrep
+# DESCRIPTION : .res 리소스 파일에서만 키워드 검색
+# PARAMETERS  : string keyword - 검색할 키워드
+# RETURNED    : 파일명:행번호:내용 형식으로 출력
+#-------------------------------------------------------------------------------
 rgrep()
 {
         find . -name '*.res' -print | xargs grep -H "$*"
 }
 
+#-------------------------------------------------------------------------------
+# FUNCTION    : mgrep
+# DESCRIPTION : Makefile에서만 키워드 검색
+# PARAMETERS  : string keyword - 검색할 키워드
+# RETURNED    : 파일명:행번호:내용 형식으로 출력
+#-------------------------------------------------------------------------------
 mgrep()
 {
         find . -name '[M|m]akefile' -print | xargs grep -H "$1"
 }
 
+#-------------------------------------------------------------------------------
+# FUNCTION    : ugrep
+# DESCRIPTION : C/C++ 소스에서 키워드 검색 후 파일명만 중복 없이 출력
+#               bak/back/test 파일은 결과에서 제외
+# PARAMETERS  : string pattern - 검색할 정규식 패턴
+# RETURNED    : 매칭된 파일명 목록 (중복 제거)
+#-------------------------------------------------------------------------------
 ugrep()
 {
         find . -name "*.[h|c]" -or -name "*.cc" -or -name "*.pc" -or -name "*.sc" | \
@@ -127,6 +179,13 @@ ugrep()
         uniq
 }
 
+#-------------------------------------------------------------------------------
+# FUNCTION    : vgrep
+# DESCRIPTION : .sc 및 C/C++ 소스에서 키워드 검색, 행번호 포함 정렬 출력
+#               bak/back/test/org/OLD/diff/tobe 파일 제외
+# PARAMETERS  : string keyword - 검색할 키워드
+# RETURNED    : 파일명:행번호:내용 형식으로 정렬 출력
+#-------------------------------------------------------------------------------
 vgrep()
 {
         find . -name '*.sc' -print | \
