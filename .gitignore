@@ -1,3 +1,6 @@
+# Gemini 감지 상태 파일 (기기마다 다름)
+last-seen-commit
+
 # 런타임 / 세션 데이터 (추적 불필요)
 *.bak
 *.jsonl

@@ -5,6 +5,17 @@
   },
   "theme": "dark-daltonized",
   "hooks": {
+    "UserPromptSubmit": [
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "__HOME__/.claude/hooks/gemini-check.sh"
+          }
+        ]
+      }
+    ],
     "SessionStart": [
       {
         "matcher": "*",
