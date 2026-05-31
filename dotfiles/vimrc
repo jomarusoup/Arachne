@@ -1,0 +1,39 @@
+if has("syntax")
+    syntax on
+
+    " 다양한 코드 요소에 대한 색상 설정
+    highlight Comment   ctermfg=111     " 주석
+    highlight String    ctermfg=136     " 문자열
+    highlight Character ctermfg=136     " 문자
+    highlight Constant  ctermfg=136     " 상수
+    highlight Number    ctermfg=202     " 숫자
+    highlight Special   ctermfg=202     " 특수문자(%d, \n 등)
+    highlight Statement ctermfg=184     " 키워드
+    highlight PreProc   ctermfg=184     " 전처리 지시자
+    highlight Type      ctermfg=184     " 데이터 타입
+    highlight Search    ctermfg=240     " 검색시 하이라이트
+endif
+
+" Vim 차이점 강조 색상 설정
+highlight DiffAdd    ctermfg=15  ctermbg=235            " 라인 추가
+highlight DiffDelete ctermfg=15  ctermbg=235            " 라인 제거
+highlight DiffChange ctermfg=15  ctermbg=235            " 라인 일부분 변경
+highlight DiffText   ctermfg=226 ctermbg=235 cterm=bold " 변경된 라인의 정확한 부분
+
+" 기본 설정
+set ts=4 " 탭 크기 설정
+
+set autowrite                    " 자동 저장
+set smartcase                    " 대소문자 구별 검색
+set noai
+set hlsearch                     " 검색어 하이라이팅
+
+" 제목 표시 줄 설정
+set title                          " 제목 표시 줄 사용
+set titlestring=%{hostname()}:\ %F " 제목 표시 줄 포맷
+
+" 파일을 열 때 마지막으로 수정된 위치로 커서 이동
+au BufReadPost *
+    \ if line("'\"") > 0 && line("'\"") <= line("$") |
+    \ exe "normal! g`\"" |
+    \ endif
