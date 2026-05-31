@@ -1,15 +1,6 @@
----
-Title: CLAUDE
-creation: 2026-05-05
-modification: 2026-05-05
-tags:
-aliases:
----
-> FROM::
-
 # Claude Code 글로벌 지시서
 
-실제 Global로 사용에 바로 적용 가능한 Agent, Skill, Hooks, Commands, Rule 및 MCP등 여러 세팅이다.
+웹·MVP부터 저수준 시스템 프로그래밍까지 아우르는 Harness의 글로벌 Claude Code 설정.
 
 @rules/common/workflow.md
 @rules/common/coding-style.md
@@ -19,21 +10,75 @@ aliases:
 
 ## Architecture
 
-이 프로젝트의 구성요소는 아래와 같습니다.
+```
+~/.claude/  (→ Arachne/ 심볼릭 링크)
+│
+├── agents/                          # Claude Code 서브에이전트
+│   ├── planner.md                   # 구현 설계 전담 (model: opus)
+│   └── code-reviewer.md             # 코드 리뷰 전담 (model: sonnet)
+│
+├── commands/                        # 슬래시 커맨드 (/명령어)
+│   ├── add.md                       # /add        — 기능 추가
+│   ├── fix.md                       # /fix        — 버그 수정
+│   ├── design.md                    # /design     — 설계 문서
+│   ├── verify.md                    # /verify     — 수정 후 검증
+│   ├── status.md                    # /status     — 프로젝트 현황
+│   ├── git.md                       # /git        — 커밋·푸시
+│   ├── handoff.md                   # /handoff    — AI 전환 전 상태 저장
+│   ├── issue.md                     # /issue      — GitHub 이슈 처리
+│   ├── learn.md                     # /learn      — 패턴 학습
+│   └── save-session.md              # /save-session — 세션 요약 저장
+│
+├── hooks/                           # 이벤트 기반 자동화
+│   ├── session-start.sh             # SessionStart  — 최근 세션 안내
+│   ├── session-end.sh               # Stop          — git 기반 스냅샷 저장
+│   ├── pre-compact.sh               # PreCompact    — 압축 전 상태 저장
+│   └── gemini-check.sh              # UserPromptSubmit — Gemini 작업 감지
+│
+├── rules/common/                    # 항상 적용되는 전역 규칙
+│   ├── workflow.md                  # Claude/Gemini 역할 분담·행동 규칙
+│   ├── coding-style.md              # 언어별 주석·네이밍·포매팅
+│   ├── patterns.md                  # SRP·불변성·에러 처리·품질 체크리스트
+│   ├── issue-workflow.md            # GitHub 이슈 처리 워크플로
+│   └── ui-layout.md                 # UI 레이아웃 기준
+│
+├── dotfiles/                        # 홈 디렉토리 설정 파일
+│   ├── bash_profile                 # → ~/.bash_profile (sgrep 등 유틸 포함)
+│   └── vimrc                        # → ~/.vimrc
+│
+├── skills/                          # (예정) 워크플로·도메인 스킬
+├── mcp-configs/                     # (예정) MCP 서버 설정 템플릿
+└── tests/                           # (예정) Arachne 자체 테스트
+```
 
-- agents/ - 위임을 위한 전문 하위 에이전트(기획자, 코드 검토자, TDD 가이드 등)
-- skill/ - 워크플로 정의 및 도메인 지식 (코딩 표준, 패턴, 테스팅)
-- commands/ - 사용자가 호출하는 슬래시 명령어(/tdd, /plan, /e2e 등)
-- hooks/ - 트리거 기반 자동화(세션 지속성, 사전/사후 도구 후크)
-- rules/ - 항상 지침을 준수하세요 (보안, 코딩 스타일, 테스트 요구 사항)
-- mcp-configs/ - 외부 통합을 위한 MCP 서버 구성
-- tests/ - 스크립트 및 유틸리티용 테스트 모음
+## Development Notes
 
-##  Developmnet Notes
+### 파일 형식
 
-- 패키지 관리자 감지: npm, pnpm, yarn, bun ( `CLAUDE_PACKAGE_MANAGER`환경 변수 또는 프로젝트 설정을 통해 구성 가능)
-- 에이전트 형식: YAML 프런트매터(이름, 설명, 도구, 모델)가 포함된 Markdown
-- 스킬 형식: 사용 시점, 작동 방식, 예시를 명확하게 구분한 마크다운 형식
-- 스킬 배치: skills/ 폴더에 정리되어 있으며, ~/.claude/skills/ 경로에서 생성/가져오기됩니다. 자세한 내용은 docs/SKILL-PLACEMENT-POLICY.md를 참조하세요.
-- 후크 형식: 매처 조건 및 명령/알림 후크가 포함된 JSON
+**agents/** — Claude Code 서브에이전트 (YAML frontmatter 필수)
+```yaml
+---
+name: 에이전트명          # Agent(subagent_type: "name") 호출 시 매칭
+description: 한 줄 설명   # 언제 활성화할지 Claude가 참고
+tools: ["Read", "Grep"]   # 허용 도구 목록
+model: opus               # opus / sonnet / haiku
+---
+```
 
+**commands/** — 슬래시 커맨드 (YAML frontmatter 필수)
+```yaml
+---
+description: /명령어 설명  # /help 에서 표시되는 설명
+---
+```
+
+**skills/** — 워크플로 스킬 (frontmatter 없음, 마크다운 본문만)
+- 구성: 언제 사용하는지 / 어떻게 동작하는지 / 예시
+
+**rules/** — 지시서 (@임포트 또는 직접 작성, frontmatter 불필요)
+
+### 기타
+
+- 패키지 관리자: npm, pnpm, yarn, bun (`CLAUDE_PACKAGE_MANAGER` 환경변수로 지정)
+- 훅 형식: Bash 스크립트, `settings.json`의 `hooks` 섹션에 등록
+- `install.sh` 실행 시 `~/.claude/` 심볼릭 링크 + `settings.json` 생성
