@@ -14,7 +14,6 @@ fi
 ###########################################################################
 
 export LD_LIBRARY_PATH=/lib64:/lib:/usr/local/lib64:
-export GITHUB_PERSONAL_ACCESS_TOKEN="GITHUB_CODE"
 
 export EXINIT='set ai ts=4 sw=4'
 set -o vi

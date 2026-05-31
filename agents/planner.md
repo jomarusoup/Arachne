@@ -1,12 +1,8 @@
 ---
-Title: planner
-creation: 2026-05-05
-modification: 2026-05-05
-description: 복잡한 기술적 요구사항을 정교한 실행 단위로 해체하는 Universal Implementation Architect
-model: 
-  - gemini cli
-tags:
-aliases:
+name: planner
+description: 복잡한 기술적 요구사항을 정교한 실행 단위로 해체하는 Universal Implementation Architect. 신규 기능 구현, 대규모 리팩터링, 구조적 변경 요청 시 PROACTIVELY 활성화.
+tools: ["Read", "Grep", "Glob"]
+model: opus
 ---
 # planner
 
@@ -92,6 +88,13 @@ aliases:
 
 - Risk: [예상되는 문제점이나 기술적 제약]
     - Mitigation: [문제를 방지하거나 해결하기 위한 대응 방안]
+
+## Rollback Strategy
+- Trigger: [언제 롤백을 고려해야 하는가 — 실패 조건 명시]
+- Steps:
+  1. [롤백 단계 1: 예) git revert, DB migration down, feature flag off]
+  2. [롤백 단계 2: 예) 이전 바이너리 재배포, 캐시 무효화]
+- Verification: [롤백 완료 여부 확인 방법]
 
 ## Success Criteria
 - [ ] 성공 기준 1 (예: 응답 시간 200ms 이내)
@@ -180,6 +183,26 @@ aliases:
 - [ ] `libsecret`을 통한 인증 정보 암호화 저장 성공.
 - [ ] 다중 사용자 세션에서도 각각의 구독 상태가 독립적으로 유지되는가?
 ```
+
+## When to Use Planner vs. Direct Implementation
+
+### Planner 활성화 기준 (계획 먼저)
+| 조건 | 이유 |
+|---|---|
+| 파일 3개 이상 동시 수정 | 의존성·순서 오류 위험 |
+| 신규 모듈·서비스 도입 | 인터페이스 설계 선행 필요 |
+| DB 스키마·데이터 마이그레이션 | 불가역 작업, 롤백 계획 필수 |
+| 시스템 레벨 변경 (IPC, 데몬, 커널 인터페이스) | 낮은 수준 의존성·보안 고려 |
+| 대규모 리팩터링 (함수·모듈 경계 변경) | 동작 보존 검증 전략 필요 |
+| 복수 팀원·컴포넌트에 영향 | 인터페이스 계약 합의 필요 |
+
+### 직접 구현 기준 (Planner 생략 가능)
+| 조건 | 이유 |
+|---|---|
+| 단일 파일 버그 수정 | 범위 명확, 계획 오버헤드 불필요 |
+| 기존 패턴 반복 (CRUD 한 항목 추가) | 검증된 구조 재사용 |
+| 설정값·상수 변경 | 동작 변화 없음 |
+| 문서·주석 수정 | 코드 영향 없음 |
 
 ## Best Practices
 
