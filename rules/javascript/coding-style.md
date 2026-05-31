@@ -1,9 +1,9 @@
 ---
 paths:
-  - "**/*.js"
-  - "**/*.jsx"
   - "**/*.ts"
   - "**/*.tsx"
+  - "**/*.js"
+  - "**/*.jsx"
   - "**/*.mjs"
 ---
 # JavaScript / TypeScript 코딩 스타일
@@ -32,16 +32,16 @@ RETURNED    : 반환값 설명
 
 ## 중괄호 스타일 — K&R (Allman 금지)
 
-ASI(Automatic Semicolon Insertion) 문제로 Allman 스타일 **금지**.
+ASI(Automatic Semicolon Insertion) 문제로 Allman 스타일 **금지**:
 
 ```javascript
-/* BAD: ASI가 return 뒤 세미콜론 삽입 → undefined 반환 */
+/* BAD: return 뒤 ASI → undefined 반환 */
 return
 {
     data: "success"
 };
 
-/* GOOD: K&R */
+/* GOOD */
 return {
     data: "success"
 };
@@ -57,16 +57,6 @@ let g_EditingId = null;
 ```
 
 - `const` 우선, 재할당 필요 시 `let`, `var` 금지
-- 한 줄에 변수 하나 (공통 규칙 준수)
-
-## 네이밍 (JS 전용)
-
-- 함수·메서드: `PascalCase` (`RenderList`, `FetchData`)
-- 지역 변수·인자: `snake_case`
-- 객체 속성·JSON 키: `camelCase`
-- 전역 변수: `g_SnakeCase` (공통 규칙 준수)
-- 상수: `SCREAMING_SNAKE_CASE`
-- 클래스: `PascalCase`
 
 ## 불변성
 
@@ -76,25 +66,81 @@ tasks.push(newTask);
 task.done = true;
 
 /* GOOD: 불변 연산 */
-const tasks    = [...g_Tasks, newTask];
-const updated  = { ...task, done: true };
+const tasks   = [...g_Tasks, newTask];
+const updated = { ...task, done: true };
 ```
 
 ## 에러 처리
 
-- `async/await` 에 `try/catch` 필수
+```typescript
+async function loadData(id: string): Promise<Data> {
+    try {
+        return await fetchData(id);
+    } catch (error: unknown) {
+        if (error instanceof Error) {
+            throw new Error(`loadData 실패: ${error.message}`);
+        }
+        throw new Error("loadData: 알 수 없는 에러");
+    }
+}
+```
+
+- `catch (error: unknown)` — `any` 금지, `unknown`으로 수신 후 타입 좁히기
 - Promise 체인에 `.catch()` 필수
-- `console.error` 로 에러 로깅 (조용히 무시 금지)
+
+## TypeScript 타입 시스템
+
+### interface vs type
+
+```typescript
+/* 확장·구현 가능한 객체 형태 → interface */
+interface User {
+    id:    string;
+    email: string;
+}
+
+/* 유니온·교차·유틸리티 타입 → type */
+type UserRole    = "admin" | "member";
+type AdminUser   = User & { role: UserRole };
+```
+
+### `any` 금지
+
+```typescript
+/* BAD */
+function parse(input: any) { return input.value; }
+
+/* GOOD: unknown으로 수신 후 타입 가드 */
+function parse(input: unknown): string {
+    if (typeof input === "object" && input !== null && "value" in input) {
+        return String((input as { value: unknown }).value);
+    }
+    throw new Error("유효하지 않은 입력");
+}
+```
+
+### 입력 검증 — Zod
+
+외부 입력(API 응답, 폼 데이터)은 Zod로 스키마 검증:
+
+```typescript
+import { z } from "zod";
+
+const UserSchema = z.object({
+    email: z.string().email(),
+    age:   z.number().int().min(0).max(150),
+});
+
+type User = z.infer<typeof UserSchema>;
+
+const user: User = UserSchema.parse(rawInput);
+```
 
 ## 디버그 출력
 
 ```javascript
-console.log('[DEBUG]', variable);       /* 배포 전 제거 */
-console.warn('[PROJECTNAME]', message); /* 운영 경고 */
+console.log('[DEBUG]', variable);        /* 배포 전 제거 */
+console.warn('[PROJECTNAME]', message);  /* 운영 경고 */
 ```
 
-## TypeScript 추가 규칙
-
-- `any` 타입 금지 (부득이한 경우 `// eslint-disable-line` 주석 필수)
-- 인터페이스 이름: `I` 접두사 없이 `PascalCase`
-- `as` 타입 단언 최소화 — 타입 가드 우선
+프로덕션 코드에서 `console.log` 금지 — 로깅 라이브러리 사용.
