@@ -1,9 +1,10 @@
 #!/bin/bash
 ################################################################################
 # FILE NAME   : session-end.sh
-# DESCRIPTION : Stop Hook — 세션 종료 시 수동 저장 없으면 자동 스냅샷 생성
+# DESCRIPTION : Stop Hook — 세션 종료 시 수동 저장 없으면 자동 스냅샷 생성,
+#               현재 HEAD를 last-seen-commit 에 저장해 Gemini 감지 기준점 갱신
 # DATA        : 2026-05-05
-# Modification: 2026-05-05
+# Modification: 2026-05-31
 ################################################################################
 
 SESSION_DIR="$(pwd)/.claude/sessions"
@@ -28,4 +29,15 @@ else
 - 저장 시각: ${DATE}
 TEMPLATE
     echo "[세션 종료] ⚠️  /save-session 미실행 → auto-${DATE}.md 자동 생성"
+fi
+
+#-------------------------------------------------------------------------------
+# Gemini 감지 기준점 갱신 — 현재 HEAD 저장
+#-------------------------------------------------------------------------------
+REPO_DIR=$(git rev-parse --show-toplevel 2>/dev/null)
+if [ -n "$REPO_DIR" ]; then
+    CURRENT_HEAD=$(git -C "$REPO_DIR" rev-parse HEAD 2>/dev/null)
+    if [ -n "$CURRENT_HEAD" ]; then
+        echo "$CURRENT_HEAD" > "$REPO_DIR/.claude/last-seen-commit"
+    fi
 fi
