@@ -21,23 +21,23 @@ TDD 워크플로 진입점. `tdd` 에이전트를 활성화하고 Red-Green-Refa
 
 ## 프로젝트 유형 감지
 
-| 감지 조건 | 프레임워크 | 테스트 실행 |
-|---|---|---|
-| `CMakeLists.txt` + `*.cpp` | Google Test | `ctest --test-dir build` |
-| `Makefile` + `*.c` | cmocka / Unity | `make test` |
-| `go.mod` | go test | `go test -race ./...` |
-| `package.json` | Jest / Vitest | `npm test` |
-| `pyproject.toml` / `pytest.ini` | pytest | `pytest` |
+| 감지 조건                       | 프레임워크     | 테스트 실행              |
+| ------------------------------- | -------------- | ------------------------ |
+| `CMakeLists.txt` + `*.cpp`      | Google Test    | `ctest --test-dir build` |
+| `Makefile` + `*.c`              | cmocka / Unity | `make test`              |
+| `go.mod`                        | go test        | `go test -race ./...`    |
+| `package.json`                  | Jest / Vitest  | `npm test`               |
+| `pyproject.toml` / `pytest.ini` | pytest         | `pytest`                 |
 
 ## 테스트 파일 네이밍
 
-| 언어 | 규칙 | 예시 |
-|---|---|---|
-| C | `test_<모듈명>.c` | `test_conn.c` |
-| C++ | `<모듈명>_test.cpp` | `conn_test.cpp` |
-| Go | `<파일명>_test.go` | `conn_test.go` |
-| JavaScript | `<파일명>.test.js` | `conn.test.js` |
-| Python | `test_<모듈명>.py` | `test_conn.py` |
+| 언어       | 규칙                | 예시            |
+| ---------- | ------------------- | --------------- |
+| C          | `test_<모듈명>.c`   | `test_conn.c`   |
+| C++        | `<모듈명>_test.cpp` | `conn_test.cpp` |
+| Go         | `<파일명>_test.go`  | `conn_test.go`  |
+| JavaScript | `<파일명>.test.js`  | `conn.test.js`  |
+| Python     | `test_<모듈명>.py`  | `test_conn.py`  |
 
 ## 사용 예시
 
