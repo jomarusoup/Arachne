@@ -29,7 +29,9 @@
 │
 ├── agents/                          # Claude Code 서브에이전트
 │   ├── planner.md                   # 구현 설계 전담 (model: opus)
-│   └── code-reviewer.md             # 코드 리뷰 전담 (model: sonnet)
+│   ├── code-reviewer.md             # 코드 리뷰 전담 (model: sonnet)
+│   ├── tdd.md                       # TDD 사이클 안내 (model: sonnet)
+│   └── debugger.md                  # GDB·valgrind·strace·perf (model: sonnet)
 │
 ├── commands/                        # 슬래시 커맨드 (/명령어)
 │   ├── add.md                       # /add        — 기능 추가
