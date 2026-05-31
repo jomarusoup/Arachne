@@ -1,35 +1,35 @@
 ---
 name: error-handling
-description: Patterns for robust error handling across C/C++, TypeScript, Python, and Go. Covers typed errors, return codes, retries, circuit breakers, and user-facing error messages.
+description: C/C++·TypeScript·Python·Go 전반의 견고한 에러 처리 패턴. 타입화된 에러, 반환 코드, 재시도, 서킷 브레이커, 사용자 대면 에러 메시지 다룸.
 origin: ECC (modified — C/C++ 섹션 추가)
 ---
 
-# Error Handling Patterns
+# 에러 처리 패턴
 
-Consistent, robust error handling patterns for production applications.
+운영 애플리케이션을 위한 일관되고 견고한 에러 처리 패턴.
 
-## When to Activate
+## 언제 활성화하나
 
-- Designing error types or exception hierarchies for a new module or service
-- Adding retry logic or circuit breakers for unreliable external dependencies
-- Reviewing API endpoints for missing error handling
-- Implementing user-facing error messages and feedback
-- Debugging cascading failures or silent error swallowing
+- 새 모듈·서비스의 에러 타입 또는 예외 계층 설계
+- 불안정한 외부 의존성에 재시도 로직·서킷 브레이커 추가
+- API 엔드포인트의 에러 처리 누락 검토
+- 사용자 대면 에러 메시지 및 피드백 구현
+- 연쇄 실패 또는 조용한 에러 삼킴 디버깅
 
-## Core Principles
+## 핵심 원칙
 
-1. **Fail fast and loudly** — surface errors at the boundary where they occur; don't bury them
-2. **Typed errors over string messages** — errors are first-class values with structure
-3. **User messages ≠ developer messages** — show friendly text to users, log full context server-side
-4. **Never swallow errors silently** — every `catch` block must either handle, re-throw, or log
-5. **Errors are part of your API contract** — document every error code a client may receive
+1. **빠르고 명확하게 실패** — 에러가 발생하는 경계에서 노출; 묻어두지 않는다
+2. **문자열 메시지보다 타입화된 에러** — 에러는 구조를 가진 일급 값
+3. **사용자 메시지 ≠ 개발자 메시지** — 사용자에게는 친절한 텍스트, 서버에는 전체 컨텍스트 로깅
+4. **에러를 조용히 삼키지 않기** — 모든 `catch` 블록은 처리·재던지기·로깅 중 하나
+5. **에러는 API 계약의 일부** — 클라이언트가 받을 수 있는 모든 에러 코드 문서화
 
 ## TypeScript / JavaScript
 
-### Typed Error Classes
+### 타입화된 에러 클래스
 
 ```typescript
-// Define an error hierarchy for your domain
+// 도메인의 에러 계층 정의
 export class AppError extends Error {
   constructor(
     message: string,
@@ -39,9 +39,8 @@ export class AppError extends Error {
   ) {
     super(message)
     this.name = this.constructor.name
-    // Maintain correct prototype chain in transpiled ES5 JavaScript.
-    // Required for `instanceof` checks (e.g., `error instanceof NotFoundError`)
-    // to work correctly when extending the built-in Error class.
+    // 트랜스파일된 ES5 JavaScript에서 올바른 프로토타입 체인 유지.
+    // 내장 Error 클래스 확장 시 `instanceof` 검사가 올바르게 작동하도록 필요.
     Object.setPrototypeOf(this, new.target.prototype)
   }
 }
@@ -58,12 +57,6 @@ export class ValidationError extends AppError {
   }
 }
 
-export class UnauthorizedError extends AppError {
-  constructor(reason = 'Authentication required') {
-    super(reason, 'UNAUTHORIZED', 401)
-  }
-}
-
 export class RateLimitError extends AppError {
   constructor(public readonly retryAfterMs: number) {
     super('Rate limit exceeded', 'RATE_LIMITED', 429)
@@ -71,9 +64,9 @@ export class RateLimitError extends AppError {
 }
 ```
 
-### Result Pattern (no-throw style)
+### Result 패턴 (no-throw 스타일)
 
-For operations where failure is expected and common (parsing, external calls):
+실패가 예상되고 흔한 연산(파싱, 외부 호출)에 사용:
 
 ```typescript
 type Result<T, E = AppError> =
@@ -88,7 +81,7 @@ function err<E>(error: E): Result<never, E> {
   return { ok: false, error }
 }
 
-// Usage
+// 사용
 async function fetchUser(id: string): Promise<Result<User>> {
   try {
     const user = await db.users.findUnique({ where: { id } })
@@ -101,21 +94,19 @@ async function fetchUser(id: string): Promise<Result<User>> {
 
 const result = await fetchUser('abc-123')
 if (!result.ok) {
-  // TypeScript knows result.error here
-  logger.error('Failed to fetch user', { error: result.error })
+  logger.error('사용자 조회 실패', { error: result.error })
   return
 }
-// TypeScript knows result.value here
 console.log(result.value.email)
 ```
 
-### API Error Handler (Next.js / Express)
+### API 에러 핸들러 (Next.js / Express)
 
 ```typescript
 import { NextRequest, NextResponse } from 'next/server'
 
 function handleApiError(error: unknown): NextResponse {
-  // Known application error
+  // 알려진 애플리케이션 에러
   if (error instanceof AppError) {
     return NextResponse.json(
       {
@@ -129,13 +120,13 @@ function handleApiError(error: unknown): NextResponse {
     )
   }
 
-  // Zod validation error
+  // Zod 검증 에러
   if (error instanceof z.ZodError) {
     return NextResponse.json(
       {
         error: {
           code: 'VALIDATION_ERROR',
-          message: 'Request validation failed',
+          message: '요청 검증 실패',
           details: error.issues.map(i => ({
             field: i.path.join('.'),
             message: i.message,
@@ -146,24 +137,24 @@ function handleApiError(error: unknown): NextResponse {
     )
   }
 
-  // Unexpected error — log details, return generic message
-  console.error('Unexpected error:', error)
+  // 예기치 않은 에러 — 상세 로깅, 일반 메시지 반환
+  console.error('예기치 않은 에러:', error)
   return NextResponse.json(
-    { error: { code: 'INTERNAL_ERROR', message: 'An unexpected error occurred' } },
+    { error: { code: 'INTERNAL_ERROR', message: '예기치 않은 오류가 발생했습니다' } },
     { status: 500 },
   )
 }
 
 export async function POST(req: NextRequest) {
   try {
-    // ... handler logic
+    // ... 핸들러 로직
   } catch (error) {
     return handleApiError(error)
   }
 }
 ```
 
-### React Error Boundary
+### React 에러 바운더리
 
 ```typescript
 import { Component, ErrorInfo, ReactNode } from 'react'
@@ -188,7 +179,7 @@ export class ErrorBoundary extends Component<Props, State> {
 
   componentDidCatch(error: Error, info: ErrorInfo) {
     this.props.onError?.(error, info)
-    console.error('Unhandled React error:', error, info)
+    console.error('처리되지 않은 React 에러:', error, info)
   }
 
   render() {
@@ -197,19 +188,19 @@ export class ErrorBoundary extends Component<Props, State> {
   }
 }
 
-// Usage
-<ErrorBoundary fallback={<p>Something went wrong. Please refresh.</p>}>
+// 사용
+<ErrorBoundary fallback={<p>문제가 발생했습니다. 새로고침해 주세요.</p>}>
   <MyComponent />
 </ErrorBoundary>
 ```
 
 ## Python
 
-### Custom Exception Hierarchy
+### 커스텀 예외 계층
 
 ```python
 class AppError(Exception):
-    """Base application error."""
+    """기본 애플리케이션 에러."""
     def __init__(self, message: str, code: str, status_code: int = 500):
         super().__init__(message)
         self.code = code
@@ -225,7 +216,7 @@ class ValidationError(AppError):
         self.details = details or []
 ```
 
-### FastAPI Global Exception Handler
+### FastAPI 전역 예외 핸들러
 
 ```python
 from fastapi import FastAPI, Request
@@ -242,31 +233,31 @@ async def app_error_handler(request: Request, exc: AppError) -> JSONResponse:
 
 @app.exception_handler(Exception)
 async def generic_error_handler(request: Request, exc: Exception) -> JSONResponse:
-    # Log full details, return generic message
-    logger.exception("Unexpected error", exc_info=exc)
+    # 전체 상세 로깅, 일반 메시지 반환
+    logger.exception("예기치 않은 에러", exc_info=exc)
     return JSONResponse(
         status_code=500,
-        content={"error": {"code": "INTERNAL_ERROR", "message": "An unexpected error occurred"}},
+        content={"error": {"code": "INTERNAL_ERROR", "message": "예기치 않은 오류가 발생했습니다"}},
     )
 ```
 
 ## Go
 
-### Sentinel Errors and Error Wrapping
+### 센티넬 에러와 에러 래핑
 
 ```go
 package domain
 
 import "errors"
 
-// Sentinel errors for type-checking
+// 타입 검사를 위한 센티넬 에러
 var (
-    ErrNotFound    = errors.New("not found")
+    ErrNotFound     = errors.New("not found")
     ErrUnauthorized = errors.New("unauthorized")
     ErrConflict     = errors.New("conflict")
 )
 
-// Wrap errors with context — never lose the original
+// 컨텍스트로 에러 래핑 — 원본을 절대 잃지 않는다
 func (r *UserRepository) FindByID(ctx context.Context, id string) (*User, error) {
     user, err := r.db.QueryRow(ctx, "SELECT * FROM users WHERE id = $1", id)
     if errors.Is(err, sql.ErrNoRows) {
@@ -278,7 +269,7 @@ func (r *UserRepository) FindByID(ctx context.Context, id string) (*User, error)
     return user, nil
 }
 
-// At the handler level, unwrap to determine response
+// 핸들러 레벨에서 unwrap하여 응답 결정
 func (h *Handler) GetUser(w http.ResponseWriter, r *http.Request) {
     user, err := h.service.GetUser(r.Context(), chi.URLParam(r, "id"))
     if err != nil {
@@ -286,10 +277,10 @@ func (h *Handler) GetUser(w http.ResponseWriter, r *http.Request) {
         case errors.Is(err, domain.ErrNotFound):
             writeError(w, http.StatusNotFound, "not_found", err.Error())
         case errors.Is(err, domain.ErrUnauthorized):
-            writeError(w, http.StatusForbidden, "forbidden", "Access denied")
+            writeError(w, http.StatusForbidden, "forbidden", "접근 거부됨")
         default:
-            slog.Error("unexpected error", "err", err)
-            writeError(w, http.StatusInternalServerError, "internal_error", "An unexpected error occurred")
+            slog.Error("예기치 않은 에러", "err", err)
+            writeError(w, http.StatusInternalServerError, "internal_error", "예기치 않은 오류 발생")
         }
         return
     }
@@ -329,7 +320,7 @@ if (ret != ERR_OK)
 ```c
 int ProcessFile(const char *path)
 {
-    int    ret = ERR_IO;
+    int    ret = -1;
     int    fd  = -1;
     char  *buf = NULL;
 
@@ -401,9 +392,7 @@ private:
 - [ ] NULL 포인터 전달 시 즉시 에러 반환
 - [ ] 에러 로그에 파일명·라인·에러 코드 포함
 
----
-
-## Retry with Exponential Backoff
+## 지수 백오프 재시도
 
 ```typescript
 interface RetryOptions {
@@ -442,25 +431,25 @@ async function withRetry<T>(
   throw lastError
 }
 
-// Usage: retry transient network errors, not 4xx
+// 사용: 4xx가 아닌 일시적 네트워크 에러만 재시도
 const data = await withRetry(() => fetch('/api/data').then(r => r.json()), {
   maxAttempts: 3,
   retryIf: (error) => !(error instanceof AppError && error.statusCode < 500),
 })
 ```
 
-## User-Facing Error Messages
+## 사용자 대면 에러 메시지
 
-Map error codes to human-readable messages. Keep technical details out of user-visible text.
+에러 코드를 사람이 읽을 수 있는 메시지로 매핑. 사용자에게 보이는 텍스트에서 기술 세부사항 제외.
 
 ```typescript
 const USER_ERROR_MESSAGES: Record<string, string> = {
-  NOT_FOUND: 'The requested item could not be found.',
-  UNAUTHORIZED: 'Please sign in to continue.',
-  FORBIDDEN: "You don't have permission to do that.",
-  VALIDATION_ERROR: 'Please check your input and try again.',
-  RATE_LIMITED: 'Too many requests. Please wait a moment and try again.',
-  INTERNAL_ERROR: 'Something went wrong on our end. Please try again later.',
+  NOT_FOUND: '요청하신 항목을 찾을 수 없습니다.',
+  UNAUTHORIZED: '계속하려면 로그인해 주세요.',
+  FORBIDDEN: '해당 작업에 대한 권한이 없습니다.',
+  VALIDATION_ERROR: '입력을 확인하고 다시 시도해 주세요.',
+  RATE_LIMITED: '요청이 너무 많습니다. 잠시 후 다시 시도해 주세요.',
+  INTERNAL_ERROR: '서버에 문제가 발생했습니다. 나중에 다시 시도해 주세요.',
 }
 
 export function getUserMessage(code: string): string {
@@ -468,15 +457,15 @@ export function getUserMessage(code: string): string {
 }
 ```
 
-## Error Handling Checklist
+## 에러 처리 체크리스트
 
-Before merging any code that touches error handling:
+에러 처리를 다루는 코드 머지 전:
 
-- [ ] Every `catch` block handles, re-throws, or logs — no silent swallowing
-- [ ] API errors follow the standard envelope `{ error: { code, message } }`
-- [ ] User-facing messages contain no stack traces or internal details
-- [ ] Full error context is logged server-side
-- [ ] Custom error classes extend a base `AppError` with a `code` field
-- [ ] Async functions surface errors to callers — no fire-and-forget without fallback
-- [ ] Retry logic only retries retriable errors (not 4xx client errors)
-- [ ] React components are wrapped in `ErrorBoundary` for rendering errors
+- [ ] 모든 `catch` 블록이 처리·재던지기·로깅 — 조용한 삼킴 없음
+- [ ] API 에러가 표준 형식 `{ error: { code, message } }` 따름
+- [ ] 사용자 대면 메시지에 스택 트레이스나 내부 세부사항 없음
+- [ ] 전체 에러 컨텍스트가 서버에 로깅됨
+- [ ] 커스텀 에러 클래스가 `code` 필드가 있는 기본 `AppError` 확장
+- [ ] 비동기 함수가 호출자에게 에러 노출 — 폴백 없는 fire-and-forget 없음
+- [ ] 재시도 로직이 재시도 가능한 에러만 재시도 (4xx 클라이언트 에러 제외)
+- [ ] React 컴포넌트가 렌더링 에러를 위해 `ErrorBoundary`로 감싸짐
