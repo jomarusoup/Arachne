@@ -1,6 +1,7 @@
 ---
 paths:
   - "**/*.py"
+  - "**/*.pyi"
   - "**/pyproject.toml"
   - "**/requirements.txt"
 ---
@@ -32,14 +33,42 @@ paths:
 #-------------------------------------------------------------------------------
 ```
 
-## 포매팅
+## 표준 및 포매팅
 
-- `black` 포매터 적용 — 커밋 전 `black <파일>` 실행
-- `isort` 임포트 정렬
+- **PEP 8** 준수
+- **black** — 코드 포매팅
+- **isort** — 임포트 정렬
+- **ruff** — 린팅
+- 들여쓰기: **4 스페이스** (공통 규칙 준수)
 
-## 중괄호 스타일 — 해당 없음 (들여쓰기로 블록 구분)
+## 타입 힌트
 
-- 들여쓰기: **4 스페이스** (공통 규칙 준수, 탭 금지)
+모든 함수 시그니처에 타입 힌트 필수:
+
+```python
+def connect(host: str, port: int) -> bool:
+    ...
+```
+
+## 불변성
+
+불변 데이터 구조 우선 사용:
+
+```python
+from dataclasses import dataclass
+from typing import NamedTuple
+
+# 불변 클래스
+@dataclass(frozen=True)
+class ServerConfig:
+    host: str
+    port: int
+
+# 불변 튜플 기반 구조체
+class Point(NamedTuple):
+    x: float
+    y: float
+```
 
 ## 네이밍 (Python 전용)
 
@@ -62,21 +91,11 @@ except FileNotFoundError as err:
 ```
 
 - 빈 `except` 절 금지
-- `Exception` 만 캐치하고 무시하는 패턴 금지
-
-## 타입 힌트
-
-- 함수 시그니처에 타입 힌트 필수
-- `mypy` 또는 `pyright` 로 정적 검사
-
-```python
-def connect(host: str, port: int) -> bool:
-    ...
-```
+- `Exception` 캐치 후 무시 금지
 
 ## 디버그 출력
 
 ```python
-print(f"[DEBUG] value={value}")        # 배포 전 제거
-logging.warning(f"[PROJ] msg={msg}")   # 운영 경고
+print(f"[DEBUG] value={value}")          # 배포 전 제거
+logging.warning(f"[PROJ] msg={msg}")     # 운영 경고
 ```
