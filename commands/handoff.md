@@ -1,3 +1,6 @@
+---
+description: AI 전환 전 현재 작업 상태를 HANDOFF.md에 저장
+---
 # /handoff — AI 전환 전 상태 저장
 
 Gemini(또는 다른 AI)로 전환하기 전에 실행.
