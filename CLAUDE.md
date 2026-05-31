@@ -76,11 +76,14 @@
 │   ├── bash_profile                 # → ~/.bash_profile (sgrep 등 유틸 포함)
 │   └── vimrc                        # → ~/.vimrc
 │
-├── skills/                          # 워크플로·도메인 스킬
-│   ├── build-debug.md               # C/C++ 빌드·GDB 디버그 절차
-│   ├── memory-check.md              # valgrind·ASan·TSan 메모리 검사
-│   ├── git-flow.md                  # 브랜치·커밋·PR 워크플로
-│   └── refactor.md                  # SRP 기반 리팩터링 절차
+├── skills/                          # 워크플로·도메인 스킬 (28개, README.md 참고)
+│   ├── build-debug.md / memory-check.md / git-flow.md / refactor.md  # Harness 전용
+│   ├── cpp-coding-standards.md / cpp-testing.md / latency-critical-systems.md
+│   ├── golang-patterns.md / golang-testing.md / python-patterns.md / python-testing.md
+│   ├── tdd-workflow.md / verification-loop.md / error-handling.md / coding-standards.md
+│   ├── security-review.md / security-scan.md / architecture-decision-records.md
+│   ├── api-design.md / backend-patterns.md / docker-patterns.md / deployment-patterns.md
+│   └── network-*.md / homelab-*.md / netmiko-ssh-automation.md
 ├── mcp-configs/                     # (예정) MCP 서버 설정 템플릿
 └── tests/                           # (예정) Arachne 자체 테스트
 ```
