@@ -1,12 +1,3 @@
----
-Title: workflow
-creation: 2026-05-05
-modification: 2026-05-05
-tags:
-aliases:
----
-> FROM::
-
 ## AI 역할 분담 (Claude / Gemini)
 
 | 작업 | 담당 |
@@ -88,19 +79,13 @@ Claude: "README.md 변경 확인. 이어서 진행합니다."
 
 ---
 
-## 토큰 절약 원칙
-
-- 파일 전체 읽기 금지 — grep 먼저, 필요 범위만 Read
-- Gemini가 설계한 내용을 재분석하지 않고 바로 구현
-- Gemini 백그라운드 실행 중 동일 작업 선제 수행 금지
-
----
-
 ## 전역 행동 규칙
 
 - **파일 전체 읽기 금지** — `sgrep <키워드>`로 위치 먼저, 해당 범위만 Read
   - `sgrep`은 `~/.bash_profile`에 정의된 전용 검색 함수로, C/C++·Rust·Python·HTML·CSS·JS·TS·Go·Docker·Makefile·Shell·SQL·YAML·JSON·MD 등 전 확장자를 커버
   - `grep` 단독 사용 시 누락 가능성 있음 → **반드시 `sgrep` 우선 사용**
+- **Gemini 결과 재분석 금지** — Gemini가 설계한 내용을 Claude가 재분석하지 않고 바로 구현
+- **Gemini 병행 작업 금지** — Gemini 백그라운드 실행 중 동일 작업 선제 수행 금지
 - **README.md 직접 수정 금지** — Gemini CLI 전담 영역
 - **수정 전 보고** — 기능 추가·삭제 전 `[PLAN]`으로 승인 요청
 - **코딩 스타일 준수** — `~/.claude/rules/common/coding-style.md` 적용
