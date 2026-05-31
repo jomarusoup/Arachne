@@ -1,5 +1,5 @@
 ---
-description: 수정 후 ���법·동작 2단계 검증 — 커밋 전 필수 실행
+description: 수정 후 문법·동작 2단계 검증 — 커밋 전 필수 실행
 ---
 # /verify — 수정 후 검증
 
@@ -7,84 +7,53 @@ description: 수정 후 ���법·동작 2단계 검증 — 커밋 전 필�
 
 ---
 
-## STEP 1 — 정적 검증 (Haiku 에이전트에 위임)
+## STEP 1 — 정적 검증
 
-**Haiku 에이전트에 아래 프롬프트를 전달해서 실행한다.**
+프로젝트 유형에 따라 해당 명령 실행:
 
-```
-작업 디렉토리: /Users/jomarusoup/Documents/project/taskflow
+```bash
+# C/C++
+gcc -fsyntax-only -Wall -Wextra src/*.c
+cppcheck --enable=warning src/
 
-다음 node 명령을 실행하고 결과를 그대로 보고해라.
+# Go
+go build ./... && go vet ./...
 
-node -e "
-const fs=require('fs'),vm=require('vm');
-const js=fs.readFileSync('taskflow.js','utf8');
-const html=fs.readFileSync('taskflow.html','utf8');
+# JavaScript / TypeScript
+node --check src/js/*.js
+tsc --noEmit          # TypeScript
 
-try{new vm.Script(js);console.log('✓ SYNTAX OK');}
-catch(e){console.log('✗ ERROR:',e.message);process.exit(1);}
+# Python
+python -m py_compile src/*.py
+ruff check src/
 
-let d=0;for(const c of js){if(c==='{')d++;else if(c==='}')d--;}
-console.log(d===0?'✓ 괄호 균형':'✗ 불균형 depth='+d);
-
-['renderAll','openModal','saveTask','renderCalendar',
- '_renderEventBars','renderContacts','renderLedger',
- '_populateAssignee','buildExpandPanel'].forEach(fn=>{
-  console.log((js.includes('function '+fn)?'✓':'✗')+' '+fn);
-});
-
-const cs=(html.match(/colspan=\"(\d+)\"/g)||[]);
-console.log('colspan 값들:',cs.join(', '));
-"
-
-✗ 항목이 하나라도 있으면 FAILED, 모두 ✓이면 PASSED 라고 최종 판정을 한 줄로 출력해라.
+# 공통 — 테스트 실행
+make test / go test ./... / npm test / pytest
 ```
 
-Haiku 결과가 **FAILED**면 STEP 2 진행하지 말고 즉시 오류 내용을 나(Sonnet)에게 반환한다.
+오류가 있으면 STEP 2 진행하지 않고 즉시 수정.
 
 ---
 
-## STEP 2 — 브라우저 검증 (chrome-devtools-mcp, Sonnet이 직접 실행)
+## STEP 2 — 런타임 검증
 
-STEP 1 PASSED 후 실행. MCP 도구 순서대로 호출한다.
+### 웹 프로젝트
+`chrome-devtools-mcp` 사용:
+1. 파일 열기 / 개발 서버 접속
+2. 콘솔 에러 확인 (`list_console_messages`)
+3. 핵심 기능 동작 확인
+4. 스크린샷
 
-### 2-1. 파일 열기
-```
-navigate_page: file:///Users/jomarusoup/Documents/project/taskflow/taskflow.html
-```
+### 시스템 프로그래밍
+```bash
+# 빌드 후 실행
+make && ./binary
 
-### 2-2. 로드 대기
-```
-wait_for: selector="#view-dashboard" (timeout 5000ms)
-```
+# 메모리 검사
+valgrind --leak-check=full --error-exitcode=1 ./binary
 
-### 2-3. 핵심 함수 window 등록 확인
-```
-evaluate_script:
-  const fns = ['renderAll','openModal','saveTask','renderCalendar',
-    '_renderEventBars','renderContacts','renderLedger',
-    '_populateAssignee','buildExpandPanel','renderInventory'];
-  fns.map(fn => (typeof window[fn]==='function' ? '✓ ' : '✗ ') + fn);
-```
-
-### 2-4. 콘솔 에러 확인
-```
-evaluate_script:
-  window.__errors = [];
-  window.addEventListener('error', e => window.__errors.push(e.message));
-  renderAll();
-  window.__errors;
-```
-
-### 2-5. 스크린샷 (대시보드 기본 상태)
-```
-take_screenshot
-```
-
-### 2-6. 인벤토리 탭 전환 후 스크린샷
-```
-evaluate_script: switchView('inventory')
-take_screenshot
+# 기능 테스트
+make test
 ```
 
 ---
@@ -93,8 +62,7 @@ take_screenshot
 
 | 결과 | 조치 |
 |---|---|
-| STEP 1 FAILED | 즉시 수정, 재실행 |
-| STEP 2 console error 있음 | 에러 메시지 확인 후 수정 |
-| STEP 2 window 함수 ✗ | 해당 함수 선언 위치 grep 후 확인 |
-| 스크린샷 레이아웃 깨짐 | CSS 확인 |
-| 모두 통과 | /git 진행 가능 |
+| STEP 1 오류 | 즉시 수정 후 재실행 |
+| STEP 2 런타임 오류 | 에러 로그 확인 후 수정 |
+| 메모리 오류 | valgrind 출력 분석 |
+| 모두 통과 | `/git` 진행 가능 |
