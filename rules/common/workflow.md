@@ -53,7 +53,9 @@ aliases:
 
 ## 전역 행동 규칙
 
-- **파일 전체 읽기 금지** — grep으로 위치 먼저, 해당 범위만 Read
+- **파일 전체 읽기 금지** — `sgrep <키워드>`로 위치 먼저, 해당 범위만 Read
+  - `sgrep`은 `~/.bash_profile`에 정의된 전용 검색 함수로, C/C++·Rust·Python·HTML·CSS·JS·TS·Go·Docker·Makefile·Shell·SQL·YAML·JSON·MD 등 전 확장자를 커버
+  - `grep` 단독 사용 시 누락 가능성 있음 → **반드시 `sgrep` 우선 사용**
 - **README.md 직접 수정 금지** — Gemini CLI 전담 영역
 - **수정 전 보고** — 기능 추가·삭제 전 `[PLAN]`으로 승인 요청
 - **코딩 스타일 준수** — `~/.claude/rules/common/coding-style.md` 적용
