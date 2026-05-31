@@ -7,12 +7,12 @@ description: E2E 테스트 실행 — 시스템(데몬·IPC) 및 웹(Playwright)
 
 ## 프로젝트 유형 감지
 
-| 감지 조건 | E2E 방식 |
-|---|---|
-| `Makefile` / `CMakeLists.txt` | 시스템 E2E (프로세스·IPC) |
-| `playwright.config.*` | Playwright |
-| `cypress.config.*` | Cypress |
-| `package.json` + `"e2e"` 스크립트 | npm e2e |
+| 감지 조건                         | E2E 방식                  |
+| --------------------------------- | ------------------------- |
+| `Makefile` / `CMakeLists.txt`     | 시스템 E2E (프로세스·IPC) |
+| `playwright.config.*`             | Playwright                |
+| `cypress.config.*`                | Cypress                   |
+| `package.json` + `"e2e"` 스크립트 | npm e2e                   |
 
 ---
 
@@ -96,9 +96,9 @@ npx playwright test --debug tests/failing.spec.ts
 
 ## 판정 기준
 
-| 결과 | 조치 |
-|---|---|
-| 모두 통과 | `/git` 진행 가능 |
-| 일부 실패 | 로그 수집 후 `debugger` 에이전트 활용 |
-| 데몬 미기동 | 빌드 오류 확인 → `build-debug` 스킬 |
-| 소켓 연결 실패 | `strace` 로 시스템 콜 추적 |
+| 결과           | 조치                                  |
+| -------------- | ------------------------------------- |
+| 모두 통과      | `/git` 진행 가능                      |
+| 일부 실패      | 로그 수집 후 `debugger` 에이전트 활용 |
+| 데몬 미기동    | 빌드 오류 확인 → `build-debug` 스킬   |
+| 소켓 연결 실패 | `strace` 로 시스템 콜 추적            |

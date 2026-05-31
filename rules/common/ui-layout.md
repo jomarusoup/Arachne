@@ -19,12 +19,12 @@
 
 ## 버튼 크기·간격
 
-| 용도 | padding | font-size |
-|---|---|---|
-| 주요 액션 | 8px 16px | 13px |
-| 보조 액션 | 4px 10px | 12px |
-| 테이블 헤더 인라인 | 2px 5px | 11px |
-| 탭 컨트롤 | 3px 6px | 12px |
+| 용도               | padding  | font-size |
+| ------------------ | -------- | --------- |
+| 주요 액션          | 8px 16px | 13px      |
+| 보조 액션          | 4px 10px | 12px      |
+| 테이블 헤더 인라인 | 2px 5px  | 11px      |
+| 탭 컨트롤          | 3px 6px  | 12px      |
 
 - flex gap: 버튼 그룹 `gap:8px`, 인라인 아이콘 버튼 `gap:2~4px`
 - **호버 시 표시 패턴** — 행·열 컨트롤은 `:hover`에서만 노출
@@ -36,11 +36,11 @@
 
 ## 패딩
 
-| 위치 | 값 |
-|---|---|
-| 테이블 `th` | `padding:9px 12px` |
-| 테이블 `td` | `padding:8px 12px` |
-| 컨테이너 body | `padding:20px` |
+| 위치                | 값                      |
+| ------------------- | ----------------------- |
+| 테이블 `th`         | `padding:9px 12px`      |
+| 테이블 `td`         | `padding:8px 12px`      |
+| 컨테이너 body       | `padding:20px`          |
 | toolbar/filter 영역 | `margin-bottom:14~16px` |
 
 ## 신규 컴포넌트 체크리스트
