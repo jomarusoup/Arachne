@@ -1,104 +1,82 @@
 ---
 name: cpp-testing
-description: Use only when writing/updating/fixing C++ tests, configuring GoogleTest/CTest, diagnosing failing or flaky tests, or adding coverage/sanitizers.
+description: C++ 테스트 작성·수정·수정, GoogleTest/CTest 설정, 실패·불안정 테스트 진단, 커버리지·sanitizer 추가 시에만 사용.
 origin: ECC
 ---
 
-# C++ Testing (Agent Skill)
+# C++ 테스팅 (에이전트 스킬)
 
-Agent-focused testing workflow for modern C++ (C++17/20) using GoogleTest/GoogleMock with CMake/CTest.
+CMake/CTest와 함께 GoogleTest/GoogleMock을 사용하는 현대 C++ (C++17/20) 에이전트 중심 테스팅 워크플로.
 
-## When to Use
+## 언제 사용하나
 
-- Writing new C++ tests or fixing existing tests
-- Designing unit/integration test coverage for C++ components
-- Adding test coverage, CI gating, or regression protection
-- Configuring CMake/CTest workflows for consistent execution
-- Investigating test failures or flaky behavior
-- Enabling sanitizers for memory/race diagnostics
+- 새 C++ 테스트 작성 또는 기존 테스트 수정
+- C++ 컴포넌트 단위/통합 테스트 커버리지 설계
+- 테스트 커버리지, CI 게이팅, 회귀 방지 추가
+- CMake/CTest 워크플로 일관된 실행 설정
+- 테스트 실패 또는 불안정 동작 조사
+- 메모리/레이스 진단을 위한 sanitizer 활성화
 
-### When NOT to Use
+### 언제 사용하지 않나
 
-- Implementing new product features without test changes
-- Large-scale refactors unrelated to test coverage or failures
-- Performance tuning without test regressions to validate
-- Non-C++ projects or non-test tasks
+- 테스트 변경 없는 신규 기능 구현
+- 테스트 커버리지나 실패와 무관한 대규모 리팩터링
+- 테스트 회귀 없는 성능 튜닝
+- C++ 이외 프로젝트 또는 테스트 무관 태스크
 
-## Core Concepts
+## 핵심 개념
 
-- **TDD loop**: red → green → refactor (tests first, minimal fix, then cleanups).
-- **Isolation**: prefer dependency injection and fakes over global state.
-- **Test layout**: `tests/unit`, `tests/integration`, `tests/testdata`.
-- **Mocks vs fakes**: mock for interactions, fake for stateful behavior.
-- **CTest discovery**: use `gtest_discover_tests()` for stable test discovery.
-- **CI signal**: run subset first, then full suite with `--output-on-failure`.
+- **TDD 루프**: red → green → refactor (테스트 먼저, 최소 수정, 정리)
+- **격리**: 전역 상태 대신 의존성 주입과 페이크 선호
+- **테스트 레이아웃**: `tests/unit`, `tests/integration`, `tests/testdata`
+- **목 vs 페이크**: 상호작용에는 목, 상태 있는 동작에는 페이크
+- **CTest 탐색**: 안정적인 테스트 탐색을 위해 `gtest_discover_tests()` 사용
 
-## TDD Workflow
+## TDD 워크플로
 
-Follow the RED → GREEN → REFACTOR loop:
+RED → GREEN → REFACTOR 루프:
 
-1. **RED**: write a failing test that captures the new behavior
-2. **GREEN**: implement the smallest change to pass
-3. **REFACTOR**: clean up while tests stay green
+1. **RED**: 새 동작을 포착하는 실패하는 테스트 작성
+2. **GREEN**: 통과시키는 최소한의 변경 구현
+3. **REFACTOR**: 테스트를 유지하면서 정리
 
 ```cpp
 // tests/add_test.cpp
 #include <gtest/gtest.h>
 
-int Add(int a, int b); // Provided by production code.
+int Add(int a, int b);
 
-TEST(AddTest, AddsTwoNumbers) { // RED
-  EXPECT_EQ(Add(2, 3), 5);
+TEST(AddTest, AddsTwoNumbers) {  // RED
+    EXPECT_EQ(Add(2, 3), 5);
 }
 
 // src/add.cpp
-int Add(int a, int b) { // GREEN
-  return a + b;
+int Add(int a, int b) {  // GREEN
+    return a + b;
 }
-
-// REFACTOR: simplify/rename once tests pass
 ```
 
-## Code Examples
+## 코드 예시
 
-### Basic Unit Test (gtest)
+### 기본 단위 테스트 (gtest)
 
 ```cpp
-// tests/calculator_test.cpp
 #include <gtest/gtest.h>
-
-int Add(int a, int b); // Provided by production code.
 
 TEST(CalculatorTest, AddsTwoNumbers) {
     EXPECT_EQ(Add(2, 3), 5);
 }
 ```
 
-### Fixture (gtest)
+### 픽스처 (gtest)
 
 ```cpp
-// tests/user_store_test.cpp
-// Pseudocode stub: replace UserStore/User with project types.
-#include <gtest/gtest.h>
-#include <memory>
-#include <optional>
-#include <string>
-
-struct User { std::string name; };
-class UserStore {
-public:
-    explicit UserStore(std::string /*path*/) {}
-    void Seed(std::initializer_list<User> /*users*/) {}
-    std::optional<User> Find(const std::string &/*name*/) { return User{"alice"}; }
-};
-
 class UserStoreTest : public ::testing::Test {
 protected:
     void SetUp() override {
         store = std::make_unique<UserStore>(":memory:");
         store->Seed({{"alice"}, {"bob"}});
     }
-
     std::unique_ptr<UserStore> store;
 };
 
@@ -109,66 +87,40 @@ TEST_F(UserStoreTest, FindsExistingUser) {
 }
 ```
 
-### Mock (gmock)
+### 목 (gmock)
 
 ```cpp
-// tests/notifier_test.cpp
-#include <gmock/gmock.h>
-#include <gtest/gtest.h>
-#include <string>
-
-class Notifier {
-public:
-    virtual ~Notifier() = default;
-    virtual void Send(const std::string &message) = 0;
-};
-
 class MockNotifier : public Notifier {
 public:
     MOCK_METHOD(void, Send, (const std::string &message), (override));
 };
 
-class Service {
-public:
-    explicit Service(Notifier &notifier) : notifier_(notifier) {}
-    void Publish(const std::string &message) { notifier_.Send(message); }
-
-private:
-    Notifier &notifier_;
-};
-
 TEST(ServiceTest, SendsNotifications) {
     MockNotifier notifier;
     Service service(notifier);
-
     EXPECT_CALL(notifier, Send("hello")).Times(1);
     service.Publish("hello");
 }
 ```
 
-### CMake/CTest Quickstart
+### CMake/CTest 빠른 시작
 
 ```cmake
-# CMakeLists.txt (excerpt)
 cmake_minimum_required(VERSION 3.20)
 project(example LANGUAGES CXX)
-
 set(CMAKE_CXX_STANDARD 20)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 include(FetchContent)
-# Prefer project-locked versions. If using a tag, use a pinned version per project policy.
-set(GTEST_VERSION v1.17.0) # Adjust to project policy.
+set(GTEST_VERSION v1.17.0)
 FetchContent_Declare(
-  googletest
-  # Google Test framework (official repository)
-  URL https://github.com/google/googletest/archive/refs/tags/${GTEST_VERSION}.zip
+    googletest
+    URL https://github.com/google/googletest/archive/refs/tags/${GTEST_VERSION}.zip
 )
 FetchContent_MakeAvailable(googletest)
 
 add_executable(example_tests
-  tests/calculator_test.cpp
-  src/calculator.cpp
+    tests/calculator_test.cpp
+    src/calculator.cpp
 )
 target_link_libraries(example_tests GTest::gtest GTest::gmock GTest::gtest_main)
 
@@ -183,41 +135,30 @@ cmake --build build -j
 ctest --test-dir build --output-on-failure
 ```
 
-## Running Tests
+## 테스트 실행
 
 ```bash
 ctest --test-dir build --output-on-failure
 ctest --test-dir build -R ClampTest
-ctest --test-dir build -R "UserStoreTest.*" --output-on-failure
-```
-
-```bash
-./build/example_tests --gtest_filter=ClampTest.*
+./build/example_tests --gtest_filter=CalculatorTest.*
 ./build/example_tests --gtest_filter=UserStoreTest.FindsExistingUser
 ```
 
-## Debugging Failures
+## 실패 디버깅
 
-1. Re-run the single failing test with gtest filter.
-2. Add scoped logging around the failing assertion.
-3. Re-run with sanitizers enabled.
-4. Expand to full suite once the root cause is fixed.
+1. gtest 필터로 실패한 단일 테스트 재실행
+2. 실패 단언 주변에 범위 로깅 추가
+3. sanitizer 활성화 후 재실행
+4. 근본 원인 수정 후 전체 스위트로 확장
 
-## Coverage
-
-Prefer target-level settings instead of global flags.
+## 커버리지
 
 ```cmake
-option(ENABLE_COVERAGE "Enable coverage flags" OFF)
+option(ENABLE_COVERAGE "커버리지 플래그 활성화" OFF)
 
 if(ENABLE_COVERAGE)
-  if(CMAKE_CXX_COMPILER_ID MATCHES "GNU")
     target_compile_options(example_tests PRIVATE --coverage)
     target_link_options(example_tests PRIVATE --coverage)
-  elseif(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-    target_compile_options(example_tests PRIVATE -fprofile-instr-generate -fcoverage-mapping)
-    target_link_options(example_tests PRIVATE -fprofile-instr-generate)
-  endif()
 endif()
 ```
 
@@ -232,93 +173,51 @@ lcov --remove coverage.info '/usr/*' --output-file coverage.info
 genhtml coverage.info --output-directory coverage
 ```
 
-Clang + llvm-cov:
-
-```bash
-cmake -S . -B build-llvm -DENABLE_COVERAGE=ON -DCMAKE_CXX_COMPILER=clang++
-cmake --build build-llvm -j
-LLVM_PROFILE_FILE="build-llvm/default.profraw" ctest --test-dir build-llvm
-llvm-profdata merge -sparse build-llvm/default.profraw -o build-llvm/default.profdata
-llvm-cov report build-llvm/example_tests -instr-profile=build-llvm/default.profdata
-```
-
-## Sanitizers
+## Sanitizer
 
 ```cmake
-option(ENABLE_ASAN "Enable AddressSanitizer" OFF)
-option(ENABLE_UBSAN "Enable UndefinedBehaviorSanitizer" OFF)
-option(ENABLE_TSAN "Enable ThreadSanitizer" OFF)
+option(ENABLE_ASAN "AddressSanitizer 활성화" OFF)
+option(ENABLE_UBSAN "UndefinedBehaviorSanitizer 활성화" OFF)
+option(ENABLE_TSAN "ThreadSanitizer 활성화" OFF)
 
 if(ENABLE_ASAN)
-  add_compile_options(-fsanitize=address -fno-omit-frame-pointer)
-  add_link_options(-fsanitize=address)
+    add_compile_options(-fsanitize=address -fno-omit-frame-pointer)
+    add_link_options(-fsanitize=address)
 endif()
 if(ENABLE_UBSAN)
-  add_compile_options(-fsanitize=undefined -fno-omit-frame-pointer)
-  add_link_options(-fsanitize=undefined)
+    add_compile_options(-fsanitize=undefined)
+    add_link_options(-fsanitize=undefined)
 endif()
 if(ENABLE_TSAN)
-  add_compile_options(-fsanitize=thread)
-  add_link_options(-fsanitize=thread)
+    add_compile_options(-fsanitize=thread)
+    add_link_options(-fsanitize=thread)
 endif()
 ```
 
-## Flaky Tests Guardrails
+## 불안정 테스트 가드레일
 
-- Never use `sleep` for synchronization; use condition variables or latches.
-- Make temp directories unique per test and always clean them.
-- Avoid real time, network, or filesystem dependencies in unit tests.
-- Use deterministic seeds for randomized inputs.
+- 동기화에 `sleep` 사용 금지; 조건 변수 또는 래치 사용
+- 임시 디렉토리는 테스트별 고유하게 생성하고 항상 정리
+- 단위 테스트에서 실제 시간·네트워크·파일시스템 의존성 금지
+- 무작위 입력에는 결정론적 시드 사용
 
-## Best Practices
+## 모범 사례
 
-### DO
+**해야 할 것:**
+- 테스트를 결정론적이고 격리된 상태로 유지
+- 전역 변수 대신 의존성 주입 선호
+- 전제조건에는 `ASSERT_*`, 다중 확인에는 `EXPECT_*`
+- CTest 레이블 또는 디렉토리로 단위 vs 통합 분리
+- CI에서 메모리 및 레이스 감지를 위해 sanitizer 실행
 
-- Keep tests deterministic and isolated
-- Prefer dependency injection over globals
-- Use `ASSERT_*` for preconditions, `EXPECT_*` for multiple checks
-- Separate unit vs integration tests in CTest labels or directories
-- Run sanitizers in CI for memory and race detection
+**하지 말아야 할 것:**
+- 단위 테스트에서 실제 시간이나 네트워크 의존
+- 조건 변수를 사용할 수 있을 때 sleep 동기화
+- 단순 값 객체 과도한 목킹
+- 중요하지 않은 로그에 취약한 문자열 매칭
 
-### DON'T
+## 대안
 
-- Don't depend on real time or network in unit tests
-- Don't use sleeps as synchronization when a condition variable can be used
-- Don't over-mock simple value objects
-- Don't use brittle string matching for non-critical logs
-
-### Common Pitfalls
-
-- **Using fixed temp paths** → Generate unique temp directories per test and clean them.
-- **Relying on wall clock time** → Inject a clock or use fake time sources.
-- **Flaky concurrency tests** → Use condition variables/latches and bounded waits.
-- **Hidden global state** → Reset global state in fixtures or remove globals.
-- **Over-mocking** → Prefer fakes for stateful behavior and only mock interactions.
-- **Missing sanitizer runs** → Add ASan/UBSan/TSan builds in CI.
-- **Coverage on debug-only builds** → Ensure coverage targets use consistent flags.
-
-## Optional Appendix: Fuzzing / Property Testing
-
-Only use if the project already supports LLVM/libFuzzer or a property-testing library.
-
-- **libFuzzer**: best for pure functions with minimal I/O.
-- **RapidCheck**: property-based tests to validate invariants.
-
-Minimal libFuzzer harness (pseudocode: replace ParseConfig):
-
-```cpp
-#include <cstddef>
-#include <cstdint>
-#include <string>
-
-extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
-    std::string input(reinterpret_cast<const char *>(data), size);
-    // ParseConfig(input); // project function
-    return 0;
-}
-```
-
-## Alternatives to GoogleTest
-
-- **Catch2**: header-only, expressive matchers
-- **doctest**: lightweight, minimal compile overhead
+- **Catch2**: 헤더 전용, 표현적 매처
+- **doctest**: 경량, 최소 컴파일 오버헤드
+- **cmocka**: 순수 C 프로젝트용
