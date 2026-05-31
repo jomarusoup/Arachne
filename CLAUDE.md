@@ -49,12 +49,26 @@
 │   ├── pre-compact.sh               # PreCompact    — 압축 전 상태 저장
 │   └── gemini-check.sh              # UserPromptSubmit — Gemini 작업 감지
 │
-├── rules/common/                    # 항상 적용되는 전역 규칙
-│   ├── workflow.md                  # Claude/Gemini 역할 분담·행동 규칙
-│   ├── coding-style.md              # 언어별 주석·네이밍·포매팅
-│   ├── patterns.md                  # SRP·불변성·에러 처리·품질 체크리스트
-│   ├── issue-workflow.md            # GitHub 이슈 처리 워크플로
-│   └── ui-layout.md                 # UI 레이아웃 기준
+├── rules/                           # 항상 적용되는 전역 규칙
+│   ├── common/                      # 언어 무관 공통 규칙 (12개)
+│   │   ├── workflow.md              # Claude/Gemini 역할 분담·행동 규칙
+│   │   ├── coding-style.md          # 헤더 구조·네이밍·포매팅 공통 원칙
+│   │   ├── patterns.md              # SRP·불변성·에러 처리
+│   │   ├── agents.md                # 에이전트 목록·활성화 기준
+│   │   ├── development-workflow.md  # 조사→설계→TDD→리뷰→커밋
+│   │   ├── git-workflow.md          # 커밋 형식·브랜치·PR
+│   │   ├── hooks.md                 # 훅 유형·등록 방법
+│   │   ├── security.md              # 보안 체크리스트·비밀값 관리
+│   │   ├── testing.md               # TDD·AAA·메모리 테스트
+│   │   ├── performance.md           # 모델 선택·컨텍스트 관리
+│   │   ├── issue-workflow.md        # 이슈 타입별 처리 원칙
+│   │   └── ui-layout.md             # UI 레이아웃 기준
+│   ├── c/          # C 시스템 프로그래밍 (coding-style·hooks·patterns·security·testing)
+│   ├── cpp/        # C++ (coding-style·hooks·patterns·security·testing)
+│   ├── golang/     # Go (coding-style·hooks·patterns·security·testing)
+│   ├── python/     # Python (coding-style·hooks·patterns·security·testing)
+│   ├── javascript/ # JS/TS (coding-style·hooks·patterns·security·testing)
+│   └── bash/       # Bash/Shell (coding-style·hooks·patterns·security·testing)
 │
 ├── dotfiles/                        # 홈 디렉토리 설정 파일
 │   ├── bash_profile                 # → ~/.bash_profile (sgrep 등 유틸 포함)

@@ -1,5 +1,5 @@
 ---
-name: reviewer
+name: code-reviewer
 description: 코드 리뷰 전담 에이전트. 수정 후 품질·안정성·보안을 도메인 무관하게 검토. 코드 변경 직후 PROACTIVELY 활성화.
 tools: ["Read", "Grep", "Glob", "Bash"]
 model: sonnet
