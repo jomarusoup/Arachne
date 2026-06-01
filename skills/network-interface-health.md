@@ -1,7 +1,6 @@
 ---
 name: network-interface-health
 description: 라우터·스위치·Linux 호스트의 인터페이스 오류·드롭·CRC·듀플렉스 불일치·플래핑·속도 협상 이슈·카운터 추세 진단.
-origin: community
 ---
 
 # 네트워크 인터페이스 상태

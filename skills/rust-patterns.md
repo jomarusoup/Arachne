@@ -1,7 +1,6 @@
 ---
 name: rust-patterns
 description: 저지연 시스템용 이디엄틱 Rust 패턴. tokio 비동기, lock-free 자료구조, zero-copy, 트레이딩·실시간 데이터 컨텍스트에 최적화.
-origin: Harness
 ---
 
 # Rust 개발 패턴

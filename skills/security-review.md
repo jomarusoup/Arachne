@@ -1,7 +1,6 @@
 ---
 name: security-review
 description: 인증 추가·사용자 입력 처리·비밀값 작업·API 엔드포인트 생성·결제/민감한 기능 구현 시 사용. 포괄적인 보안 체크리스트와 패턴 제공.
-origin: ECC
 ---
 
 # 보안 리뷰 스킬

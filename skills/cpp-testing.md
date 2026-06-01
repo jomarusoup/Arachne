@@ -1,7 +1,6 @@
 ---
 name: cpp-testing
 description: C++ 테스트 작성·수정·수정, GoogleTest/CTest 설정, 실패·불안정 테스트 진단, 커버리지·sanitizer 추가 시에만 사용.
-origin: ECC
 ---
 
 # C++ 테스팅 (에이전트 스킬)

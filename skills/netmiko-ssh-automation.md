@@ -1,7 +1,6 @@
 ---
 name: netmiko-ssh-automation
 description: 읽기 전용 수집·경계 있는 배치 SSH·TextFSM 파싱·보호된 설정 변경·타임아웃·에러 처리를 위한 안전한 Python Netmiko 패턴.
-origin: community
 ---
 
 # Netmiko SSH 자동화
