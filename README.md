@@ -17,6 +17,8 @@ aliases:
 `~/.claude/` 디렉터리를 심볼릭 링크로 이 레포와 연결합니다.
 레포를 수정하면 글로벌 설정에 즉시 반영되고, `git push/pull`로 모든 머신을 동기화할 수 있습니다.
 
+> 📖 skills·agents·커맨드·hooks 사용법은 [docs/USAGE.md](docs/USAGE.md) 참고
+
 ---
 
 ## 🚀 설치
