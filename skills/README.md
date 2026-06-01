@@ -1,6 +1,6 @@
 # Skills
 
-Claude Code 세션에서 호출 가능한 워크플로·도메인 스킬 모음 (15개).
+Claude Code 세션에서 호출 가능한 워크플로·도메인 스킬 모음 (20개).
 
 `origin: Harness` — Harness 전용 작성  
 `origin: ECC` — everything-claude-code에서 그대로 가져옴  
@@ -22,6 +22,8 @@ Claude Code 세션에서 호출 가능한 워크플로·도메인 스킬 모음 
 | `cpp-testing` | ECC | GoogleTest/CTest·sanitizer |
 | `latency-critical-systems` | ECC (mod) | IPC·epoll·소켓 저지연 시스템 |
 | `error-handling` | ECC (mod) | C/C++·TypeScript·Python·Go 에러 처리 |
+| `trading-systems` | Harness | FIX 프로토콜, 오더북, 마켓 데이터, rdtsc 측정 |
+| `performance-profiling` | Harness | pprof·perf·flamegraph 병목 분석 워크플로 |
 
 ## 언어별 패턴·테스팅
 
@@ -29,6 +31,9 @@ Claude Code 세션에서 호출 가능한 워크플로·도메인 스킬 모음 
 |---|---|---|
 | `golang-patterns` | ECC | 이디엄틱 Go 패턴 |
 | `golang-testing` | ECC | 테이블 드리븐·벤치마크·퍼징 |
+| `rust-patterns` | Harness | tokio 비동기, lock-free, zero-copy, 저지연 Rust |
+| `rust-testing` | Harness | criterion 벤치마크, proptest, flamegraph |
+| `go-http-patterns` | Harness | Go HTTP 서버, gRPC, graceful shutdown |
 
 ## TDD·검증
 
