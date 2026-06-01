@@ -1,6 +1,6 @@
 # Skills
 
-Claude Code 세션에서 호출 가능한 워크플로·도메인 스킬 모음 (20개).
+Claude Code 세션에서 호출 가능한 워크플로·도메인 스킬 모음 (17개).
 
 `origin: Harness` — Harness 전용 작성  
 `origin: ECC` — everything-claude-code에서 그대로 가져옴  
@@ -45,22 +45,17 @@ Claude Code 세션에서 호출 가능한 워크플로·도메인 스킬 모음 
 |---|---|---|
 | `security-review` | ECC | 보안 리뷰 체크리스트 |
 | `security-scan` | ECC | Claude Code 설정 보안 스캔 |
-| `architecture-decision-records` | ECC | ADR 작성·관리 |
 
-## 인프라·배포·API
+## 인프라
 
 | 스킬 | 출처 | 설명 |
 |---|---|---|
-| `api-design` | ECC | REST API 설계 패턴 |
-| `backend-patterns` | ECC | Node.js/Express 백엔드 패턴 |
 | `docker-patterns` | ECC | Docker/Compose 패턴 |
-| `deployment-patterns` | ECC | CI/CD·배포·롤백 전략 |
 
 ## 네트워크
 
 | 스킬 | 출처 | 설명 |
 |---|---|---|
-| `network-config-validation` | ECC | 라우터·스위치 설정 사전 검증 |
-| `network-interface-health` | ECC | 인터페이스 오류·CRC·플래핑 진단 |
-| `network-bgp-diagnostics` | ECC | BGP 이웃·라우트·AS 경로 진단 |
-| `netmiko-ssh-automation` | ECC | Python Netmiko SSH 자동화 |
+| `network-config-validation` | community | 라우터·스위치 설정 사전 검증 |
+| `network-interface-health` | community | 인터페이스 오류·CRC·플래핑 진단 |
+| `netmiko-ssh-automation` | community | Python Netmiko SSH 자동화 |
