@@ -1,7 +1,6 @@
 ---
 name: memory-check
 description: valgrind·AddressSanitizer·ThreadSanitizer 메모리 검사 실행 절차. 메모리 누수·오염·레이스 컨디션 검출.
-origin: Harness
 ---
 
 # 메모리 검사 워크플로

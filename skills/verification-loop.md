@@ -1,7 +1,6 @@
 ---
 name: verification-loop
 description: Claude Code 세션의 포괄적 검증 시스템. 기능 완료·PR 생성·리팩터링 후 품질 게이트 통과 확인.
-origin: ECC
 ---
 
 # 검증 루프 스킬

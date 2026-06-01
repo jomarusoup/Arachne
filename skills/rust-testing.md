@@ -1,7 +1,6 @@
 ---
 name: rust-testing
 description: Rust 테스팅 워크플로. criterion 벤치마크로 p99 레이턴시 회귀 감지, proptest 속성 기반 테스트, cargo-flamegraph 프로파일링.
-origin: Harness
 ---
 
 # Rust 테스팅 워크플로

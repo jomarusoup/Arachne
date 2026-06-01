@@ -1,7 +1,6 @@
 ---
 name: build-debug
 description: C/C++ 빌드·디버그 워크플로. make/cmake 빌드 오류 해결, GDB 디버그 세션, 바이너리 검증 절차.
-origin: Harness
 ---
 
 # C/C++ 빌드·디버그 워크플로
