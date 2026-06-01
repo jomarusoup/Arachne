@@ -4,6 +4,7 @@
     "command": "bash __HOME__/.claude/statusline-command.sh"
   },
   "theme": "dark-daltonized",
+  "model": "sonnet",
   "hooks": {
     "UserPromptSubmit": [
       {
