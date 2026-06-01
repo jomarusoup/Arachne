@@ -13,8 +13,6 @@ description: git 커밋·푸시. GitHub MCP 연결 시 Claude Code 안에서 바
 ## Haiku 에이전트에 전달할 프롬프트
 
 ```
-작업 디렉토리: /Users/jomarusoup/Documents/project/taskflow
-
 다음 순서로 git 커밋·푸시를 실행해라.
 
 커밋 메시지 인수: "$ARGUMENTS"
@@ -36,15 +34,14 @@ git status --short
   docs     문서 수정
   chore    설정 변경
 
-예) fix: 캘린더 바 겹침 수정
+예) fix: 널 포인터 역참조 수정
 
 ### 3. README.md 동기화 (생략)
 README.md 업데이트는 Gemini CLI가 담당한다. 이 단계에서는 README.md를 직접 수정하지 않는다.
 
 ### 4. 커밋 & 푸시
 ```bash
-git add taskflow.html taskflow.css taskflow.js
-git add .claude/            # .claude 변경이 있으면
+git add -A
 git commit -m "[커밋 메시지]"
 git push
 ```
