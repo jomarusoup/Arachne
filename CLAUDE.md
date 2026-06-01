@@ -18,6 +18,7 @@
 @rules/c/coding-style.md
 @rules/cpp/coding-style.md
 @rules/golang/coding-style.md
+@rules/rust/coding-style.md
 @rules/python/coding-style.md
 @rules/javascript/coding-style.md
 @rules/bash/coding-style.md

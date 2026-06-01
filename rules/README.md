@@ -41,6 +41,13 @@ rules/
 │   ├── security.md              — context 타임아웃, gosec, SQL 인젝션
 │   └── testing.md               — 테이블 드리븐, -race, 커버리지
 │
+├── rust/                        # Rust
+│   ├── coding-style.md          — rustfmt, Clippy, K&R, 네이밍
+│   ├── hooks.md                 — cargo fmt, cargo clippy, cargo audit
+│   ├── patterns.md              — 소유권·빌림, tokio, lock-free, 저지연
+│   ├── security.md              — unsafe 규칙, cargo-audit, 공급망 보안
+│   └── testing.md               — criterion 벤치마크, proptest, nextest
+│
 ├── python/                      # Python
 │   ├── coding-style.md          — black, 타입 힌트, 불변 dataclass
 │   ├── hooks.md                 — black, mypy, ruff
@@ -89,6 +96,7 @@ rules/
 | `*.c`, `*.h` | `c/*.md` 전체 |
 | `*.cpp`, `*.hpp` | `cpp/*.md` 전체 |
 | `*.go` | `golang/*.md` 전체 |
+| `*.rs`, `Cargo.toml` | `rust/*.md` 전체 |
 | `*.py` | `python/*.md` 전체 |
 | `*.js`, `*.ts` | `javascript/*.md` 전체 |
 | `*.sh` | `bash/*.md` 전체 |
