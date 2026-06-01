@@ -148,6 +148,53 @@ Arachne/
 
 ---
 
+## 🔁 Gemini 작업 감지
+
+Gemini가 별도 터미널에서 작업을 완료하고 커밋·푸시하면, Claude가 다음 메시지 입력 시 자동으로 감지합니다.
+
+### 동작 원리
+
+| 구성 요소 | 역할 |
+|---|---|
+| `hooks/gemini-check.sh` | `UserPromptSubmit` 훅 — 메시지 입력마다 실행 |
+| `.claude/last-seen-commit` | 마지막으로 Claude가 확인한 커밋 해시 저장 |
+| `hooks/session-end.sh` | 세션 종료 시 현재 HEAD를 `last-seen-commit`에 기록 |
+
+### 감지 흐름
+
+```
+Gemini 작업 완료 → git commit → git push
+    ↓
+Claude 다음 메시지 입력 시
+    ↓
+gemini-check.sh 실행
+  - 현재 HEAD ≠ last-seen-commit → 새 커밋 존재
+  - 커밋 목록·변경 파일 출력
+  - last-seen-commit 갱신 (중복 알림 방지)
+```
+
+### 출력 예시
+
+```
+┌────────────────────────────────────────────────────────
+│  [Gemini 작업 감지] 마지막 세션 이후 커밋 1건
+└────────────────────────────────────────────────────────
+
+  커밋 목록:
+  a1b2c3d  docs: README 재작성  (2 minutes ago)
+
+  변경 파일:
+  [수정]  README.md
+```
+
+### 주의사항
+
+- `.claude/last-seen-commit` 파일이 없으면 최초 실행 시 현재 HEAD를 기록하고 종료 (알림 없음)
+- git 레포 외부 디렉토리에서 실행 시 조용히 종료 (`exit 0`)
+- `last-seen-commit`은 `.gitignore`에 포함되어 레포에 추적되지 않음
+
+---
+
 ## 🔄 동기화
 
 심볼릭 링크로 연결되어 `~/.claude/` 수정 = 레포 수정입니다.
