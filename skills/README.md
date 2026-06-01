@@ -1,6 +1,6 @@
 # Skills
 
-Claude Code 세션에서 호출 가능한 워크플로·도메인 스킬 모음 (28개).
+Claude Code 세션에서 호출 가능한 워크플로·도메인 스킬 모음 (20개).
 
 `origin: Harness` — Harness 전용 작성  
 `origin: ECC` — everything-claude-code에서 그대로 가져옴  
@@ -14,14 +14,11 @@ Claude Code 세션에서 호출 가능한 워크플로·도메인 스킬 모음 
 |---|---|
 | `build-debug` | C/C++ 빌드·GDB 디버그 절차 |
 | `memory-check` | valgrind·ASan·TSan 메모리 검사 |
-| `git-flow` | Harness 브랜치·커밋·PR 워크플로 |
-| `refactor` | SRP 기반 리팩터링 절차 |
 
 ## 시스템 프로그래밍
 
 | 스킬 | 출처 | 설명 |
 |---|---|---|
-| `cpp-coding-standards` | ECC | C++ Core Guidelines 기반 표준 |
 | `cpp-testing` | ECC | GoogleTest/CTest·sanitizer |
 | `latency-critical-systems` | ECC (mod) | IPC·epoll·소켓 저지연 시스템 |
 | `error-handling` | ECC (mod) | C/C++·TypeScript·Python·Go 에러 처리 |
@@ -46,7 +43,6 @@ Claude Code 세션에서 호출 가능한 워크플로·도메인 스킬 모음 
 
 | 스킬 | 출처 | 설명 |
 |---|---|---|
-| `coding-standards` | ECC | 범용 코딩 컨벤션 |
 | `security-review` | ECC | 보안 리뷰 체크리스트 |
 | `security-scan` | ECC | Claude Code 설정 보안 스캔 |
 | `architecture-decision-records` | ECC | ADR 작성·관리 |
@@ -68,5 +64,3 @@ Claude Code 세션에서 호출 가능한 워크플로·도메인 스킬 모음 
 | `network-interface-health` | ECC | 인터페이스 오류·CRC·플래핑 진단 |
 | `network-bgp-diagnostics` | ECC | BGP 이웃·라우트·AS 경로 진단 |
 | `netmiko-ssh-automation` | ECC | Python Netmiko SSH 자동화 |
-| `homelab-network-setup` | ECC | 홈랩 게이트웨이·DHCP·DNS 설정 |
-| `homelab-wireguard-vpn` | ECC | WireGuard VPN 서버·피어 설정 |
