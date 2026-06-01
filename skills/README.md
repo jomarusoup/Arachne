@@ -1,6 +1,6 @@
 # Skills
 
-Claude Code 세션에서 호출 가능한 워크플로·도메인 스킬 모음 (17개).
+Claude Code 세션에서 호출 가능한 워크플로·도메인 스킬 모음 (15개).
 
 `origin: Harness` — Harness 전용 작성  
 `origin: ECC` — everything-claude-code에서 그대로 가져옴  
@@ -29,8 +29,6 @@ Claude Code 세션에서 호출 가능한 워크플로·도메인 스킬 모음 
 |---|---|---|
 | `golang-patterns` | ECC | 이디엄틱 Go 패턴 |
 | `golang-testing` | ECC | 테이블 드리븐·벤치마크·퍼징 |
-| `python-patterns` | ECC | PEP8·타입 힌트·파이썬닉 패턴 |
-| `python-testing` | ECC | pytest·픽스처·모킹·커버리지 |
 
 ## TDD·검증
 

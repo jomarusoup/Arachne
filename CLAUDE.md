@@ -76,10 +76,10 @@
 │   ├── bash_profile                 # → ~/.bash_profile (sgrep 등 유틸 포함)
 │   └── vimrc                        # → ~/.vimrc
 │
-├── skills/                          # 워크플로·도메인 스킬 (17개, README.md 참고)
+├── skills/                          # 워크플로·도메인 스킬 (15개, README.md 참고)
 │   ├── build-debug.md / memory-check.md                             # Harness 전용
 │   ├── cpp-testing.md / latency-critical-systems.md / error-handling.md
-│   ├── golang-patterns.md / golang-testing.md / python-patterns.md / python-testing.md
+│   ├── golang-patterns.md / golang-testing.md
 │   ├── tdd-workflow.md / verification-loop.md
 │   ├── security-review.md / security-scan.md
 │   ├── docker-patterns.md
