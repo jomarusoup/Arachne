@@ -194,3 +194,10 @@ vgrep()
         grep -Ev "bak|back|BACK|test|Test|org|OLD|diff|tobe" | \
         xargs grep -Hn "$*" | sort | grep "$*"
 }
+
+#===============================================================================
+# ARACHNE — 프로젝트 스크립트 글로벌 등록
+#===============================================================================
+if [ -f "${HOME}/.claude/tmux.sh" ]; then
+    alias workspace="${HOME}/.claude/tmux.sh"
+fi
