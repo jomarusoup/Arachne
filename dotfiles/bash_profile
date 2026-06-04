@@ -196,8 +196,9 @@ vgrep()
 }
 
 #===============================================================================
-# ARACHNE — 프로젝트 스크립트 글로벌 등록
+# ARACHNE — ~/.local/bin PATH 등록
+# install.sh 가 tws, arachne 등을 ~/.local/bin/ 심볼릭 링크로 등록함
 #===============================================================================
-if [ -f "${HOME}/.claude/tmux.sh" ]; then
-    alias workspace="${HOME}/.claude/tmux.sh"
+if [[ ":$PATH:" != *":$HOME/.local/bin:"* ]]; then
+    export PATH="$HOME/.local/bin:$PATH"
 fi

@@ -3,7 +3,7 @@
 # FILE NAME   : install.sh
 # DESCRIPTION : Arachne -> ~/.claude 심볼릭 링크 설치 스크립트
 # DATA        : 2026-05-05
-# Modification: 2026-06-03
+# Modification: 2026-06-04
 ################################################################################
 
 set -e
@@ -11,7 +11,14 @@ set -e
 REPO_DIR="$(cd "$(dirname "$0")" && pwd)"
 CLAUDE_DIR="$HOME/.claude"
 DOTFILES_DIR="$REPO_DIR/dotfiles"
+LOCAL_BIN="$HOME/.local/bin"
 ARACHNE_TAG="ARACHNE"
+
+# "스크립트명:커맨드명" 형식 — git pull 시 심볼릭 링크라 자동 업데이트됨
+BIN_TARGETS=(
+    "install.sh:arachne"
+    "tmux.sh:tws"
+)
 
 SYMLINK_TARGETS=(
     "CLAUDE.md"
@@ -30,9 +37,19 @@ SYMLINK_TARGETS=(
 usage() {
     echo "Usage: $0 [--export-settings] [--export-dotfiles]"
     echo ""
-    echo "  (no args)          : ~/.claude/ 심볼릭 링크 + dotfiles 설치"
+    echo "  (no args)          : ~/.claude/ 심볼릭 링크 + dotfiles + bin 설치"
     echo "  --export-settings  : ~/.claude/settings.json -> settings.template.json 으로 내보내기"
     echo "  --export-dotfiles  : ~/.bash_profile, ~/.vimrc -> dotfiles/ 로 내보내기"
+    echo ""
+    echo "  설치 후 사용 가능한 커맨드:"
+    for entry in "${BIN_TARGETS[@]}"; do
+        local script="${entry%%:*}"
+        local cmd="${entry##*:}"
+        echo "    ${cmd}  (-> ${script})"
+    done
+    echo ""
+    echo "  업데이트: git pull  (심볼릭 링크라 자동 반영, install 재실행 불필요)"
+    echo "  새 스크립트 추가 시: arachne  (재실행으로 신규 심볼릭 링크 등록)"
 }
 
 ################################################################################
@@ -54,6 +71,48 @@ backup_and_link() {
 
     ln -s "$src" "$dst"
     echo "  링크: $dst -> $src"
+}
+
+################################################################################
+# FUNCTION    : register_bin
+# DESCRIPTION : BIN_TARGETS 를 ~/.local/bin/ 에 심볼릭 링크로 등록
+#               git pull 시 자동 업데이트 (재실행 불필요)
+#               새 스크립트 추가 시에만 재실행 필요
+################################################################################
+register_bin() {
+    echo "[Arachne] bin 등록 시작: $LOCAL_BIN"
+    mkdir -p "$LOCAL_BIN"
+
+    for entry in "${BIN_TARGETS[@]}"; do
+        local script="${entry%%:*}"
+        local cmd="${entry##*:}"
+        local src="$REPO_DIR/$script"
+        local dst="$LOCAL_BIN/$cmd"
+
+        if [ ! -f "$src" ]; then
+            echo "  스킵 (파일 없음): $script"
+            continue
+        fi
+
+        chmod +x "$src"
+
+        if [ -L "$dst" ]; then
+            rm "$dst"
+        elif [ -e "$dst" ]; then
+            echo "  백업: $dst -> $dst.bak"
+            mv "$dst" "$dst.bak"
+        fi
+
+        ln -s "$src" "$dst"
+        echo "  등록: $cmd -> $src"
+    done
+
+    echo "[Arachne] bin 등록 완료"
+
+    if ! echo "$PATH" | grep -q "$LOCAL_BIN"; then
+        echo "  주의: $LOCAL_BIN 이 PATH에 없습니다. ~/.bash_profile에 추가하세요:"
+        echo "    export PATH=\"\$HOME/.local/bin:\$PATH\""
+    fi
 }
 
 ################################################################################
@@ -79,6 +138,7 @@ install() {
 
     echo "[Arachne] Claude 설치 완료"
     install_dotfiles
+    register_bin
 }
 
 ################################################################################
