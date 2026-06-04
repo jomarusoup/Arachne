@@ -256,14 +256,19 @@ Arachne는 `install.sh`를 통해 설치되며, 설치 후에는 `arachne` 커�
 
 ### 전체 명령어 레퍼런스
 
+표준 리눅스 CLI 관행을 따른다: **동작은 서브커맨드, 진짜 옵션만 플래그(`-h`/`-v`).**
+
 | 명령 | 종류 | 동작 |
 | ---- | ---- | ---- |
-| `arachne` | 서브커맨드 없음 | `~/.claude/` 심볼릭 링크 + `settings.json` 생성 + dotfiles 병합 + bin 등록 (전체 설치/재설치) |
+| `arachne` (또는 `arachne install`) | 서브커맨드 | `~/.claude/` 심볼릭 링크 + `settings.json` 생성 + dotfiles 병합 + bin 등록 (전체 설치/재설치) |
 | `arachne update` | 서브커맨드 | `git pull` 후 위 설치를 재실행 (동기화 허브) |
 | `arachne session` | 서브커맨드 | tmux 워크스페이스 매니저 실행 (= `tws`, 8장 참고) |
-| `arachne --export-settings` | 옵션 | 현재 `~/.claude/settings.json` → 레포 `settings.template.json`으로 역추출 |
-| `arachne --export-dotfiles` | 옵션 | 로컬 `~/.bash_profile`·`~/.vimrc`의 변경 → 레포 `dotfiles/`로 역추출 |
-| `arachne --help` (`-h`) | 옵션 | 도움말 출력 |
+| `arachne export-settings` | 서브커맨드 | 현재 `~/.claude/settings.json` → 레포 `settings.template.json`으로 역추출 |
+| `arachne export-dotfiles` | 서브커맨드 | 로컬 `~/.bash_profile`·`~/.vimrc`의 변경 → 레포 `dotfiles/`로 역추출 |
+| `arachne -h` (`--help`) | 옵션 | 도움말 출력 |
+| `arachne -v` (`--version`) | 옵션 | 버전 정보 출력 |
+
+> 하위호환: 옛 `--export-settings` / `--export-dotfiles` 플래그도 여전히 동작한다(별칭).
 
 ```bash
 # 최초 설치 / 새 스크립트·심볼릭 링크 추가 후 재등록
@@ -276,10 +281,10 @@ arachne update
 arachne session        # tws 와 동일
 
 # settings.json 변경사항을 레포 템플릿에 반영
-arachne --export-settings
+arachne export-settings
 
 # 로컬에서 수정한 dotfiles 설정을 레포(dotfiles/)로 역추출
-arachne --export-dotfiles
+arachne export-dotfiles
 ```
 
 ### `arachne update` 실행 시 일어나는 일
@@ -296,7 +301,7 @@ arachne --export-dotfiles
 ```
 
 > **부작용 주의**
-> - `settings.json`은 매번 템플릿에서 **재생성**된다. 직접 수정한 값이 있으면 먼저 `arachne --export-settings`로 템플릿에 반영해야 유실되지 않는다 (직전 값은 `settings.json.bak`에 보존).
+> - `settings.json`은 매번 템플릿에서 **재생성**된다. 직접 수정한 값이 있으면 먼저 `arachne export-settings`로 템플릿에 반영해야 유실되지 않는다 (직전 값은 `settings.json.bak`에 보존).
 > - dotfiles는 `# === ARACHNE BEGIN/END ===` 마커 **안쪽만** 갱신하므로 마커 밖 사용자 설정은 안전하다.
 > - 셸에 즉시 반영하려면 `source ~/.bash_profile`.
 
@@ -336,45 +341,24 @@ Claude Code는 터미널을 점유하므로, 여러 프로젝트나 테스트 �
 
 ---
 
-## 9. Gemini 질의 래퍼 (`gask`)
+## 9. Gemini 질의 래퍼 (`gask`) — CLI 레퍼런스
 
-`gask`는 **Gemini CLI를 비대화(headless)로 호출해 깨끗한 답변만 stdout으로 받는** 래퍼다.
-Claude Code가 별도 터미널로 전환하지 않고 설계·조사·요약을 Gemini에 직접 위임할 때 사용한다
-(6장 협업 워크플로의 자동화 경로). `~/.local/bin/gask → gask.sh` 심볼릭 링크로 등록된다.
+`gask`의 **언제·왜·비용 라우팅**은 [6장 경로 A](#6-claude--gemini-협업-비용-최적화)를 참고.
+이 절은 명령 레퍼런스만 다룬다. `gask`는 `gemini -p`의 노이즈(stderr)를 걸러
+**답변만 stdout**으로 돌려주는 래퍼이며, `~/.local/bin/gask → gask.sh` 심볼릭 링크로 등록된다.
 
-### 왜 필요한가
-`gemini -p`는 stderr로 `True color`·`Ripgrep is not available`·`Warning:` 등 비본질 노이즈를
-함께 뱉어 호출 측 컨텍스트를 오염시킨다. `gask`는 이 노이즈를 필터링하고 **답변 본문만 stdout**으로
-내보내, Claude가 결과를 그대로 받아 이어서 구현할 수 있게 한다.
-
-### 사용법
+### 문법
 ```bash
 gask [-m MODEL] "프롬프트..."
 cat file | gask "이 입력을 요약해줘"      # stdin 입력은 프롬프트에 자동 append
 ```
 
-| 옵션 | 설명 |
-| ---- | ---- |
-| `-m MODEL` | 사용할 Gemini 모델 지정 (미지정 시 `gemini` 기본값 또는 환경변수 `GASK_MODEL`) |
+| 옵션·요소 | 설명 |
+| --------- | ---- |
+| `-m MODEL` | 사용할 Gemini 모델 (미지정 시 `gemini` 기본값 또는 환경변수 `GASK_MODEL`) |
 | `-h` | 도움말 출력 |
+| 종료 코드 | 내부 `gemini` 호출 결과를 그대로 전파 → 스크립트·파이프라인에 안전 |
+| stdout / stderr | 답변 본문은 stdout, 노이즈 제거 후 남은 진단만 stderr |
 
-### 예시
-```bash
-# 설계 자문 → 답변을 stdout으로
-gask "이 함수 설계 검토해줘: $(cat module.c)"
-
-# 로그 에러 원인만 요약
-gask "이 로그 에러 원인만 요약: $(cat app.log)"
-
-# 생성물 바로 파일로 (Claude는 내용 재독 없이 위임 결과 신뢰)
-gask "README 초안 작성" > README.md
-
-# 모델 고정
-GASK_MODEL=gemini-2.5-pro gask "아키텍처 대안 비교"
-```
-
-### 협업 워크플로와의 관계
-- **기획·설계·README·대안 비교** 같은 Gemini 전담 작업(6장 참고)을, 사용자가 다른 터미널에서
-  `gemini -p`를 직접 실행하는 대신 `gask`로 위임할 수 있다.
-- 종료 코드는 내부 `gemini` 호출 결과를 그대로 전파하므로 스크립트·파이프라인에 안전하게 엮인다.
+> 사용 예시·비용 라우팅(끌어오기/쏟아내기)은 6장 참고.
 

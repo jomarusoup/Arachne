@@ -120,8 +120,8 @@ Arachne은 심볼릭 링크를 기반으로 하며, `update` 커맨드로 소스
 arachne update
 
 # 설정 내보내기
-arachne --export-settings   # settings.json → settings.template.json
-arachne --export-dotfiles   # ~/.bash_profile, ~/.vimrc → dotfiles/ 내보내기
+arachne export-settings   # settings.json → settings.template.json
+arachne export-dotfiles   # ~/.bash_profile, ~/.vimrc → dotfiles/ 내보내기
 ```
 
 ---
