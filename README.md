@@ -39,9 +39,12 @@ cd ~/Arachne
 ### 주요 CLI 커맨드
 | 커맨드 | 설명 |
 |---|---|
-| `arachne update` | Arachne 최신 상태로 업데이트 (git pull + 재설치) |
-| `arachne session` | **Tmux Workspace Manager**: Claude Code 전용 대화형 세션 매니저 (`tws`와 동일) |
-| `arachne` | (인자 없음) Arachne 재설치 및 설정 동기화 |
+| `arachne` | (옵션 없음) Arachne 재설치 및 설정 동기화 |
+| `arachne -u` (`--update`) | 최신 상태로 업데이트 (git pull + 재설치) |
+| `arachne -s` (`--session`) | **Tmux Workspace Manager**: 대화형 세션 매니저 (`tws`와 동일) |
+| `arachne -e` (`--export-settings`) | settings.json → 템플릿 내보내기 |
+| `arachne -d` (`--export-dotfiles`) | dotfiles → 레포 내보내기 |
+| `arachne -h` / `-v` | 도움말 / 버전 |
 | `gask` | **Gemini 직접 호출 래퍼** — Claude Code가 `gemini -p`를 Bash로 호출해 설계·요약을 위임 |
 
 ---
@@ -88,9 +91,9 @@ Arachne/
 
 ---
 
-## 🏗️ 워크스페이스 관리 (session)
+## 🏗️ 워크스페이스 관리 (`-s`)
 
-`arachne session` (또는 `tws`) 커맨드를 통해
+`arachne -s` (또는 `tws`) 로
  Claude Code 세션을 효율적으로 관리할 수 있습니다.
 - **템플릿 지원**: 기본 터미널 / Claude Code 자동 실행(dev) / 테스트용 2분할 화면
 - **세션 관리**: 생성, 접속(Attach), 삭제(Kill), 일괄 종료 지원
@@ -113,15 +116,15 @@ Claude 쿼터는 희소 자원, Gemini는 한계비용 ≈ 0이라는 전제로 
 
 ## 🔄 동기화 및 업데이트
 
-Arachne은 심볼릭 링크를 기반으로 하며, `update` 커맨드로 소스 동기화와 재설치를 한 번에 처리합니다.
+Arachne은 심볼릭 링크를 기반으로 하며, `-u` 옵션으로 소스 동기화와 재설치를 한 번에 처리합니다.
 
 ```bash
 # 최신 상태로 업데이트 (표준 방식)
-arachne update
+arachne -u
 
 # 설정 내보내기
-arachne export-settings   # settings.json → settings.template.json
-arachne export-dotfiles   # ~/.bash_profile, ~/.vimrc → dotfiles/ 내보내기
+arachne -e   # settings.json → settings.template.json
+arachne -d   # ~/.bash_profile, ~/.vimrc → dotfiles/ 내보내기
 ```
 
 ---
