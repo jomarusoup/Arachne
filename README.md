@@ -42,6 +42,7 @@ cd ~/Arachne
 | `arachne update` | Arachne 최신 상태로 업데이트 (git pull + 재설치) |
 | `arachne session` | **Tmux Workspace Manager**: Claude Code 전용 대화형 세션 매니저 (`tws`와 동일) |
 | `arachne` | (인자 없음) Arachne 재설치 및 설정 동기화 |
+| `gask` | **Gemini 직접 호출 래퍼** — Claude Code가 `gemini -p`를 Bash로 호출해 설계·요약을 위임 |
 
 ---
 
@@ -53,6 +54,7 @@ Arachne/
 ├── settings.template.json       # ~/.claude/settings.json 템플릿
 ├── install.sh                   # 통합 관리 도구 (CLI: arachne)
 ├── tmux.sh                      # tmux 워크스페이스 매니저 (CLI: tws)
+├── gask.sh                      # Gemini 직접 호출 래퍼 (CLI: gask)
 │
 ├── rules/                       # Claude 전역 행동 규칙
 │   ├── common/                  # 언어 공통 (workflow, coding-style, patterns 등 12개)
@@ -92,6 +94,20 @@ Arachne/
  Claude Code 세션을 효율적으로 관리할 수 있습니다.
 - **템플릿 지원**: 기본 터미널 / Claude Code 자동 실행(dev) / 테스트용 2분할 화면
 - **세션 관리**: 생성, 접속(Attach), 삭제(Kill), 일괄 종료 지원
+
+---
+
+## 🤝 Claude ↔ Gemini 협업 (비용 최적화)
+
+Claude 쿼터는 희소 자원, Gemini는 한계비용 ≈ 0이라는 전제로 역할을 나눕니다.
+**토큰 무거운 작업(설계·대용량 읽기·요약·장문 생성)은 Gemini로, 정밀 구현·디버깅은 Claude로.**
+
+- **`gask` 직접 호출**: Claude Code가 터미널 전환 없이 `gemini -p`를 Bash로 호출 → 답변 수신
+  - 끌어오기(요약·자문): `gask "이 로그 요약: $(cat app.log)"` → 큰 입력, 작은 출력으로 **절약**
+  - 쏟아내기(생성): `gask "README 작성" > README.md` → 파일로 빼고 **내용 재독 안 함**
+- **git-bus 감지**: 다른 터미널에서 Gemini가 직접 커밋한 경우 `gemini-check.sh` 훅이 자동 감지
+
+> 상세 워크플로·비용 라우팅은 [docs/USAGE.md](docs/USAGE.md) 6장 참고.
 
 ---
 

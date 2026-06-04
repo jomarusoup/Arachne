@@ -20,6 +20,7 @@ ARACHNE_TAG="ARACHNE"
 BIN_TARGETS=(
     "install.sh:arachne"
     "tmux.sh:tws"
+    "gask.sh:gask"
 )
 
 SYMLINK_TARGETS=(
