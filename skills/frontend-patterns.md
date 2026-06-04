@@ -1,0 +1,380 @@
+---
+name: frontend-patterns
+description: React·Next.js 프론트엔드 패턴 — 컴포넌트 합성, 상태 관리, 데이터 페칭, 성능 최적화(메모이제이션·가상화·코드 분할), 폼, 에러 바운더리, 접근성. 컴포넌트·상태·성능 원칙은 독립 데스크톱 UI로도 이식된다.
+---
+
+# 프론트엔드 개발 패턴
+
+React·Next.js와 성능 좋은 UI를 위한 모던 패턴.
+
+> 코드 예시는 React 기준이지만, **컴포넌트 합성·단방향 상태·메모이제이션·가상화·에러 경계** 같은
+> 구조적 원칙은 프레임워크에 종속되지 않는다. 웹 클라이언트를 독립 데스크톱 프로그램(Tauri·Qt 등)으로
+> 전환해도 동일한 사고가 적용된다.
+
+## 언제 활성화하나
+
+- React 컴포넌트 구축 (합성·props·렌더링)
+- 상태 관리 (useState·useReducer·Context·Zustand)
+- 데이터 페칭 (SWR·React Query·서버 컴포넌트)
+- 성능 최적화 (메모이제이션·가상화·코드 분할)
+- 폼 처리 (검증·제어 입력·Zod 스키마)
+- 접근성 있는 반응형 UI 패턴
+
+## 컴포넌트 패턴
+
+### 상속보다 합성
+
+```tsx
+// 올바름: 컴포넌트 합성
+interface CardProps {
+    children: React.ReactNode;
+    variant?: "default" | "outlined";
+}
+
+export function Card({ children, variant = "default" }: CardProps) {
+    return <div className={`card card-${variant}`}>{children}</div>;
+}
+
+export function CardHeader({ children }: { children: React.ReactNode }) {
+    return <div className="card-header">{children}</div>;
+}
+
+// 사용
+<Card>
+    <CardHeader>Title</CardHeader>
+    <CardBody>Content</CardBody>
+</Card>
+```
+
+### 컴파운드 컴포넌트 — Context로 암묵적 상태 공유
+
+```tsx
+const TabsContext = createContext<TabsContextValue | undefined>(undefined);
+
+export function Tabs({ children, defaultTab }: TabsProps) {
+    const [activeTab, setActiveTab] = useState(defaultTab);
+    return (
+        <TabsContext.Provider value={{ activeTab, setActiveTab }}>
+            {children}
+        </TabsContext.Provider>
+    );
+}
+
+export function Tab({ id, children }: TabProps) {
+    const context = useContext(TabsContext);
+    if (!context) throw new Error("Tab must be used within Tabs");
+    return (
+        <button
+            className={context.activeTab === id ? "active" : ""}
+            onClick={() => context.setActiveTab(id)}
+        >
+            {children}
+        </button>
+    );
+}
+```
+
+## 커스텀 훅 패턴
+
+### 비동기 데이터 페칭 훅
+
+```tsx
+export function useQuery<T>(
+    key: string,
+    fetcher: () => Promise<T>,
+    options?: UseQueryOptions<T>,
+) {
+    const [data, setData] = useState<T | null>(null);
+    const [error, setError] = useState<Error | null>(null);
+    const [loading, setLoading] = useState(false);
+
+    const refetch = useCallback(async () => {
+        setLoading(true);
+        setError(null);
+        try {
+            const result = await fetcher();
+            setData(result);
+            options?.onSuccess?.(result);
+        } catch (err) {
+            const error = err as Error;
+            setError(error);
+            options?.onError?.(error);
+        } finally {
+            setLoading(false);
+        }
+    }, [fetcher, options]);
+
+    useEffect(() => {
+        if (options?.enabled !== false) refetch();
+    }, [key, refetch, options?.enabled]);
+
+    return { data, error, loading, refetch };
+}
+```
+
+### 디바운스 훅 — 정리(cleanup) 필수
+
+```tsx
+export function useDebounce<T>(value: T, delay: number): T {
+    const [debounced, setDebounced] = useState<T>(value);
+    useEffect(() => {
+        const handler = setTimeout(() => setDebounced(value), delay);
+        return () => clearTimeout(handler);   // 정리 — 누수·중복 방지
+    }, [value, delay]);
+    return debounced;
+}
+```
+
+## 상태 관리 — Context + Reducer
+
+전역 상태는 불변 업데이트로. 시스템 코드의 단방향 데이터 흐름·불변 메시지 패싱과 같은 원리다.
+
+```tsx
+type Action =
+    | { type: "SET_MARKETS"; payload: Market[] }
+    | { type: "SELECT_MARKET"; payload: Market };
+
+function reducer(state: State, action: Action): State {
+    switch (action.type) {
+        case "SET_MARKETS":
+            return { ...state, markets: action.payload };   // 불변 — 새 객체
+        case "SELECT_MARKET":
+            return { ...state, selectedMarket: action.payload };
+        default:
+            return state;
+    }
+}
+
+export function useMarkets() {
+    const context = useContext(MarketContext);
+    if (!context) throw new Error("useMarkets must be used within MarketProvider");
+    return context;
+}
+```
+
+## 성능 최적화
+
+### 메모이제이션 — 측정 후 적용
+
+```tsx
+// 고비용 계산 메모
+const sortedMarkets = useMemo(
+    () => [...markets].sort((a, b) => b.volume - a.volume),  // 원본 불변
+    [markets],
+);
+
+// 자식에 넘기는 함수 메모
+const handleSearch = useCallback((query: string) => setSearchQuery(query), []);
+
+// 순수 컴포넌트 메모
+export const MarketCard = React.memo<MarketCardProps>(({ market }) => (
+    <div className="market-card">
+        <h3>{market.name}</h3>
+    </div>
+));
+```
+
+> 메모이제이션은 공짜가 아니다. 실제 리렌더 비용이 측정될 때만 적용한다 — 무분별한 `useMemo`는 노이즈다.
+
+### 코드 분할·지연 로딩
+
+```tsx
+import { lazy, Suspense } from "react";
+
+const HeavyChart = lazy(() => import("./HeavyChart"));
+
+export function Dashboard() {
+    return (
+        <Suspense fallback={<ChartSkeleton />}>
+            <HeavyChart data={data} />
+        </Suspense>
+    );
+}
+```
+
+### 긴 리스트 가상화 — 보이는 것만 렌더
+
+대용량 리스트는 화면에 보이는 행만 렌더한다. 시스템 코드의 윈도잉·페이지 캐시와 같은 사고다.
+
+```tsx
+import { useVirtualizer } from "@tanstack/react-virtual";
+
+export function VirtualMarketList({ markets }: { markets: Market[] }) {
+    const parentRef = useRef<HTMLDivElement>(null);
+    const virtualizer = useVirtualizer({
+        count: markets.length,
+        getScrollElement: () => parentRef.current,
+        estimateSize: () => 100,
+        overscan: 5,
+    });
+    return (
+        <div ref={parentRef} style={{ height: "600px", overflow: "auto" }}>
+            <div style={{ height: `${virtualizer.getTotalSize()}px`, position: "relative" }}>
+                {virtualizer.getVirtualItems().map((row) => (
+                    <div
+                        key={row.index}
+                        style={{
+                            position: "absolute",
+                            top: 0,
+                            width: "100%",
+                            height: `${row.size}px`,
+                            transform: `translateY(${row.start}px)`,
+                        }}
+                    >
+                        <MarketCard market={markets[row.index]} />
+                    </div>
+                ))}
+            </div>
+        </div>
+    );
+}
+```
+
+## 폼 처리 — 제어 입력 + 검증
+
+```tsx
+export function CreateMarketForm() {
+    const [formData, setFormData] = useState<FormData>({ name: "", description: "" });
+    const [errors, setErrors] = useState<FormErrors>({});
+
+    const validate = (): boolean => {
+        const next: FormErrors = {};
+        if (!formData.name.trim()) next.name = "이름은 필수입니다";
+        else if (formData.name.length > 200) next.name = "이름은 200자 미만이어야 합니다";
+        setErrors(next);
+        return Object.keys(next).length === 0;
+    };
+
+    const handleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!validate()) return;
+        await createMarket(formData);
+    };
+
+    return (
+        <form onSubmit={handleSubmit}>
+            <input
+                value={formData.name}
+                onChange={(e) => setFormData((prev) => ({ ...prev, name: e.target.value }))}
+            />
+            {errors.name && <span className="error">{errors.name}</span>}
+            <button type="submit">생성</button>
+        </form>
+    );
+}
+```
+
+> 외부 입력(폼·API 응답)은 Zod 스키마로 검증한다 — `rules/javascript/coding-style.md` 참고. 시스템 경계 검증과 같은 원칙.
+
+## 에러 바운더리 — UI 격리
+
+```tsx
+export class ErrorBoundary extends React.Component<Props, ErrorBoundaryState> {
+    state: ErrorBoundaryState = { hasError: false, error: null };
+
+    static getDerivedStateFromError(error: Error): ErrorBoundaryState {
+        return { hasError: true, error };
+    }
+
+    componentDidCatch(error: Error, info: React.ErrorInfo) {
+        console.warn("[PROJ] error boundary caught", error, info);   // 운영 경고
+    }
+
+    render() {
+        if (this.state.hasError) {
+            return (
+                <div className="error-fallback">
+                    <h2>문제가 발생했습니다</h2>
+                    <button onClick={() => this.setState({ hasError: false })}>다시 시도</button>
+                </div>
+            );
+        }
+        return this.props.children;
+    }
+}
+```
+
+## 애니메이션 — Framer Motion
+
+```tsx
+import { motion, AnimatePresence } from "framer-motion";
+
+export function AnimatedMarketList({ markets }: { markets: Market[] }) {
+    return (
+        <AnimatePresence>
+            {markets.map((market) => (
+                <motion.div
+                    key={market.id}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -20 }}
+                    transition={{ duration: 0.3 }}
+                >
+                    <MarketCard market={market} />
+                </motion.div>
+            ))}
+        </AnimatePresence>
+    );
+}
+```
+
+> 모션 디테일(enter/exit 분리, press scale, transition 범위)은 스킬 `make-interfaces-feel-better` 참고.
+
+## 접근성 패턴
+
+### 키보드 내비게이션
+
+```tsx
+const handleKeyDown = (e: React.KeyboardEvent) => {
+    switch (e.key) {
+        case "ArrowDown":
+            e.preventDefault();
+            setActiveIndex((i) => Math.min(i + 1, options.length - 1));
+            break;
+        case "ArrowUp":
+            e.preventDefault();
+            setActiveIndex((i) => Math.max(i - 1, 0));
+            break;
+        case "Enter":
+            e.preventDefault();
+            onSelect(options[activeIndex]);
+            break;
+        case "Escape":
+            setIsOpen(false);
+            break;
+    }
+};
+```
+
+### 포커스 관리 — 모달 열고 닫을 때 복원
+
+```tsx
+export function Modal({ isOpen, onClose, children }: ModalProps) {
+    const modalRef = useRef<HTMLDivElement>(null);
+    const previousFocusRef = useRef<HTMLElement | null>(null);
+
+    useEffect(() => {
+        if (isOpen) {
+            previousFocusRef.current = document.activeElement as HTMLElement;
+            modalRef.current?.focus();
+        } else {
+            previousFocusRef.current?.focus();   // 닫을 때 이전 포커스 복원
+        }
+    }, [isOpen]);
+
+    return isOpen ? (
+        <div
+            ref={modalRef}
+            role="dialog"
+            aria-modal="true"
+            tabIndex={-1}
+            onKeyDown={(e) => e.key === "Escape" && onClose()}
+        >
+            {children}
+        </div>
+    ) : null;
+}
+```
+
+> **기억할 것**: 모던 프론트엔드 패턴은 유지보수 가능하고 성능 좋은 UI를 만든다.
+> 프로젝트 복잡도에 맞는 패턴을 고른다. 디자인 품질 기준은 `rules/web/design-quality.md` 참고.
