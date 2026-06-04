@@ -32,7 +32,8 @@
 │   ├── planner.md                   # 구현 설계 전담 (model: opus)
 │   ├── code-reviewer.md             # 코드 리뷰 전담 (model: sonnet)
 │   ├── tdd.md                       # TDD 사이클 안내 (model: sonnet)
-│   └── debugger.md                  # GDB·valgrind·strace·perf (model: sonnet)
+│   ├── debugger.md                  # GDB·valgrind·strace·perf (model: sonnet)
+│   └── python-reviewer.md           # Python 특화 코드 리뷰 (model: sonnet)
 │
 ├── commands/                        # 슬래시 커맨드 (/명령어)
 │   ├── add.md                       # /add        — 기능 추가
@@ -44,7 +45,8 @@
 │   ├── handoff.md                   # /handoff    — AI 전환 전 상태 저장
 │   ├── issue.md                     # /issue      — GitHub 이슈 처리
 │   ├── learn.md                     # /learn      — 패턴 학습
-│   └── save-session.md              # /save-session — 세션 요약 저장
+│   ├── save-session.md              # /save-session — 세션 요약 저장
+│   └── python-review.md             # /python-review — Python 코드 리뷰
 │
 ├── hooks/                           # 이벤트 기반 자동화
 │   ├── session-start.sh             # SessionStart  — 최근 세션 안내
@@ -69,7 +71,8 @@
 │   ├── c/          # C 시스템 프로그래밍 (coding-style·hooks·patterns·security·testing)
 │   ├── cpp/        # C++ (coding-style·hooks·patterns·security·testing)
 │   ├── golang/     # Go (coding-style·hooks·patterns·security·testing)
-│   ├── python/     # Python (coding-style·hooks·patterns·security·testing)
+│   ├── python/     # Python (coding-style·hooks·patterns·security·testing·fastapi)
+│   ├── web/        # 웹 디자인 품질 (design-quality)
 │   ├── javascript/ # JS/TS (coding-style·hooks·patterns·security·testing)
 │   └── bash/       # Bash/Shell (coding-style·hooks·patterns·security·testing)
 │
@@ -77,12 +80,15 @@
 │   ├── bash_profile                 # → ~/.bash_profile (sgrep 등 유틸 포함)
 │   └── vimrc                        # → ~/.vimrc
 │
-├── skills/                          # 워크플로·도메인 스킬 (20개, README.md 참고)
+├── skills/                          # 워크플로·도메인 스킬 (26개, README.md 참고)
 │   ├── build-debug.md / memory-check.md                             # Harness 전용
 │   ├── cpp-testing.md / latency-critical-systems.md / error-handling.md
 │   ├── trading-systems.md / performance-profiling.md
 │   ├── golang-patterns.md / golang-testing.md / go-http-patterns.md
 │   ├── rust-patterns.md / rust-testing.md
+│   ├── python-patterns.md / python-testing.md                       # Python
+│   ├── backend-patterns.md / frontend-patterns.md / make-interfaces-feel-better.md  # 백엔드·웹
+│   ├── agentic-engineering.md                                       # 메타·하네스
 │   ├── tdd-workflow.md / verification-loop.md
 │   ├── security-review.md / security-scan.md
 │   ├── docker-patterns.md

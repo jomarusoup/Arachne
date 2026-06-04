@@ -1,6 +1,6 @@
 # Skills
 
-Claude Code 세션에서 호출 가능한 워크플로·도메인 스킬 모음 (20개).
+Claude Code 세션에서 호출 가능한 워크플로·도메인 스킬 모음 (26개).
 
 ---
 
@@ -25,6 +25,16 @@ Claude Code 세션에서 호출 가능한 워크플로·도메인 스킬 모음 
 | `rust-patterns` | tokio 비동기, lock-free, zero-copy, 저지연 Rust |
 | `rust-testing` | criterion 벤치마크, proptest, flamegraph |
 | `go-http-patterns` | Go HTTP 서버, gRPC, graceful shutdown |
+| `python-patterns` | EAFP·타입힌트·컨텍스트매니저·`__slots__` (자원/메모리 사고 선행 학습) |
+| `python-testing` | pytest·TDD·픽스처·autospec 모킹·async 테스트 |
+
+## 백엔드·웹
+
+| 스킬 | 설명 |
+|---|---|
+| `backend-patterns` | 레포지토리·서비스 레이어·N+1·캐싱·큐 (Python/FastAPI + 시스템 전환 이식 맵) |
+| `frontend-patterns` | React·Next 합성·상태·가상화·a11y (데스크톱 UI 이식) |
+| `make-interfaces-feel-better` | 동심 radius·광학 정렬·모션·히트 영역 등 UI 폴리시 디테일 |
 
 ## TDD·검증
 
@@ -53,3 +63,9 @@ Claude Code 세션에서 호출 가능한 워크플로·도메인 스킬 모음 
 | `network-config-validation` | 라우터·스위치 설정 사전 검증 |
 | `network-interface-health` | 인터페이스 오류·CRC·플래핑 진단 |
 | `netmiko-ssh-automation` | Python Netmiko SSH 자동화 |
+
+## 메타·하네스
+
+| 스킬 | 설명 |
+|---|---|
+| `agentic-engineering` | eval-우선 실행·작업 분해·비용 인식 모델 라우팅 (하네스 설계·운영 관점) |
