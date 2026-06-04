@@ -256,38 +256,38 @@ Arachne는 `install.sh`를 통해 설치되며, 설치 후에는 `arachne` 커�
 
 ### 전체 명령어 레퍼런스
 
-표준 리눅스 CLI 관행을 따른다: **동작은 서브커맨드, 진짜 옵션만 플래그(`-h`/`-v`).**
+표준 리눅스 CLI 관행을 따른다: **옵션 없이 실행하면 설치, 각 동작은 단/장 플래그로 지정.**
 
-| 명령 | 종류 | 동작 |
-| ---- | ---- | ---- |
-| `arachne` (또는 `arachne install`) | 서브커맨드 | `~/.claude/` 심볼릭 링크 + `settings.json` 생성 + dotfiles 병합 + bin 등록 (전체 설치/재설치) |
-| `arachne update` | 서브커맨드 | `git pull` 후 위 설치를 재실행 (동기화 허브) |
-| `arachne session` | 서브커맨드 | tmux 워크스페이스 매니저 실행 (= `tws`, 8장 참고) |
-| `arachne export-settings` | 서브커맨드 | 현재 `~/.claude/settings.json` → 레포 `settings.template.json`으로 역추출 |
-| `arachne export-dotfiles` | 서브커맨드 | 로컬 `~/.bash_profile`·`~/.vimrc`의 변경 → 레포 `dotfiles/`로 역추출 |
-| `arachne -h` (`--help`) | 옵션 | 도움말 출력 |
-| `arachne -v` (`--version`) | 옵션 | 버전 정보 출력 |
+| 명령 | 동작 |
+| ---- | ---- |
+| `arachne` | (옵션 없음) `~/.claude/` 심볼릭 링크 + `settings.json` 생성 + dotfiles 병합 + bin 등록 (전체 설치/재설치) |
+| `arachne -u`, `--update` | `git pull` 후 위 설치를 재실행 (동기화 허브) |
+| `arachne -s`, `--session` | tmux 워크스페이스 매니저 실행 (= `tws`, 8장 참고) |
+| `arachne -e`, `--export-settings` | 현재 `~/.claude/settings.json` → 레포 `settings.template.json`으로 역추출 |
+| `arachne -d`, `--export-dotfiles` | 로컬 `~/.bash_profile`·`~/.vimrc`의 변경 → 레포 `dotfiles/`로 역추출 |
+| `arachne -h`, `--help` | 도움말 출력 |
+| `arachne -v`, `--version` | 버전 정보 출력 |
 
-> 하위호환: 옛 `--export-settings` / `--export-dotfiles` 플래그도 여전히 동작한다(별칭).
+> 하위호환: 옛 단어형(`update` / `session` / `export-settings` / `export-dotfiles`)도 별칭으로 여전히 동작한다.
 
 ```bash
 # 최초 설치 / 새 스크립트·심볼릭 링크 추가 후 재등록
 arachne
 
 # 최신 상태로 업데이트 (git pull + 재설치 통합)
-arachne update
+arachne -u
 
 # tmux 워크스페이스 매니저 진입
-arachne session        # tws 와 동일
+arachne -s             # tws 와 동일
 
 # settings.json 변경사항을 레포 템플릿에 반영
-arachne export-settings
+arachne -e
 
 # 로컬에서 수정한 dotfiles 설정을 레포(dotfiles/)로 역추출
-arachne export-dotfiles
+arachne -d
 ```
 
-### `arachne update` 실행 시 일어나는 일
+### `arachne -u` 실행 시 일어나는 일
 
 ```text
 [Arachne] 업데이트 시작 (git pull)
@@ -301,7 +301,7 @@ arachne export-dotfiles
 ```
 
 > **부작용 주의**
-> - `settings.json`은 매번 템플릿에서 **재생성**된다. 직접 수정한 값이 있으면 먼저 `arachne export-settings`로 템플릿에 반영해야 유실되지 않는다 (직전 값은 `settings.json.bak`에 보존).
+> - `settings.json`은 매번 템플릿에서 **재생성**된다. 직접 수정한 값이 있으면 먼저 `arachne -e`로 템플릿에 반영해야 유실되지 않는다 (직전 값은 `settings.json.bak`에 보존).
 > - dotfiles는 `# === ARACHNE BEGIN/END ===` 마커 **안쪽만** 갱신하므로 마커 밖 사용자 설정은 안전하다.
 > - 셸에 즉시 반영하려면 `source ~/.bash_profile`.
 
@@ -321,12 +321,12 @@ arachne export-dotfiles
 
 ---
 
-## 8. Tmux 워크스페이스 매니저 (`session`)
+## 8. Tmux 워크스페이스 매니저 (`-s`)
 
-Claude Code는 터미널을 점유하므로, 여러 프로젝트나 테스트 환경을 동시에 관리하기 위해 `arachne session` (또는 `tws`) 명령어를 제공합니다.
+Claude Code는 터미널을 점유하므로, 여러 프로젝트나 테스트 환경을 동시에 관리하기 위해 `arachne -s` (또는 `tws`) 명령어를 제공합니다.
 
 ### 주요 기능
-- **대화형 메뉴**: `arachne session` 입력 시 세션 생성, 목록 확인, 접속, 삭제를 번호 입력만으로 처리합니다.
+- **대화형 메뉴**: `arachne -s` 입력 시 세션 생성, 목록 확인, 접속, 삭제를 번호 입력만으로 처리합니다.
 - **워크플로 템플릿**:
   - `기본`: 일반 터미널 세션
   - `dev`: 진입 시 `claude` 커맨드를 자동 실행

@@ -44,20 +44,18 @@ usage() {
     local script
     local cmd
 
-    echo "Usage: ${PROG} [OPTIONS] COMMAND"
+    echo "Usage: ${PROG} [OPTION]"
     echo ""
     echo "Arachne — Claude Code 글로벌 설정 관리 도구"
-    echo ""
-    echo "Commands:"
-    echo "  install            ~/.claude/ 심볼릭 링크 + dotfiles + bin 설치 (기본값)"
-    echo "  update             git pull 후 최신 상태로 재설치"
-    echo "  session            tmux 워크스페이스 매니저(tws) 실행"
-    echo "  export-settings    ~/.claude/settings.json -> settings.template.json 내보내기"
-    echo "  export-dotfiles    ~/.bash_profile, ~/.vimrc -> dotfiles/ 내보내기"
+    echo "옵션 없이 실행하면 설치/재설치를 수행한다."
     echo ""
     echo "Options:"
-    echo "  -h, --help         이 도움말 출력"
-    echo "  -v, --version      버전 정보 출력"
+    echo "  -u, --update           git pull 후 최신 상태로 재설치"
+    echo "  -s, --session          tmux 워크스페이스 매니저(tws) 실행"
+    echo "  -e, --export-settings  ~/.claude/settings.json -> settings.template.json 내보내기"
+    echo "  -d, --export-dotfiles  ~/.bash_profile, ~/.vimrc -> dotfiles/ 내보내기"
+    echo "  -h, --help             이 도움말 출력"
+    echo "  -v, --version          버전 정보 출력"
     echo ""
     echo "설치 후 사용 가능한 CLI 커맨드:"
     for entry in "${BIN_TARGETS[@]}"; do
@@ -328,12 +326,12 @@ export_settings() {
 }
 
 case "${1:-}" in
-    install|"")                          install ;;
-    update)                              update_arachne ;;
-    session)                             run_session ;;
-    export-settings|--export-settings)   export_settings ;;
-    export-dotfiles|--export-dotfiles)   export_dotfiles ;;
-    -h|--help|help)                      usage ;;
-    -v|--version)                        show_version ;;
-    *)                                   echo "[ERROR] 알 수 없는 커맨드: $1" >&2; usage >&2; exit 1 ;;
+    "")                                       install ;;
+    -u|--update|update)                       update_arachne ;;
+    -s|--session|session)                     run_session ;;
+    -e|--export-settings|export-settings)     export_settings ;;
+    -d|--export-dotfiles|export-dotfiles)     export_dotfiles ;;
+    -h|--help|help)                           usage ;;
+    -v|--version)                             show_version ;;
+    *)                                        echo "[ERROR] 알 수 없는 옵션: $1" >&2; usage >&2; exit 1 ;;
 esac
