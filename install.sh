@@ -8,7 +8,9 @@
 
 set -e
 
-REPO_DIR="$(cd "$(dirname "$0")" && pwd)"
+# readlink -f 로 심볼릭 링크(arachne -> install.sh)를 해석해야 실제 레포 경로를 얻는다.
+# 미해석 시 arachne 커맨드 실행 위치(~/.local/bin)가 잡혀 update/session 이 실패한다.
+REPO_DIR="$(cd "$(dirname "$(readlink -f "$0")")" && pwd)"
 CLAUDE_DIR="$HOME/.claude"
 DOTFILES_DIR="$REPO_DIR/dotfiles"
 LOCAL_BIN="$HOME/.local/bin"
@@ -61,7 +63,7 @@ usage() {
 ################################################################################
 update_arachne() {
     echo "[Arachne] 업데이트 시작 (git pull)"
-    cd "$REPO_DIR"
+    cd "$REPO_DIR" || { echo "[ERROR] 레포 디렉터리 진입 실패: $REPO_DIR" >&2; exit 1; }
     git pull
     echo "[Arachne] 최신 소스 기반 재설치 진행"
     install
@@ -83,7 +85,6 @@ run_session() {
 
 ################################################################################
 # FUNCTION    : backup_and_link
-
 # DESCRIPTION : 기존 파일/디렉터리 백업 후 심볼릭 링크 생성
 # PARAMETERS  : string src - 레포 내 원본 경로
 #               string dst - ~/.claude/ 내 대상 경로
