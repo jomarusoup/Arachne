@@ -69,7 +69,7 @@ UpdateGeminiRef() {
     git -C "$repo_dir" fetch -q origin 2>/dev/null || true
 
     local remote_branch
-    remote_branch=$(git -C "$repo_dir" rev-parse --abbrev-ref --symbolic-full-name @{u} 2>/dev/null)
+    remote_branch=$(git -C "$repo_dir" rev-parse --abbrev-ref --symbolic-full-name '@{u}' 2>/dev/null)
 
     local current_head
     if [ -n "$remote_branch" ]; then
