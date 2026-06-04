@@ -1,7 +1,7 @@
 ---
 Title: README
 creation: 2026-05-05
-modification: 2026-06-01
+modification: 2026-06-04
 Description: 저지연 풀스택 시스템 프로그래밍을 위한 Claude Code 글로벌 설정 프레임워크
 tags:
 aliases:
@@ -33,11 +33,15 @@ cd ~/Arachne
 1. 기존 `~/.claude/` 파일 자동 백업 (`.bak`)
 2. 레포 → `~/.claude/` 심볼릭 링크 생성
 3. `settings.template.json`의 `__HOME__` → 실제 홈 경로로 치환해 `settings.json` 생성
+4. **dotfiles 병합**: `~/.bash_profile`, `~/.vimrc`에 Arachne 설정을 안전하게 병합 (기존 내용 보존)
+5. **CLI 등록**: `~/.local/bin/`에 `arachne`, `tws` 커맨드 등록
 
-```bash
-./install.sh --export-settings   # settings.json → settings.template.json 내보내기
-./install.sh --export-dotfiles   # ~/.bash_profile, ~/.vimrc → dotfiles/ 내보내기
-```
+### 주요 CLI 커맨드
+| 커맨드 | 설명 |
+|---|---|
+| `arachne update` | Arachne 최신 상태로 업데이트 (git pull + 재설치) |
+| `arachne session` | **Tmux Workspace Manager**: Claude Code 전용 대화형 세션 매니저 (`tws`와 동일) |
+| `arachne` | (인자 없음) Arachne 재설치 및 설정 동기화 |
 
 ---
 
@@ -47,17 +51,12 @@ cd ~/Arachne
 Arachne/
 ├── CLAUDE.md                    # 글로벌 지시서 진입점 (@rules/* 임포트)
 ├── settings.template.json       # ~/.claude/settings.json 템플릿
-├── install.sh                   # 설치 스크립트
+├── install.sh                   # 통합 관리 도구 (CLI: arachne)
+├── tmux.sh                      # tmux 워크스페이스 매니저 (CLI: tws)
 │
 ├── rules/                       # Claude 전역 행동 규칙
 │   ├── common/                  # 언어 공통 (workflow, coding-style, patterns 등 12개)
-│   ├── c/                       # C 시스템 프로그래밍
-│   ├── cpp/                     # C++
-│   ├── golang/                  # Go
-│   ├── rust/                    # Rust (저지연·트레이딩 특화)
-│   ├── python/                  # Python (툴링·스크립팅)
-│   ├── javascript/              # JavaScript / TypeScript
-│   └── bash/                    # Bash / Shell
+│   ├── ...                      # 언어별 규칙 (c, cpp, golang, rust, python, js, bash)
 │
 ├── skills/                      # 워크플로·도메인 스킬 (20개)
 ├── commands/                    # 슬래시 커맨드 (13개)
@@ -65,7 +64,7 @@ Arachne/
 ├── hooks/                       # 이벤트 훅 (session-start/end, pre-compact, gemini-check)
 ├── mcp-configs/                 # MCP 서버 설정 템플릿
 ├── tests/                       # 검증 스크립트 (bats + shell)
-└── dotfiles/                    # bash_profile, vimrc
+└── dotfiles/                    # bash_profile, vimrc (병합 원본)
 ```
 
 ---
@@ -80,133 +79,33 @@ Arachne/
 | `/tdd` | TDD 사이클 — Red-Green-Refactor + 메모리 검사 |
 | `/verify` | 수정 후 2단계 검증 (정적 검사 + 동작) |
 | `/git` | 커밋·푸시 |
-| `/issue` | GitHub 오픈 이슈 확인 후 순차 처리 |
 | `/status` | 프로젝트 현황 빠르게 파악 |
-| `/design` | UI·컴포넌트 설계 문서 작성 |
-| `/e2e` | E2E 테스트 실행 |
 | `/handoff` | AI 전환 전 작업 상태 저장 |
 | `/save-session` | 세션 요약 저장 (컨텍스트 70% 시 실행) |
 | `/learn` | 세션 발견 패턴을 rules에 저장 |
 
 ---
 
-## 📚 Skills
+## 🏗️ 워크스페이스 관리 (session)
 
-`skills/` 디렉터리에 저장된 워크플로·도메인 지식. 관련 파일 편집 시 자동 로드되거나 명시적으로 참조합니다.
-
-### 시스템 프로그래밍
-| 스킬 | 설명 |
-|---|---|
-| `latency-critical-systems` | IPC·epoll·소켓 저지연 설계 |
-| `trading-systems` | FIX 프로토콜, 오더북, 마켓 데이터, rdtsc |
-| `performance-profiling` | pprof·perf·flamegraph 병목 분석 |
-| `build-debug` | C/C++ 빌드·GDB 디버그 |
-| `memory-check` | valgrind·ASan·TSan |
-| `cpp-testing` | GoogleTest·sanitizer |
-| `error-handling` | C/C++·Go·TypeScript 에러 처리 |
-
-### 언어별 패턴·테스팅
-| 스킬 | 설명 |
-|---|---|
-| `rust-patterns` | tokio, lock-free, zero-copy, 저지연 Rust |
-| `rust-testing` | criterion 벤치마크, proptest, flamegraph |
-| `golang-patterns` | 이디엄틱 Go 패턴 |
-| `golang-testing` | 테이블 드리븐·벤치마크·퍼징 |
-| `go-http-patterns` | Go HTTP 서버, gRPC, graceful shutdown |
-
-### 기타
-| 스킬 | 설명 |
-|---|---|
-| `tdd-workflow` | Red-Green-Refactor 범용 워크플로 |
-| `verification-loop` | Claude Code 세션 검증 시스템 |
-| `security-review` | 보안 리뷰 체크리스트 |
-| `security-scan` | Claude Code 설정 보안 스캔 |
-| `docker-patterns` | Docker/Compose 패턴 |
-| `network-config-validation` | 라우터·스위치 설정 검증 |
-| `network-interface-health` | 인터페이스 오류·플래핑 진단 |
-| `netmiko-ssh-automation` | Python Netmiko SSH 자동화 |
+`arachne session` (또는 `tws`) 커맨드를 통해
+ Claude Code 세션을 효율적으로 관리할 수 있습니다.
+- **템플릿 지원**: 기본 터미널 / Claude Code 자동 실행(dev) / 테스트용 2분할 화면
+- **세션 관리**: 생성, 접속(Attach), 삭제(Kill), 일괄 종료 지원
 
 ---
 
-## 🤖 에이전트
+## 🔄 동기화 및 업데이트
 
-| 에이전트 | 활성화 시점 |
-|---|---|
-| `planner` | 파일 3개+ 수정, 신규 모듈, 시스템 레벨 변경 |
-| `code-reviewer` | 코드 작성·수정 완료 후 |
-| `tdd` | 신규 기능, 버그 수정, 리팩터링 |
-| `debugger` | 빌드 실패, 세그폴트, 메모리 오류 |
-
----
-
-## 🪝 Hooks
-
-| 훅 | 시점 | 동작 |
-|---|---|---|
-| `session-start.sh` | 세션 시작 | 최근 세션 파일 안내 |
-| `session-end.sh` | 세션 종료 | git 기반 스냅샷 저장 |
-| `pre-compact.sh` | 컨텍스트 압축 전 | 현재 상태 저장 |
-| `gemini-check.sh` | 메시지 입력 시 | Gemini 작업 완료 감지 |
-
----
-
-## 🔁 Gemini 작업 감지
-
-Gemini가 별도 터미널에서 작업을 완료하고 커밋·푸시하면, Claude가 다음 메시지 입력 시 자동으로 감지합니다.
-
-### 동작 원리
-
-| 구성 요소 | 역할 |
-|---|---|
-| `hooks/gemini-check.sh` | `UserPromptSubmit` 훅 — 메시지 입력마다 실행 |
-| `.claude/last-seen-commit` | 마지막으로 Claude가 확인한 커밋 해시 저장 |
-| `hooks/session-end.sh` | 세션 종료 시 현재 HEAD를 `last-seen-commit`에 기록 |
-
-### 감지 흐름
-
-```
-Gemini 작업 완료 → git commit → git push
-    ↓
-Claude 다음 메시지 입력 시
-    ↓
-gemini-check.sh 실행
-  - 현재 HEAD ≠ last-seen-commit → 새 커밋 존재
-  - 커밋 목록·변경 파일 출력
-  - last-seen-commit 갱신 (중복 알림 방지)
-```
-
-### 출력 예시
-
-```
-┌────────────────────────────────────────────────────────
-│  [Gemini 작업 감지] 마지막 세션 이후 커밋 1건
-└────────────────────────────────────────────────────────
-
-  커밋 목록:
-  a1b2c3d  docs: README 재작성  (2 minutes ago)
-
-  변경 파일:
-  [수정]  README.md
-```
-
-### 주의사항
-
-- `.claude/last-seen-commit` 파일이 없으면 최초 실행 시 현재 HEAD를 기록하고 종료 (알림 없음)
-- git 레포 외부 디렉토리에서 실행 시 조용히 종료 (`exit 0`)
-- `last-seen-commit`은 `.gitignore`에 포함되어 레포에 추적되지 않음
-
----
-
-## 🔄 동기화
-
-심볼릭 링크로 연결되어 `~/.claude/` 수정 = 레포 수정입니다.
+Arachne은 심볼릭 링크를 기반으로 하며, `update` 커맨드로 소스 동기화와 재설치를 한 번에 처리합니다.
 
 ```bash
-# 변경 후 푸시
-cd ~/Arachne && git add -A && git commit -m "..." && git push
+# 최신 상태로 업데이트 (표준 방식)
+arachne update
 
-# 다른 머신에서 동기화
-cd ~/Arachne && git pull
+# 설정 내보내기
+arachne --export-settings   # settings.json → settings.template.json
+arachne --export-dotfiles   # ~/.bash_profile, ~/.vimrc → dotfiles/ 내보내기
 ```
 
 ---
@@ -217,7 +116,5 @@ cd ~/Arachne && git pull
 |---|---|
 | `projects/` | 대화 기록·세션 데이터 |
 | `cache/`, `sessions/`, `backups/` | 런타임 생성 파일 |
-| `history.jsonl` | 대화 히스토리 |
-| `plugins/` | 설치 시 자동 다운로드 |
 | `.credentials.json` | API 키 등 민감 정보 |
 | `*.bak` | 설치 시 생성되는 백업 |

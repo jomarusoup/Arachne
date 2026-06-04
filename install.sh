@@ -35,25 +35,55 @@ SYMLINK_TARGETS=(
 # DESCRIPTION : 사용법 출력
 ################################################################################
 usage() {
-    echo "Usage: $0 [--export-settings] [--export-dotfiles]"
+    echo "Usage: $0 [COMMAND] [OPTIONS]"
     echo ""
-    echo "  (no args)          : ~/.claude/ 심볼릭 링크 + dotfiles + bin 설치"
+    echo "Commands:"
+    echo "  (none)             : ~/.claude/ 심볼릭 링크 + dotfiles + bin 설치"
+    echo "  update             : git pull 후 최신 상태로 재설치"
+    echo "  session            : tmux 워크스페이스 매니저(tws) 실행"
+    echo ""
+    echo "Options:"
     echo "  --export-settings  : ~/.claude/settings.json -> settings.template.json 으로 내보내기"
     echo "  --export-dotfiles  : ~/.bash_profile, ~/.vimrc -> dotfiles/ 로 내보내기"
+    echo "  --help, -h         : 도움말 출력"
     echo ""
-    echo "  설치 후 사용 가능한 커맨드:"
+    echo "  설치 후 사용 가능한 CLI 커맨드:"
     for entry in "${BIN_TARGETS[@]}"; do
         local script="${entry%%:*}"
         local cmd="${entry##*:}"
         echo "    ${cmd}  (-> ${script})"
     done
-    echo ""
-    echo "  업데이트: git pull  (심볼릭 링크라 자동 반영, install 재실행 불필요)"
-    echo "  새 스크립트 추가 시: arachne  (재실행으로 신규 심볼릭 링크 등록)"
+}
+
+################################################################################
+# FUNCTION    : update_arachne
+# DESCRIPTION : git pull 후 최신 상태로 재설치 (동기화 허브)
+################################################################################
+update_arachne() {
+    echo "[Arachne] 업데이트 시작 (git pull)"
+    cd "$REPO_DIR"
+    git pull
+    echo "[Arachne] 최신 소스 기반 재설치 진행"
+    install
+}
+
+################################################################################
+# FUNCTION    : run_session
+# DESCRIPTION : tmux 워크스페이스 매니저 실행 (tws 래퍼)
+################################################################################
+run_session() {
+    local tmux_script="$REPO_DIR/tmux.sh"
+    if [ -f "$tmux_script" ]; then
+        exec "$tmux_script"
+    else
+        echo "[ERROR] tmux.sh 파일을 찾을 수 없습니다: $tmux_script"
+        exit 1
+    fi
 }
 
 ################################################################################
 # FUNCTION    : backup_and_link
+
 # DESCRIPTION : 기존 파일/디렉터리 백업 후 심볼릭 링크 생성
 # PARAMETERS  : string src - 레포 내 원본 경로
 #               string dst - ~/.claude/ 내 대상 경로
@@ -277,9 +307,11 @@ export_settings() {
 }
 
 case "${1:-}" in
+    update)            update_arachne ;;
+    session)           run_session ;;
     --export-settings) export_settings ;;
     --export-dotfiles) export_dotfiles ;;
     --help|-h)         usage ;;
     "")                install ;;
-    *)                 echo "[ERROR] 알 수 없는 옵션: $1"; usage; exit 1 ;;
+    *)                 echo "[ERROR] 알 수 없는 커맨드 또는 옵션: $1"; usage; exit 1 ;;
 esac

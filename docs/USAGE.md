@@ -220,28 +220,51 @@ model: opus               # opus / sonnet / haiku
 현재 HEAD가 기준점과 다르면 새 커밋 목록·변경 파일을 박스 UI로 출력하고 기준점을 갱신(중복 알림 방지)한다. 기준점 파일이 없으면 최초 1회는 조용히 기록만 한다.
 
 ---
+## 7. 설치 · 업데이트 · 동기화 (`arachne`)
 
-## 7. 설치 · 동기화 (`install.sh`)
+Arachne는 `install.sh`를 통해 설치되며, 설치 후에는 `arachne` 커맨드로 관리할 수 있습니다.
 
-### 최초 설치
+### 설치 및 업데이트 흐름
+1. **심볼릭 링크**: `CLAUDE.md`, `commands/`, `agents/` 등을 `~/.claude/`에 연결하여 레포 수정이 즉시 반영되게 합니다.
+2. **설정 생성**: `settings.template.json`을 기반으로 홈 경로를 치환하여 `~/.claude/settings.json`을 생성합니다.
+3. **CLI 등록**: `~/.local/bin/`에 `arachne`(관리), `tws`(워크스페이스) 커맨드를 등록합니다.
+
+### dotfiles 병합 메커니즘 (Safe Merge)
+기존의 단순 심볼릭 링크 방식 대신, 사용자 홈 디렉토리의 `.bash_profile`, `.vimrc` 파일에 Arachne 설정을 **병합**합니다.
+
+- **동작 원리**: 파일 내에 `# === ARACHNE BEGIN ===`과 `# === ARACHNE END ===` 마커를 삽입하고, 그 사이에만 설정을 주입합니다.
+- **안전성**: 마커 외부의 기존 사용자 설정은 전혀 건드리지 않으므로 재실행해도 안전합니다.
+- **멱등성**: 이미 섹션이 존재하면 해당 내용만 최신으로 교체하고, 없으면 파일 끝에 추가합니다.
+
+### 주요 명령어
 ```bash
-cd ~/Arachne && ./install.sh
-```
-- `CLAUDE.md · commands · agents · rules · hooks · skills · statusline-command.sh`를 `~/.claude/`에 **심볼릭 링크**로 연결
-- `settings.template.json` → `__HOME__` 치환 → `~/.claude/settings.json` **생성**(심볼릭 링크 아님, 기존 파일은 `.bak` 백업)
-- `dotfiles/`(`.bash_profile` `.vimrc`)를 홈에 링크
+# 최신 상태로 업데이트 (git pull + 재설치 통합)
+arachne update
 
-### settings 변경을 레포에 반영
-`~/.claude/settings.json`은 추적되지 않으므로, 직접 수정했다면 템플릿으로 내보내야 한다.
+# settings.json 변경사항을 레포 템플릿에 반영
+arachne --export-settings
 
-```bash
-./install.sh --export-settings   # 현재 settings.json → settings.template.json
-git add settings.template.json && git commit -m "chore: update settings template" && git push
+# 로컬에서 수정한 dotfiles 설정을 레포(dotfiles/)로 역추출
+arachne --export-dotfiles
 ```
 
-### 다른 머신에서 동기화
-```bash
-cd ~/Arachne && git pull && ./install.sh
-```
+---
 
-> ⚠️ `settings.json`을 직접 편집한 뒤 템플릿에 반영하지 않으면, 다음 `install.sh` 실행 때 변경이 사라진다(drift). 훅·모델·테마 등 영속이 필요한 설정은 반드시 템플릿에 반영할 것.
+## 8. Tmux 워크스페이스 매니저 (`session`)
+
+Claude Code는 터미널을 점유하므로, 여러 프로젝트나 테스트 환경을 동시에 관리하기 위해 `arachne session` (또는 `tws`) 명령어를 제공합니다.
+
+### 주요 기능
+- **대화형 메뉴**: `arachne session` 입력 시 세션 생성, 목록 확인, 접속, 삭제를 번호 입력만으로 처리합니다.
+- **워크플로 템플릿**:
+  - `기본`: 일반 터미널 세션
+  - `dev`: 진입 시 `claude` 커맨드를 자동 실행
+  - `테스트`: 화면을 좌우로 분할하여 한쪽엔 코드/로그, 한쪽엔 테스트 실행
+- **영속성**: 터미널 창을 닫아도 `tws` 세션은 백그라운드에서 유지되며, 언제든 다시 `Attach`할 수 있습니다.
+
+### 필수 단축키 (Prefix: `Ctrl + b`)
+- **세션 탈출 (Detach)**: `Ctrl + b` -> `d` (작업 유지)
+- **화면 전환**: `Ctrl + b` -> `방향키`
+- **화면 최대화**: `Ctrl + b` -> `z`
+- **스크롤 모드**: `Ctrl + b` -> `[` (이후 방향키, 종료는 `q`)
+
