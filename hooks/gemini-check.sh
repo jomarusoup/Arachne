@@ -19,7 +19,7 @@ git -C "$REPO_DIR" fetch -q origin 2>/dev/null || true
 #-------------------------------------------------------------------------------
 # 비교 기준: 리모트 트래킹 브랜치 HEAD (없으면 로컬 HEAD)
 #-------------------------------------------------------------------------------
-REMOTE_BRANCH=$(git -C "$REPO_DIR" rev-parse --abbrev-ref --symbolic-full-name @{u} 2>/dev/null)
+REMOTE_BRANCH=$(git -C "$REPO_DIR" rev-parse --abbrev-ref --symbolic-full-name '@{u}' 2>/dev/null)
 if [ -n "$REMOTE_BRANCH" ]; then
     CURRENT_HEAD=$(git -C "$REPO_DIR" rev-parse "$REMOTE_BRANCH" 2>/dev/null)
 else

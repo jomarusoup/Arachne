@@ -74,8 +74,6 @@ branch=$(git -C "$PWD" rev-parse --abbrev-ref HEAD 2>/dev/null || echo "")
 # --- context progress bar ---
 pct_int=$(printf "%.0f" "$used_pct")
 used_tokens=$((total_input + total_output))
-remain_tokens=0
-[ "$max_tokens" -gt 0 ] && remain_tokens=$(awk "BEGIN { printf \"%d\", $max_tokens * (1 - $used_pct / 100) }")
 
 bar_filled=$((pct_int / 10))
 bar_empty=$((10 - bar_filled))
