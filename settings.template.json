@@ -5,6 +5,11 @@
   },
   "theme": "dark-daltonized",
   "model": "sonnet",
+  "permissions": {
+    "allow": [
+      "Bash(gask:*)"
+    ]
+  },
   "hooks": {
     "UserPromptSubmit": [
       {
