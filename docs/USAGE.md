@@ -190,34 +190,52 @@ model: opus               # opus / sonnet / haiku
 
 ---
 
-## 6. Claude ↔ Gemini 협업
+## 6. Claude ↔ Gemini 협업 (비용 최적화)
+
+**전제**: Claude 쿼터는 희소 자원, Gemini는 한계비용 ≈ 0. → 토큰 무거운·저정밀 작업은 Gemini로 내려보내 Claude 소모를 줄인다.
 
 ### 역할 분담
 | 작업 | 담당 |
 |---|---|
-| 기능 기획 · 요구사항 · 설계 문서 · 아키텍처 | **Gemini** (`gemini -p "..."`) |
-| README.md 갱신 · 브레인스토밍 · 우선순위 결정 | **Gemini** |
-| 코드 구현 · 버그 수정 · 리팩터링 · 설정 관리 | **Claude** |
+| 기능 기획 · 설계 · 아키텍처 | **Gemini** (`gask`) |
+| 대용량 코드·로그 읽기·요약 | **Gemini** (`gask`) |
+| README · 장문 문서 생성 | **Gemini** (`gask`, 파일로 출력) |
+| 사전 조사 · 대안 비교 · 루틴 리뷰 1차 | **Gemini** (`gask`) |
+| 코드 구현 · 버그 수정 · 디버깅 · 보안 리뷰 | **Claude** |
+| `~/.claude/` 설정 관리 · 마이그레이션 · 인프라 설정 | **Claude** |
 
-### 위임 워크플로
+### 경로 A — `gask` 직접 호출 (기본)
+Claude Code가 **터미널 전환 없이 Bash로 `gask`를 직접 호출**해 답변을 받아온다.
+`gask`는 `gemini -p`의 경고·노이즈를 걸러 **답변만 stdout**으로 돌려주는 래퍼다 (`gask.sh` → `~/.local/bin/gask`).
+
+```bash
+gask "이 설계 검토해줘: $(cat module.c)"            # 자문 → 답변 stdout
+gask "이 로그 에러 원인만 요약: $(cat app.log)"      # 요약 → 답변 stdout
+gask "README 초안 작성" > README.md                  # 생성 → 파일로 (내용 재독 금지)
+gask -m gemini-2.5-flash "간단 질의"                 # 모델 지정 (선택)
 ```
-1. Claude가 위임 트리거 감지 → "gemini -p '...'" 안내
-2. 사용자가 별도 터미널에서 Gemini 실행
-3. Gemini가 파일 수정 → git commit → git push   (= Gemini의 "응답")
-4. Claude가 다음 메시지 입력 시 자동 감지 (gemini-check.sh)
-5. Claude가 변경 확인 후 후속 구현 진행
-```
 
-> 두 AI 사이에 직접 채널은 없다. **git 히스토리가 메시지 버스** 역할을 한다.
+#### 비용 라우팅 — 핵심
+| 패턴 | 예시 | 방식 | 비용 |
+|---|---|---|---|
+| **끌어오기 (요약·자문)** | 대용량 읽기, 설계 검토, 조사 | `gask "..."` → 답변 사용 | 🟢 절약 (큰 입력 → 작은 출력) |
+| **쏟아내기 (문서 생성)** | README, 설계 문서, 장문 | `gask "..." > file` → **재독 금지** | 🔴 읽으면 절약 상쇄 |
 
-### 감지 메커니즘
+> Gemini 답을 Claude 컨텍스트로 끌어오는 건 **요약·자문일 때만**. 장문 생성은 파일로 빼고 Claude는 존재만 확인한다 — 다시 읽으면 절약이 사라진다.
+> 권한: `settings.json`의 `permissions.allow`에 `Bash(gask:*)`가 있어 호출마다 승인 프롬프트가 뜨지 않는다.
+
+### 경로 B — git-bus 감지 (보조)
+본인·가족이 **다른 터미널에서 Gemini로 직접 커밋**한 경우를 위한 비동기 채널. `gask`와 공존한다.
+
 | 구성 요소 | 역할 |
 |---|---|
-| `hooks/gemini-check.sh` | `UserPromptSubmit` 훅 — 매 입력마다 현재 HEAD ↔ 기준점 비교 |
-| `.claude/last-seen-commit` | Claude가 마지막으로 확인한 커밋 해시 (gitignore, 추적 안 됨) |
-| `hooks/session-end.sh` | 세션 종료 시 현재 HEAD를 기준점에 기록 |
+| `hooks/gemini-check.sh` | `UserPromptSubmit` 훅 — `git fetch` 후 `origin` HEAD ↔ 기준점 비교 |
+| `.claude/last-seen-commit` | 마지막으로 확인한 리모트 커밋 해시 (gitignore, 추적 안 됨) |
+| `hooks/session-end.sh` | 세션 종료 시 fetch한 리모트 HEAD를 기준점에 기록 |
 
-현재 HEAD가 기준점과 다르면 새 커밋 목록·변경 파일을 박스 UI로 출력하고 기준점을 갱신(중복 알림 방지)한다. 기준점 파일이 없으면 최초 1회는 조용히 기록만 한다.
+리모트 HEAD가 기준점과 다르면 새 커밋 목록·변경 파일을 박스 UI로 출력하고 기준점을 갱신(중복 알림 방지)한다. 기준점 파일이 없으면 최초 1회는 조용히 기록만 한다.
+
+> 두 AI 사이 채널은 둘이다: **`gask`(동기 호출) + git 히스토리(비동기 메시지 버스).**
 
 ---
 ## 7. 설치 · 업데이트 · 동기화 (`arachne`)
@@ -236,10 +254,26 @@ Arachne는 `install.sh`를 통해 설치되며, 설치 후에는 `arachne` 커�
 - **안전성**: 마커 외부의 기존 사용자 설정은 전혀 건드리지 않으므로 재실행해도 안전합니다.
 - **멱등성**: 이미 섹션이 존재하면 해당 내용만 최신으로 교체하고, 없으면 파일 끝에 추가합니다.
 
-### 주요 명령어
+### 전체 명령어 레퍼런스
+
+| 명령 | 종류 | 동작 |
+| ---- | ---- | ---- |
+| `arachne` | 서브커맨드 없음 | `~/.claude/` 심볼릭 링크 + `settings.json` 생성 + dotfiles 병합 + bin 등록 (전체 설치/재설치) |
+| `arachne update` | 서브커맨드 | `git pull` 후 위 설치를 재실행 (동기화 허브) |
+| `arachne session` | 서브커맨드 | tmux 워크스페이스 매니저 실행 (= `tws`, 8장 참고) |
+| `arachne --export-settings` | 옵션 | 현재 `~/.claude/settings.json` → 레포 `settings.template.json`으로 역추출 |
+| `arachne --export-dotfiles` | 옵션 | 로컬 `~/.bash_profile`·`~/.vimrc`의 변경 → 레포 `dotfiles/`로 역추출 |
+| `arachne --help` (`-h`) | 옵션 | 도움말 출력 |
+
 ```bash
+# 최초 설치 / 새 스크립트·심볼릭 링크 추가 후 재등록
+arachne
+
 # 최신 상태로 업데이트 (git pull + 재설치 통합)
 arachne update
+
+# tmux 워크스페이스 매니저 진입
+arachne session        # tws 와 동일
 
 # settings.json 변경사항을 레포 템플릿에 반영
 arachne --export-settings
@@ -247,6 +281,38 @@ arachne --export-settings
 # 로컬에서 수정한 dotfiles 설정을 레포(dotfiles/)로 역추출
 arachne --export-dotfiles
 ```
+
+### `arachne update` 실행 시 일어나는 일
+
+```text
+[Arachne] 업데이트 시작 (git pull)
+이미 업데이트 상태입니다.
+[Arachne] 최신 소스 기반 재설치 진행
+  링크: ~/.claude/CLAUDE.md, commands, agents, rules, hooks, skills
+  백업: ~/.claude/settings.json -> settings.json.bak   ← 기존 설정 보존
+  생성: ~/.claude/settings.json (from settings.template.json)
+  갱신 (ARACHNE 섹션): ~/.bash_profile, ~/.vimrc
+  등록: arachne, tws, gask -> bin
+```
+
+> **부작용 주의**
+> - `settings.json`은 매번 템플릿에서 **재생성**된다. 직접 수정한 값이 있으면 먼저 `arachne --export-settings`로 템플릿에 반영해야 유실되지 않는다 (직전 값은 `settings.json.bak`에 보존).
+> - dotfiles는 `# === ARACHNE BEGIN/END ===` 마커 **안쪽만** 갱신하므로 마커 밖 사용자 설정은 안전하다.
+> - 셸에 즉시 반영하려면 `source ~/.bash_profile`.
+
+### 왜 어느 위치에서 실행해도 동작하나
+
+`arachne`는 `~/.local/bin/arachne → install.sh` 심볼릭 링크다. `install.sh`는 `readlink -f`로
+심링크를 해석해 **실제 레포 경로**를 찾으므로, 현재 작업 디렉터리와 무관하게 올바른 레포에서
+`git pull`·재설치가 수행된다.
+
+### 트러블슈팅
+
+| 증상 | 원인·해결 |
+| ---- | --------- |
+| `arachne: command not found` | `~/.local/bin`이 PATH에 없음. `export PATH="$HOME/.local/bin:$PATH"`를 `.bash_profile`에 추가 후 `source` |
+| `git pull` 단계에서 인증 실패 | 레포 원격이 SSH(`git@github.com:...`)이므로 SSH 키 등록 필요 |
+| 새 CLI 스크립트가 명령으로 안 잡힘 | `install.sh`의 `BIN_TARGETS`에 `"스크립트명:커맨드명"` 추가 후 `arachne` 재실행 |
 
 ---
 
@@ -267,4 +333,48 @@ Claude Code는 터미널을 점유하므로, 여러 프로젝트나 테스트 �
 - **화면 전환**: `Ctrl + b` -> `방향키`
 - **화면 최대화**: `Ctrl + b` -> `z`
 - **스크롤 모드**: `Ctrl + b` -> `[` (이후 방향키, 종료는 `q`)
+
+---
+
+## 9. Gemini 질의 래퍼 (`gask`)
+
+`gask`는 **Gemini CLI를 비대화(headless)로 호출해 깨끗한 답변만 stdout으로 받는** 래퍼다.
+Claude Code가 별도 터미널로 전환하지 않고 설계·조사·요약을 Gemini에 직접 위임할 때 사용한다
+(6장 협업 워크플로의 자동화 경로). `~/.local/bin/gask → gask.sh` 심볼릭 링크로 등록된다.
+
+### 왜 필요한가
+`gemini -p`는 stderr로 `True color`·`Ripgrep is not available`·`Warning:` 등 비본질 노이즈를
+함께 뱉어 호출 측 컨텍스트를 오염시킨다. `gask`는 이 노이즈를 필터링하고 **답변 본문만 stdout**으로
+내보내, Claude가 결과를 그대로 받아 이어서 구현할 수 있게 한다.
+
+### 사용법
+```bash
+gask [-m MODEL] "프롬프트..."
+cat file | gask "이 입력을 요약해줘"      # stdin 입력은 프롬프트에 자동 append
+```
+
+| 옵션 | 설명 |
+| ---- | ---- |
+| `-m MODEL` | 사용할 Gemini 모델 지정 (미지정 시 `gemini` 기본값 또는 환경변수 `GASK_MODEL`) |
+| `-h` | 도움말 출력 |
+
+### 예시
+```bash
+# 설계 자문 → 답변을 stdout으로
+gask "이 함수 설계 검토해줘: $(cat module.c)"
+
+# 로그 에러 원인만 요약
+gask "이 로그 에러 원인만 요약: $(cat app.log)"
+
+# 생성물 바로 파일로 (Claude는 내용 재독 없이 위임 결과 신뢰)
+gask "README 초안 작성" > README.md
+
+# 모델 고정
+GASK_MODEL=gemini-2.5-pro gask "아키텍처 대안 비교"
+```
+
+### 협업 워크플로와의 관계
+- **기획·설계·README·대안 비교** 같은 Gemini 전담 작업(6장 참고)을, 사용자가 다른 터미널에서
+  `gemini -p`를 직접 실행하는 대신 `gask`로 위임할 수 있다.
+- 종료 코드는 내부 `gemini` 호출 결과를 그대로 전파하므로 스크립트·파이프라인에 안전하게 엮인다.
 
