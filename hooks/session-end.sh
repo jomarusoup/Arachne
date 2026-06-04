@@ -4,10 +4,10 @@
 # DESCRIPTION : Stop Hook — 세션 종료 시 git 기반 프로젝트 상태 스냅샷 생성,
 #               Gemini 감지 기준점(last-seen-commit) 갱신
 # DATA        : 2026-05-05
-# Modification: 2026-05-31
+# Modification: 2026-06-04
 ################################################################################
 
-SESSION_DIR="$(pwd)/.claude/sessions"
+SESSION_DIR="$HOME/.claude/sessions"
 TODAY=$(date +%Y-%m-%d)
 DATE=$(date +%Y-%m-%d-%H%M)
 
@@ -59,15 +59,24 @@ TEMPLATE
 
 #===============================================================================
 # FUNCTION    : UpdateGeminiRef
-# DESCRIPTION : Gemini 감지 기준점 — 현재 HEAD를 last-seen-commit 에 저장
+# DESCRIPTION : Gemini 감지 기준점 — fetch 후 리모트 HEAD를 last-seen-commit 에 저장
 #===============================================================================
 UpdateGeminiRef() {
     local repo_dir
     repo_dir=$(git rev-parse --show-toplevel 2>/dev/null)
     [ -z "$repo_dir" ] && return
 
+    git -C "$repo_dir" fetch -q origin 2>/dev/null || true
+
+    local remote_branch
+    remote_branch=$(git -C "$repo_dir" rev-parse --abbrev-ref --symbolic-full-name @{u} 2>/dev/null)
+
     local current_head
-    current_head=$(git -C "$repo_dir" rev-parse HEAD 2>/dev/null)
+    if [ -n "$remote_branch" ]; then
+        current_head=$(git -C "$repo_dir" rev-parse "$remote_branch" 2>/dev/null)
+    else
+        current_head=$(git -C "$repo_dir" rev-parse HEAD 2>/dev/null)
+    fi
     [ -z "$current_head" ] && return
 
     echo "$current_head" > "$repo_dir/.claude/last-seen-commit"

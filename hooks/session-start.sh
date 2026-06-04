@@ -3,10 +3,10 @@
 # FILE NAME   : session-start.sh
 # DESCRIPTION : SessionStart Hook — 세션 시작 시 최근 세션 파일 경로 안내
 # DATA        : 2026-05-05
-# Modification: 2026-05-05
+# Modification: 2026-06-04
 ################################################################################
 
-SESSION_DIR="$(pwd)/.claude/sessions"
+SESSION_DIR="$HOME/.claude/sessions"
 
 if [ ! -d "$SESSION_DIR" ]; then
     exit 0
@@ -21,7 +21,7 @@ fi
 if [ -n "$LATEST" ]; then
     echo "┌───────────────────────────────────────────────────────────────────────────────"
     echo "│  [세션 이어받기] "
-    echo "│  최근 세션: $(basename $LATEST)"
+    echo "│  최근 세션: $(basename "$LATEST")"
     echo "│  → cat $LATEST"
     echo "└───────────────────────────────────────────────────────────────────────────────"
 fi
