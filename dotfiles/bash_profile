@@ -1,3 +1,4 @@
+# === ARACHNE BEGIN ===
 ###########################################################################
 # .bash_profile
 ###########################################################################
@@ -13,7 +14,7 @@ fi
 # COMMON
 ###########################################################################
 
-export LD_LIBRARY_PATH=/lib64:/lib:/usr/local/lib64:
+export LD_LIBRARY_PATH=/lib64:/lib:/usr/local/lib64
 
 export EXINIT='set ai ts=4 sw=4'
 set -o vi
@@ -47,45 +48,45 @@ alias mv='mv -i'
 sgrep()
 {
         #--- C / C++ header & source
-        find . -name '*.[h|c]'      -print | xargs grep -H "$*"
-        find . -name '*.cc'         -print | xargs grep -H "$*"
-        find . -name '*.pc'         -print | xargs grep -H "$*"
-        find . -name '*.sc'         -print | xargs grep -H "$*"
-        find . -name '*.gc'         -print | xargs grep -H "$*"
-        find . -name '*.cp'         -print | xargs grep -H "$*"
-        find . -name '*.res'        -print | xargs grep -H "$*"
-        find . -name '*.pgc'        -print | xargs grep -H "$*"
-        find . -name '*.hpp'        -print | xargs grep -H "$*"
-        find . -name '*.cpp'        -print | xargs grep -H "$*"
+        find . -name '*.[hc]'      -print | xargs -r grep -H "$*"
+        find . -name '*.cc'         -print | xargs -r grep -H "$*"
+        find . -name '*.pc'         -print | xargs -r grep -H "$*"
+        find . -name '*.sc'         -print | xargs -r grep -H "$*"
+        find . -name '*.gc'         -print | xargs -r grep -H "$*"
+        find . -name '*.cp'         -print | xargs -r grep -H "$*"
+        find . -name '*.res'        -print | xargs -r grep -H "$*"
+        find . -name '*.pgc'        -print | xargs -r grep -H "$*"
+        find . -name '*.hpp'        -print | xargs -r grep -H "$*"
+        find . -name '*.cpp'        -print | xargs -r grep -H "$*"
         #--- Rust
-        find . -name '*.rs'         -print | xargs grep -H "$*"
+        find . -name '*.rs'         -print | xargs -r grep -H "$*"
         #--- Python
-        find . -name '*.py'         -print | xargs grep -H "$*"
+        find . -name '*.py'         -print | xargs -r grep -H "$*"
         #--- Web (HTML / CSS / JS / TS)
-        find . -name '*.html'       -print | xargs grep -H "$*"
-        find . -name '*.css'        -print | xargs grep -H "$*"
-        find . -name '*.js'         -print | xargs grep -H "$*"
-        find . -name '*.ts'         -print | xargs grep -H "$*"
+        find . -name '*.html'       -print | xargs -r grep -H "$*"
+        find . -name '*.css'        -print | xargs -r grep -H "$*"
+        find . -name '*.js'         -print | xargs -r grep -H "$*"
+        find . -name '*.ts'         -print | xargs -r grep -H "$*"
         #--- Go
-        find . -name '*.go'         -print | xargs grep -H "$*"
+        find . -name '*.go'         -print | xargs -r grep -H "$*"
         #--- Docker
-        find . -name 'Dockerfile'   -print | xargs grep -H "$*"
-        find . -name 'Dockerfile.*' -print | xargs grep -H "$*"
+        find . -name 'Dockerfile'   -print | xargs -r grep -H "$*"
+        find . -name 'Dockerfile.*' -print | xargs -r grep -H "$*"
         #--- Makefile
-        find . -name '[M|m]akefile' -print | xargs grep -H "$*"
-        find . -name '*.mk'         -print | xargs grep -H "$*"
+        find . -name '[Mm]akefile' -print | xargs -r grep -H "$*"
+        find . -name '*.mk'         -print | xargs -r grep -H "$*"
         #--- Shell script
-        find . -name '*.sh'         -print | xargs grep -H "$*"
-        find . -name '*.bash'       -print | xargs grep -H "$*"
+        find . -name '*.sh'         -print | xargs -r grep -H "$*"
+        find . -name '*.bash'       -print | xargs -r grep -H "$*"
         #--- SQL
-        find . -name '*.sql'        -print | xargs grep -H "$*"
+        find . -name '*.sql'        -print | xargs -r grep -H "$*"
         #--- Config / Manifest
-        find . -name '*.toml'       -print | xargs grep -H "$*"
-        find . -name '*.yaml'       -print | xargs grep -H "$*"
-        find . -name '*.yml'        -print | xargs grep -H "$*"
-        find . -name '*.json'       -print | xargs grep -H "$*"
+        find . -name '*.toml'       -print | xargs -r grep -H "$*"
+        find . -name '*.yaml'       -print | xargs -r grep -H "$*"
+        find . -name '*.yml'        -print | xargs -r grep -H "$*"
+        find . -name '*.json'       -print | xargs -r grep -H "$*"
         #--- Markdown
-        find . -name '*.md'         -print | xargs grep -H "$*"
+        find . -name '*.md'         -print | xargs -r grep -H "$*"
 }
 
 #===============================================================================
@@ -97,45 +98,45 @@ sgrep()
 lgrep()
 {
         #--- C / C++ header & source
-        find . -name '*.[h|c]'      -print | xargs grep -H -A2 -B2 "$*"
-        find . -name '*.cc'         -print | xargs grep -H -A2 -B2 "$*"
-        find . -name '*.pc'         -print | xargs grep -H -A2 -B2 "$*"
-        find . -name '*.sc'         -print | xargs grep -H -A2 -B2 "$*"
-        find . -name '*.gc'         -print | xargs grep -H -A2 -B2 "$*"
-        find . -name '*.cp'         -print | xargs grep -H -A2 -B2 "$*"
-        find . -name '*.res'        -print | xargs grep -H -A2 -B2 "$*"
-        find . -name '*.pgc'        -print | xargs grep -H -A2 -B2 "$*"
-        find . -name '*.hpp'        -print | xargs grep -H -A2 -B2 "$*"
-        find . -name '*.cpp'        -print | xargs grep -H -A2 -B2 "$*"
+        find . -name '*.[hc]'      -print | xargs -r grep -H -A2 -B2 "$*"
+        find . -name '*.cc'         -print | xargs -r grep -H -A2 -B2 "$*"
+        find . -name '*.pc'         -print | xargs -r grep -H -A2 -B2 "$*"
+        find . -name '*.sc'         -print | xargs -r grep -H -A2 -B2 "$*"
+        find . -name '*.gc'         -print | xargs -r grep -H -A2 -B2 "$*"
+        find . -name '*.cp'         -print | xargs -r grep -H -A2 -B2 "$*"
+        find . -name '*.res'        -print | xargs -r grep -H -A2 -B2 "$*"
+        find . -name '*.pgc'        -print | xargs -r grep -H -A2 -B2 "$*"
+        find . -name '*.hpp'        -print | xargs -r grep -H -A2 -B2 "$*"
+        find . -name '*.cpp'        -print | xargs -r grep -H -A2 -B2 "$*"
         #--- Rust
-        find . -name '*.rs'         -print | xargs grep -H -A2 -B2 "$*"
+        find . -name '*.rs'         -print | xargs -r grep -H -A2 -B2 "$*"
         #--- Python
-        find . -name '*.py'         -print | xargs grep -H -A2 -B2 "$*"
+        find . -name '*.py'         -print | xargs -r grep -H -A2 -B2 "$*"
         #--- Web (HTML / CSS / JS / TS)
-        find . -name '*.html'       -print | xargs grep -H -A2 -B2 "$*"
-        find . -name '*.css'        -print | xargs grep -H -A2 -B2 "$*"
-        find . -name '*.js'         -print | xargs grep -H -A2 -B2 "$*"
-        find . -name '*.ts'         -print | xargs grep -H -A2 -B2 "$*"
+        find . -name '*.html'       -print | xargs -r grep -H -A2 -B2 "$*"
+        find . -name '*.css'        -print | xargs -r grep -H -A2 -B2 "$*"
+        find . -name '*.js'         -print | xargs -r grep -H -A2 -B2 "$*"
+        find . -name '*.ts'         -print | xargs -r grep -H -A2 -B2 "$*"
         #--- Go
-        find . -name '*.go'         -print | xargs grep -H -A2 -B2 "$*"
+        find . -name '*.go'         -print | xargs -r grep -H -A2 -B2 "$*"
         #--- Docker
-        find . -name 'Dockerfile'   -print | xargs grep -H -A2 -B2 "$*"
-        find . -name 'Dockerfile.*' -print | xargs grep -H -A2 -B2 "$*"
+        find . -name 'Dockerfile'   -print | xargs -r grep -H -A2 -B2 "$*"
+        find . -name 'Dockerfile.*' -print | xargs -r grep -H -A2 -B2 "$*"
         #--- Makefile
-        find . -name '[M|m]akefile' -print | xargs grep -H -A2 -B2 "$*"
-        find . -name '*.mk'         -print | xargs grep -H -A2 -B2 "$*"
+        find . -name '[Mm]akefile' -print | xargs -r grep -H -A2 -B2 "$*"
+        find . -name '*.mk'         -print | xargs -r grep -H -A2 -B2 "$*"
         #--- Shell script
-        find . -name '*.sh'         -print | xargs grep -H -A2 -B2 "$*"
-        find . -name '*.bash'       -print | xargs grep -H -A2 -B2 "$*"
+        find . -name '*.sh'         -print | xargs -r grep -H -A2 -B2 "$*"
+        find . -name '*.bash'       -print | xargs -r grep -H -A2 -B2 "$*"
         #--- SQL
-        find . -name '*.sql'        -print | xargs grep -H -A2 -B2 "$*"
+        find . -name '*.sql'        -print | xargs -r grep -H -A2 -B2 "$*"
         #--- Config / Manifest
-        find . -name '*.toml'       -print | xargs grep -H -A2 -B2 "$*"
-        find . -name '*.yaml'       -print | xargs grep -H -A2 -B2 "$*"
-        find . -name '*.yml'        -print | xargs grep -H -A2 -B2 "$*"
-        find . -name '*.json'       -print | xargs grep -H -A2 -B2 "$*"
+        find . -name '*.toml'       -print | xargs -r grep -H -A2 -B2 "$*"
+        find . -name '*.yaml'       -print | xargs -r grep -H -A2 -B2 "$*"
+        find . -name '*.yml'        -print | xargs -r grep -H -A2 -B2 "$*"
+        find . -name '*.json'       -print | xargs -r grep -H -A2 -B2 "$*"
         #--- Markdown
-        find . -name '*.md'         -print | xargs grep -H -A2 -B2 "$*"
+        find . -name '*.md'         -print | xargs -r grep -H -A2 -B2 "$*"
 }
 
 #-------------------------------------------------------------------------------
@@ -146,7 +147,7 @@ lgrep()
 #-------------------------------------------------------------------------------
 rgrep()
 {
-        find . -name '*.res' -print | xargs grep -H "$*"
+        find . -name '*.res' -print | xargs -r grep -H "$*"
 }
 
 #-------------------------------------------------------------------------------
@@ -157,7 +158,7 @@ rgrep()
 #-------------------------------------------------------------------------------
 mgrep()
 {
-        find . -name '[M|m]akefile' -print | xargs grep -H "$1"
+        find . -name '[Mm]akefile' -print | xargs -r grep -H "$1"
 }
 
 #-------------------------------------------------------------------------------
@@ -169,8 +170,8 @@ mgrep()
 #-------------------------------------------------------------------------------
 ugrep()
 {
-        find . -name "*.[h|c]" -or -name "*.cc" -or -name "*.pc" -or -name "*.sc" | \
-        xargs grep -E $1                                                          | \
+        find . -name "*.[hc]" -or -name "*.cc" -or -name "*.pc" -or -name "*.sc" | \
+        xargs -r grep -E "$1"                                                     | \
         grep -Ev "bak|back|test"                                                  | \
         sed 's/[:|*]/ /g'                                                         | \
         awk '{printf("%s\n", $1);}'                                               | \
@@ -189,10 +190,10 @@ vgrep()
 {
         find . -name '*.sc' -print | \
         grep -Ev "bak|back|BACK|test|Test|org|OLD|diff|tobe" | \
-        xargs grep -Hn "$*" | sort | grep "$*"
-        find . -name '*.[h|c]' -print | \
+        xargs -r grep -Hn "$*" | sort | grep "$*"
+        find . -name '*.[hc]' -print | \
         grep -Ev "bak|back|BACK|test|Test|org|OLD|diff|tobe" | \
-        xargs grep -Hn "$*" | sort | grep "$*"
+        xargs -r grep -Hn "$*" | sort | grep "$*"
 }
 
 #===============================================================================
