@@ -15,6 +15,8 @@ CLAUDE_DIR="$HOME/.claude"
 DOTFILES_DIR="$REPO_DIR/dotfiles"
 LOCAL_BIN="$HOME/.local/bin"
 ARACHNE_TAG="ARACHNE"
+PROG="arachne"
+ARACHNE_VERSION="1.0.0"
 
 # "스크립트명:커맨드명" 형식 — git pull 시 심볼릭 링크라 자동 업데이트됨
 BIN_TARGETS=(
@@ -38,24 +40,41 @@ SYMLINK_TARGETS=(
 # DESCRIPTION : 사용법 출력
 ################################################################################
 usage() {
-    echo "Usage: $0 [COMMAND] [OPTIONS]"
+    local entry
+    local script
+    local cmd
+
+    echo "Usage: ${PROG} [OPTIONS] COMMAND"
+    echo ""
+    echo "Arachne — Claude Code 글로벌 설정 관리 도구"
     echo ""
     echo "Commands:"
-    echo "  (none)             : ~/.claude/ 심볼릭 링크 + dotfiles + bin 설치"
-    echo "  update             : git pull 후 최신 상태로 재설치"
-    echo "  session            : tmux 워크스페이스 매니저(tws) 실행"
+    echo "  install            ~/.claude/ 심볼릭 링크 + dotfiles + bin 설치 (기본값)"
+    echo "  update             git pull 후 최신 상태로 재설치"
+    echo "  session            tmux 워크스페이스 매니저(tws) 실행"
+    echo "  export-settings    ~/.claude/settings.json -> settings.template.json 내보내기"
+    echo "  export-dotfiles    ~/.bash_profile, ~/.vimrc -> dotfiles/ 내보내기"
     echo ""
     echo "Options:"
-    echo "  --export-settings  : ~/.claude/settings.json -> settings.template.json 으로 내보내기"
-    echo "  --export-dotfiles  : ~/.bash_profile, ~/.vimrc -> dotfiles/ 로 내보내기"
-    echo "  --help, -h         : 도움말 출력"
+    echo "  -h, --help         이 도움말 출력"
+    echo "  -v, --version      버전 정보 출력"
     echo ""
-    echo "  설치 후 사용 가능한 CLI 커맨드:"
+    echo "설치 후 사용 가능한 CLI 커맨드:"
     for entry in "${BIN_TARGETS[@]}"; do
-        local script="${entry%%:*}"
-        local cmd="${entry##*:}"
-        echo "    ${cmd}  (-> ${script})"
+        script="${entry%%:*}"
+        cmd="${entry##*:}"
+        echo "  ${cmd}  (-> ${script})"
     done
+}
+
+################################################################################
+# FUNCTION    : show_version
+# DESCRIPTION : 버전 정보 출력 (git 단축 해시 포함)
+################################################################################
+show_version() {
+    local rev
+    rev=$(git -C "$REPO_DIR" rev-parse --short HEAD 2>/dev/null || echo "unknown")
+    echo "${PROG} ${ARACHNE_VERSION} (${rev})"
 }
 
 ################################################################################
@@ -309,11 +328,12 @@ export_settings() {
 }
 
 case "${1:-}" in
-    update)            update_arachne ;;
-    session)           run_session ;;
-    --export-settings) export_settings ;;
-    --export-dotfiles) export_dotfiles ;;
-    --help|-h)         usage ;;
-    "")                install ;;
-    *)                 echo "[ERROR] 알 수 없는 커맨드 또는 옵션: $1"; usage; exit 1 ;;
+    install|"")                          install ;;
+    update)                              update_arachne ;;
+    session)                             run_session ;;
+    export-settings|--export-settings)   export_settings ;;
+    export-dotfiles|--export-dotfiles)   export_dotfiles ;;
+    -h|--help|help)                      usage ;;
+    -v|--version)                        show_version ;;
+    *)                                   echo "[ERROR] 알 수 없는 커맨드: $1" >&2; usage >&2; exit 1 ;;
 esac
