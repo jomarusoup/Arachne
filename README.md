@@ -11,13 +11,15 @@ aliases:
 
 # 🕷️ Arachne
 
-저지연 풀스택 시스템 프로그래밍 프레임워크를 위한 Claude Code 글로벌 설정.
+저지연 풀스택 시스템 프로그래밍 프레임워크를 위한 **멀티-CLI** 글로벌 설정.
 **C/C++ · Go · Rust** 중심의 실시간 트레이딩·데이터 파이프라인 개발에 최적화.
 
-`~/.claude/` 디렉터리를 심볼릭 링크로 이 레포와 연결합니다.
-레포를 수정하면 글로벌 설정에 즉시 반영되고, `git push/pull`로 모든 머신을 동기화할 수 있습니다.
+하나의 공통 규약(`AGENTS.md`, SSOT)을 **Claude Code · Gemini CLI · Codex CLI** 세 도구가
+동시에 따른다. `~/.claude/` 등을 심볼릭 링크로 이 레포와 연결하므로, 레포를 수정하면 글로벌
+설정에 반영되고 `git push/pull`로 모든 머신을 동기화할 수 있습니다.
 
 > 📖 skills·agents·커맨드·hooks 사용법은 [docs/USAGE.md](docs/USAGE.md) 참고
+> 🔗 3개 CLI 통합 사용·상호작용은 [docs/MULTI-CLI.md](docs/MULTI-CLI.md) 참고
 
 ---
 
@@ -55,7 +57,8 @@ cd ~/Arachne
 
 ```
 Arachne/
-├── CLAUDE.md                    # 글로벌 지시서 진입점 (@rules/* 임포트)
+├── CLAUDE.md                    # Claude 전용 보충 지시서 (rules/는 네이티브 자동 로드)
+├── AGENTS.md                    # 공통 규약 SSOT (Claude·Gemini·Codex 공유)
 ├── settings.template.json       # ~/.claude/settings.json 템플릿
 ├── install.sh                   # 통합 관리 도구 (CLI: arachne)
 ├── tmux.sh                      # tmux 워크스페이스 매니저 (CLI: tws)

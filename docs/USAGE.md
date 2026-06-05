@@ -3,6 +3,7 @@
 하니스(Claude Code)에서 Arachne의 **skills · agents · 슬래시 커맨드 · hooks · rules · Gemini 협업**을 실제로 어떻게 쓰는지 정리한 상세 가이드.
 
 > README는 "무엇이 있는지"(카탈로그), CLAUDE.md는 "항상 적용되는 지시서", 이 문서는 "어떻게 쓰는지"(how-to)를 담는다.
+> Gemini CLI·Codex CLI와의 통합 사용·전파·상호작용은 [MULTI-CLI.md](MULTI-CLI.md)에 별도 정리돼 있다.
 
 ---
 
@@ -14,7 +15,7 @@
 | 에이전트 | `agents/*.md` | Claude가 자동 활성화 / `Task`·`Agent` 호출 | YAML frontmatter(`name`,`tools`,`model`) |
 | 스킬(지식) | `skills/*.md` | 관련 작업 시 Claude가 참조 | frontmatter 없음 — 마크다운 본문 |
 | 훅 | `hooks/*.sh` | Claude Code 이벤트가 자동 실행 | `settings.json`의 `hooks` 섹션 |
-| 규칙 | `rules/**/*.md` | 항상 적용 | `CLAUDE.md`의 `@import` + 확장자 기반 |
+| 규칙 | `rules/**/*.md` | 공통=매 세션 / 언어=확장자 매칭 시 | `~/.claude/rules/` 네이티브 자동 로드 (paths frontmatter) |
 
 모든 항목은 `~/.claude/`에 심볼릭 링크로 연결되어, **레포 수정 = 즉시 반영**된다(`install.sh` 참고).
 
@@ -176,8 +177,9 @@ model: opus               # opus / sonnet / haiku
 ### 사용법
 규칙은 **항상 자동 적용**된다 — 별도 호출 없음.
 
-- **공통 규칙**(`rules/common/*.md`)은 `CLAUDE.md`의 `@import`로 모든 세션에 로드된다.
-- **언어별 규칙**(`rules/<언어>/*.md`)은 해당 확장자 파일을 편집할 때 자동 활성화된다.
+- **공통 규칙**(`rules/common/*.md`)은 `~/.claude/rules/` 네이티브 자동 로드로 **모든 세션에** 적용된다(@import 아님 — `install.sh`가 `rules/`를 심볼릭).
+- **언어별 규칙**(`rules/<언어>/*.md`)은 `paths` frontmatter 덕에 해당 확장자 파일을 편집할 때 자동 활성화된다.
+- Gemini·Codex는 `rules/` 자동 로더가 없어, 공통 규약 다이제스트인 [`AGENTS.md`](../AGENTS.md)를 본다(6장 참고).
 
 | 확장자 | 자동 로드되는 규칙 |
 |---|---|

@@ -114,7 +114,8 @@ description: /명령어 설명  # /help 에서 표시되는 설명
 **skills/** — 워크플로 스킬 (frontmatter 없음, 마크다운 본문만)
 - 구성: 언제 사용하는지 / 어떻게 동작하는지 / 예시
 
-**rules/** — 지시서 (@임포트 또는 직접 작성, frontmatter 불필요)
+**rules/** — 지시서. `@import` 하지 않는다 — `~/.claude/rules/` 심볼릭으로 네이티브 자동 로드
+(공통=매 세션, 언어=`paths` frontmatter 매칭 시). 상단 주석 참고.
 
 ### 기타
 

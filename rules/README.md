@@ -76,20 +76,19 @@ rules/
 
 ## 사용 방법
 
-### CLAUDE.md에서 임포트
+> **@import 하지 않는다.** `install.sh`가 `rules/`를 `~/.claude/rules/`로 심볼릭하며,
+> Claude Code가 이를 **네이티브로 자동 로드**한다. 과거의 `@rules/...` import는
+> 전부 중복이라 제거됐다(`c123a7e`). 공식 문서: code.claude.com/docs/en/memory
+> ("Organize rules with .claude/rules/", "Path-specific rules").
 
-```markdown
-# 공통 규칙 (항상 로드)
-@rules/common/workflow.md
-@rules/common/coding-style.md
-@rules/common/patterns.md
-@rules/common/security.md
-@rules/common/testing.md
+| 규칙 | 로드 시점 |
+|---|---|
+| `rules/common/*` (paths frontmatter 없음) | **매 세션 자동 로드** |
+| `rules/<언어>/*` (paths frontmatter 있음) | **해당 확장자 파일 편집 시** 자동 로드 |
 
-# 언어별 규칙 (paths 기반 자동 활성화 + 명시적 임포트)
-@rules/c/coding-style.md
-@rules/golang/coding-style.md
-```
+Gemini CLI·Codex CLI는 `rules/` 자동 로더가 없으므로, 공통 규약을 추출한
+[`AGENTS.md`](../AGENTS.md)(SSOT)를 본다 — Gemini는 `~/.gemini/GEMINI.md` 심볼릭,
+Codex는 `~/.codex/AGENTS.md` 마커 병합.
 
 ### 자동 활성화 (paths 기반)
 
