@@ -35,6 +35,7 @@ bash tests/validate_settings.sh
 |---|---|---|
 | `install.bats` | `install.sh` — 심볼릭 링크·settings.json 생성 | bats |
 | `hooks.bats` | `hooks/*.sh` — 존재·권한·문법·기본 동작 | bats |
+| `docs_sync.bats` | `docs-sync.sh` — 설정 생성·목록·문법 | bats |
 | `validate_settings.sh` | `settings.template.json` — JSON 유효성·필수 키 | bash + jq |
 
 ## validate_settings.sh

@@ -21,6 +21,7 @@ aliases:
 > 🗺️ 하네스 구조 다이어그램(Mermaid)은 [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) 참고
 > 📖 skills·agents·커맨드·hooks 사용법은 [docs/USAGE.md](docs/USAGE.md) 참고
 > 🔗 3개 CLI 통합 사용·상호작용은 [docs/MULTI-CLI.md](docs/MULTI-CLI.md) 참고
+> 🗂️ 원격 프로젝트 문서 ↔ Obsidian 동기화는 [docs/OBSIDIAN-DOCS-SYNC.md](docs/OBSIDIAN-DOCS-SYNC.md) 참고
 
 ---
 
@@ -39,7 +40,7 @@ cd ~/Arachne
 2. 레포 → `~/.claude/` 심볼릭 링크 생성
 3. `settings.template.json`의 `__HOME__` → 실제 홈 경로로 치환해 `settings.json` 생성
 4. **dotfiles 병합**: `~/.bash_profile`, `~/.vimrc`에 Arachne 설정을 안전하게 병합 (기존 내용 보존)
-5. **CLI 등록**: `~/.local/bin/`에 `arachne`, `tws` 커맨드 등록
+5. **CLI 등록**: `~/.local/bin/`에 `arachne`, `tws`, `gask`, `docs-sync` 커맨드 등록
 
 ### 주요 CLI 커맨드
 | 커맨드 | 설명 |
@@ -53,6 +54,7 @@ cd ~/Arachne
 | `arachne -d` (`--export-dotfiles`) | dotfiles → 레포 내보내기 |
 | `arachne -v` | 버전 정보 |
 | `gask` | **Gemini 직접 호출 래퍼** — Claude Code가 `gemini -p`를 Bash로 호출해 설계·요약을 위임 |
+| `docs-sync` | 원격 프로젝트 README/docs/Markdown 문서 ↔ Obsidian Vault 동기화 |
 
 ---
 
@@ -66,6 +68,7 @@ Arachne/
 ├── install.sh                   # 통합 관리 도구 (CLI: arachne)
 ├── tmux.sh                      # tmux 워크스페이스 매니저 (CLI: tws)
 ├── gask.sh                      # Gemini 직접 호출 래퍼 (CLI: gask)
+├── docs-sync.sh                 # 원격 프로젝트 문서 ↔ Obsidian 동기화 (CLI: docs-sync)
 │
 ├── rules/                       # Claude 전역 행동 규칙
 │   ├── common/                  # 언어 공통 (workflow, coding-style, patterns 등 12개)
