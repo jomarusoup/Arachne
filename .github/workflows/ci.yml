@@ -1,0 +1,33 @@
+name: CI
+
+# 자기규칙 강제: 하네스가 강제하는 shellcheck·bats·인덱스 일치를 스스로 검증한다.
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install shellcheck & bats
+        run: sudo apt-get update -qq && sudo apt-get install -y shellcheck bats
+
+      - name: Shellcheck (모든 셸 스크립트)
+        run: |
+          shellcheck -S warning \
+            install.sh tmux.sh gask.sh statusline-command.sh \
+            hooks/*.sh tests/*.sh
+
+      - name: Bats (install + hooks)
+        run: bats tests/install.bats tests/hooks.bats
+
+      - name: settings.json 템플릿 검증
+        run: bash tests/validate_settings.sh
+
+      - name: 인덱스 ↔ 실제 파일 일치
+        run: bash tests/check_index.sh
