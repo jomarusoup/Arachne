@@ -69,49 +69,32 @@ flowchart TB
 
 ## 2. 레포 디렉터리 구조
 
-```mermaid
-flowchart LR
-    ROOT["Arachne/"]
+> 디렉터리 구조는 다이어그램이 아닌 트리 텍스트로 표기한다(Mermaid는 관계·흐름 표현용).
 
-    ROOT --> META["📄 루트 메타"]
-    ROOT --> RULES["📐 rules/"]
-    ROOT --> SKILLS["🧩 skills/ (26)"]
-    ROOT --> CMDS["⌨️ commands/ (14)"]
-    ROOT --> AGENTS["🤝 agents/ (5)"]
-    ROOT --> HOOKS["🪝 hooks/ (4)"]
-    ROOT --> SCRIPTS["⚙️ 실행 스크립트"]
-    ROOT --> SUP["🔧 보조"]
-
-    META --> M1["AGENTS.md (SSOT)"]
-    META --> M2["CLAUDE.md"]
-    META --> M3["README.md"]
-    META --> M4["settings.template.json"]
-
-    RULES --> R1["common/ (12)"]
-    RULES --> R2["c · cpp · golang · rust"]
-    RULES --> R3["python · javascript · bash"]
-    RULES --> R4["web/ (design-quality)"]
-
-    AGENTS --> A1["planner (opus)"]
-    AGENTS --> A2["code-reviewer (sonnet)"]
-    AGENTS --> A3["tdd (sonnet)"]
-    AGENTS --> A4["debugger (sonnet)"]
-    AGENTS --> A5["python-reviewer (sonnet)"]
-
-    HOOKS --> H1["session-start.sh"]
-    HOOKS --> H2["session-end.sh"]
-    HOOKS --> H3["pre-compact.sh"]
-    HOOKS --> H4["gemini-check.sh"]
-
-    SCRIPTS --> S1["install.sh → arachne"]
-    SCRIPTS --> S2["tmux.sh → tws"]
-    SCRIPTS --> S3["gask.sh → gask"]
-    SCRIPTS --> S4["statusline-command.sh"]
-
-    SUP --> SUP1["mcp-configs/"]
-    SUP --> SUP2["dotfiles/"]
-    SUP --> SUP3["tests/ (bats + shell)"]
-    SUP --> SUP4["docs/ · .github/workflows/"]
+```
+Arachne/
+├── AGENTS.md                    # 공통 규약 SSOT (Claude·Gemini·Codex 공유)
+├── CLAUDE.md                    # Claude 전용 보충 지시
+├── README.md
+├── settings.template.json       # ~/.claude/settings.json 템플릿
+├── install.sh                   # 통합 관리 도구 (CLI: arachne)
+├── tmux.sh                      # 워크스페이스 매니저 (CLI: tws)
+├── gask.sh                      # Gemini 직접 호출 래퍼 (CLI: gask)
+├── statusline-command.sh
+│
+├── rules/                       # Claude 전역 행동 규칙
+│   ├── common/                  # 언어 공통 (12)
+│   ├── c · cpp · golang · rust  # 언어별 규칙
+│   ├── python · javascript · bash
+│   └── web/                     # design-quality
+├── skills/                      # 워크플로·도메인 스킬 (26)
+├── commands/                    # 슬래시 커맨드 (14)
+├── agents/                      # 서브에이전트 (planner·code-reviewer·tdd·debugger·python-reviewer)
+├── hooks/                       # 이벤트 훅 (session-start/end · pre-compact · gemini-check)
+├── mcp-configs/                 # MCP 서버 설정 템플릿
+├── dotfiles/                    # bash_profile · vimrc (병합 원본)
+├── tests/                       # 검증 (bats + shell)
+└── docs/ · .github/workflows/   # 문서 · CI
 ```
 
 ---
