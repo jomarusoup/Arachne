@@ -42,25 +42,43 @@ CheckReferenced() {
 }
 
 #-------------------------------------------------------------------------------
-# 검사 1: skills/*.md ↔ skills/README.md
+# 검사 1: skills/*.md ↔ skills/README.md · docs/USAGE.md
 #-------------------------------------------------------------------------------
 echo "[index] skills/ ↔ skills/README.md"
 CheckReferenced "skills" "skills/README.md" || FAIL=1
+echo "[index] skills/ ↔ docs/USAGE.md"
+CheckReferenced "skills" "docs/USAGE.md" || FAIL=1
 
 #-------------------------------------------------------------------------------
-# 검사 2: commands/*.md ↔ CLAUDE.md
+# 검사 2: commands/*.md ↔ CLAUDE.md · docs/USAGE.md
 #-------------------------------------------------------------------------------
 echo "[index] commands/ ↔ CLAUDE.md"
 CheckReferenced "commands" "CLAUDE.md" || FAIL=1
+echo "[index] commands/ ↔ docs/USAGE.md"
+CheckReferenced "commands" "docs/USAGE.md" || FAIL=1
 
 #-------------------------------------------------------------------------------
-# 검사 3: agents/*.md ↔ CLAUDE.md
+# 검사 3: agents/*.md ↔ CLAUDE.md · docs/USAGE.md
 #-------------------------------------------------------------------------------
 echo "[index] agents/ ↔ CLAUDE.md"
 CheckReferenced "agents" "CLAUDE.md" || FAIL=1
+echo "[index] agents/ ↔ docs/USAGE.md"
+CheckReferenced "agents" "docs/USAGE.md" || FAIL=1
 
 #-------------------------------------------------------------------------------
-# 검사 4: 낡은 "(예정)" 마커 — 실제 존재하는 디렉터리를 미래형으로 표기 금지
+# 검사 4: rules/<하위디렉터리> ↔ CLAUDE.md (언어 규칙 트리 누락 차단)
+#-------------------------------------------------------------------------------
+echo "[index] rules/ 하위디렉터리 ↔ CLAUDE.md"
+for dir in "$REPO_DIR"/rules/*/; do
+    name=$(basename "$dir")
+    if ! grep -qE "(^|[^a-z])$name/" "$REPO_DIR/CLAUDE.md"; then
+        echo "  [DRIFT] rules/$name/ 가 CLAUDE.md 트리에 없음"
+        FAIL=1
+    fi
+done
+
+#-------------------------------------------------------------------------------
+# 검사 5: 낡은 "(예정)" 마커 — 실제 존재하는 디렉터리를 미래형으로 표기 금지
 #-------------------------------------------------------------------------------
 echo "[index] 낡은 '(예정)' 마커 검사"
 for stale_dir in tests mcp-configs; do

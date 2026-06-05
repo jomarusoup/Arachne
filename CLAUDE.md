@@ -63,6 +63,7 @@ Claude Code가 이를 네이티브로 자동 로드한다:
 │   ├── c/          # C 시스템 프로그래밍 (coding-style·hooks·patterns·security·testing)
 │   ├── cpp/        # C++ (coding-style·hooks·patterns·security·testing)
 │   ├── golang/     # Go (coding-style·hooks·patterns·security·testing)
+│   ├── rust/       # Rust (coding-style·hooks·patterns·security·testing)
 │   ├── python/     # Python (coding-style·hooks·patterns·security·testing·fastapi)
 │   ├── web/        # 웹 디자인 품질 (design-quality)
 │   ├── javascript/ # JS/TS (coding-style·hooks·patterns·security·testing)
