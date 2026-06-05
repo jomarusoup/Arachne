@@ -43,9 +43,10 @@ teardown() {
 }
 
 @test "install.sh: 심볼릭 링크 생성 확인" {
-    run bash install.sh --target "${TMP_DIR}"
+    export HOME="${TMP_DIR}"          # 설치 대상 홈을 격리
+    run bash install.sh -i            # 무인자는 usage, 설치는 -i 필수
     [ "$status" -eq 0 ]
-    [ -L "${TMP_DIR}/.claude" ]
+    [ -L "${TMP_DIR}/.claude/CLAUDE.md" ]
 }
 ```
 

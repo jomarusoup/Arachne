@@ -26,7 +26,7 @@ aliases:
 ```bash
 git clone https://github.com/jomarusoup/Arachne.git ~/Arachne
 cd ~/Arachne
-./install.sh   # 최초 1회 — 이후 arachne 커맨드 사용 가능
+./install.sh -i   # 최초 1회 — 이후 arachne 커맨드 사용 가능
 ```
 
 설치 스크립트가 하는 일:
