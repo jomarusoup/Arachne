@@ -35,7 +35,10 @@ Claude Code가 이를 네이티브로 자동 로드한다:
 │   ├── issue.md                     # /issue      — GitHub 이슈 처리
 │   ├── learn.md                     # /learn      — 패턴 학습
 │   ├── save-session.md              # /save-session — 세션 요약 저장
-│   └── python-review.md             # /python-review — Python 코드 리뷰
+│   ├── python-review.md             # /python-review — Python 코드 리뷰
+│   ├── tdd.md                       # /tdd        — TDD 사이클
+│   ├── e2e.md                       # /e2e        — E2E 테스트
+│   └── refactor.md                  # /refactor   — SRP 리팩터링
 │
 ├── hooks/                           # 이벤트 기반 자동화
 │   ├── session-start.sh             # SessionStart  — 최근 세션 안내
@@ -82,8 +85,8 @@ Claude Code가 이를 네이티브로 자동 로드한다:
 │   ├── security-review.md / security-scan.md
 │   ├── docker-patterns.md
 │   └── network-config-validation.md / network-interface-health.md / netmiko-ssh-automation.md
-├── mcp-configs/                     # (예정) MCP 서버 설정 템플릿
-└── tests/                           # (예정) Arachne 자체 테스트
+├── mcp-configs/                     # MCP 서버 설정 템플릿 (github·filesystem)
+└── tests/                           # Arachne 자체 테스트 (bats + 인덱스 검사)
 ```
 
 ## Development Notes
