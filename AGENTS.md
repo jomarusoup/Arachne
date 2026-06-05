@@ -1,8 +1,11 @@
 # AGENTS.md — 공유 코어 규약
 
 > **이 파일은 단일 진실 공급원(SSOT)이다.** Claude Code · Gemini CLI · Codex CLI가
-> 모두 이 한 파일을 가리킨다 (Claude는 `CLAUDE.md`에서 `@AGENTS.md` import,
-> Codex/Gemini는 `~/.codex/AGENTS.md`·`~/.gemini/GEMINI.md` 심볼릭 링크).
+> 모두 같은 공통 규약을 본다.
+> - **Claude**: 이 규약의 **풀 디테일**을 `rules/`(→`~/.claude/rules/` 심볼릭)에서 네이티브
+>   자동 로드한다. 따라서 Claude는 AGENTS.md를 직접 import하지 않는다(중복이라 불필요).
+> - **Gemini**: `~/.gemini/GEMINI.md` → 이 파일 **심볼릭** (수정 즉시 반영).
+> - **Codex**: `~/.codex/AGENTS.md` ← 이 파일 **마커 병합** (`arachne -i --target codex` 재실행 시 반영).
 >
 > 여기에는 **CLI 무관한 공통 규약만** 담는다. 특정 도구 전용 기능(Claude의 훅·서브에이전트·
 > 슬래시 커맨드·모델 라우팅 등)은 각 도구의 보충 파일(`CLAUDE.md` 등)에 둔다 — 그래야

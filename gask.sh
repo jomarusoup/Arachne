@@ -64,9 +64,11 @@ fi
 # gemini 호출 — 답변은 stdout, 노이즈 걸러낸 진단은 stderr
 #   (stdin 으로 들어온 입력은 gemini 가 프롬프트에 자동 append)
 #-------------------------------------------------------------------------------
-cmd=(gemini -p "${prompt}")
+# --skip-trust: 헤드리스 호출이라 임의 디렉터리(신뢰 미설정)에서도 동작해야 함.
+# 미전달 시 신뢰 안 된 cwd 에서 gemini 가 거부 → 빈 응답. (공식 headless 권장값)
+cmd=(gemini --skip-trust -p "${prompt}")
 if [ -n "${model}" ]; then
-    cmd=(gemini -m "${model}" -p "${prompt}")
+    cmd=(gemini --skip-trust -m "${model}" -p "${prompt}")
 fi
 
 err_file=$(mktemp)
