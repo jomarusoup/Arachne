@@ -48,11 +48,36 @@ Arachne는 **하나의 공통 규약(`AGENTS.md`)을 세 개의 AI 코딩 CLI가
 
 ---
 
-## 3. CLI별 사용법
+## 3. CLI별 동작 — 무엇이 작동하나
 
-### 3.1 Claude Code
+### 3.0 능력 매트릭스
+
+Arachne 구성요소가 각 CLI에서 실제로 작동하는지. **공통 규약만 셋이 공유**하고, 나머지는
+대부분 Claude 전용이다(import·이벤트 훅·서브에이전트 개념이 Claude Code에만 있으므로).
+
+| Arachne 구성요소 | Claude Code | Gemini CLI | Codex CLI |
+| --- | :---: | :---: | :---: |
+| 공통 규약 (`AGENTS.md` / `rules/common`) | ✅ `rules/` 풀버전 자동 로드 | ✅ `GEMINI.md` | ✅ `~/.codex/AGENTS.md` |
+| 언어 규칙 (`rules/<언어>/*`) | ✅ `paths`로 확장자 매칭 시 자동 로드 | ⚠️ AGENTS §9 **경로 포인터만** (본문 자동 로드 X) | ⚠️ 동일 |
+| 서브에이전트 (`agents/`) | ✅ | ❌ | ❌ |
+| 슬래시 커맨드 (`commands/`) | ✅ `/이름` | ❌ | ❌ |
+| 이벤트 훅 (`hooks/`) | ✅ Session·PreCompact·Prompt | ❌ | ❌ |
+| 스킬 (`skills/`) | ✅ 자동 참조 | ❌ | ❌ |
+| 상태표시줄 (`statusline`) | ✅ | ❌ | ❌ |
+| `gask` 위임 | ✅ **호출 주체** | — (위임 **대상**) | ❌ |
+| MCP 서버 | ✅ `settings.json` | 별도 `~/.gemini` 설정(미관리) | 별도 `~/.codex/config.toml`(미관리) |
+
+> 요점: **Gemini·Codex는 "공통 규약을 읽는 것"까지**가 Arachne가 주는 전부다. 에이전트·훅·커맨드 같은
+> 오케스트레이션은 Claude Code 고유 기능이라 이식되지 않는다. (Gemini·Codex가 가진 **자체** 에이전트·MCP
+> 기능은 별개이며 Arachne가 아직 관리하지 않는다 — [설계문서](issue/2026-06-05-multi-cli-ssot.md) Phase 3.)
+
+### 3.1 Claude Code — 풀 스택으로 동작
 
 별도 설정 불필요 — `arachne -i` 후 자동이다.
+
+**런타임 동작**: 세션 시작 시 `~/.claude/rules/`를 네이티브로 읽고(공통=항상), `CLAUDE.md`의 Claude
+전용 보충을 적용한다. 파일 편집 시 확장자에 맞는 언어 규칙이 추가 로드되고, 이벤트마다 훅이 실행되며,
+상태표시줄이 렌더된다. 에이전트·슬래시 커맨드를 호출할 수 있다.
 
 - **공통 규칙**(`rules/common/*`): 매 세션 자동 로드.
 - **언어 규칙**(`rules/<언어>/*`): 해당 확장자 파일을 열면 `paths` frontmatter로 자동 활성화
@@ -60,9 +85,13 @@ Arachne는 **하나의 공통 규약(`AGENTS.md`)을 세 개의 AI 코딩 CLI가
 - **서브에이전트·슬래시 커맨드·훅·`gask`·모델 라우팅**: `CLAUDE.md` + `agents/`·`commands/`·`hooks/`에 정의.
   자세한 사용은 [USAGE.md](USAGE.md).
 
-### 3.2 Gemini CLI
+### 3.2 Gemini CLI — 공통 규약 + gask 위임 대상
 
-- 글로벌 컨텍스트 `~/.gemini/GEMINI.md`가 AGENTS.md를 가리킨다. 별도 작업 없이 매 호출 로드된다.
+**런타임 동작**: Gemini는 매 호출마다 글로벌 컨텍스트 `~/.gemini/GEMINI.md`(→ AGENTS.md 심볼릭)를
+로드한다. 즉 **공통 규약만** 적용되고, 에이전트·훅·커맨드는 없다. 비대화 호출 시 신뢰 폴더 검사가 있어
+헤드리스 환경에선 `--skip-trust`가 필요하다(`gask`가 자동 처리). 실측: `gemini --skip-trust -p`가
+AGENTS.md에 심은 고유 토큰을 출력 → 런타임 로딩 확인됨.
+
 - Arachne는 Claude가 Gemini에 작업을 위임하는 `gask` 래퍼를 제공한다(비용 최적화 — [USAGE.md §6](USAGE.md)).
 
 ```bash
@@ -72,9 +101,13 @@ gask "이 로그 에러 원인만 요약: $(cat app.log)"
 
 > `gask`는 헤드리스 호출이라 `--skip-trust`로 동작한다. 임의 디렉터리에서 불려도 신뢰 설정 없이 응답한다.
 
-### 3.3 Codex CLI
+### 3.3 Codex CLI — 공통 규약(병합본)
 
-- 글로벌 지침 `~/.codex/AGENTS.md`에 SSOT 본문이 마커로 병합돼 있다. 새 세션에서 자동 로드된다.
+**런타임 동작**: Codex는 새 세션마다 글로벌 지침 `~/.codex/AGENTS.md`를 로드한다. 이 파일엔 SSOT 본문이
+마커(`<!-- === ARACHNE … === -->`)로 병합돼 있고, 마커 밖 사용자 내용은 보존된다. **공통 규약만** 적용되고
+에이전트·훅·커맨드는 없다(Codex 자체 기능은 별개). 실측: 프로젝트 AGENTS.md가 없는 중립 디렉터리에서
+`codex exec`가 전역 지침의 고유 토큰을 출력 → 런타임 로딩 확인됨.
+
 - 비대화 실행:
 
 ```bash
