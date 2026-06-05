@@ -119,3 +119,38 @@ run_install() {
     cp "${TMP_TEMPLATE}" "${REPO_DIR}/settings.template.json"
     rm -f "${TMP_TEMPLATE}"
 }
+
+#-------------------------------------------------------------------------------
+# Codex 타깃 설치 검증 (Phase 2)
+#-------------------------------------------------------------------------------
+@test "codex: AGENTS.md 마커 병합으로 ~/.codex/AGENTS.md 생성" {
+    run bash "${REPO_DIR}/install.sh" -i --target codex
+    [ "$status" -eq 0 ]
+    [ -f "${TMP_DIR}/.codex/AGENTS.md" ]
+    grep -qF "<!-- === ARACHNE BEGIN === -->" "${TMP_DIR}/.codex/AGENTS.md"
+    grep -qF "<!-- === ARACHNE END === -->" "${TMP_DIR}/.codex/AGENTS.md"
+}
+
+@test "codex: 재실행 멱등성 — 마커 쌍이 1개만 유지" {
+    bash "${REPO_DIR}/install.sh" -i --target codex
+    bash "${REPO_DIR}/install.sh" -i --target codex
+    run grep -cF "<!-- === ARACHNE BEGIN === -->" "${TMP_DIR}/.codex/AGENTS.md"
+    [ "$output" -eq 1 ]
+}
+
+@test "codex: 사용자 보충 내용 보존" {
+    mkdir -p "${TMP_DIR}/.codex"
+    echo "USER-SUPPLEMENT-XYZ" > "${TMP_DIR}/.codex/AGENTS.md"
+
+    run bash "${REPO_DIR}/install.sh" -i --target codex
+    [ "$status" -eq 0 ]
+    grep -qF "USER-SUPPLEMENT-XYZ" "${TMP_DIR}/.codex/AGENTS.md"
+}
+
+@test "codex: SSOT 본문이 실제로 반영됨" {
+    bash "${REPO_DIR}/install.sh" -i --target codex
+    # AGENTS.md 첫 헤더 라인이 병합 결과에 존재해야 함
+    run head -1 "${REPO_DIR}/AGENTS.md"
+    local first_line="$output"
+    grep -qF "$first_line" "${TMP_DIR}/.codex/AGENTS.md"
+}
