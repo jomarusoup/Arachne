@@ -255,15 +255,17 @@ install() {
 # FUNCTION    : merge_dotfile
 # DESCRIPTION : dotfiles/ 내용을 사용자 파일에 ARACHNE 섹션으로 병합
 #               기존 파일 내용 유지, 섹션이 있으면 갱신 / 없으면 끝에 추가
-# PARAMETERS  : string src - dotfiles/ 내 원본 경로
-#               string dst - 홈 디렉터리 내 대상 경로
+# PARAMETERS  : string src          - dotfiles/ 내 원본 경로
+#               string dst          - 홈 디렉터리 내 대상 경로
+#               string comment_char - 파일 형식별 주석 문자 (기본: #, vimrc: ")
 ################################################################################
 merge_dotfile() {
     local src="$1"
     local dst="$2"
+    local comment_char="${3:-#}"
 
-    local begin="# === ${ARACHNE_TAG} BEGIN ==="
-    local end="# === ${ARACHNE_TAG} END ==="
+    local begin="${comment_char} === ${ARACHNE_TAG} BEGIN ==="
+    local end="${comment_char} === ${ARACHNE_TAG} END ==="
     local tmp
     tmp=$(mktemp)
 
@@ -314,8 +316,8 @@ merge_dotfile() {
 ################################################################################
 install_dotfiles() {
     echo "[Arachne] dotfiles 설치 시작"
-    merge_dotfile "$DOTFILES_DIR/bash_profile" "$HOME/.bash_profile"
-    merge_dotfile "$DOTFILES_DIR/vimrc"        "$HOME/.vimrc"
+    merge_dotfile "$DOTFILES_DIR/bash_profile" "$HOME/.bash_profile" "#"
+    merge_dotfile "$DOTFILES_DIR/vimrc"        "$HOME/.vimrc"        '"'
     echo "[Arachne] dotfiles 설치 완료"
     echo "  적용하려면: source ~/.bash_profile"
 }
@@ -323,17 +325,19 @@ install_dotfiles() {
 ################################################################################
 # FUNCTION    : _export_single
 # DESCRIPTION : 사용자 파일의 ARACHNE 섹션을 dotfiles/ 로 추출
-# PARAMETERS  : string src - 홈 디렉터리 내 원본 파일 경로
-#               string dst - dotfiles/ 내 대상 경로
-#               string label - 로그 표시용 파일명
+# PARAMETERS  : string src          - 홈 디렉터리 내 원본 파일 경로
+#               string dst          - dotfiles/ 내 대상 경로
+#               string label        - 로그 표시용 파일명
+#               string comment_char - 파일 형식별 주석 문자 (기본: #, vimrc: ")
 ################################################################################
 _export_single() {
     local src="$1"
     local dst="$2"
     local label="$3"
+    local comment_char="${4:-#}"
 
-    local begin="# === ${ARACHNE_TAG} BEGIN ==="
-    local end="# === ${ARACHNE_TAG} END ==="
+    local begin="${comment_char} === ${ARACHNE_TAG} BEGIN ==="
+    local end="${comment_char} === ${ARACHNE_TAG} END ==="
 
     if [ ! -f "${src}" ] && [ ! -L "${src}" ]; then
         echo "  스킵 (없음): ${src}"
@@ -362,8 +366,8 @@ _export_single() {
 ################################################################################
 export_dotfiles() {
     echo "[Arachne] dotfiles 내보내기 시작"
-    _export_single "$HOME/.bash_profile" "$DOTFILES_DIR/bash_profile" ".bash_profile"
-    _export_single "$HOME/.vimrc"        "$DOTFILES_DIR/vimrc"        ".vimrc"
+    _export_single "$HOME/.bash_profile" "$DOTFILES_DIR/bash_profile" ".bash_profile" "#"
+    _export_single "$HOME/.vimrc"        "$DOTFILES_DIR/vimrc"        ".vimrc"        '"'
     echo "[Arachne] dotfiles 내보내기 완료"
     echo "  커밋하려면: cd $REPO_DIR && git add dotfiles/ && git commit -m 'chore: update dotfiles'"
 }
