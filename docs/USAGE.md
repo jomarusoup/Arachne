@@ -50,6 +50,7 @@ description: /명령어 설명
 | `/add` `/fix` `/refactor` | 기능 추가 · 버그 수정 · 리팩터링 |
 | `/tdd` `/verify` `/e2e` | TDD 사이클 · 2단계 검증 · E2E 테스트 |
 | `/design` `/python-review` | 설계 문서 · Python 코드 리뷰 |
+| `/fastapi-review` `/react-review` | FastAPI API 리뷰 · React/Next 웹 리뷰 |
 | `/issue` `/status` | GitHub 이슈 순차 처리 · 프로젝트 현황 |
 | `/git` `/handoff` `/save-session` `/learn` | 커밋·푸시 · 전환 저장 · 세션 요약 · 패턴 학습 |
 
@@ -92,6 +93,8 @@ model: opus               # opus / sonnet / haiku
 | `tdd` | sonnet | Red-Green-Refactor 안내 |
 | `debugger` | sonnet | GDB·valgrind·strace·perf |
 | `python-reviewer` | sonnet | PEP 8·타입 힌트·보안·이디엄 Python 리뷰 |
+| `fastapi-reviewer` | sonnet | FastAPI async·DI·스키마·API 보안 리뷰 |
+| `react-reviewer` | sonnet | React/Next 렌더·Hooks·a11y·XSS·성능 리뷰 |
 
 ### 병렬 실행
 독립적인 작업은 여러 에이전트를 동시에 돌릴 수 있다(예: 모듈 A 보안 분석 + 모듈 B 성능 검토 + 모듈 C 리뷰 → 3개 동시).
