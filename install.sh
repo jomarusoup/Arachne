@@ -51,6 +51,8 @@ usage() {
     echo "Options:"
     echo "  -i, --install          설치/재설치 수행"
     echo "  -u, --update           git pull 후 최신 상태로 재설치"
+    echo "      --target T          설치 대상 CLI: claude|gemini|codex|all (기본 all)"
+    echo "                          (-i/-u 와 함께 사용. 미감지 CLI는 자동 스킵)"
     echo "  -s, --session          tmux 워크스페이스 매니저(tws) 실행"
     echo "  -e, --export-settings  ~/.claude/settings.json -> settings.template.json 내보내기"
     echo "  -d, --export-dotfiles  ~/.bash_profile, ~/.vimrc -> dotfiles/ 내보내기"
@@ -165,11 +167,12 @@ register_bin() {
 }
 
 ################################################################################
-# FUNCTION    : install
-# DESCRIPTION : 심볼릭 링크 설치 및 settings.json 생성
+# FUNCTION    : install_claude
+# DESCRIPTION : Claude Code 타깃 설치 — 심볼릭 링크 + settings.json 생성
+#               (rules/ 가 ~/.claude/rules/ 로 링크돼 네이티브 자동 로드됨)
 ################################################################################
-install() {
-    echo "[Arachne] 설치 시작: $REPO_DIR -> $CLAUDE_DIR"
+install_claude() {
+    echo "[Arachne] Claude 설치 시작: $REPO_DIR -> $CLAUDE_DIR"
     mkdir -p "$CLAUDE_DIR"
 
     for target in "${SYMLINK_TARGETS[@]}"; do
@@ -186,8 +189,66 @@ install() {
     echo "  생성: $settings_dst (from settings.template.json)"
 
     echo "[Arachne] Claude 설치 완료"
+}
+
+################################################################################
+# FUNCTION    : install_gemini
+# DESCRIPTION : Gemini CLI 타깃 설치 — AGENTS.md(SSOT)를 ~/.gemini/GEMINI.md 로 심볼릭
+#               심볼릭이라 AGENTS.md 수정이 재설치 없이 즉시 반영됨
+################################################################################
+install_gemini() {
+    local gemini_dir="$HOME/.gemini"
+    echo "[Arachne] Gemini 설치 시작: AGENTS.md -> $gemini_dir/GEMINI.md"
+    mkdir -p "$gemini_dir"
+    backup_and_link "$REPO_DIR/AGENTS.md" "$gemini_dir/GEMINI.md"
+    echo "[Arachne] Gemini 설치 완료"
+}
+
+################################################################################
+# FUNCTION    : detect_cli
+# DESCRIPTION : 대상 CLI 설치 여부 검사 (홈 디렉터리 또는 바이너리 존재)
+# PARAMETERS  : string cli - gemini | codex
+# RETURNED    : 0(감지) / 1(미감지)
+################################################################################
+detect_cli() {
+    local cli="$1"
+    case "$cli" in
+        gemini) [ -d "$HOME/.gemini" ] || command -v gemini >/dev/null 2>&1 ;;
+        codex)  [ -d "$HOME/.codex" ]  || command -v codex  >/dev/null 2>&1 ;;
+        *)      return 1 ;;
+    esac
+}
+
+################################################################################
+# FUNCTION    : install_shared
+# DESCRIPTION : 타깃 무관 공통 설치 (dotfiles 병합 + bin 등록) — 항상 1회
+################################################################################
+install_shared() {
     install_dotfiles
     register_bin
+}
+
+################################################################################
+# FUNCTION    : install
+# DESCRIPTION : 타깃 디스패처 — ARACHNE_TARGET 에 따라 CLI별 설치 후 공통 설치
+#               all 은 감지된 CLI 에만 설치(미감지 시 graceful skip)
+################################################################################
+install() {
+    case "${ARACHNE_TARGET:-all}" in
+        claude) install_claude ;;
+        gemini) install_gemini ;;
+        codex)  echo "[Arachne] Codex 타깃은 Phase 2 예정 (미구현)" >&2; exit 1 ;;
+        all)
+            install_claude
+            if detect_cli gemini; then
+                install_gemini
+            else
+                echo "[Arachne] Gemini CLI 미감지 — 스킵"
+            fi
+            # Codex 는 Phase 2 에서 추가
+            ;;
+    esac
+    install_shared
 }
 
 ################################################################################
@@ -325,10 +386,31 @@ export_settings() {
     echo "  커밋하려면: cd $REPO_DIR && git add settings.template.json && git commit -m 'chore: update settings template'"
 }
 
+################################################################################
+# FUNCTION    : parse_target
+# DESCRIPTION : 인자에서 --target 값을 파싱해 전역 ARACHNE_TARGET 에 저장·검증
+# PARAMETERS  : 커맨드 뒤 나머지 인자들 ("$@")
+################################################################################
+ARACHNE_TARGET="all"
+parse_target() {
+    ARACHNE_TARGET="all"
+    while [ $# -gt 0 ]; do
+        case "$1" in
+            --target=*) ARACHNE_TARGET="${1#--target=}" ;;
+            --target)   shift || true; ARACHNE_TARGET="${1:-}" ;;
+        esac
+        shift || true
+    done
+    case "$ARACHNE_TARGET" in
+        claude|gemini|codex|all) ;;
+        *) echo "[ERROR] 알 수 없는 타깃: '$ARACHNE_TARGET' (claude|gemini|codex|all)" >&2; exit 1 ;;
+    esac
+}
+
 case "${1:-}" in
     ""|"-h"|--help|help)                      usage ;;
-    -i|--install|install)                     install ;;
-    -u|--update|update)                       update_arachne ;;
+    -i|--install|install)                     shift; parse_target "$@"; install ;;
+    -u|--update|update)                       shift; parse_target "$@"; update_arachne ;;
     -s|--session|session)                     run_session ;;
     -e|--export-settings|export-settings)     export_settings ;;
     -d|--export-dotfiles|export-dotfiles)     export_dotfiles ;;
