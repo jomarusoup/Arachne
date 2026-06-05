@@ -79,11 +79,17 @@ Arachne 구성요소가 각 CLI에서 실제로 작동하는지. **공통 규약
 전용 보충을 적용한다. 파일 편집 시 확장자에 맞는 언어 규칙이 추가 로드되고, 이벤트마다 훅이 실행되며,
 상태표시줄이 렌더된다. 에이전트·슬래시 커맨드를 호출할 수 있다.
 
-- **공통 규칙**(`rules/common/*`): 매 세션 자동 로드.
-- **언어 규칙**(`rules/<언어>/*`): 해당 확장자 파일을 열면 `paths` frontmatter로 자동 활성화
-  (예: `*.rs` 편집 → `rules/rust/*` 로드).
-- **서브에이전트·슬래시 커맨드·훅·`gask`·모델 라우팅**: `CLAUDE.md` + `agents/`·`commands/`·`hooks/`에 정의.
-  자세한 사용은 [USAGE.md](USAGE.md).
+**어떻게 쓰나** (Claude Code 채팅에서):
+
+```
+/add  /fix  /tdd  /verify  /refactor …      # 슬래시 커맨드 — 워크플로 실행
+"code-reviewer로 이 변경 리뷰해줘"            # 서브에이전트 위임
+"이 설계 gask로 검토해줘"                     # Claude가 Bash로 gask 호출 → Gemini 위임
+```
+
+- **공통 규칙**(`rules/common/*`): 매 세션 자동 로드 — 입력 불필요.
+- **언어 규칙**(`rules/<언어>/*`): 해당 확장자 파일을 열면 자동 활성화 (예: `*.rs` 편집 → `rules/rust/*`).
+- 슬래시 커맨드·에이전트·스킬·훅 전체 카탈로그와 상세 예시는 [USAGE.md](USAGE.md).
 
 ### 3.2 Gemini CLI — 공통 규약 + gask 위임 대상
 
@@ -92,14 +98,21 @@ Arachne 구성요소가 각 CLI에서 실제로 작동하는지. **공통 규약
 헤드리스 환경에선 `--skip-trust`가 필요하다(`gask`가 자동 처리). 실측: `gemini --skip-trust -p`가
 AGENTS.md에 심은 고유 토큰을 출력 → 런타임 로딩 확인됨.
 
-- Arachne는 Claude가 Gemini에 작업을 위임하는 `gask` 래퍼를 제공한다(비용 최적화 — [USAGE.md §6](USAGE.md)).
+**어떻게 쓰나**:
 
 ```bash
-gask "이 설계 검토해줘: $(cat module.c)"     # 자문 → 답변 stdout
+# (1) 직접 — 공통 규약이 자동 로드된 채로 동작
+gemini                                        # 대화형 세션
+gemini -p "이 모듈 설계 검토해줘"             # 비대화 1회 질의
+
+# (2) Claude 안에서 위임 (권장) — gask 래퍼, 답변만 stdout
+gask "이 설계 검토해줘: $(cat module.c)"      # 자문
 gask "이 로그 에러 원인만 요약: $(cat app.log)"
+gask "README 초안 작성" > README.md           # 장문 생성 → 파일로 (재독 금지)
 ```
 
-> `gask`는 헤드리스 호출이라 `--skip-trust`로 동작한다. 임의 디렉터리에서 불려도 신뢰 설정 없이 응답한다.
+- `gask`는 Claude가 Gemini에 작업을 위임하는 비용 최적화 경로다([USAGE.md §6](USAGE.md)).
+- `gask`는 헤드리스라 `--skip-trust`를 자동 처리 — 임의 디렉터리에서 불려도 동작한다.
 
 ### 3.3 Codex CLI — 공통 규약(병합본)
 
@@ -108,11 +121,12 @@ gask "이 로그 에러 원인만 요약: $(cat app.log)"
 에이전트·훅·커맨드는 없다(Codex 자체 기능은 별개). 실측: 프로젝트 AGENTS.md가 없는 중립 디렉터리에서
 `codex exec`가 전역 지침의 고유 토큰을 출력 → 런타임 로딩 확인됨.
 
-- 비대화 실행:
+**어떻게 쓰나**:
 
 ```bash
-codex exec "이 함수 리뷰해줘"
-codex exec -C <작업디렉터리> --skip-git-repo-check "..."
+codex                                         # 대화형 — 새 세션에 공통 규약 자동 로드
+codex exec "이 함수 리뷰해줘"                  # 비대화 1회
+codex exec -C <작업디렉터리> --skip-git-repo-check "..."   # 디렉터리·git 밖 실행
 ```
 
 - **주의**: AGENTS.md를 수정했으면 Codex는 자동 반영이 아니다. `arachne -i --target codex`
