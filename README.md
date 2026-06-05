@@ -26,7 +26,7 @@ aliases:
 ```bash
 git clone https://github.com/jomarusoup/Arachne.git ~/Arachne
 cd ~/Arachne
-./install.sh
+./install.sh   # 최초 1회 — 이후 arachne 커맨드 사용 가능
 ```
 
 설치 스크립트가 하는 일:
@@ -39,12 +39,13 @@ cd ~/Arachne
 ### 주요 CLI 커맨드
 | 커맨드 | 설명 |
 |---|---|
-| `arachne` | (옵션 없음) Arachne 재설치 및 설정 동기화 |
+| `arachne`, `arachne -h` | 도움말 출력 |
+| `arachne -i` (`--install`) | 재설치 및 설정 동기화 |
 | `arachne -u` (`--update`) | 최신 상태로 업데이트 (git pull + 재설치) |
 | `arachne -s` (`--session`) | **Tmux Workspace Manager**: 대화형 세션 매니저 (`tws`와 동일) |
 | `arachne -e` (`--export-settings`) | settings.json → 템플릿 내보내기 |
 | `arachne -d` (`--export-dotfiles`) | dotfiles → 레포 내보내기 |
-| `arachne -h` / `-v` | 도움말 / 버전 |
+| `arachne -v` | 버전 정보 |
 | `gask` | **Gemini 직접 호출 래퍼** — Claude Code가 `gemini -p`를 Bash로 호출해 설계·요약을 위임 |
 
 ---

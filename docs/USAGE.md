@@ -256,23 +256,25 @@ Arachne는 `install.sh`를 통해 설치되며, 설치 후에는 `arachne` 커�
 
 ### 전체 명령어 레퍼런스
 
-표준 리눅스 CLI 관행을 따른다: **옵션 없이 실행하면 설치, 각 동작은 단/장 플래그로 지정.**
+표준 리눅스 CLI 관행을 따른다: **인수 없이 실행하면 도움말, 각 동작은 단/장 플래그로 지정.**
+
+> **첫 설치는 반드시 `./install.sh`로 진행한다.** `arachne` 커맨드는 설치 후에 사용 가능하다.
 
 | 명령 | 동작 |
 | ---- | ---- |
-| `arachne` | (옵션 없음) `~/.claude/` 심볼릭 링크 + `settings.json` 생성 + dotfiles 병합 + bin 등록 (전체 설치/재설치) |
+| `arachne`, `arachne -h`, `--help` | 도움말 출력 |
+| `arachne -i`, `--install` | `~/.claude/` 심볼릭 링크 + `settings.json` 생성 + dotfiles 병합 + bin 등록 (재설치) |
 | `arachne -u`, `--update` | `git pull` 후 위 설치를 재실행 (동기화 허브) |
 | `arachne -s`, `--session` | tmux 워크스페이스 매니저 실행 (= `tws`, 8장 참고) |
 | `arachne -e`, `--export-settings` | 현재 `~/.claude/settings.json` → 레포 `settings.template.json`으로 역추출 |
 | `arachne -d`, `--export-dotfiles` | 로컬 `~/.bash_profile`·`~/.vimrc`의 변경 → 레포 `dotfiles/`로 역추출 |
-| `arachne -h`, `--help` | 도움말 출력 |
 | `arachne -v`, `--version` | 버전 정보 출력 |
 
-> 하위호환: 옛 단어형(`update` / `session` / `export-settings` / `export-dotfiles`)도 별칭으로 여전히 동작한다.
+> 하위호환: 옛 단어형(`install` / `update` / `session` / `export-settings` / `export-dotfiles`)도 별칭으로 여전히 동작한다.
 
 ```bash
-# 최초 설치 / 새 스크립트·심볼릭 링크 추가 후 재등록
-arachne
+# 재설치 / 새 스크립트·심볼릭 링크 추가 후 재등록
+arachne -i
 
 # 최신 상태로 업데이트 (git pull + 재설치 통합)
 arachne -u
@@ -317,7 +319,7 @@ arachne -d
 | ---- | --------- |
 | `arachne: command not found` | `~/.local/bin`이 PATH에 없음. `export PATH="$HOME/.local/bin:$PATH"`를 `.bash_profile`에 추가 후 `source` |
 | `git pull` 단계에서 인증 실패 | 레포 원격이 SSH(`git@github.com:...`)이므로 SSH 키 등록 필요 |
-| 새 CLI 스크립트가 명령으로 안 잡힘 | `install.sh`의 `BIN_TARGETS`에 `"스크립트명:커맨드명"` 추가 후 `arachne` 재실행 |
+| 새 CLI 스크립트가 명령으로 안 잡힘 | `install.sh`의 `BIN_TARGETS`에 `"스크립트명:커맨드명"` 추가 후 `arachne -i` 재실행 |
 
 ---
 
