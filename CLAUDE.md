@@ -22,7 +22,9 @@ Claude Code가 이를 네이티브로 자동 로드한다:
 │   ├── code-reviewer.md             # 코드 리뷰 전담 (model: sonnet)
 │   ├── tdd.md                       # TDD 사이클 안내 (model: sonnet)
 │   ├── debugger.md                  # GDB·valgrind·strace·perf (model: sonnet)
-│   └── python-reviewer.md           # Python 특화 코드 리뷰 (model: sonnet)
+│   ├── python-reviewer.md           # Python 특화 코드 리뷰 (model: sonnet)
+│   ├── fastapi-reviewer.md          # FastAPI async·DI·API 리뷰 (model: sonnet)
+│   └── react-reviewer.md            # React/Next 렌더·a11y·XSS 리뷰 (model: sonnet)
 │
 ├── commands/                        # 슬래시 커맨드 (/명령어)
 │   ├── add.md                       # /add        — 기능 추가
@@ -36,6 +38,8 @@ Claude Code가 이를 네이티브로 자동 로드한다:
 │   ├── learn.md                     # /learn      — 패턴 학습
 │   ├── save-session.md              # /save-session — 세션 요약 저장
 │   ├── python-review.md             # /python-review — Python 코드 리뷰
+│   ├── fastapi-review.md            # /fastapi-review — FastAPI 리뷰
+│   ├── react-review.md              # /react-review — React/Next 리뷰
 │   ├── tdd.md                       # /tdd        — TDD 사이클
 │   ├── e2e.md                       # /e2e        — E2E 테스트
 │   └── refactor.md                  # /refactor   — SRP 리팩터링
