@@ -6,6 +6,9 @@
 # Modification: 2026-06-04
 ################################################################################
 
+# 훅은 자동 실행·의도적 continue 경로라 -e 제외 (실패해도 세션을 막지 않음)
+set -uo pipefail
+
 SESSION_DIR="$HOME/.claude/sessions"
 
 if [ ! -d "$SESSION_DIR" ]; then

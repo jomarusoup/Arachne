@@ -6,7 +6,7 @@
 # Modification: 2026-06-04
 ################################################################################
 
-set -e
+set -euo pipefail
 
 # readlink -f 로 심볼릭 링크(arachne -> install.sh)를 해석해야 실제 레포 경로를 얻는다.
 # 미해석 시 arachne 커맨드 실행 위치(~/.local/bin)가 잡혀 update/session 이 실패한다.
