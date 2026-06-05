@@ -266,6 +266,117 @@ export function CreateMarketForm() {
 
 > 외부 입력(폼·API 응답)은 Zod 스키마로 검증한다 — `rules/javascript/coding-style.md` 참고. 시스템 경계 검증과 같은 원칙.
 
+## React 19 / 서버 컴포넌트 (App Router·RSC)
+
+신규 코드 기준. (출처: everything-claude-code `react-patterns` — Arachne 스타일로 반영)
+
+### 서버/클라이언트 컴포넌트 경계
+
+```tsx
+// 서버 컴포넌트 — 기본값, async, 자기 자신의 JS를 보내지 않음
+export default async function ProductPage({ params }: { params: { id: string } }) {
+    const product = await db.product.findUnique({ where: { id: params.id } });
+    if (!product) notFound();
+    return <ProductView product={product} />;
+}
+
+// 클라이언트 컴포넌트 — "use client"로 옵트인 (상호작용 경계)
+"use client";
+export function AddToCartButton({ productId }: { productId: string }) {
+    const [pending, startTransition] = useTransition();
+    return (
+        <button disabled={pending} onClick={() => startTransition(() => addToCart(productId))}>
+            {pending ? "담는 중..." : "장바구니"}
+        </button>
+    );
+}
+```
+
+경계 규칙:
+- 서버→클라이언트: 직렬화 가능한 props 또는 `children` 전달
+- 클라이언트→서버: Server Action을 `<form action={...}>` 또는 이벤트 핸들러에서 호출
+- **클라이언트 파일에서 서버 컴포넌트를 `import` 금지** — `children`으로 합성
+
+### 폼 액션 — `useActionState` (신규 코드 권장)
+
+```tsx
+"use client";
+import { useActionState } from "react";
+
+const initial = { error: null as string | null };
+
+async function updateUserAction(_prev: typeof initial, formData: FormData) {
+    "use server";
+    const parsed = UserSchema.safeParse(Object.fromEntries(formData));   // 서버 경계 검증 필수
+    if (!parsed.success) return { error: "잘못된 입력" };
+    await db.user.update({ where: { id: parsed.data.id }, data: parsed.data });
+    return { error: null };
+}
+
+export function UserForm() {
+    const [state, formAction, pending] = useActionState(updateUserAction, initial);
+    return (
+        <form action={formAction}>
+            <input name="name" required />
+            <button type="submit" disabled={pending}>저장</button>
+            {state.error && <p role="alert">{state.error}</p>}
+        </form>
+    );
+}
+```
+
+> Server Action 입력은 클라이언트 검증만 신뢰하지 말고 **서버에서 스키마 재검증**한다.
+
+### 낙관적 UI — `useOptimistic`
+
+```tsx
+"use client";
+import { useOptimistic } from "react";
+
+export function MessageList({ messages }: { messages: Message[] }) {
+    const [optimistic, addOptimistic] = useOptimistic(
+        messages,
+        (state, newMessage: Message) => [...state, newMessage],
+    );
+
+    async function send(formData: FormData) {
+        const text = String(formData.get("text"));
+        addOptimistic({ id: "pending", text, sender: "me" });   // 즉시 반영
+        await saveMessage(text);                                // 확정은 서버 응답 후
+    }
+
+    return (
+        <>
+            <ul>{optimistic.map((m) => <li key={m.id}>{m.text}</li>)}</ul>
+            <form action={send}><input name="text" /><button type="submit">전송</button></form>
+        </>
+    );
+}
+```
+
+### 상태 위치 결정 트리
+
+```
+한 컴포넌트만 사용?            → 그 안에서 useState
+부모 + 일부 자손?             → 가장 가까운 공통 조상으로 끌어올림
+먼 가지들 + 저빈도 읽기?       → React Context (theme·auth·locale)
+  (theme·auth·locale)
+트리 전체 고빈도 갱신?         → 외부 스토어 (Zustand·Jotai·Redux Toolkit)
+서버에서 파생?                → 서버 상태 라이브러리 (TanStack Query·SWR·RSC fetch)
+```
+
+> 대부분의 페이지는 Context·전역 스토어가 필요 없다. 중복 끌어올림이 고통스러워지기 전엔 추상화를 미룬다.
+
+### 데이터 워터폴 제거 (성능)
+
+```tsx
+const a = await getA(); const b = await getB();          // BAD — 직렬 대기
+const [a, b] = await Promise.all([getA(), getB()]);      // GOOD — 병렬
+```
+
+> 서버에서 같은 요청이 반복되면 `React.cache()`로 중복 제거. 배럴 임포트(`index.ts` 재노출)는
+> 트리셰이킹을 저해하므로 직접 임포트를 선호.
+
 ## 에러 바운더리 — UI 격리
 
 ```tsx
