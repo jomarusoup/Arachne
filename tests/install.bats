@@ -154,3 +154,38 @@ run_install() {
     local first_line="$output"
     grep -qF "$first_line" "${TMP_DIR}/.codex/AGENTS.md"
 }
+
+#-------------------------------------------------------------------------------
+# --check 연결 점검 검증 (Phase 3)
+#-------------------------------------------------------------------------------
+@test "check: 3 CLI 정상 연결 시 OK 및 exit 0" {
+    # 세 타깃을 모두 설치 → ~/.gemini·~/.codex 디렉터리 생성으로 감지 보장
+    bash "${REPO_DIR}/install.sh" -i --target claude
+    bash "${REPO_DIR}/install.sh" -i --target gemini
+    bash "${REPO_DIR}/install.sh" -i --target codex
+
+    run bash "${REPO_DIR}/install.sh" --check
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"모든 연결 정상"* ]]
+}
+
+@test "check: Codex 섹션이 AGENTS.md와 다르면 stale 탐지 (exit 1)" {
+    bash "${REPO_DIR}/install.sh" -i --target claude
+    # 마커는 있으나 본문이 낡은 Codex 파일 위조
+    mkdir -p "${TMP_DIR}/.codex"
+    {
+        echo "<!-- === ARACHNE BEGIN === -->"
+        echo "OLD-STALE-CONTENT"
+        echo "<!-- === ARACHNE END === -->"
+    } > "${TMP_DIR}/.codex/AGENTS.md"
+
+    run bash "${REPO_DIR}/install.sh" --check
+    [ "$status" -eq 1 ]
+    [[ "$output" == *"stale"* ]]
+}
+
+@test "check: Claude 미설치 시 FAIL (exit 1)" {
+    run bash "${REPO_DIR}/install.sh" --check
+    [ "$status" -eq 1 ]
+    [[ "$output" == *"[FAIL] Claude"* ]]
+}

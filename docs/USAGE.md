@@ -197,6 +197,8 @@ model: opus               # opus / sonnet / haiku
 
 **전제**: Claude 쿼터는 희소 자원, Gemini는 한계비용 ≈ 0. → 토큰 무거운·저정밀 작업은 Gemini로 내려보내 Claude 소모를 줄인다.
 
+> **정책 SSOT**: 비용 라우팅·역할 분담의 **단일 출처는 [`rules/common/workflow.md`](../rules/common/workflow.md)** (Claude가 실제로 따르는 행동 규칙). 이 절은 사람용 설명이며, 충돌 시 workflow.md가 우선한다.
+
 ### 역할 분담
 | 작업 | 담당 |
 |---|---|
@@ -268,6 +270,7 @@ Arachne는 `install.sh`를 통해 설치되며, 설치 후에는 `arachne` 커�
 | `arachne`, `arachne -h`, `--help` | 도움말 출력 |
 | `arachne -i`, `--install` | `~/.claude/` 심볼릭 링크 + `settings.json` 생성 + dotfiles 병합 + bin 등록 (재설치) |
 | `arachne -u`, `--update` | `git pull` 후 위 설치를 재실행 (동기화 허브) |
+| `arachne -c`, `--check` | 3개 CLI(Claude·Gemini·Codex) 연결 상태 점검 — 심볼릭 댕글링·Codex stale 탐지 |
 | `arachne -s`, `--session` | tmux 워크스페이스 매니저 실행 (= `tws`, 8장 참고) |
 | `arachne -e`, `--export-settings` | 현재 `~/.claude/settings.json` → 레포 `settings.template.json`으로 역추출 |
 | `arachne -d`, `--export-dotfiles` | 로컬 `~/.bash_profile`·`~/.vimrc`의 변경 → 레포 `dotfiles/`로 역추출 |
