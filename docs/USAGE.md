@@ -120,7 +120,7 @@ model: opus               # opus / sonnet / haiku
 |---|---|
 | 시스템 프로그래밍 | `latency-critical-systems` `trading-systems` `performance-profiling` `build-debug` `memory-check` `cpp-testing` `error-handling` |
 | 언어별 패턴·테스팅 | `rust-patterns` `rust-testing` `golang-patterns` `golang-testing` `go-http-patterns` `python-patterns` `python-testing` |
-| 백엔드·웹 | `backend-patterns` `frontend-patterns` `make-interfaces-feel-better` |
+| 백엔드·웹 | `backend-patterns` `frontend-patterns` `api-design` `fastapi-patterns` `make-interfaces-feel-better` |
 | 워크플로·보안·기타 | `tdd-workflow` `verification-loop` `security-review` `security-scan` `docker-patterns` `agentic-engineering` |
 | 네트워크 | `network-config-validation` `network-interface-health` `netmiko-ssh-automation` |
 

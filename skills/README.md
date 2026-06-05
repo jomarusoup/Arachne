@@ -1,6 +1,6 @@
 # Skills
 
-Claude Code 세션에서 호출 가능한 워크플로·도메인 스킬 모음 (26개).
+Claude Code 세션에서 호출 가능한 워크플로·도메인 스킬 모음 (28개).
 
 ---
 
@@ -33,7 +33,9 @@ Claude Code 세션에서 호출 가능한 워크플로·도메인 스킬 모음 
 | 스킬 | 설명 |
 |---|---|
 | `backend-patterns` | 레포지토리·서비스 레이어·N+1·캐싱·큐 (Python/FastAPI + 시스템 전환 이식 맵) |
-| `frontend-patterns` | React·Next 합성·상태·가상화·a11y (데스크톱 UI 이식) |
+| `frontend-patterns` | React·Next 합성·상태·가상화·a11y·React 19(서버 컴포넌트·액션·낙관적 UI) |
+| `api-design` | REST 설계 — 리소스 네이밍·상태 코드·봉투·커서/오프셋 페이지네이션·버전·레이트리밋 |
+| `fastapi-patterns` | FastAPI 프로덕션 — 앱 팩토리·DI·스키마 분리·async·중앙 에러 핸들러·테스트 |
 | `make-interfaces-feel-better` | 동심 radius·광학 정렬·모션·히트 영역 등 UI 폴리시 디테일 |
 
 ## TDD·검증
