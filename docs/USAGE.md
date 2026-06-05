@@ -48,6 +48,7 @@ description: /명령어 설명
 |---|---|
 | `/add` `/fix` `/refactor` | 기능 추가 · 버그 수정 · 리팩터링 |
 | `/tdd` `/verify` `/e2e` | TDD 사이클 · 2단계 검증 · E2E 테스트 |
+| `/design` `/python-review` | 설계 문서 · Python 코드 리뷰 |
 | `/issue` `/status` | GitHub 이슈 순차 처리 · 프로젝트 현황 |
 | `/git` `/handoff` `/save-session` `/learn` | 커밋·푸시 · 전환 저장 · 세션 요약 · 패턴 학습 |
 
@@ -89,6 +90,7 @@ model: opus               # opus / sonnet / haiku
 | `code-reviewer` | sonnet | 품질·보안·안정성 리뷰 |
 | `tdd` | sonnet | Red-Green-Refactor 안내 |
 | `debugger` | sonnet | GDB·valgrind·strace·perf |
+| `python-reviewer` | sonnet | PEP 8·타입 힌트·보안·이디엄 Python 리뷰 |
 
 ### 병렬 실행
 독립적인 작업은 여러 에이전트를 동시에 돌릴 수 있다(예: 모듈 A 보안 분석 + 모듈 B 성능 검토 + 모듈 C 리뷰 → 3개 동시).
@@ -113,8 +115,9 @@ model: opus               # opus / sonnet / haiku
 | 카테고리 | 스킬 |
 |---|---|
 | 시스템 프로그래밍 | `latency-critical-systems` `trading-systems` `performance-profiling` `build-debug` `memory-check` `cpp-testing` `error-handling` |
-| 언어별 패턴·테스팅 | `rust-patterns` `rust-testing` `golang-patterns` `golang-testing` `go-http-patterns` |
-| 워크플로·보안·기타 | `tdd-workflow` `verification-loop` `security-review` `security-scan` `docker-patterns` |
+| 언어별 패턴·테스팅 | `rust-patterns` `rust-testing` `golang-patterns` `golang-testing` `go-http-patterns` `python-patterns` `python-testing` |
+| 백엔드·웹 | `backend-patterns` `frontend-patterns` `make-interfaces-feel-better` |
+| 워크플로·보안·기타 | `tdd-workflow` `verification-loop` `security-review` `security-scan` `docker-patterns` `agentic-engineering` |
 | 네트워크 | `network-config-validation` `network-interface-health` `netmiko-ssh-automation` |
 
 ### 새 스킬 추가
