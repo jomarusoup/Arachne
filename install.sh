@@ -24,6 +24,7 @@ BIN_TARGETS=(
     "install.sh:arachne"
     "tmux.sh:tws"
     "gask.sh:gask"
+    "docs-sync.sh:docs-sync"
 )
 
 SYMLINK_TARGETS=(
