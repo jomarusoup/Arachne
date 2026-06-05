@@ -55,28 +55,40 @@ arachne -i --target claude|gemini|codex|all     (기본 all)
 | 언어 coding-style 7개 | △ | **제거 보류** — Phase 0 검증 후 결정 (아래 4장) |
 | `@AGENTS.md` | — | **신규 추가** (import 블록 최상단) |
 
-## 4. ⚠️ Phase 0 — 선결 검증 (구현 전 필수)
+## 4. ✅ Phase 0 — 검증 완료 (paths 자동활성화 = 네이티브 지원)
 
-**언어 coding-style 7개 @import 제거 가능 여부는 "Claude Code가 `paths:` frontmatter를 자동 로드하는가"에 달림.**
+**공식 문서(`code.claude.com/docs/en/memory`)로 확정**: `paths:` frontmatter 조건부 로드와
+`~/.claude/rules/` 자동 로드는 **Claude Code 네이티브 기능**. 심볼릭 링크도 공식 지원.
+(초기 가설 "Cursor 전용 기능, Claude Code 미지원"은 **반증됨**.)
 
-실측 결과:
-- 언어 규칙 파일들에 `paths:` frontmatter는 **존재**.
-- 그러나 `settings.template.json`에 paths 매핑 **없음** → 로더 부재.
-- `paths` 자동활성화는 Cursor `.mdc` 기능 — **Claude Code 네이티브 미지원 의심**.
+함의:
+1. Arachne는 `rules`를 `~/.claude/rules`로 심볼릭 → **공통 규칙은 항상, 언어 규칙은 `paths` 매칭 시
+   이미 자동 로드 중.** 각 언어 `security/patterns/hooks/testing`도 `paths` frontmatter가 있으면
+   매칭 파일 열 때 로드됨(미로드 아님).
+2. 따라서 **CLAUDE.md의 `@rules/...` 19개 import는 전부 중복** — 제거해도 콘텐츠 유실 없음
+   (rules/ 자동 로더가 대체). #25 항목4가 "이중 로드"로 확정.
+3. **Claude는 AGENTS.md조차 불필요** — rules/가 풀 디테일을 자동 로드하므로. AGENTS.md는
+   rules/ 자동 로더가 없는 **Gemini/Codex 전용 휴대용 다이제스트**로 역할이 명확해짐.
 
-→ 사실이면:
-1. 언어 import 제거 시 언어 규칙 **완전 미로드(콘텐츠 유실)** → 제거 금지.
-2. **선재 결함**: 각 언어의 `security/patterns/hooks/testing` 28개 파일은 import도 안 되고 paths 로더도 없어
-   **현재도 로드 안 될 가능성**. (이슈 #25 항목4 재정의 필요 — "이중 로드"가 아니라 "대부분 미로드")
+→ 남은 실증 1건: `/memory` 실행해 심볼릭된 rules가 실제 로드 목록에 뜨는지 최종 확인(사용자만 가능).
 
-**Phase 0 = Claude Code의 paths frontmatter 처리 동작을 사실 확인.** 결과에 따라 언어 로딩 전략 분기.
+> **공식 문서가 설계를 직접 축복**: "create a `CLAUDE.md` that imports it (`@AGENTS.md`).
+> A symlink also works (`ln -s AGENTS.md CLAUDE.md`)." — 멀티-CLI SSOT 방향과 정확히 일치.
+
+### 정밀화된 아키텍처 (Phase 0 결과 반영)
+- **Claude**: `~/.claude/rules/` 네이티브 자동 로드(공통 항상 + 언어 paths). CLAUDE.md엔
+  `@rules` import 제거, Claude 전용(agents·hooks·performance·ui-layout)만. `@AGENTS.md`도 선택사항
+  (rules/와 중복이므로 굳이 import 안 해도 됨).
+- **Gemini**: `~/.gemini/GEMINI.md` ← AGENTS.md 심볼릭 (유일 규칙 소스).
+- **Codex**: `~/.codex/AGENTS.md` ← AGENTS.md 마커 병합 (유일 규칙 소스).
+- 새 드리프트 축: `AGENTS.md`(다이제스트) ↔ `rules/`(풀) 간 내용 동기화. #25와 연계해 관리.
 
 ## 5. 단계적 구현
 
 | Phase | 작업 | 독립 검증 |
 | --- | --- | --- |
-| **0** | Claude Code paths frontmatter 자동로드 여부 사실 확인 | 작동/미작동 확정 |
-| **1** | `@AGENTS.md` 추가 + 흡수 공통 6개 제거 + workflow/dev-workflow 축소 + `install_gemini` 심볼릭. (언어 import는 Phase 0 결과 전까지 유지) | `arachne -i --target claude` 회귀 없음 / `readlink ~/.gemini/GEMINI.md` = AGENTS.md / SSOT-PROBE 즉시 전파 |
+| **0** | ✅ **완료** — paths 자동로드 = 네이티브 지원 확인(공식 문서). 남은 건 `/memory` 실증 1건 | 지원 확정. `@rules` import 제거 안전 |
+| **1** | CLAUDE.md의 `@rules/...` **19개 전부 제거**(rules/ 자동로드 위임) + Claude 전용 비-rules 내용 정리 + `install_gemini`(AGENTS.md→`~/.gemini/GEMINI.md` 심볼릭) | `arachne -i --target claude` 회귀 없음 / `/memory`에 rules 로드 확인 / `readlink ~/.gemini/GEMINI.md` = AGENTS.md / SSOT-PROBE 즉시 전파 |
 | **2** | `merge_dotfile` 마커 스타일 인자화 + `install_codex` + 디스패처 `all`에 codex | `~/.codex/AGENTS.md` 마커 1쌍+본문, 멱등성, 재실행 후 SSOT-PROBE 반영 |
 | **3** | (선택) settings/config 병합 + `arachne --check` 드리프트 가드 | `--check`가 3 CLI 연결 상태 OK/FAIL 출력 |
 
