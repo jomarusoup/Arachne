@@ -2,26 +2,15 @@
 
 웹·MVP부터 저수준 시스템 프로그래밍까지 아우르는 Harness의 글로벌 Claude Code 설정.
 
-@rules/common/workflow.md
-@rules/common/coding-style.md
-@rules/common/patterns.md
-@rules/common/issue-workflow.md
-@rules/common/ui-layout.md
-@rules/common/hooks.md
-@rules/common/security.md
-@rules/common/testing.md
-@rules/common/agents.md
-@rules/common/development-workflow.md
-@rules/common/git-workflow.md
-@rules/common/performance.md
-
-@rules/c/coding-style.md
-@rules/cpp/coding-style.md
-@rules/golang/coding-style.md
-@rules/rust/coding-style.md
-@rules/python/coding-style.md
-@rules/javascript/coding-style.md
-@rules/bash/coding-style.md
+<!--
+규칙은 @import 하지 않는다. install.sh가 rules/를 ~/.claude/rules/로 심볼릭하며,
+Claude Code가 이를 네이티브로 자동 로드한다:
+  - rules/common/*  (paths 없음) → 매 세션 자동 로드
+  - rules/<언어>/*  (paths 있음) → 해당 확장자 파일 편집 시 자동 로드
+공식 문서: code.claude.com/docs/en/memory ("Organize rules with .claude/rules/", "Path-specific rules")
+따라서 과거의 @rules/... import 19개는 전부 중복이라 제거했다.
+공통 규약은 멀티-CLI 공유를 위해 AGENTS.md(SSOT)로도 추출돼 있고, Gemini/Codex는 그쪽을 본다.
+-->
 
 ## Architecture
 
