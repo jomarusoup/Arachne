@@ -53,6 +53,7 @@ usage() {
     echo "  -u, --update           git pull 후 최신 상태로 재설치"
     echo "      --target T          설치 대상 CLI: claude|gemini|codex|all (기본 all)"
     echo "                          (-i/-u 와 함께 사용. 미감지 CLI는 자동 스킵)"
+    echo "  -c, --check            3개 CLI 연결 상태 점검 (심볼릭 댕글링·Codex stale 탐지)"
     echo "  -s, --session          tmux 워크스페이스 매니저(tws) 실행"
     echo "  -e, --export-settings  ~/.claude/settings.json -> settings.template.json 내보내기"
     echo "  -d, --export-dotfiles  ~/.bash_profile, ~/.vimrc -> dotfiles/ 내보내기"
@@ -433,10 +434,80 @@ parse_target() {
     esac
 }
 
+################################################################################
+# FUNCTION    : check_arachne
+# DESCRIPTION : 3개 CLI 연결 상태 점검 — 심볼릭 댕글링·Codex 마커 stale 탐지.
+#               OK/SKIP/FAIL 출력. 하나라도 FAIL 이면 종료코드 1.
+################################################################################
+check_arachne() {
+    local fail=0
+    echo "[Arachne] 연결 상태 점검"
+
+    #---------------------------------------------------------------------------
+    # Claude — ~/.claude/CLAUDE.md 가 레포 CLAUDE.md 로 해석되는가
+    #---------------------------------------------------------------------------
+    if [ "$(readlink -e "$CLAUDE_DIR/CLAUDE.md" 2>/dev/null)" = "$(readlink -e "$REPO_DIR/CLAUDE.md")" ]; then
+        echo "  [OK]   Claude : ~/.claude/CLAUDE.md -> 레포"
+    else
+        echo "  [FAIL] Claude : ~/.claude/CLAUDE.md 가 레포로 연결되지 않음 (arachne -i 필요)"
+        fail=1
+    fi
+
+    #---------------------------------------------------------------------------
+    # Gemini — 감지된 경우에만. ~/.gemini/GEMINI.md -> 레포 AGENTS.md
+    #---------------------------------------------------------------------------
+    if detect_cli gemini; then
+        if [ "$(readlink -e "$HOME/.gemini/GEMINI.md" 2>/dev/null)" = "$(readlink -e "$REPO_DIR/AGENTS.md")" ]; then
+            echo "  [OK]   Gemini : ~/.gemini/GEMINI.md -> AGENTS.md"
+        else
+            echo "  [FAIL] Gemini : 심볼릭 끊김/불일치 (arachne -i --target gemini 필요)"
+            fail=1
+        fi
+    else
+        echo "  [SKIP] Gemini : 미감지"
+    fi
+
+    #---------------------------------------------------------------------------
+    # Codex — 감지된 경우에만. 마커 존재 + 섹션 본문이 현재 AGENTS.md 와 일치
+    #---------------------------------------------------------------------------
+    if detect_cli codex; then
+        local codex_file="$HOME/.codex/AGENTS.md"
+        local begin="<!-- === ${ARACHNE_TAG} BEGIN === -->"
+        local end="<!-- === ${ARACHNE_TAG} END === -->"
+        if [ ! -f "$codex_file" ]; then
+            echo "  [FAIL] Codex  : ~/.codex/AGENTS.md 없음 (arachne -i --target codex 필요)"
+            fail=1
+        elif ! grep -qF "$begin" "$codex_file"; then
+            echo "  [FAIL] Codex  : ARACHNE 마커 없음 (arachne -i --target codex 필요)"
+            fail=1
+        else
+            local extracted
+            extracted=$(awk -v b="$begin" -v e="$end" \
+                'index($0,b){s=1;next} index($0,e){s=0;next} s' "$codex_file")
+            if [ "$extracted" = "$(cat "$REPO_DIR/AGENTS.md")" ]; then
+                echo "  [OK]   Codex  : ~/.codex/AGENTS.md (AGENTS.md 최신)"
+            else
+                echo "  [FAIL] Codex  : 섹션이 AGENTS.md 와 다름 — stale (arachne -i --target codex 재실행)"
+                fail=1
+            fi
+        fi
+    else
+        echo "  [SKIP] Codex  : 미감지"
+    fi
+
+    if [ "$fail" -eq 0 ]; then
+        echo "[Arachne] 모든 연결 정상"
+    else
+        echo "[Arachne] 연결 문제 발견 — 위 안내대로 재설치 필요" >&2
+    fi
+    return "$fail"
+}
+
 case "${1:-}" in
     ""|"-h"|--help|help)                      usage ;;
     -i|--install|install)                     shift; parse_target "$@"; install ;;
     -u|--update|update)                       shift; parse_target "$@"; update_arachne ;;
+    -c|--check|check)                         check_arachne ;;
     -s|--session|session)                     run_session ;;
     -e|--export-settings|export-settings)     export_settings ;;
     -d|--export-dotfiles|export-dotfiles)     export_dotfiles ;;

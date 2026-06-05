@@ -2,8 +2,8 @@
 
 - **작성일**: 2026-06-05
 - **유형**: feat (신규 구조 — 하네스 규약을 3개 CLI가 공유)
-- **상태**: 설계 확정, 구현 대기 (Phase 0 선결 검증 필요)
-- **선행 의존**: 이슈 #25 (특히 항목4 — paths 자동활성화 실재 여부)
+- **상태**: ✅ Phase 0~3 구현 완료 (`c123a7e`·`f23350e` + `--check`). 3 CLI SSOT 라이브. settings/config 병합만 수요 시 잔여
+- **선행 의존**: 이슈 #25 (해소됨 — paths 자동활성화 네이티브 지원 확정)
 
 > 목표: **`AGENTS.md` 한 파일을 단일 진실 공급원(SSOT)으로 두고**, Claude Code·Gemini CLI·Codex CLI가
 > 모두 그것을 가리키게 한다. "한 파일 수정 = 세 CLI 동시 반영", **빌드/CI 가드 불필요**.
@@ -88,9 +88,9 @@ arachne -i --target claude|gemini|codex|all     (기본 all)
 | Phase | 작업 | 독립 검증 |
 | --- | --- | --- |
 | **0** | ✅ **완료** — paths 자동로드 = 네이티브 지원 확인(공식 문서). 남은 건 `/memory` 실증 1건 | 지원 확정. `@rules` import 제거 안전 |
-| **1** | CLAUDE.md의 `@rules/...` **19개 전부 제거**(rules/ 자동로드 위임) + Claude 전용 비-rules 내용 정리 + `install_gemini`(AGENTS.md→`~/.gemini/GEMINI.md` 심볼릭) | `arachne -i --target claude` 회귀 없음 / `/memory`에 rules 로드 확인 / `readlink ~/.gemini/GEMINI.md` = AGENTS.md / SSOT-PROBE 즉시 전파 |
-| **2** | `merge_dotfile` 마커 스타일 인자화 + `install_codex` + 디스패처 `all`에 codex | `~/.codex/AGENTS.md` 마커 1쌍+본문, 멱등성, 재실행 후 SSOT-PROBE 반영 |
-| **3** | (선택) settings/config 병합 + `arachne --check` 드리프트 가드 | `--check`가 3 CLI 연결 상태 OK/FAIL 출력 |
+| **1** | ✅ **완료**(`c123a7e`) — CLAUDE.md `@rules/...` 19개 제거 + `install_gemini`(AGENTS.md→`~/.gemini/GEMINI.md` 심볼릭) | `readlink -e ~/.gemini/GEMINI.md` = AGENTS.md 확인 |
+| **2** | ✅ **완료**(`f23350e`) — `merge_dotfile` 마커 접미사 인자화 + `install_codex` + 디스패처 `all`에 codex(감지 시) | bats 4종(마커·멱등성·보충 보존·SSOT 반영) 그린, 실환경 `~/.codex/AGENTS.md` 생성 |
+| **3** | ✅ **`arachne --check` 완료** — 3 CLI 연결 점검(심볼릭 댕글링·Codex stale 탐지, OK/SKIP/FAIL). settings/config 병합은 범위 직교라 미착수(수요 시) | bats 3종 그린, 실환경 3 CLI OK |
 
 ## 6. 검증 — SSOT 전파 테스트
 

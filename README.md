@@ -42,6 +42,7 @@ cd ~/Arachne
 | `arachne`, `arachne -h` | 도움말 출력 |
 | `arachne -i` (`--install`) | 재설치 및 설정 동기화 |
 | `arachne -u` (`--update`) | 최신 상태로 업데이트 (git pull + 재설치) |
+| `arachne -c` (`--check`) | 3개 CLI(Claude·Gemini·Codex) 연결 상태 점검 |
 | `arachne -s` (`--session`) | **Tmux Workspace Manager**: 대화형 세션 매니저 (`tws`와 동일) |
 | `arachne -e` (`--export-settings`) | settings.json → 템플릿 내보내기 |
 | `arachne -d` (`--export-dotfiles`) | dotfiles → 레포 내보내기 |
