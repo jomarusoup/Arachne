@@ -205,6 +205,22 @@ install_gemini() {
 }
 
 ################################################################################
+# FUNCTION    : install_codex
+# DESCRIPTION : Codex CLI 타깃 설치 — AGENTS.md(SSOT)를 ~/.codex/AGENTS.md 로 병합.
+#               import 미지원이라 심볼릭 대신 마커 병합(사용자 보충 보존).
+#               Markdown 친화 마커(<!-- === ARACHNE ... === -->) 사용.
+#               심볼릭이 아니므로 AGENTS.md 수정 후 재반영하려면
+#               arachne -i --target codex 재실행이 필요하다.
+################################################################################
+install_codex() {
+    local codex_dir="$HOME/.codex"
+    echo "[Arachne] Codex 설치 시작: AGENTS.md -> $codex_dir/AGENTS.md"
+    mkdir -p "$codex_dir"
+    merge_dotfile "$REPO_DIR/AGENTS.md" "$codex_dir/AGENTS.md" "<!--" " -->"
+    echo "[Arachne] Codex 설치 완료"
+}
+
+################################################################################
 # FUNCTION    : detect_cli
 # DESCRIPTION : 대상 CLI 설치 여부 검사 (홈 디렉터리 또는 바이너리 존재)
 # PARAMETERS  : string cli - gemini | codex
@@ -237,7 +253,7 @@ install() {
     case "${ARACHNE_TARGET:-all}" in
         claude) install_claude ;;
         gemini) install_gemini ;;
-        codex)  echo "[Arachne] Codex 타깃은 Phase 2 예정 (미구현)" >&2; exit 1 ;;
+        codex)  install_codex ;;
         all)
             install_claude
             if detect_cli gemini; then
@@ -245,7 +261,11 @@ install() {
             else
                 echo "[Arachne] Gemini CLI 미감지 — 스킵"
             fi
-            # Codex 는 Phase 2 에서 추가
+            if detect_cli codex; then
+                install_codex
+            else
+                echo "[Arachne] Codex CLI 미감지 — 스킵"
+            fi
             ;;
     esac
     install_shared
@@ -255,17 +275,19 @@ install() {
 # FUNCTION    : merge_dotfile
 # DESCRIPTION : dotfiles/ 내용을 사용자 파일에 ARACHNE 섹션으로 병합
 #               기존 파일 내용 유지, 섹션이 있으면 갱신 / 없으면 끝에 추가
-# PARAMETERS  : string src          - dotfiles/ 내 원본 경로
-#               string dst          - 홈 디렉터리 내 대상 경로
-#               string comment_char - 파일 형식별 주석 문자 (기본: #, vimrc: ")
+# PARAMETERS  : string src            - dotfiles/ 내 원본 경로
+#               string dst            - 홈 디렉터리 내 대상 경로
+#               string comment_char   - 형식별 주석 시작 문자 (기본: #, vimrc: ", md: <!--)
+#               string comment_suffix - 형식별 주석 종료 문자 (기본: 없음, md: " -->")
 ################################################################################
 merge_dotfile() {
     local src="$1"
     local dst="$2"
     local comment_char="${3:-#}"
+    local comment_suffix="${4:-}"
 
-    local begin="${comment_char} === ${ARACHNE_TAG} BEGIN ==="
-    local end="${comment_char} === ${ARACHNE_TAG} END ==="
+    local begin="${comment_char} === ${ARACHNE_TAG} BEGIN ===${comment_suffix}"
+    local end="${comment_char} === ${ARACHNE_TAG} END ===${comment_suffix}"
     local tmp
     tmp=$(mktemp)
 
