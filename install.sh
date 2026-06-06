@@ -237,6 +237,16 @@ detect_cli() {
 }
 
 ################################################################################
+# FUNCTION    : _detect_zsh_target
+# DESCRIPTION : ~/.zshrc 적용 대상 여부 판단
+#               zshrc 파일이 이미 있거나 기본 셸이 zsh인 경우 적용
+# RETURNED    : 0(적용) / 1(스킵)
+################################################################################
+_detect_zsh_target() {
+    [ -f "$HOME/.zshrc" ] || [[ "$SHELL" == */zsh ]]
+}
+
+################################################################################
 # FUNCTION    : install_shared
 # DESCRIPTION : 타깃 무관 공통 설치 (dotfiles 병합 + bin 등록) — 항상 1회
 ################################################################################
@@ -276,6 +286,7 @@ install() {
 # FUNCTION    : merge_dotfile
 # DESCRIPTION : dotfiles/ 내용을 사용자 파일에 ARACHNE 섹션으로 병합
 #               기존 파일 내용 유지, 섹션이 있으면 갱신 / 없으면 끝에 추가
+#               중복 감지: 사용자 영역에 이미 존재하는 줄은 섹션에서 제외
 # PARAMETERS  : string src            - dotfiles/ 내 원본 경로
 #               string dst            - 홈 디렉터리 내 대상 경로
 #               string comment_char   - 형식별 주석 시작 문자 (기본: #, vimrc: ", md: <!--)
@@ -299,10 +310,8 @@ merge_dotfile() {
         rm "${dst}"
 
         if [ "${link_target}" = "$(readlink -f "${src}")" ]; then
-            # Arachne dotfile 자체로의 링크: 빈 파일로 시작 (내용은 섹션으로 재주입)
             touch "${dst}"
         else
-            # 다른 파일로의 링크: 해당 내용 보존
             cp "${link_target}" "${dst}" 2>/dev/null || touch "${dst}"
         fi
         echo "  변환: 심볼릭 링크 → 파일 ${dst}"
@@ -310,39 +319,98 @@ merge_dotfile() {
 
     [ -f "${dst}" ] || touch "${dst}"
 
+    # 사용자 영역(ARACHNE 섹션 제외) 추출 — 중복 감지용
+    local user_content
+    user_content=$(awk -v b="${begin}" -v e="${end}" \
+        'BEGIN{skip=0}
+         index($0,b){skip=1; next}
+         index($0,e){skip=0; next}
+         !skip{print}' "${dst}")
+
+    # src 줄 중 사용자 영역에 없는 것만 필터링
+    local tmp_filtered
+    tmp_filtered=$(mktemp)
+    local skipped=0
+
+    while IFS= read -r line; do
+        local trimmed
+        trimmed=$(printf '%s' "${line}" | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')
+        # 빈 줄·주석은 그대로 통과
+        if [ -z "${trimmed}" ] || [[ "${trimmed}" == "${comment_char}"* ]]; then
+            printf '%s\n' "${line}" >> "${tmp_filtered}"
+            continue
+        fi
+        # 사용자 영역에 이미 존재하면 스킵
+        if printf '%s\n' "${user_content}" | grep -qxF "${trimmed}" 2>/dev/null; then
+            skipped=$((skipped + 1))
+        else
+            printf '%s\n' "${line}" >> "${tmp_filtered}"
+        fi
+    done < "${src}"
+
+    # 실질 내용(주석·공백 제외)이 남아있는지 확인
+    local has_content=0
+    while IFS= read -r chk_line; do
+        local chk_trim
+        chk_trim=$(printf '%s' "${chk_line}" | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')
+        if [ -n "${chk_trim}" ] && [[ "${chk_trim}" != "${comment_char}"* ]]; then
+            has_content=1
+            break
+        fi
+    done < "${tmp_filtered}"
+
+    # 기존 ARACHNE 섹션 처리
+    local action="추가"
     if grep -qF "${begin}" "${dst}" 2>/dev/null; then
-        # 기존 ARACHNE 섹션 교체 (마커 외부 내용 유지)
         awk -v b="${begin}" -v e="${end}" \
             'BEGIN{skip=0}
              index($0,b){skip=1; next}
              index($0,e){skip=0; next}
              !skip{print}' "${dst}" > "${tmp}"
-        echo "  갱신 (ARACHNE 섹션): ${dst}"
+        action="갱신"
     else
-        # 최초 설치: 기존 내용 보존 후 섹션 추가
         cp "${dst}" "${tmp}"
-        echo "  병합 (ARACHNE 섹션 추가): ${dst}"
     fi
 
-    {
-        printf '\n%s\n' "${begin}"
-        cat "${src}"
-        printf '%s\n' "${end}"
-    } >> "${tmp}"
+    if [ "${has_content}" -gt 0 ]; then
+        {
+            printf '\n%s\n' "${begin}"
+            cat "${tmp_filtered}"
+            printf '%s\n' "${end}"
+        } >> "${tmp}"
+        if [ "${skipped}" -gt 0 ]; then
+            echo "  ${action}: ${dst} (${skipped}줄 중복 제외)"
+        else
+            echo "  ${action}: ${dst}"
+        fi
+    else
+        if [ "${skipped}" -gt 0 ]; then
+            echo "  스킵: ${dst} (${skipped}줄 — 모두 이미 존재)"
+        else
+            echo "  ${action}: ${dst}"
+        fi
+    fi
 
+    rm -f "${tmp_filtered}"
     mv "${tmp}" "${dst}"
 }
 
 ################################################################################
 # FUNCTION    : install_dotfiles
 # DESCRIPTION : dotfiles/ 내용을 홈 디렉터리 파일에 ARACHNE 섹션으로 병합 설치
+#               중복 줄 자동 제외, zsh 감지 시 ~/.zshrc 에도 적용
 ################################################################################
 install_dotfiles() {
     echo "[Arachne] dotfiles 설치 시작"
     merge_dotfile "$DOTFILES_DIR/bash_profile" "$HOME/.bash_profile" "#"
     merge_dotfile "$DOTFILES_DIR/vimrc"        "$HOME/.vimrc"        '"'
+    if _detect_zsh_target; then
+        local zsh_src="$DOTFILES_DIR/bash_profile"
+        [ -f "$DOTFILES_DIR/zshrc" ] && zsh_src="$DOTFILES_DIR/zshrc"
+        merge_dotfile "${zsh_src}" "$HOME/.zshrc" "#"
+    fi
     echo "[Arachne] dotfiles 설치 완료"
-    echo "  적용하려면: source ~/.bash_profile"
+    echo "  적용하려면: source ~/.bash_profile  (zsh: source ~/.zshrc)"
 }
 
 ################################################################################
@@ -385,12 +453,15 @@ _export_single() {
 
 ################################################################################
 # FUNCTION    : export_dotfiles
-# DESCRIPTION : ~/.bash_profile, ~/.vimrc -> dotfiles/ 로 내보내기
+# DESCRIPTION : ~/.bash_profile, ~/.vimrc, ~/.zshrc -> dotfiles/ 로 내보내기
 ################################################################################
 export_dotfiles() {
     echo "[Arachne] dotfiles 내보내기 시작"
     _export_single "$HOME/.bash_profile" "$DOTFILES_DIR/bash_profile" ".bash_profile" "#"
     _export_single "$HOME/.vimrc"        "$DOTFILES_DIR/vimrc"        ".vimrc"        '"'
+    if [ -f "$HOME/.zshrc" ]; then
+        _export_single "$HOME/.zshrc" "$DOTFILES_DIR/zshrc" ".zshrc" "#"
+    fi
     echo "[Arachne] dotfiles 내보내기 완료"
     echo "  커밋하려면: cd $REPO_DIR && git add dotfiles/ && git commit -m 'chore: update dotfiles'"
 }
