@@ -17,6 +17,7 @@ LOCAL_BIN="$HOME/.local/bin"
 ARACHNE_TAG="ARACHNE"
 PROG="arachne"
 ARACHNE_VERSION="1.0.0"
+ENTRY_NAME="$(basename "$0")"
 
 # "스크립트명:커맨드명" 형식 — git pull 시 심볼릭 링크라 자동 업데이트됨
 BIN_TARGETS=(
@@ -575,7 +576,14 @@ check_arachne() {
 }
 
 case "${1:-}" in
-    ""|"-h"|--help|help)                      usage ;;
+    "")
+        if [ "$ENTRY_NAME" = "install.sh" ]; then
+            install
+        else
+            usage
+        fi
+        ;;
+    "-h"|--help|help)                         usage ;;
     -i|--install|install)                     shift; parse_target "$@"; install ;;
     -u|--update|update)                       shift; parse_target "$@"; update_arachne ;;
     -c|--check|check)                         check_arachne ;;
