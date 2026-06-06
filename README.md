@@ -21,7 +21,8 @@ aliases:
 > 🗺️ 하네스 구조 다이어그램(Mermaid)은 [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) 참고
 > 📖 skills·agents·커맨드·hooks 사용법은 [docs/USAGE.md](docs/USAGE.md) 참고
 > 🔗 3개 CLI 통합 사용·상호작용은 [docs/MULTI-CLI.md](docs/MULTI-CLI.md) 참고
-> 🗂️ 원격 프로젝트 문서 ↔ Obsidian 동기화는 [docs/OBSIDIAN-DOCS-SYNC.md](docs/OBSIDIAN-DOCS-SYNC.md) 참고
+> 🗂️ 원격 프로젝트 문서 ↔ Obsidian 동기화는 [docs/OBSIDIAN-DOCS-SYNC.md](docs/OBSIDIAN-DOCS-SYNC.md)(arachne 설정)·[docs/SYNCTHING-SETUP.md](docs/SYNCTHING-SETUP.md)(자동) 참고
+> 📑 약어(SSOT·TDD·DI·a11y 등) 풀이는 [docs/GLOSSARY.md](docs/GLOSSARY.md) 참고
 
 ---
 
