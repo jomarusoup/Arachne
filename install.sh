@@ -20,10 +20,14 @@ ARACHNE_VERSION="1.0.0"
 ENTRY_NAME="$(basename "$0")"
 
 # "스크립트명:커맨드명" 형식 — git pull 시 심볼릭 링크라 자동 업데이트됨
+# 위임 래퍼는 짧은 별칭(gask/cask)과 명시적 이름(gemini-task/codex-task) 둘 다 등록
 BIN_TARGETS=(
     "install.sh:arachne"
     "tmux.sh:tws"
-    "gask.sh:gask"
+    "gemini-task.sh:gask"
+    "gemini-task.sh:gemini-task"
+    "codex-task.sh:cask"
+    "codex-task.sh:codex-task"
     "docs-sync.sh:docs-sync"
 )
 
@@ -58,7 +62,7 @@ usage() {
     echo "  -c, --check            3개 CLI 연결 상태 점검 (심볼릭 댕글링·Codex stale 탐지)"
     echo "  -s, --session          tmux 워크스페이스 매니저(tws) 실행"
     echo "  -e, --export-settings  ~/.claude/settings.json -> settings.template.json 내보내기"
-    echo "  -d, --export-dotfiles  ~/.bash_profile, ~/.vimrc -> dotfiles/ 내보내기"
+    echo "  -d, --export-dotfiles  ~/.bash_profile, ~/.vimrc, ~/.zshrc -> dotfiles/ 내보내기"
     echo "  -h, --help             이 도움말 출력"
     echo "  -v, --version          버전 정보 출력"
     echo ""

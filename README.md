@@ -67,7 +67,8 @@ Arachne/
 ├── settings.template.json       # ~/.claude/settings.json 템플릿
 ├── install.sh                   # 통합 관리 도구 (CLI: arachne)
 ├── tmux.sh                      # tmux 워크스페이스 매니저 (CLI: tws)
-├── gask.sh                      # Gemini 직접 호출 래퍼 (CLI: gask)
+├── gemini-task.sh               # Gemini 위임 래퍼 — reader/advisor (CLI: gask, gemini-task)
+├── codex-task.sh                # Codex 위임 래퍼 — tester/fixer (CLI: cask, codex-task)
 ├── docs-sync.sh                 # 원격 프로젝트 문서 ↔ Obsidian 동기화 (CLI: docs-sync)
 │
 ├── rules/                       # Claude 전역 행동 규칙

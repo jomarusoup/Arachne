@@ -138,6 +138,10 @@
 ---
 
 > **도구별 보충**: 이 공유 코어 외에, 각 도구는 자기만의 보충 설정을 가진다.
-> 예) Claude Code는 `CLAUDE.md`에 서브에이전트·이벤트 훅·슬래시 커맨드·모델 라우팅·
-> Gemini 위임(`gask`)을 추가로 정의한다. 그 내용은 다른 도구와 공유되지 않으므로
-> 이 파일에 넣지 않는다.
+> 예) Claude Code는 `CLAUDE.md`/`rules/`에 서브에이전트·이벤트 훅·슬래시 커맨드·모델
+> 라우팅·위임 래퍼(`gask`=Gemini reader/advisor, `cask`=Codex tester/fixer)를 추가로
+> 정의한다. 그 내용은 다른 도구와 공유되지 않으므로 이 파일에 넣지 않는다.
+>
+> **3-레인 협업**: Claude=오케스트레이터+주 구현자, Codex=tester/fixer, Gemini=reader/advisor.
+> Codex가 `cask`로 호출되면 그 호출에 테스터/픽서 역할 프리앰블이 주입된다 — 테스트
+> 작성·실행·버그 수정에 집중하고 기능 추가는 하지 않는다. 산출물의 최종 통합·커밋은 Claude가 한다.

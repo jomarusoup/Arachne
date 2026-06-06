@@ -198,25 +198,25 @@ model: opus               # opus / sonnet / haiku
 
 ---
 
-## 6. Claude ↔ Gemini 협업 (비용 최적화)
+## 6. Claude ↔ Codex ↔ Gemini 협업 (3-레인)
 
-**전제**: Claude 쿼터는 희소 자원, Gemini는 한계비용 ≈ 0. → 토큰 무거운·저정밀 작업은 Gemini로 내려보내 Claude 소모를 줄인다.
+**전제**: Claude Code가 중심(오케스트레이터 + 주 구현자). Codex·Gemini는 위임 대상이며, 셋 다 `AGENTS.md` 공통 규약을 공유해 인계 마찰이 작다.
 
 > **정책 SSOT**: 비용 라우팅·역할 분담의 **단일 출처는 [`rules/common/workflow.md`](../rules/common/workflow.md)** (Claude가 실제로 따르는 행동 규칙). 이 절은 사람용 설명이며, 충돌 시 workflow.md가 우선한다.
 
-### 역할 분담
-| 작업 | 담당 |
-|---|---|
-| 기능 기획 · 설계 · 아키텍처 | **Gemini** (`gask`) |
-| 대용량 코드·로그 읽기·요약 | **Gemini** (`gask`) |
-| README · 장문 문서 생성 | **Gemini** (`gask`, 파일로 출력) |
-| 사전 조사 · 대안 비교 · 루틴 리뷰 1차 | **Gemini** (`gask`) |
-| 코드 구현 · 버그 수정 · 디버깅 · 보안 리뷰 | **Claude** |
-| `~/.claude/` 설정 관리 · 마이그레이션 · 인프라 설정 | **Claude** |
+### 역할 분담 (3-레인)
+| 레인 | CLI | 호출 | 하는 일 |
+|---|---|---|---|
+| 오케스트레이터 + 주 구현자 | **Claude** | (중심) | 설계·구현·리팩터링·통합·커밋, 보안 리뷰, 설정·마이그레이션·인프라 |
+| tester / fixer | **Codex** | `cask` (`codex-task`) | 테스트 작성·실행, 버그 수정 (기능 추가 X) |
+| reader / advisor | **Gemini** | `gask` (`gemini-task`) | 대용량 읽기·요약, 설계 탐색, 1차 리뷰, 장문 생성 (구현 X) |
 
-### 경로 A — `gask` 직접 호출 (기본)
+> 우선순위 두 사슬: **오프로드**(비용) = Gemini → Codex → (Claude 안 씀), **페일오버**(구현 품질) = Claude → Codex → Gemini.
+> Claude 쿼터 소진 시 구현 대타는 Codex 먼저 — `/handoff`로 인계. Gemini는 코딩 스타일 충실도가 낮아 최종 구현 코드는 안 맡긴다.
+
+### 경로 A — `gask` 직접 호출 (Gemini reader/advisor)
 Claude Code가 **터미널 전환 없이 Bash로 `gask`를 직접 호출**해 답변을 받아온다.
-`gask`는 `gemini -p`의 경고·노이즈를 걸러 **답변만 stdout**으로 돌려주는 래퍼다 (`gask.sh` → `~/.local/bin/gask`).
+`gask`(=`gemini-task`)는 `gemini -p`의 경고·노이즈를 걸러 **답변만 stdout**으로 돌려주는 래퍼다 (`gemini-task.sh` → `~/.local/bin/gask`).
 
 ```bash
 gask "이 설계 검토해줘: $(cat module.c)"            # 자문 → 답변 stdout
@@ -234,8 +234,27 @@ gask -m gemini-2.5-flash "간단 질의"                 # 모델 지정 (선택
 > Gemini 답을 Claude 컨텍스트로 끌어오는 건 **요약·자문일 때만**. 장문 생성은 파일로 빼고 Claude는 존재만 확인한다 — 다시 읽으면 절약이 사라진다.
 > 권한: `settings.json`의 `permissions.allow`에 `Bash(gask:*)`가 있어 호출마다 승인 프롬프트가 뜨지 않는다.
 
-### 경로 B — git-bus 감지 (보조)
-본인·가족이 **다른 터미널에서 Gemini로 직접 커밋**한 경우를 위한 비동기 채널. `gask`와 공존한다.
+### 경로 B — `cask` 직접 호출 (Codex tester/fixer)
+Claude Code가 **Bash로 `cask`를 직접 호출**해 테스트·수정을 위임하고 결과만 받아온다.
+`cask`(=`codex-task`)는 `codex exec`의 헤더·메타·경고를 걸러 **결과만 stdout**으로 돌려준다 (`codex-task.sh` → `~/.local/bin/cask`).
+
+```bash
+cask "tests/ 의 parser 테스트 보강안 제시: $(cat src/parser.c)"  # 제안만 (read-only 기본)
+cask -w "실패하는 test_auth 를 green 까지 수정"                   # 직접 실행·수정 (workspace-write)
+cask -r "이 함수 리뷰만 해줘"                                     # 역할 주입 없이 raw
+cask -m <model> -C <dir> "..."                                    # 모델·작업 디렉터리 지정
+```
+
+| 모드 | 플래그 | Codex | Claude |
+|---|---|---|---|
+| 제안 (기본) | 없음 | 테스트 코드·수정 diff 반환, 트리 미변경 | 적용·실행·커밋 |
+| 실행 | `-w` | 직접 쓰고 돌려 green 까지 수정 | `git diff` 검토·스타일 보정·커밋 |
+
+> `cask`는 블로킹·순차 실행이라 두 모델이 같은 파일을 동시에 건드리지 않는다. **커밋은 항상 Claude.**
+> 권한: `Bash(cask:*)`가 `permissions.allow`에 있어 호출마다 승인 프롬프트가 뜨지 않는다.
+
+### 경로 C — git-bus 감지 (보조)
+본인·가족이 **다른 터미널에서 Gemini/Codex로 직접 커밋**한 경우를 위한 비동기 채널. `gask`/`cask`와 공존한다.
 
 | 구성 요소 | 역할 |
 |---|---|
@@ -356,13 +375,13 @@ Claude Code는 터미널을 점유하므로, 여러 프로젝트나 테스트 �
 
 ---
 
-## 9. Gemini 질의 래퍼 (`gask`) — CLI 레퍼런스
+## 9. 위임 래퍼 (`gask` / `cask`) — CLI 레퍼런스
 
-`gask`의 **언제·왜·비용 라우팅**은 [6장 경로 A](#6-claude--gemini-협업-비용-최적화)를 참고.
-이 절은 명령 레퍼런스만 다룬다. `gask`는 `gemini -p`의 노이즈(stderr)를 걸러
-**답변만 stdout**으로 돌려주는 래퍼이며, `~/.local/bin/gask → gask.sh` 심볼릭 링크로 등록된다.
+**언제·왜·비용 라우팅**은 [6장](#6-claude--codex--gemini-협업-3-레인)을 참고. 이 절은 명령 레퍼런스만 다룬다.
+두 래퍼 모두 내부 CLI 노이즈(stderr)를 걸러 **결과만 stdout**으로 돌려준다. 각각 짧은 별칭과 명시적 이름으로 등록된다
+(`gask`=`gemini-task` → `gemini-task.sh`, `cask`=`codex-task` → `codex-task.sh`).
 
-### 문법
+### `gask` (= `gemini-task`) — Gemini reader/advisor
 ```bash
 gask [-m MODEL] "프롬프트..."
 cat file | gask "이 입력을 요약해줘"      # stdin 입력은 프롬프트에 자동 append
@@ -375,4 +394,20 @@ cat file | gask "이 입력을 요약해줘"      # stdin 입력은 프롬프트
 | 종료 코드 | 내부 `gemini` 호출 결과를 그대로 전파 → 스크립트·파이프라인에 안전 |
 | stdout / stderr | 답변 본문은 stdout, 노이즈 제거 후 남은 진단만 stderr |
 
-> 사용 예시·비용 라우팅(끌어오기/쏟아내기)은 6장 참고.
+### `cask` (= `codex-task`) — Codex tester/fixer
+```bash
+cask [-m MODEL] [-w] [-r] [-C DIR] "프롬프트..."
+cat test.log | cask "이 실패 원인 분석하고 수정 diff 제시"   # stdin 자동 append
+```
+
+| 옵션·요소 | 설명 |
+| --------- | ---- |
+| `-m MODEL` | 사용할 Codex 모델 (미지정 시 `codex` 기본값 또는 환경변수 `CASK_MODEL`) |
+| `-w` | 쓰기 모드(workspace-write) — codex가 테스트를 직접 쓰고 실행해 수정. 기본은 read-only 제안 모드 |
+| `-r` | raw — tester/fixer 역할 프리앰블 없이 프롬프트 그대로 전달 |
+| `-C DIR` | 작업 루트 디렉터리 지정 (`codex -C`) |
+| `-h` | 도움말 출력 |
+| 종료 코드 | 내부 `codex` 호출 결과를 그대로 전파 |
+| stdout / stderr | 결과 본문은 stdout, 진짜 에러로 보이는 줄만 stderr |
+
+> 사용 예시·통합 경계(제안/실행 모드)·비용 라우팅은 6장 참고.

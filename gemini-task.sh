@@ -1,11 +1,12 @@
 #!/bin/bash
 ################################################################################
-# FILE NAME   : gask.sh
-# DESCRIPTION : Gemini CLI 비대화 질의 래퍼 — Claude Code가 별도 터미널 전환 없이
-#               직접 호출해 설계·조사·요약을 Gemini에 위임하고 깨끗한 답변만 받는다.
+# FILE NAME   : gemini-task.sh
+# DESCRIPTION : Gemini CLI 작업 위임 래퍼 (gemini-task / 짧은 별칭 gask) —
+#               Claude Code가 별도 터미널 전환 없이 직접 호출해 설계·조사·요약을
+#               Gemini(reader/advisor 레인)에 위임하고 깨끗한 답변만 받는다.
 #               (gemini -p 의 경고/노이즈를 걸러 stdout 오염 방지)
 # DATA        : 2026-06-04
-# Modification: 2026-06-04
+# Modification: 2026-06-06
 ################################################################################
 
 set -euo pipefail
@@ -22,10 +23,11 @@ readonly NOISE_PATTERN='True color|Ripgrep is not available|^Warning:|^Loaded|^D
 #===============================================================================
 Usage() {
     cat >&2 << 'USAGE'
-Usage: gask [-m MODEL] "프롬프트..."
+Usage: gemini-task [-m MODEL] "프롬프트..."   (짧은 별칭: gask)
        cat file | gask "이 입력을 요약해줘"
 
-  Gemini CLI 비대화(headless) 호출 래퍼. 답변만 stdout 으로 출력한다.
+  Gemini CLI 비대화(headless) 작업 위임 래퍼. 답변만 stdout 으로 출력한다.
+  레인: reader/advisor — 대용량 읽기·요약·설계 탐색·1차 리뷰 (구현은 위임 안 함).
 
 Options:
   -m MODEL   사용할 Gemini 모델 (미지정 시 gemini 기본값 / 환경변수 GASK_MODEL)
