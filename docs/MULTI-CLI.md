@@ -64,12 +64,13 @@ Arachne 구성요소가 각 CLI에서 실제로 작동하는지. **공통 규약
 | 이벤트 훅 (`hooks/`) | ✅ Session·PreCompact·Prompt | ❌ | ❌ |
 | 스킬 (`skills/`) | ✅ 자동 참조 | ❌ | ❌ |
 | 상태표시줄 (`statusline`) | ✅ | ❌ | ❌ |
-| `gask` 위임 | ✅ **호출 주체** | — (위임 **대상**) | ❌ |
+| 작업 위임 래퍼 | ✅ **호출 주체** | `gask`/`gemini-task` 위임 **대상** (reader/advisor) | `cask`/`codex-task` 위임 **대상** (tester/fixer) |
 | MCP 서버 | ✅ `settings.json` | 별도 `~/.gemini` 설정(미관리) | 별도 `~/.codex/config.toml`(미관리) |
 
-> 요점: **Gemini·Codex는 "공통 규약을 읽는 것"까지**가 Arachne가 주는 전부다. 에이전트·훅·커맨드 같은
-> 오케스트레이션은 Claude Code 고유 기능이라 이식되지 않는다. (Gemini·Codex가 가진 **자체** 에이전트·MCP
-> 기능은 별개이며 Arachne가 아직 관리하지 않는다 — [설계문서](issue/2026-06-05-multi-cli-ssot.md) Phase 3.)
+> 요점: **공통 규약을 읽는 것**은 셋 다 공유한다. 그 위에 Claude는 Gemini를 `gask`(요약·자문),
+> Codex를 `cask`(테스트·수정)로 **위임 호출**한다 — 3-레인 협업. 에이전트·훅·커맨드 같은
+> 오케스트레이션 자체는 Claude Code 고유 기능이라 이식되지 않는다. (Gemini·Codex가 가진 **자체**
+> 에이전트·MCP 기능은 별개이며 Arachne가 아직 관리하지 않는다 — [설계문서](issue/2026-06-05-multi-cli-ssot.md) Phase 3.)
 
 ### 3.1 Claude Code — 풀 스택으로 동작
 
@@ -114,19 +115,27 @@ gask "README 초안 작성" > README.md           # 장문 생성 → 파일로 
 - `gask`는 Claude가 Gemini에 작업을 위임하는 비용 최적화 경로다([USAGE.md §6](USAGE.md)).
 - `gask`는 헤드리스라 `--skip-trust`를 자동 처리 — 임의 디렉터리에서 불려도 동작한다.
 
-### 3.3 Codex CLI — 공통 규약(병합본)
+### 3.3 Codex CLI — 공통 규약(병합본) + `cask` 위임 대상 (tester/fixer)
 
 **런타임 동작**: Codex는 새 세션마다 글로벌 지침 `~/.codex/AGENTS.md`를 로드한다. 이 파일엔 SSOT 본문이
 마커(`<!-- === ARACHNE … === -->`)로 병합돼 있고, 마커 밖 사용자 내용은 보존된다. **공통 규약만** 적용되고
 에이전트·훅·커맨드는 없다(Codex 자체 기능은 별개). 실측: 프로젝트 AGENTS.md가 없는 중립 디렉터리에서
 `codex exec`가 전역 지침의 고유 토큰을 출력 → 런타임 로딩 확인됨.
 
+**협업 레인**: Codex는 3-레인에서 **tester/fixer**다. Claude가 `cask`(=`codex-task`)로 테스트 작성·실행과
+버그 수정을 위임한다. `cask`는 호출마다 테스터/픽서 역할 프리앰블을 주입하고(기능 추가 금지), 결과만
+stdout으로 돌려줘 Claude가 통합·커밋한다. 기본은 read-only 제안 모드, `-w`는 workspace-write 실행 모드.
+
 **어떻게 쓰나**:
 
 ```bash
 codex                                         # 대화형 — 새 세션에 공통 규약 자동 로드
-codex exec "이 함수 리뷰해줘"                  # 비대화 1회
+codex exec "이 함수 리뷰해줘"                  # 비대화 1회 (raw)
 codex exec -C <작업디렉터리> --skip-git-repo-check "..."   # 디렉터리·git 밖 실행
+
+# Claude 안에서 위임 (권장) — cask 래퍼, 결과만 stdout
+cask "tests/ 의 parser 테스트 보강안 제시: $(cat src/parser.c)"  # 제안만 (read-only)
+cask -w "실패하는 test_auth 를 green 까지 수정"                   # 직접 실행·수정
 ```
 
 - **주의**: AGENTS.md를 수정했으면 Codex는 자동 반영이 아니다. `arachne -i --target codex`
