@@ -44,6 +44,39 @@ waitpid(WNOHANG)를 SIGCHLD 핸들러에 추가해
 - `fix/<버그명>` — 버그 수정
 - `refactor/<대상>` — 리팩터링
 
+작업 시작 전 `git pull`로 최신 `main` 위에서 분기한다. 단위는 작고 독립적으로 — 한 브랜치가
+한 관심사만 다뤄야 머지 충돌이 작다.
+
+## 다중 세션·병렬 작업 — git worktree (필수)
+
+> **핵심**: 브랜치는 *히스토리*를 격리하지만, *작업 디렉터리(체크아웃 상태)*는 격리하지 못한다.
+> **여러 세션·AI 인스턴스가 한 폴더를 공유하면, 서로 다른 브랜치를 체크아웃하며 충돌한다.**
+> 동시 작업에서 충돌을 막는 것은 브랜치가 아니라 **worktree(폴더 분리)**다.
+
+| 상황 | 방식 |
+| --- | --- |
+| 한 번에 한 작업 (단일 세션) | `main` 직접 또는 `feat/<task>` 단일 브랜치로 충분 |
+| **동시 다중 작업** (세션·에이전트 병렬) | **반드시 worktree로 폴더까지 분리** |
+
+```bash
+# 작업마다 독립 폴더 + 독립 브랜치
+git worktree add ../Arachne-<task-a>  feat/<task-a>
+git worktree add ../Arachne-<task-b>  feat/<task-b>
+
+# 각 세션은 자기 폴더에서만 작업 (체크아웃 충돌 0)
+cd ../Arachne-<task-a>   # 세션 A
+cd ../Arachne-<task-b>   # 세션 B
+
+# 끝나면 각 브랜치를 main에 머지(PR 권장) 후 worktree 정리
+git worktree remove ../Arachne-<task-a>
+```
+
+규칙:
+- **같은 작업 디렉터리에서 두 세션이 `git checkout`으로 브랜치를 바꾸지 않는다.** 병렬이면 worktree.
+- 겹치는 파일을 두 worktree가 동시에 고치면 머지 충돌은 여전하다 → 작업 경계를 파일 단위로 나눈다.
+- Claude Code의 `Agent`(서브에이전트) 도구는 `isolation: "worktree"`로 이 격리를 자동 제공한다.
+- 병렬 인스턴스는 5~6개 이하로 — 각자 토큰을 소모한다.
+
 ## PR 워크플로
 
 PR 생성 시:
