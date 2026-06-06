@@ -29,8 +29,10 @@ aliases:
 ```bash
 git clone https://github.com/jomarusoup/Arachne.git ~/Arachne
 cd ~/Arachne
-./install.sh -i   # 최초 1회 — 이후 arachne 커맨드 사용 가능
+./install.sh      # 최초 1회 — 이후 arachne 커맨드 사용 가능
 ```
+
+최초 설치 후 재설치 또는 설정 동기화는 `arachne -i`를 사용합니다.
 
 설치 스크립트가 하는 일:
 1. 기존 `~/.claude/` 파일 자동 백업 (`.bak`)

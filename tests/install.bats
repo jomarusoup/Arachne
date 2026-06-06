@@ -20,8 +20,7 @@ teardown() {
 #===============================================================================
 # FUNCTION    : run_install
 # DESCRIPTION : install.sh 를 설치 모드로 실행하고 종료코드 0 을 단언.
-#               무인자 실행은 usage(도움말)이므로 설치는 -i 플래그가 필수.
-#               설치 호출부를 한 곳으로 모아 플래그 드리프트를 차단한다.
+#               최초 설치와 재설치 양쪽에서 유효한 -i 명시 호출을 사용한다.
 # RETURNED    : 0(성공) — 실패 시 단언이 테스트를 실패시킴
 #===============================================================================
 run_install() {
@@ -79,10 +78,19 @@ run_install() {
 }
 
 #-------------------------------------------------------------------------------
-# 무인자 실행은 설치하지 않고 usage 만 출력 (안전 기본값)
+# 최초 install.sh 무인자 실행과 설치 후 arachne 무인자 실행 구분
 #-------------------------------------------------------------------------------
-@test "no-arg: 무인자 실행은 설치하지 않음 (usage 출력)" {
+@test "no-arg: install.sh 직접 실행은 최초 설치 수행" {
     run bash "${REPO_DIR}/install.sh"
+    [ "$status" -eq 0 ]
+    [ -f "${TMP_DIR}/.claude/settings.json" ]
+}
+
+@test "no-arg: arachne 커맨드는 usage 출력만 수행" {
+    ln -s "${REPO_DIR}/install.sh" "${TMP_DIR}/arachne"
+
+    run bash "${TMP_DIR}/arachne"
+
     [ "$status" -eq 0 ]
     [ ! -e "${TMP_DIR}/.claude/settings.json" ]
     [[ "$output" == *"Usage:"* ]]
