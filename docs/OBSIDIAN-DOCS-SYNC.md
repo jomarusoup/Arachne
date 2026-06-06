@@ -71,20 +71,16 @@ docs-sync pull arachne --delete
 
 포함:
 
-- `README`
-- `README.*`
-- `README-*`
-- `*.md`
-- `docs/`
-- `doc/`
-- `documentation/`
+- 프로젝트 루트의 `README.md`
+- `docs/` 디렉터리 전체 (하위 디렉터리·파일 포함)
 
 제외:
 
-- 소스 코드
-- 빌드 산출물
-- 바이너리
-- 위 목록에 들어가지 않는 모든 파일
+- 그 외 모든 파일 — 소스 코드, 빌드 산출물, 바이너리, 트리에 흩어진 `*.md`,
+  하위 디렉터리의 `README` 등은 동기화하지 않는다.
+
+문서 노이즈를 줄이기 위해 의도적으로 좁힌 정책이다. `agents/`·`commands/`·`rules/`
+처럼 운영용 마크다운이 많은 디렉터리는 Obsidian에 가져오지 않는다.
 
 ## 운영 원칙
 

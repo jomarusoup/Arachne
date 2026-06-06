@@ -12,14 +12,8 @@ PROG="docs-sync"
 DEFAULT_CONFIG="${HOME}/.config/arachne/docs-sync.conf"
 
 RSYNC_FILTERS=(
-    "--include=*/"
-    "--include=README"
-    "--include=README.*"
-    "--include=README-*"
-    "--include=*.md"
-    "--include=docs/***"
-    "--include=doc/***"
-    "--include=documentation/***"
+    "--include=/README.md"
+    "--include=/docs/***"
     "--exclude=*"
 )
 
