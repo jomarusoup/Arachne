@@ -1,8 +1,22 @@
-# Obsidian Project Docs Sync
+# Obsidian Project Docs Sync — arachne 설정(수동) 방식
 
 원격 Linux 서버의 여러 프로젝트에서 README와 Markdown 문서만 MacBook의 Obsidian Vault 아래
 `프로젝트/` 디렉터리로 가져오거나, 필요할 때 다시 원격으로 올리는 방식이다. 새 프로그램을
-상시 실행하지 않고 `rsync`를 사용한다.
+상시 실행하지 않고 **rsync**(remote sync — 변경분만 효율적으로 복사하는 도구)를 사용한다.
+
+## 문서 동기화 — 두 가지 방법
+
+| | **이 문서: docs-sync (arachne 설정)** | Syncthing (자동) |
+| --- | --- | --- |
+| 트리거 | **수동** (`docs-sync pull/push`) | 자동 (파일 변경 시 즉시) |
+| 설정 위치 | **`~/.config/arachne/docs-sync.conf`** (arachne 관리) | Syncthing GUI/설정 |
+| 설치 | **`arachne -i` 하나로 `docs-sync` 등록** | 별도 데몬 설치 |
+| 방향 | 호출 시 결정 (한쪽→다른쪽) | 양방향 |
+| 적합 | 프로젝트마다 설정 1줄, 가끔·선택적 동기화, `--dry-run` 미리보기 | 상시 백그라운드 자동화 |
+
+> **이 문서는 arachne에 내장된 설정 방식**이다. 한번에 자동 동기화를 세팅하려면
+> [SYNCTHING-SETUP.md](SYNCTHING-SETUP.md)의 "빠른 시작"을 본다. 두 방식은 공존 가능.
+> 약어 풀이는 [GLOSSARY.md](GLOSSARY.md).
 
 ## 설치
 

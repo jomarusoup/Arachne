@@ -10,21 +10,34 @@ Arachne는 **하나의 공통 규약(`AGENTS.md`)을 세 개의 AI 코딩 CLI가
 
 ## 1. 큰 그림
 
+> **SSOT** = Single Source of Truth(단일 진실 공급원). 같은 정보를 여러 곳에 복제하지 않고
+> **한 곳(`AGENTS.md`)만 정본**으로 두는 원칙. 거기만 고치면 나머지는 그것을 가리키므로,
+> 사본끼리 어긋나는 **드리프트(drift, 문서·설정이 실제와 점점 불일치해지는 현상)** 가 생기지 않는다.
+
+```mermaid
+graph TD
+    SSOT["📄 AGENTS.md<br/>(SSOT · 공통 규약)<br/>← 여기만 고친다"]
+    SSOT -->|"심볼릭 링크<br/>(수정 즉시 반영)"| GFILE["~/.gemini/GEMINI.md"]
+    SSOT -->|"마커 병합<br/>(재설치 시 반영)"| CFILE["~/.codex/AGENTS.md"]
+    SSOT -.->|"같은 규약을 더 상세히"| RULES["~/.claude/rules/<br/>(+ CLAUDE.md 보충)"]
+    GFILE --> GEMINI["🤖 Gemini CLI"]
+    CFILE --> CODEX["🤖 Codex CLI"]
+    RULES --> CLAUDE["🤖 Claude Code"]
+
+    classDef ssot fill:#fde68a,stroke:#b45309,color:#111;
+    classDef tool fill:#bfdbfe,stroke:#1e40af,color:#111;
+    class SSOT ssot;
+    class GEMINI,CODEX,CLAUDE tool;
 ```
-                ┌──────────────────────────────┐
-                │   AGENTS.md  (SSOT, 공통 규약) │   ← 여기만 고친다
-                └───────────────┬──────────────┘
-        ┌───────────────────────┼────────────────────────┐
-        │ 심볼릭(즉시)            │ 마커 병합(재설치)         │ rules/ 자동 로드
-        ▼                       ▼                         ▼
-  ~/.gemini/GEMINI.md     ~/.codex/AGENTS.md       ~/.claude/rules/  (+ CLAUDE.md 보충)
-        │                       │                         │
-     Gemini CLI              Codex CLI                Claude Code
-```
+
+> Claude는 `rules/`에서 풀 디테일을 자동 로드하므로 점선(`-.->`)으로 표시했다 — `AGENTS.md`를
+> 직접 읽는 게 아니라 같은 규약의 상세판을 본다. 자세한 비대칭은 2장.
 
 - **공통 규약**(작업 원칙·코딩 스타일·패턴·보안·테스트·git·이슈·언어 포인터)은 `AGENTS.md`에만 둔다.
 - **도구 전용 기능**(Claude의 서브에이전트·훅·슬래시 커맨드·모델 라우팅·`gask`)은 `CLAUDE.md`에만 둔다.
   → 공유 규약과 도구 전용이 파일 단위로 분리돼 **드리프트가 구조적으로 차단**된다.
+
+> 📖 이 문서의 약어(SSOT·TDD·DI·a11y 등)는 [GLOSSARY.md](GLOSSARY.md)에 풀이돼 있다.
 
 ---
 

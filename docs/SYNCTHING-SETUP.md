@@ -13,6 +13,55 @@
 
 > 두 방식은 공존 가능하다. Syncthing이 상시 동기화를 담당하고, `docs-sync.sh`는
 > Syncthing 미설치 환경(또는 디버그용)에서 단발 동기화로 활용한다.
+> 수동·arachne 관리 방식(`docs-sync`)은 [OBSIDIAN-DOCS-SYNC.md](OBSIDIAN-DOCS-SYNC.md) 참고.
+
+---
+
+## 빠른 시작 — 한번에 세팅 (자동 동기화)
+
+아래 블록을 순서대로 실행하면 Syncthing 자동 동기화가 대부분 세팅된다.
+(Device 페어링·폴더 공유는 보안상 양쪽 확인이 필요해 GUI/CLI 한 단계가 남는다. 상세는 아래 본문.)
+
+### A. 원격(Linux) — 원샷 스크립트 (복붙)
+
+```bash
+# 설치 + 방화벽(22000) + 시스템 서비스 + 문서만 동기화하는 .stignore 까지 한 번에
+USER_NAME="$(whoami)"
+REPO_DIR="$HOME/Arachne"                       # 동기화할 프로젝트 경로로 교체
+
+# 1) 설치 (배포판 자동 분기)
+if command -v dnf >/dev/null; then sudo dnf install -y syncthing
+else sudo apt-get update -qq && sudo apt-get install -y syncthing; fi
+
+# 2) 방화벽: 데이터 포트만 개방 (GUI는 닫아 둔다)
+sudo firewall-cmd --permanent --add-port=22000/tcp 2>/dev/null && sudo firewall-cmd --reload || true
+
+# 3) 시스템 서비스로 기동 (SSH 세션엔 --user 가 D-Bus 없어 실패하므로 시스템 서비스 사용)
+sudo systemctl enable --now "syncthing@${USER_NAME}.service"
+
+# 4) 문서만 동기화: README.md + docs/ 외 전부 무시
+cat > "${REPO_DIR}/.stignore" << 'EOF'
+(?d)*
+!/README.md
+!/docs
+!/docs/**
+EOF
+
+# 5) 이 서버의 Device ID 출력 (Mac에 등록할 값)
+syncthing --device-id
+```
+
+### B. 로컬(Mac) — 압축 단계
+
+```bash
+brew install --cask syncthing && open -a Syncthing      # 메뉴바 아이콘 → http://localhost:8384
+```
+브라우저 GUI(`http://localhost:8384`)에서:
+1. **Add Remote Device** → 원격 Device ID 입력, Addresses에 `tcp://<원격IP>:22000`
+2. **Add Folder** → 경로를 Obsidian 프로젝트 폴더로, **Folder Type = Send & Receive**, 원격 device 공유 체크
+3. 원격에서 폴더 수락(아래 4단계 참고) → 상태가 **최신**이 되면 완료
+
+> 위가 "한번에 세팅"의 핵심이다. 각 단계의 배경·트러블슈팅은 이어지는 본문에서 단계별로 설명한다.
 
 ## 사전 준비
 
