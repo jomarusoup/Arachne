@@ -60,6 +60,8 @@ usage() {
     echo "      --target T          설치 대상 CLI: claude|gemini|codex|all (기본 all)"
     echo "                          (-i/-u 와 함께 사용. 미감지 CLI는 자동 스킵)"
     echo "  -c, --check            3개 CLI 연결 상태 점검 (심볼릭 댕글링·Codex stale 탐지)"
+    echo "  -n, --new P [DIR]      신규 프로젝트 스캐폴딩 (README + docs/{issue,idea,template})"
+    echo "                         DIR 생략 시 현재 디렉터리. --no-git 으로 git init 생략"
     echo "  -s, --session          tmux 워크스페이스 매니저(tws) 실행"
     echo "  -e, --export-settings  ~/.claude/settings.json -> settings.template.json 내보내기"
     echo "  -d, --export-dotfiles  ~/.bash_profile, ~/.vimrc, ~/.zshrc -> dotfiles/ 내보내기"
@@ -580,6 +582,82 @@ check_arachne() {
     return "$fail"
 }
 
+################################################################################
+# FUNCTION    : new_project
+# DESCRIPTION : 신규 프로젝트를 기록 가능한 문서 구조로 스캐폴딩.
+#               모든 문서 frontmatter 는 docs/template/example.md(SSOT)에서 파생.
+# PARAMETERS  : 위치인자 project_name [parent_dir] + 플래그 --no-git
+#               parent_dir 생략 시 현재 디렉터리. 대상 존재 시 거부.
+################################################################################
+new_project() {
+    local do_git=1
+    local positional=()
+    while [ $# -gt 0 ]; do
+        case "$1" in
+            --no-git) do_git=0 ;;
+            -*)       echo "[ERROR] 알 수 없는 옵션: $1" >&2; exit 1 ;;
+            *)        positional+=("$1") ;;
+        esac
+        shift
+    done
+
+    local proj="${positional[0]:-}"
+    local parent="${positional[1]:-$PWD}"
+
+    #---------------------------------------------------------------------------
+    # 입력 검증
+    #---------------------------------------------------------------------------
+    if [ -z "$proj" ]; then
+        echo "[ERROR] 프로젝트명이 필요합니다: arachne new <project> [parent-dir] [--no-git]" >&2
+        exit 1
+    fi
+    case "$proj" in
+        */*|.*) echo "[ERROR] 프로젝트명에 '/'·선행 '.' 사용 불가: $proj" >&2; exit 1 ;;
+    esac
+
+    local tmpl="$REPO_DIR/docs/template/example.md"
+    if [ ! -f "$tmpl" ]; then
+        echo "[ERROR] 문서 템플릿이 없습니다: $tmpl" >&2
+        exit 1
+    fi
+
+    local dest="$parent/$proj"
+    if [ -e "$dest" ]; then
+        echo "[ERROR] 이미 존재합니다: $dest" >&2
+        exit 1
+    fi
+
+    #---------------------------------------------------------------------------
+    # 기록 구조 생성
+    #---------------------------------------------------------------------------
+    mkdir -p "$dest/docs/issue" "$dest/docs/idea" "$dest/docs/template"
+    touch "$dest/docs/issue/.gitkeep" "$dest/docs/idea/.gitkeep"
+    cp "$tmpl" "$dest/docs/template/example.md"
+
+    #---------------------------------------------------------------------------
+    # README.md — example.md frontmatter 치환 (Title·날짜·MOC)
+    #---------------------------------------------------------------------------
+    local today
+    today=$(date +%F)
+    sed -e "s/^Title:.*/Title: ${proj}/" \
+        -e "s/YYYY-MM-DD/${today}/g" \
+        -e "s/\[\[Project_name\]\]/[[${proj}]]/" \
+        "$tmpl" > "$dest/README.md"
+    printf '\n# %s\n' "$proj" >> "$dest/README.md"
+
+    #---------------------------------------------------------------------------
+    # git 초기화 (기본) — --no-git 으로 생략
+    #---------------------------------------------------------------------------
+    if [ "$do_git" -eq 1 ]; then
+        git -C "$dest" init -q
+    fi
+
+    echo "[Arachne] 신규 프로젝트 생성: $dest"
+    echo "  구조: README.md, docs/{issue,idea,template/example.md}"
+    [ "$do_git" -eq 1 ] && echo "  git 저장소 초기화됨"
+    return 0
+}
+
 case "${1:-}" in
     "")
         if [ "$ENTRY_NAME" = "install.sh" ]; then
@@ -592,6 +670,7 @@ case "${1:-}" in
     -i|--install|install)                     shift; parse_target "$@"; install ;;
     -u|--update|update)                       shift; parse_target "$@"; update_arachne ;;
     -c|--check|check)                         check_arachne ;;
+    -n|--new|new)                             shift; new_project "$@" ;;
     -s|--session|session)                     run_session ;;
     -e|--export-settings|export-settings)     export_settings ;;
     -d|--export-dotfiles|export-dotfiles)     export_dotfiles ;;
