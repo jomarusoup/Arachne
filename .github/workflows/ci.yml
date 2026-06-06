@@ -23,8 +23,8 @@ jobs:
             install.sh tmux.sh gask.sh statusline-command.sh \
             hooks/*.sh tests/*.sh
 
-      - name: Bats (install + hooks)
-        run: bats tests/install.bats tests/hooks.bats
+      - name: Bats (전체 *.bats — 새 테스트 자동 포함)
+        run: bats tests/*.bats
 
       - name: settings.json 템플릿 검증
         run: bash tests/validate_settings.sh

@@ -297,6 +297,7 @@ Arachne는 `install.sh`를 통해 설치되며, 설치 후에는 `arachne` 커�
 | `arachne -i`, `--install` | `~/.claude/` 심볼릭 링크 + `settings.json` 생성 + dotfiles 병합 + bin 등록 (재설치) |
 | `arachne -u`, `--update` | `git pull` 후 위 설치를 재실행 (동기화 허브) |
 | `arachne -c`, `--check` | 3개 CLI(Claude·Gemini·Codex) 연결 상태 점검 — 심볼릭 댕글링·Codex stale 탐지 |
+| `arachne -n <P> [DIR]`, `--new` | 신규 프로젝트 스캐폴딩 — `README.md` + `docs/{issue,idea,template/example.md}`. 모든 문서 frontmatter는 `docs/template/example.md`(SSOT) 파생. `--no-git`로 git init 생략 |
 | `arachne -s`, `--session` | tmux 워크스페이스 매니저 실행 (= `tws`, 8장 참고) |
 | `arachne -e`, `--export-settings` | 현재 `~/.claude/settings.json` → 레포 `settings.template.json`으로 역추출 |
 | `arachne -d`, `--export-dotfiles` | 로컬 `~/.bash_profile`·`~/.vimrc`의 변경 → 레포 `dotfiles/`로 역추출 |

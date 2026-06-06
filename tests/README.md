@@ -36,6 +36,8 @@ bash tests/validate_settings.sh
 | `install.bats` | `install.sh` — 심볼릭 링크·settings.json 생성 | bats |
 | `hooks.bats` | `hooks/*.sh` — 존재·권한·문법·기본 동작 | bats |
 | `docs_sync.bats` | `docs-sync.sh` — 설정 생성·목록·문법 | bats |
+| `new_project.bats` | `arachne new` — 구조 생성·frontmatter 치환·git init·안전성 | bats |
+| `check_index.sh` | 인덱스 ↔ 실제 파일 일치 (skills·commands·agents·rules) | bash |
 | `validate_settings.sh` | `settings.template.json` — JSON 유효성·필수 키 | bash + jq |
 
 ## validate_settings.sh
