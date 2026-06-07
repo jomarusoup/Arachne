@@ -18,7 +18,7 @@ FROM:: [[2026-06-07-workflow-audit]]
 - **작성일**: 2026-06-07
 - **심각도**: MEDIUM
 - **영역**: `arachne-task.sh:18-22`, `IsQuotaError`
-- **상태**: mock CLI로 재현 완료
+- **상태**: 해결됨 — 7087f4e (NON_QUOTA 네거티브 가드 + 쿼터 패턴 정밀화). task [[2026-06-07-atask-correctness-hardening]]
 
 ## 문제
 

@@ -18,7 +18,7 @@ FROM:: [[2026-06-07-workflow-audit]]
 - **작성일**: 2026-06-07
 - **심각도**: HIGH
 - **영역**: `arachne-task.sh`, `codex-task.sh`, `gemini-task.sh`
-- **상태**: 재현 완료
+- **상태**: 해결됨 — 7087f4e (impl 비-claude 후보 역할·커밋 비승계 경고). task [[2026-06-07-atask-correctness-hardening]]
 
 ## 문제
 

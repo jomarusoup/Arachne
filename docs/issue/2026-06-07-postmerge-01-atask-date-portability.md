@@ -18,7 +18,7 @@ FROM:: [[2026-06-07-postmerge-audit]]
 - **작성일**: 2026-06-07
 - **심각도**: LOW
 - **영역**: `arachne-task.sh:231,259`, `hooks/atask-quota-warn.sh:31`
-- **상태**: 코드 확인 완료
+- **상태**: 해결됨 — 7087f4e (FmtCooldown 상대시간, GNU date -d 제거). task [[2026-06-07-atask-correctness-hardening]]
 - **GitHub**: #37
 
 ## 문제

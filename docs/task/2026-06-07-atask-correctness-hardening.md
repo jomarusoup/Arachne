@@ -14,9 +14,9 @@ FROM:: [[2026-06-07-workflow-audit]]
 
 # [task] atask 정확성 하드닝
 
-- **상태**: planned
+- **상태**: done
 - **우선순위**: high
-- **담당**: unassigned
+- **담당**: Claude (Opus)
 - **관련 문서**: #26 #31 #32 #37, [[2026-06-07-workflow-01-atask-impl-failover]], [[2026-06-07-postmerge-01-atask-date-portability]]
 
 ## 목표
@@ -31,13 +31,13 @@ FROM:: [[2026-06-07-workflow-audit]]
 
 ## 작업 목록
 
-- [ ] #26: `impl` 폴백이 구현 역할을 보존하도록 — Codex/Gemini 단계가 tester/reader 제약을 유지하고 "중심·커밋 권한 자동 승계 없음"을 코드·출력에 명시
-- [ ] #31: `IsQuotaError` 패턴이 일반 오류(`syntax error` 등)를 소진으로 오판하지 않도록 패턴 정밀화(종료코드 + 패턴 조합)
-- [ ] #32: 단일 `-m` 모델 옵션이 서로 다른 CLI 모델 공간을 혼합하지 않도록 — CLI별 모델 지정 분리 또는 거부
-- [ ] #37: GNU `date -d @N` 의존 제거 — BSD `date -r`/GNU 분기 또는 "N분 후" 상대 표시
-- [ ] 회귀 테스트: 위 4건 각각 bats 케이스 추가
-- [ ] `shellcheck` + `bats tests/atask.bats` 통과
-- [ ] USAGE/MULTI-CLI 관련 서술 갱신
+- [x] #26: `impl` 폴백이 구현 역할을 보존하도록 — 비-claude 후보 처리 시 "역할 제한 래퍼 실행, 역할·커밋 자동 승계 아님, 종료코드 0이 구현 완료 아님" 경고를 stderr에 출력
+- [x] #31: `IsQuotaError`에 `NON_QUOTA_PATTERN` 네거티브 가드 추가(`disk quota`·`syntax error` 등 제외) + bare `quota`/`429`를 API 소진 표현으로 정밀화
+- [x] #32: atask `-m` 옵션 제거 — CLI별 모델은 `GTASK_MODEL`/`CTASK_MODEL` 환경변수로 분리, 모델 forwarding 제거
+- [x] #37: GNU `date -d @N` 의존 제거 — `FmtCooldown`으로 플랫폼 무관 상대시간("~Nm 후") 표시, `atask-quota-warn.sh`도 동일 처리
+- [x] 회귀 테스트: `tests/atask.bats`에 #26·#31·#32·#37 케이스 4건 추가(총 16)
+- [x] `shellcheck` + `bats tests/atask.bats` 통과
+- [x] USAGE §9 atask 레퍼런스에서 `-m` 제거·환경변수 안내 반영(MULTI-CLI §5.1엔 `-m` 미사용)
 
 ## 검증
 
@@ -58,3 +58,11 @@ shellcheck -S warning arachne-task.sh hooks/atask-quota-warn.sh
 ### 2026-06-07
 
 - task 생성: workflow·postmerge 감사에서 atask 관련 4개 이슈를 하나의 하드닝 작업으로 묶음.
+
+### 2026-06-08
+
+- 4개 이슈 구현 완료 (`arachne-task.sh`·`hooks/atask-quota-warn.sh`·`tests/atask.bats`·`docs/USAGE.md`).
+- 검증: `shellcheck -S warning` 통과, `bats tests/*.bats` **75개 전부 green**(신규 4 포함), `check_index.sh` 통과.
+- 커밋: **7087f4e** (`fix: atask 정확성 하드닝 (#26·#31·#32·#37)`), origin/main push 완료.
+- 설계 메모: #32는 옵션 추가 대신 **제거**로 해결(디스패처는 실행 CLI를 미리 모르므로 단일 모델명이 부적절). #37은 BSD/GNU 분기 대신 **상대시간 표시**로 통일해 플랫폼 분기 자체를 없앰.
+- 상태 → **done**. GitHub #26·#31·#32·#37 close 예정.
