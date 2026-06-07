@@ -1,7 +1,7 @@
 ---
 Title: README
 creation: 2026-05-05
-modification: 2026-06-04
+modification: 2026-06-07
 Description: 저지연 풀스택 시스템 프로그래밍을 위한 Claude Code 글로벌 설정 프레임워크
 tags:
 aliases:
@@ -21,6 +21,7 @@ aliases:
 > 🗺️ 하네스 구조 다이어그램(Mermaid)은 [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) 참고
 > 📖 skills·agents·커맨드·hooks 사용법은 [docs/USAGE.md](docs/USAGE.md) 참고
 > 🔗 3개 CLI 통합 사용·상호작용은 [docs/MULTI-CLI.md](docs/MULTI-CLI.md) 참고
+> 🪟 Windows에서 Claude Code·Codex CLI·Gemini CLI 설치는 [docs/WINDOWS-SETUP.md](docs/WINDOWS-SETUP.md) 참고
 > 🗂️ 원격 프로젝트 문서 ↔ Obsidian 동기화는 [docs/OBSIDIAN-DOCS-SYNC.md](docs/OBSIDIAN-DOCS-SYNC.md)(arachne 설정)·[docs/SYNCTHING-SETUP.md](docs/SYNCTHING-SETUP.md)(자동) 참고
 > 📑 약어(SSOT·TDD·DI·a11y 등) 풀이는 [docs/GLOSSARY.md](docs/GLOSSARY.md) 참고
 
@@ -37,6 +38,10 @@ cd ~/Arachne
 ```
 
 ### Windows (PowerShell)
+
+먼저 Claude Code·Codex CLI·Gemini CLI와 Git for Windows, Node.js를 설치합니다.
+명령별 인증·업데이트·WSL2 대안은
+[Windows 상세 설치 가이드](docs/WINDOWS-SETUP.md)를 따릅니다.
 
 ```powershell
 git clone https://github.com/jomarusoup/Arachne.git "$HOME\Arachne"

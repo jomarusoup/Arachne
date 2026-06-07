@@ -279,6 +279,10 @@ Arachne는 macOS/Linux에서 `install.sh`, Windows에서 `install.ps1`을 통해
 
 ### Windows 설치
 
+Claude Code·Codex CLI·Gemini CLI 자체를 아직 설치하지 않았다면
+[WINDOWS-SETUP.md](WINDOWS-SETUP.md)에서 Git for Windows·Node.js 준비, 각 CLI 설치와 인증,
+네이티브 PowerShell/WSL2 선택 기준을 먼저 확인합니다.
+
 ```powershell
 git clone https://github.com/jomarusoup/Arachne.git "$HOME\Arachne"
 Set-Location "$HOME\Arachne"
