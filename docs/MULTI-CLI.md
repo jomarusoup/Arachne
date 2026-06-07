@@ -173,11 +173,38 @@ cask -w "실패하는 test_auth 를 green 까지 수정"                   # 직
 
 ### 4.2 Collaboration — 3-Lane Cost Routing (Claude · Codex · Gemini)
 
-토큰 무겁고 정밀도가 덜 중요한 작업(설계·요약·조사·1차 리뷰·장문 생성)은 Claude가 `gask`로
-**Gemini(reader/advisor)** 에 위임한다. 테스트 작성·실행과 버그 수정은 `cask`로
+§1~3이 **규약 공유**(한 파일을 셋이 본다)라면, 이 절은 **런타임 위임**이다. Claude가 중심에서
+역할을 분리해 떠넘긴다. 토큰 무겁고 정밀도가 덜 중요한 작업(설계·요약·조사·1차 리뷰·장문 생성)은
+`gask`로 **Gemini(reader/advisor)** 에, 테스트 작성·실행과 버그 수정은 `cask`로
 **Codex(tester/fixer)** 에 위임한다. 정밀 구현·통합·디버깅·보안 리뷰·설정 관리, 그리고 **최종 커밋**은
-**Claude(오케스트레이터+주 구현자)** 가 직접 한다. 정책의 단일 출처(SSOT)는
-[`rules/common/workflow.md`](../rules/common/workflow.md), 사람용 설명은 [USAGE.md §6](USAGE.md).
+**Claude(오케스트레이터+주 구현자)** 가 직접 한다.
+
+```mermaid
+flowchart TB
+    GEMINI["💎 Gemini — reader/advisor<br/>대용량 읽기·요약·설계 탐색<br/>1차 리뷰·장문 생성"]
+    CLAUDE["🤖 Claude Code<br/>오케스트레이터 + 주 구현자<br/>= 유일 커미터"]
+    CODEX["🔷 Codex — tester/fixer<br/>테스트 작성·실행·버그 수정<br/>(기능 추가 X)"]
+    GIT["📦 git (main)"]
+
+    CLAUDE -->|"gask 위임"| GEMINI
+    CLAUDE -->|"cask 위임"| CODEX
+    GEMINI -.->|"요약·자문 (stdout)"| CLAUDE
+    CODEX -.->|"테스트·수정 diff (stdout)"| CLAUDE
+    CLAUDE ==>|"통합·스타일 보정·단독 커밋"| GIT
+    GIT -.->|"git-bus: 외부 직접 커밋 감지<br/>(hooks/gemini-check.sh)"| CLAUDE
+
+    classDef gem fill:#0f3d3e,stroke:#34d399,color:#d1fae5;
+    classDef cla fill:#1e3a5f,stroke:#60a5fa,color:#dbeafe;
+    classDef cdx fill:#3b2f5e,stroke:#a78bfa,color:#ede9fe;
+    classDef git fill:#1f2937,stroke:#9ca3af,color:#e5e7eb;
+    class GEMINI gem;
+    class CLAUDE cla;
+    class CODEX cdx;
+    class GIT git;
+```
+
+> 이 다이어그램은 [ARCHITECTURE.md §2](ARCHITECTURE.md)와 동일한 협업 구조다(같은 그림을 두 문서가 공유).
+> 정책의 단일 출처(SSOT)는 [`rules/common/workflow.md`](../rules/common/workflow.md), 사람용 설명은 [USAGE.md §6](USAGE.md).
 
 방향이 반대인 두 우선순위 사슬:
 - **오프로드(offload, 비용)**: Gemini → Codex → (Claude 안 씀) — 토큰 무거운 일을 싸게 떠넘김
