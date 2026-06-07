@@ -41,7 +41,7 @@ cd ~/Arachne
 2. 레포 → `~/.claude/` 심볼릭 링크 생성
 3. `settings.template.json`의 `__HOME__` → 실제 홈 경로로 치환해 `settings.json` 생성
 4. **dotfiles 병합**: `~/.bash_profile`, `~/.vimrc`에 Arachne 설정을 안전하게 병합 (기존 내용 보존)
-5. **CLI 등록**: `~/.local/bin/`에 `arachne`, `tws`, `gask`(=`gemini-task`), `cask`(=`codex-task`), `docs-sync` 커맨드 등록
+5. **CLI 등록**: `~/.local/bin/`에 `arachne`, `tws`, `gemini-task`(=`gask`), `codex-task`(=`cask`), `docs-sync` 커맨드 등록
 
 ### Core CLI Commands
 | 커맨드 | 설명 |
@@ -55,8 +55,8 @@ cd ~/Arachne
 | `arachne -e` (`--export-settings`) | settings.json → 템플릿 내보내기 |
 | `arachne -d` (`--export-dotfiles`) | dotfiles → 레포 내보내기 |
 | `arachne -v` | 버전 정보 |
-| `gask` (= `gemini-task`) | **Gemini 위임 래퍼 (reader/advisor 레인)** — Claude Code가 `gemini -p`를 Bash로 호출해 읽기·요약·자문을 위임 |
-| `cask` (= `codex-task`) | **Codex 위임 래퍼 (tester/fixer 레인)** — Claude Code가 `codex exec`를 Bash로 호출해 테스트 작성·실행·버그 수정을 위임 |
+| `gemini-task` (= `gask`) | **Gemini 위임 래퍼 (reader/advisor 레인)** — Claude Code가 `gemini -p`를 Bash로 호출해 읽기·요약·자문을 위임 |
+| `codex-task` (= `cask`) | **Codex 위임 래퍼 (tester/fixer 레인)** — Claude Code가 `codex exec`를 Bash로 호출해 테스트 작성·실행·버그 수정을 위임 |
 | `docs-sync` | 원격 프로젝트 README/docs/Markdown 문서 ↔ Obsidian Vault 동기화 |
 
 ---
@@ -70,8 +70,8 @@ Arachne/
 ├── settings.template.json       # ~/.claude/settings.json 템플릿
 ├── install.sh                   # 통합 관리 도구 (CLI: arachne)
 ├── tmux.sh                      # tmux 워크스페이스 매니저 (CLI: tws)
-├── gemini-task.sh               # Gemini 위임 래퍼 — reader/advisor (CLI: gask, gemini-task)
-├── codex-task.sh                # Codex 위임 래퍼 — tester/fixer (CLI: cask, codex-task)
+├── gemini-task.sh               # Gemini 위임 래퍼 — reader/advisor (CLI: gemini-task, gask)
+├── codex-task.sh                # Codex 위임 래퍼 — tester/fixer (CLI: codex-task, cask)
 ├── docs-sync.sh                 # 원격 프로젝트 문서 ↔ Obsidian 동기화 (CLI: docs-sync)
 ├── statusline-command.sh        # Claude Code 상태표시줄 렌더러
 │
@@ -133,20 +133,20 @@ Claude Code가 **중심(오케스트레이터 + 주 구현자)**이고, Codex·G
 | 레인 (Lane) | CLI | 위임 호출 | 하는 일 |
 |---|---|---|---|
 | **오케스트레이터 + 주 구현자** | **Claude** | (중심) | 설계·구현·리팩터링·통합·커밋, 보안/임계 리뷰, 설정·마이그레이션·인프라 |
-| **tester / fixer** | **Codex** | `cask` (=`codex-task`) | 테스트 작성·실행, 버그 수정 — **기능 추가는 안 함** |
-| **reader / advisor** | **Gemini** | `gask` (=`gemini-task`) | 대용량 읽기·요약, 설계 탐색, 1차 리뷰, 장문 생성 — **구현은 안 함** |
+| **tester / fixer** | **Codex** | `codex-task` (=`cask`) | 테스트 작성·실행, 버그 수정 — **기능 추가는 안 함** |
+| **reader / advisor** | **Gemini** | `gemini-task` (=`gask`) | 대용량 읽기·요약, 설계 탐색, 1차 리뷰, 장문 생성 — **구현은 안 함** |
 
 방향이 반대인 두 우선순위 사슬:
 - **오프로드 (offload, 비용 기준)**: Gemini → Codex → (Claude 안 씀) — 토큰 무거운 일을 싸게 떠넘김
 - **페일오버 (failover, 구현 품질 기준)**: Claude → Codex → Gemini — Claude 쿼터 소진 시 구현 대타는 Codex 먼저
 
 위임 경로:
-- **`gask` (Gemini reader/advisor)**: Claude Code가 터미널 전환 없이 `gemini -p`를 Bash로 호출 → 답변 수신
-  - 끌어오기(요약·자문): `gask "이 로그 요약: $(cat app.log)"` → 큰 입력, 작은 출력으로 **절약**
-  - 쏟아내기(생성): `gask "README 작성" > README.md` → 파일로 빼고 **내용 재독 안 함**
-- **`cask` (Codex tester/fixer)**: Claude Code가 `codex exec`를 Bash로 호출 → 테스트·수정 위임
-  - 제안 모드(기본): `cask "parser 테스트 보강안 제시: $(cat src/parser.c)"` → diff만 반환, 트리 미변경
-  - 실행 모드: `cask -w "실패하는 test_auth 를 green 까지 수정"` → 직접 쓰고 돌려 수정 (커밋은 Claude)
+- **`gemini-task` (Gemini reader/advisor)**: Claude Code가 터미널 전환 없이 `gemini -p`를 Bash로 호출 → 답변 수신
+  - 끌어오기(요약·자문): `gemini-task "이 로그 요약: $(cat app.log)"` → 큰 입력, 작은 출력으로 **절약**
+  - 쏟아내기(생성): `gemini-task "README 작성" > README.md` → 파일로 빼고 **내용 재독 안 함**
+- **`codex-task` (Codex tester/fixer)**: Claude Code가 `codex exec`를 Bash로 호출 → 테스트·수정 위임
+  - 제안 모드(기본): `codex-task "parser 테스트 보강안 제시: $(cat src/parser.c)"` → diff만 반환, 트리 미변경
+  - 실행 모드: `codex-task -w "실패하는 test_auth 를 green 까지 수정"` → 직접 쓰고 돌려 수정 (커밋은 Claude)
 - **git-bus 감지 (보조)**: 다른 터미널에서 Gemini/Codex가 직접 커밋한 경우 `gemini-check.sh` 훅이 자동 감지
 
 > 상세 역할·비용 라우팅은 [docs/MULTI-CLI.md](docs/MULTI-CLI.md)·[docs/USAGE.md](docs/USAGE.md) 6장 참고.

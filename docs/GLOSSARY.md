@@ -56,10 +56,12 @@ Arachne 문서에 나오는 줄임말을 **풀어 쓴 말(원어)** 과 함께 �
 
 ## Arachne Delegation Wrappers
 
-| 이름 | 풀어 쓴 말 | 설명 |
+> 정식 명령은 **`gemini-task` / `codex-task`**, `gask` / `cask`는 같은 스크립트의 **짧은 별칭**이다(둘 다 동작).
+
+| 정식 이름 | 짧은 별칭 | 설명 |
 | --- | --- | --- |
-| **gask** | gemini-task | Claude가 Gemini에 **읽기·요약·자문**을 위임하는 래퍼(`gemini -p` 감쌈). reader/advisor 레인. |
-| **cask** | codex-task | Claude가 Codex에 **테스트·버그 수정**을 위임하는 래퍼(`codex exec` 감쌈). tester/fixer 레인. |
+| **gemini-task** | `gask` | Claude가 Gemini에 **읽기·요약·자문**을 위임하는 래퍼(`gemini -p` 감쌈). reader/advisor 레인. |
+| **codex-task** | `cask` | Claude가 Codex에 **테스트·버그 수정**을 위임하는 래퍼(`codex exec` 감쌈). tester/fixer 레인. |
 
 ---
 

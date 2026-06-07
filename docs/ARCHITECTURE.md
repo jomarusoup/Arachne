@@ -87,7 +87,7 @@ flowchart TB
 4. **공통 설치** (`install_shared`, 항상 1회)
    1. `install_dotfiles` — `~/.bash_profile`·`~/.vimrc`에 `# === ARACHNE BEGIN/END ===` 마커 섹션을
       병합(멱등: 있으면 교체, 없으면 추가, 사용자 영역 중복 줄은 제외).
-   2. `register_bin` — `BIN_TARGETS`(arachne · tws · gask · gemini-task · cask · codex-task · docs-sync)를
+   2. `register_bin` — `BIN_TARGETS`(arachne · tws · gemini-task · gask · codex-task · cask · docs-sync)를
       `~/.local/bin/`에 심볼릭으로 등록(+`chmod +x`). PATH에 `~/.local/bin`이 없으면 경고 출력.
 
 > **graceful skip**: `all` 타깃에서 Gemini/Codex가 감지되지 않으면(`~/.gemini`·`~/.codex` 부재 + 바이너리
@@ -115,8 +115,8 @@ flowchart TB
 | 레인 (Lane) | CLI | 위임 호출 | 역할 | 안 하는 것 |
 | --- | --- | --- | --- | --- |
 | 중심 | **Claude** | (직접) | 설계·구현·리팩터링·통합·**커밋**, 보안/임계 리뷰, 인프라 | — |
-| reader / advisor | **Gemini** | `gask` (`gemini-task`) | 대용량 읽기·요약, 설계 탐색, 1차 리뷰, 장문 생성 | 최종 구현 코드 |
-| tester / fixer | **Codex** | `cask` (`codex-task`) | 테스트 작성·실행, 버그 수정 | 기능 추가 |
+| reader / advisor | **Gemini** | `gemini-task` (`gask`) | 대용량 읽기·요약, 설계 탐색, 1차 리뷰, 장문 생성 | 최종 구현 코드 |
+| tester / fixer | **Codex** | `codex-task` (`cask`) | 테스트 작성·실행, 버그 수정 | 기능 추가 |
 
 ```mermaid
 flowchart TB
@@ -125,8 +125,8 @@ flowchart TB
     CODEX["🔷 Codex — tester/fixer<br/>테스트 작성·실행·버그 수정<br/>(기능 추가 X)"]
     GIT["📦 git (main)"]
 
-    CLAUDE -->|"gask 위임"| GEMINI
-    CLAUDE -->|"cask 위임"| CODEX
+    CLAUDE -->|"gemini-task 위임"| GEMINI
+    CLAUDE -->|"codex-task 위임"| CODEX
     GEMINI -.->|"요약·자문 (stdout)"| CLAUDE
     CODEX -.->|"테스트·수정 diff (stdout)"| CLAUDE
     CLAUDE ==>|"통합·스타일 보정·단독 커밋"| GIT
@@ -151,27 +151,31 @@ flowchart TB
 
 > **왜 역할을 분리하나** — 구현(Claude)과 검증(Codex)을 **다른 모델**이 맡으면 상관된 맹점(correlated
 > blind spot)이 줄어든다. Gemini는 코딩 스타일 충실도가 낮아 최종 구현 코드는 맡기지 않고 읽기·자문에 둔다.
-> `cask`/`gask`는 블로킹·순차 호출이라 두 모델이 같은 파일을 동시에 건드리지 않으며, **커밋은 항상 Claude**다.
+> `codex-task`/`gemini-task`는 블로킹·순차 호출이라 두 모델이 같은 파일을 동시에 건드리지 않으며, **커밋은 항상 Claude**다.
 
-**`cask` 통합 경계 (제안 / 실행)**:
+**`codex-task` 통합 경계 (제안 / 실행)**:
 
 | 모드 | 플래그 | Codex 동작 | Claude 동작 |
 | --- | --- | --- | --- |
 | 제안 (기본) | 없음 | 테스트·수정 diff를 stdout 반환, 트리 미변경 | 받아서 적용·실행·커밋 |
 | 실행 | `-w` | 직접 쓰고 돌려 green까지 수정, 트리 변경 | `git diff` 검토·스타일 보정·커밋 |
 
+> **사용 모드 & 페일오버**: 각 CLI는 단독·위임 대상·페일오버 중심으로 쓰인다. Claude 쿼터 소진 시
+> 중심이 Codex → Gemini로 이양되는 단계별 캐스케이드(L0~L3)와 단독 사용·cross-harness 패키징은
+> [MULTI-CLI.md §5](MULTI-CLI.md)에 정리돼 있다.
+>
 > 정책 단일 출처(SSOT)는 [`rules/common/workflow.md`](../rules/common/workflow.md),
 > 사람용 상세는 [MULTI-CLI.md](MULTI-CLI.md)·[USAGE.md §6](USAGE.md).
 
 ### 동작 단계 — 위임 한 사이클 (Claude → Codex 예시)
 
-`cask -w "실패하는 test_auth 를 green 까지 수정"` 한 줄이 실제로 거치는 흐름:
+`codex-task -w "실패하는 test_auth 를 green 까지 수정"` 한 줄이 실제로 거치는 흐름:
 
 1. **분류·라우팅** — Claude가 작업을 본다. "테스트·검증성" → tester/fixer 레인(Codex). "대용량 읽기·요약"
    이면 reader/advisor 레인(Gemini), "정밀 구현·임계 판단"이면 Claude가 직접.
-2. **위임 호출** — Claude가 `Bash`로 `cask`(=`codex-task.sh`)를 부른다. 권한 `Bash(cask:*)`가 허용돼 있어
+2. **위임 호출** — Claude가 `Bash`로 `codex-task`(=`codex-task.sh`)를 부른다. 권한 `Bash(cask:*)`가 허용돼 있어
    승인 프롬프트 없이 실행된다.
-3. **래퍼 전처리** — `cask`가 호출에 **tester/fixer 역할 프리앰블**을 주입한다(기능 추가 금지). `-w`면
+3. **래퍼 전처리** — `codex-task`가 호출에 **tester/fixer 역할 프리앰블**을 주입한다(기능 추가 금지). `-w`면
    `codex exec`를 workspace-write로, 기본은 read-only 제안 모드로 돌린다.
 4. **Codex 실행** — Codex가 테스트를 읽고(필요시 수정), 돌려서 green까지 만든다. 래퍼가 `codex`의 헤더·메타·
    경고(stderr)를 걸러 **결과/ diff만 stdout**으로 돌려준다.
@@ -180,7 +184,7 @@ flowchart TB
 6. **검증 → 단독 커밋** — `/verify`(정적+동작) 통과 후 **Claude만** `git add/commit/push` 한다.
 
 > 핵심 불변식: **블로킹·순차 호출**이라 두 모델이 같은 파일을 동시에 건드리지 않고, **커밋 권한은 Claude 단독**.
-> `gask`(Gemini) 사이클도 동일하나 4단계에서 코드 대신 요약·자문을 받고, 장문 생성은 파일로 빼 재독하지 않는다.
+> `gemini-task`(Gemini) 사이클도 동일하나 4단계에서 코드 대신 요약·자문을 받고, 장문 생성은 파일로 빼 재독하지 않는다.
 
 ---
 
@@ -196,8 +200,8 @@ Arachne/
 ├── settings.template.json       # ~/.claude/settings.json 템플릿
 ├── install.sh                   # 통합 관리 도구 (CLI: arachne)
 ├── tmux.sh                      # 워크스페이스 매니저 (CLI: tws)
-├── gemini-task.sh               # Gemini 위임 래퍼 — reader/advisor (CLI: gask, gemini-task)
-├── codex-task.sh                # Codex 위임 래퍼 — tester/fixer (CLI: cask, codex-task)
+├── gemini-task.sh               # Gemini 위임 래퍼 — reader/advisor (CLI: gemini-task, gask)
+├── codex-task.sh                # Codex 위임 래퍼 — tester/fixer (CLI: codex-task, cask)
 ├── statusline-command.sh
 │
 ├── rules/                       # Claude 전역 행동 규칙
@@ -269,7 +273,7 @@ sequenceDiagram
 - **`session-end.sh` (Stop)** — 세션 종료 시. git 기반 스냅샷을 남기고, 방금 fetch한 리모트 HEAD를
   `.claude/last-seen-commit`에 기록해 다음 세션의 git-bus 비교 기준점을 최신화한다.
 
-> **두 AI 간 비동기 채널**: `gask`/`cask`(동기 호출)와 별개로, git 히스토리가 **메시지 버스** 역할을 한다 —
+> **두 AI 간 비동기 채널**: `gemini-task`/`codex-task`(동기 호출)와 별개로, git 히스토리가 **메시지 버스** 역할을 한다 —
 > 누군가 다른 터미널/머신에서 커밋하면 `gemini-check.sh`가 다음 프롬프트 때 그것을 알린다.
 
 ---
@@ -320,8 +324,8 @@ flowchart TB
 
 ## 6. Development Workflow Pipeline (3-Lane)
 
-`조사 → 설계 → TDD → 리뷰 → 커밋`. 토큰 무거운 읽기·요약은 Gemini(`gask`, reader/advisor)로,
-테스트·버그 수정은 Codex(`cask`, tester/fixer)로, 정밀 구현·통합·커밋은 Claude가 맡는다.
+`조사 → 설계 → TDD → 리뷰 → 커밋`. 토큰 무거운 읽기·요약은 Gemini(`gemini-task`, reader/advisor)로,
+테스트·버그 수정은 Codex(`codex-task`, tester/fixer)로, 정밀 구현·통합·커밋은 Claude가 맡는다.
 TDD = Test-Driven Development(테스트 주도 개발), RED→GREEN→REFACTOR 순서.
 
 ```mermaid
@@ -329,9 +333,9 @@ flowchart LR
     START([작업 시작]) --> INV["0. 조사·재사용<br/>sgrep · 기존 라이브러리 탐색"]
     INV --> ROUTE{무거움? 검증?}
 
-    ROUTE -->|"설계·요약·장문·1차 리뷰"| GEMINI["💎 Gemini (gask)<br/>reader/advisor"]
+    ROUTE -->|"설계·요약·장문·1차 리뷰"| GEMINI["💎 Gemini (gemini-task)<br/>reader/advisor"]
     ROUTE -->|"구현·디버깅·임계 리뷰"| CLAUDE["🤖 Claude<br/>오케스트레이터+구현자"]
-    ROUTE -->|"테스트 작성·실행·버그 수정"| CODEX["🔷 Codex (cask)<br/>tester/fixer"]
+    ROUTE -->|"테스트 작성·실행·버그 수정"| CODEX["🔷 Codex (codex-task)<br/>tester/fixer"]
 
     GEMINI -.->|자문 결과| PLAN
     CODEX -.->|테스트·수정 diff| REVIEW
@@ -353,11 +357,11 @@ flowchart LR
 ### 동작 단계 — 한 작업이 거치는 길
 
 0. **조사·재사용** — 새로 짜기 전에 `sgrep`으로 유사 패턴을, man/POSIX/패키지로 기존 구현을 찾는다.
-   80% 이상 해결하는 검증된 구현이 있으면 채택. 대용량 일괄 분석은 `gask`로 Gemini에 요약 위임(토큰 절약).
+   80% 이상 해결하는 검증된 구현이 있으면 채택. 대용량 일괄 분석은 `gemini-task`로 Gemini에 요약 위임(토큰 절약).
 1. **설계** — 파일 3개+ 수정·신규 모듈·시스템 레벨 변경이면 **`planner` 에이전트**(opus)로 설계 선행.
-   단순 버그·설정값 변경은 생략 가능. 무거운 설계 탐색은 `gask`로 1차안을 받아 가볍게 sanity check 후 채택.
+   단순 버그·설정값 변경은 생략 가능. 무거운 설계 탐색은 `gemini-task`로 1차안을 받아 가볍게 sanity check 후 채택.
 2. **TDD** — `tdd` 에이전트로 RED(실패 테스트) → GREEN(최소 구현) → REFACTOR. 테스트 작성·실행은
-   `cask`로 Codex에 위임 가능(구현=Claude, 검증=Codex로 맹점 탈상관). 커버리지 80%+ 확인.
+   `codex-task`로 Codex에 위임 가능(구현=Claude, 검증=Codex로 맹점 탈상관). 커버리지 80%+ 확인.
 3. **리뷰** — 코드 변경 직후 `code-reviewer`(언어별 `python-reviewer`·`fastapi-reviewer`·`react-reviewer`),
    빌드 실패·메모리 문제면 `debugger`. CRITICAL·HIGH는 수정 후 진행.
 4. **검증** — `/verify`로 정적 검사(`gcc -fsyntax-only`·`go vet`·`tsc --noEmit`·`ruff`·`shellcheck` 등) +

@@ -6,8 +6,8 @@
 | 레인 | 담당 CLI | 호출 | 하는 일 |
 | --- | --- | --- | --- |
 | **오케스트레이터 + 주 구현자** | **Claude** | (중심) | 설계·구현·리팩터링·통합·커밋, 보안/임계 리뷰, 설정·마이그레이션·인프라 |
-| **tester / fixer** | **Codex** | `cask` (= `codex-task`) | 테스트 작성·실행, 버그 수정. **기능 추가는 안 함** |
-| **reader / advisor** | **Gemini** | `gask` (= `gemini-task`) | 대용량 읽기·요약, 설계 탐색, 1차 리뷰, 장문 생성. **구현은 안 함** |
+| **tester / fixer** | **Codex** | `codex-task` (= `cask`) | 테스트 작성·실행, 버그 수정. **기능 추가는 안 함** |
+| **reader / advisor** | **Gemini** | `gemini-task` (= `gask`) | 대용량 읽기·요약, 설계 탐색, 1차 리뷰, 장문 생성. **구현은 안 함** |
 
 ### 두 개의 우선순위 사슬 (방향이 반대)
 
@@ -21,41 +21,65 @@
 > Claude 쿼터 소진 시 구현 대타는 **Codex 먼저** — `/handoff`로 인계.
 > Gemini는 코딩 스타일 충실도가 낮아 **최종 구현 코드 생성은 맡기지 않는다.**
 
+### 페일오버 캐스케이드 — 사용량 소진 시 "중심" 이양
+
+**불변식**: 어느 순간에도 **중심(center)은 정확히 하나** — 오케스트레이터 + 주 구현자 + **유일 커미터**.
+현재 중심의 쿼터가 소진되면 중심 역할이 **Claude → Codex → Gemini** 순으로 내려가고, "유일 커미터"
+권한도 그 중심을 따라 이동한다. 이 순서는 **코딩 스타일 충실도**(Codex > Gemini) 때문이다.
+
+| 단계 | 가용 CLI | 중심 (구현+커밋) | tester/fixer | reader/advisor | 인계·주의 |
+| --- | --- | --- | --- | --- | --- |
+| **L0 정상** | Claude·Codex·Gemini | **Claude** | Codex (`codex-task`) | Gemini (`gemini-task`) | 기본 3-레인 |
+| **L1 Claude 소진** | Codex·Gemini | **Codex** | (Codex 자체 흡수) | Gemini (`gemini-task`) | `/handoff`로 Codex에 인계. Gemini 1차 리뷰로 검증 보강 |
+| **L2 Claude+Codex 소진** | Gemini | **Gemini** | (사람 + Gemini) | (Gemini) | 스타일 충실도 낮음 → **사람 리뷰 강화**, 작은 단위로 진행 |
+| **L3 전부 소진** | 없음 | 사람(수동) | — | — | 쿼터 회복 대기, 자동 위임 중단 |
+
+**분기 — 중심은 Claude 유지, 위임 대상 하나만 소진된 경우:**
+
+| 소진된 대상 | 역할 재배치 | 영향 |
+| --- | --- | --- |
+| **Codex만 소진** | Claude가 tester/fixer를 직접 흡수(테스트 작성·실행을 본인이) | 구현·검증을 같은 모델이 맡아 **맹점 탈상관 효과↓** — 리뷰 더 신중 |
+| **Gemini만 소진** | 읽기·요약·1차 리뷰를 Claude(또는 Codex)가 직접 | **토큰 절약 효과↓**, 구현 품질엔 영향 없음 |
+
+> 원칙: ① 중심이 바뀌어도 **커밋은 그 시점의 중심 단독**(여러 CLI 동시 커밋 금지). ② 강등될수록(특히 L2)
+> 스타일·정확도 리스크가 커지므로 **변경 단위를 작게, 사람 검증을 두껍게**. ③ 쿼터가 회복되면 한 단계씩
+> **복귀**(L2→L1→L0)하며, 복귀 시 직전 중심이 `/handoff`로 상태를 넘긴다.
+
 ---
 
-## Gemini 위임 — `gask` (= `gemini-task`)
+## Gemini 위임 — `gemini-task` (= `gask`)
 
-Claude Code가 **별도 터미널 전환 없이 Bash로 `gask`를 직접 호출**해 Gemini에 위임하고
+Claude Code가 **별도 터미널 전환 없이 Bash로 `gemini-task`를 직접 호출**해 Gemini에 위임하고
 답변을 받아온다. (`gemini -p` 래퍼, 경고·노이즈 제거 후 답변만 stdout)
 
 ```bash
-gask "이 설계 검토해줘: $(cat module.c)"            # 자문 → 답변 stdout
-gask "이 로그에서 에러 원인만 요약: $(cat app.log)"  # 요약 → 답변 stdout
-gask "README 초안 작성" > README.md                  # 생성 → 파일로, 내용 재독 금지
-gask -m gemini-2.5-flash "간단 질의"                 # 모델 지정 (선택)
+gemini-task "이 설계 검토해줘: $(cat module.c)"            # 자문 → 답변 stdout
+gemini-task "이 로그에서 에러 원인만 요약: $(cat app.log)"  # 요약 → 답변 stdout
+gemini-task "README 초안 작성" > README.md                  # 생성 → 파일로, 내용 재독 금지
+gemini-task -m gemini-2.5-flash "간단 질의"                 # 모델 지정 (선택)
 ```
 
 ### 비용 라우팅 — 무엇을 어떻게 위임할지
 
 | 패턴                      | 예시                          | 방식                                | 비용                          |
 | ------------------------- | ----------------------------- | ----------------------------------- | ----------------------------- |
-| **끌어오기 (요약·자문)**  | 대용량 읽기, 설계 검토, 조사  | `gask "..."` → 답변 받아 사용       | 🟢 절약 (큰 입력 → 작은 출력) |
-| **쏟아내기 (문서 생성)**  | README, 설계 문서, 장문       | `gask "..." > file` → **재독 금지** | 🔴 읽으면 절약 상쇄           |
+| **끌어오기 (요약·자문)**  | 대용량 읽기, 설계 검토, 조사  | `gemini-task "..."` → 답변 받아 사용       | 🟢 절약 (큰 입력 → 작은 출력) |
+| **쏟아내기 (문서 생성)**  | README, 설계 문서, 장문       | `gemini-task "..." > file` → **재독 금지** | 🔴 읽으면 절약 상쇄           |
 
 > 원칙: Gemini 답을 Claude 컨텍스트로 **끌어오는 건 요약·자문일 때만**.
 > 장문 생성은 파일로 빼고 Claude는 존재만 확인한다(내용을 다시 읽으면 절약 효과가 사라진다).
 
 ---
 
-## Codex 위임 — `cask` (= `codex-task`)
+## Codex 위임 — `codex-task` (= `cask`)
 
-Claude Code가 **Bash로 `cask`를 직접 호출**해 테스트 작성·실행과 버그 수정을 Codex에
+Claude Code가 **Bash로 `codex-task`를 직접 호출**해 테스트 작성·실행과 버그 수정을 Codex에
 위임하고 결과만 받아온다. (`codex exec` 래퍼, 헤더·메타·경고 제거 후 결과만 stdout)
 
 ```bash
-cask "tests/ 의 parser 테스트 보강안 제시: $(cat src/parser.c)"  # 제안만 (read-only 기본)
-cask -w "실패하는 test_auth 를 green 까지 수정"                   # 직접 실행·수정 (workspace-write)
-cask -r "이 함수 리뷰만 해줘"                                     # 역할 주입 없이 raw
+codex-task "tests/ 의 parser 테스트 보강안 제시: $(cat src/parser.c)"  # 제안만 (read-only 기본)
+codex-task -w "실패하는 test_auth 를 green 까지 수정"                   # 직접 실행·수정 (workspace-write)
+codex-task -r "이 함수 리뷰만 해줘"                                     # 역할 주입 없이 raw
 ```
 
 ### 통합 경계 (A안 — Claude가 유일 커미터)
@@ -65,7 +89,7 @@ cask -r "이 함수 리뷰만 해줘"                                     # 역�
 | **제안 (기본)** | 없음 | 테스트 코드·수정 diff 를 stdout 으로 반환, 트리 미변경 | 받아서 적용·실행·커밋 |
 | **실행** | `-w` | 테스트를 직접 쓰고 돌려 green 까지 수정, 변경을 트리에 남김 | `git diff` 검토·스타일 보정·커밋 |
 
-> `cask` 는 블로킹 호출이라 Claude가 결과를 받을 때까지 대기 → 순차 실행이라
+> `codex-task` 는 블로킹 호출이라 Claude가 결과를 받을 때까지 대기 → 순차 실행이라
 > 두 모델이 같은 파일을 동시에 건드리는 충돌이 없다. **커밋은 항상 Claude가 한다.**
 > Codex 산출물은 `AGENTS.md`(다이제스트)만 따르므로, 통합 시 Claude가 `rules/` 풀
 > 규칙(헤더·네이밍 등)으로 스타일을 보정한다.
@@ -75,7 +99,7 @@ cask -r "이 함수 리뷰만 해줘"                                     # 역�
 ## git-bus 감지 (보조 경로)
 
 본인·가족이 **다른 터미널에서 Gemini/Codex로 직접 커밋**한 경우를 위해 git 기반 감지도 유지한다.
-`gask`/`cask` 직접 호출과 공존하는 보조 채널이다.
+`gemini-task`/`codex-task` 직접 호출과 공존하는 보조 채널이다.
 
 | 시점           | 동작                                                                  |
 | -------------- | --------------------------------------------------------------------- |
@@ -84,7 +108,7 @@ cask -r "이 함수 리뷰만 해줘"                                     # 역�
 | 감지 시        | 마지막 기준점 이후 새 커밋 목록·변경 파일 출력 후 기준점 갱신         |
 | 중복 방지      | 이미 확인한 커밋은 재출력 안 함                                       |
 
-> AI 사이 직접 채널은 `gask`/`cask`(동기 호출)와 git 히스토리(비동기 메시지 버스)다.
+> AI 사이 직접 채널은 `gemini-task`/`codex-task`(동기 호출)와 git 히스토리(비동기 메시지 버스)다.
 
 ---
 
@@ -92,8 +116,8 @@ cask -r "이 함수 리뷰만 해줘"                                     # 역�
 
 - **파일 전체 읽기 금지** — `sgrep <키워드>`로 위치 먼저, 해당 범위만 Read
   - `sgrep`은 `~/.bash_profile`의 전용 검색 함수로 전 확장자를 커버
-  - 대용량 일괄 분석은 Read 대신 `gask`로 Gemini에 요약 위임 (Claude 입력 토큰 절약)
-- **테스트·검증은 `cask`로 Codex에 위임 고려** — 구현(Claude)과 검증(Codex)을 다른
+  - 대용량 일괄 분석은 Read 대신 `gemini-task`로 Gemini에 요약 위임 (Claude 입력 토큰 절약)
+- **테스트·검증은 `codex-task`로 Codex에 위임 고려** — 구현(Claude)과 검증(Codex)을 다른
   모델이 맡으면 상관된 맹점이 줄어든다. 기본은 제안 모드, 직접 수정은 `-w`.
 - **Gemini 자문은 저비용 sanity check 후 채택** — Gemini 설계를 출발점으로 받되,
   구현 직전 명백한 결함만 1회 가볍게 검토한다(전체 재분석 금지 — 틀린 설계 구현이
