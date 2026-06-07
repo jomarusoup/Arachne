@@ -6,7 +6,7 @@
 #               Gemini(reader/advisor 레인)에 위임하고 깨끗한 답변만 받는다.
 #               (gemini -p 의 경고/노이즈를 걸러 stdout 오염 방지)
 # DATA        : 2026-06-04
-# Modification: 2026-06-07
+# Modification: 2026-06-08
 ################################################################################
 
 set -euo pipefail
@@ -32,6 +32,12 @@ Usage: gemini-task [-m MODEL] "프롬프트..."   (짧은 별칭: gtask)
 Options:
   -m MODEL   사용할 Gemini 모델 (미지정 시 gemini 기본값 / 환경변수 GTASK_MODEL)
   -h         이 도움말 출력
+
+Security:
+  - reader/advisor(읽기 전용)라 파일을 쓰지 않지만, 신뢰할 수 없는 콘텐츠를 요약·자문에
+    직접 넣으면 답변이 조종될 수 있다(간접 프롬프트 인젝션). 외부 로그·이슈·웹은
+    "<<UNTRUSTED ... UNTRUSTED>>" 같은 구획에 담아 데이터임을 표시하고, 받은 답변은
+    Claude가 검토 후 사용한다(특히 링크·명령은 그대로 실행 금지).
 
 Examples:
   gtask "이 함수 설계 검토해줘: $(cat module.c)"   # 자문 → 답변 stdout

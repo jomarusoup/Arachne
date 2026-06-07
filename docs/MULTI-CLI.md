@@ -250,6 +250,11 @@ flowchart TB
 다음 프롬프트 때 새 커밋을 알린다(비동기 메시지 버스). 작성자나 사용 CLI는 판별하지 않으며, 업스트림이
 있는 경우 다른 로컬 터미널의 미푸시 커밋은 감지 대상이 아니다.
 
+> ⚠️ **위임 입력 보안 (#38)**: 위임은 신뢰 경계를 넘는 입력을 하위 모델에 전달하므로 **간접 프롬프트
+> 인젝션** 위험이 있다. 신뢰할 수 없는 콘텐츠는 `<<UNTRUSTED ... UNTRUSTED>>` 구획에 담고, `ctask`는
+> non-raw에서 인젝션 저항 지시를 주입하며 `-w`(쓰기) 모드는 사전 경고한다. 트리 변경은 `git diff` 검토 후
+> **Claude가 단독 커밋**한다. 방어 원칙은 [AI-ENGINEERING-NOTES §3](AI-ENGINEERING-NOTES.md).
+
 ### 4.3 Independence — They Don't Break Each Other
 
 - Codex 병합은 **마커 밖 사용자 내용을 보존**한다(직접 추가한 메모가 재설치로 사라지지 않음).
