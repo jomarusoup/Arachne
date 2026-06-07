@@ -19,7 +19,7 @@ FROM:: [[2026-06-07-postmerge-audit]]
 - **작성일**: 2026-06-07
 - **심각도**: HIGH
 - **영역**: `gemini-task.sh`, `codex-task.sh`, `arachne-task.sh`
-- **상태**: 코드 확인 완료 (살균·allowlist 0건)
+- **상태**: 해결됨 — dd4a047 (인젝션 저항 프리앰블·-w 경고·UNTRUSTED 구획 규약·문서·테스트8). 부분 완화(완전 차단 아님). task [[2026-06-07-wrapper-injection-defense]]
 - **GitHub**: #38
 
 ## 문제
