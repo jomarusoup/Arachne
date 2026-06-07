@@ -41,7 +41,7 @@ cd ~/Arachne
 2. 레포 → `~/.claude/` 심볼릭 링크 생성
 3. `settings.template.json`의 `__HOME__` → 실제 홈 경로로 치환해 `settings.json` 생성
 4. **dotfiles 병합**: `~/.bash_profile`, `~/.vimrc`에 Arachne 설정을 안전하게 병합 (기존 내용 보존)
-5. **CLI 등록**: `~/.local/bin/`에 `arachne`, `tws`, `gemini-task`(=`gask`), `codex-task`(=`cask`), `docs-sync` 커맨드 등록
+5. **CLI 등록**: `~/.local/bin/`에 `arachne`, `tws`, `gemini-task`(=`gask`), `codex-task`(=`cask`), `arachne-task`(=`atask`), `docs-sync` 커맨드 등록
 
 ### Core CLI Commands
 | 커맨드 | 설명 |
@@ -57,6 +57,7 @@ cd ~/Arachne
 | `arachne -v` | 버전 정보 |
 | `gemini-task` (= `gask`) | **Gemini 위임 래퍼 (reader/advisor 레인)** — Claude Code가 `gemini -p`를 Bash로 호출해 읽기·요약·자문을 위임 |
 | `codex-task` (= `cask`) | **Codex 위임 래퍼 (tester/fixer 레인)** — Claude Code가 `codex exec`를 Bash로 호출해 테스트 작성·실행·버그 수정을 위임 |
+| `atask` (= `arachne-task`) | **자동 폴백 캐스케이드 디스패처** — 역할별 우선순위로 CLI를 시도하고 쿼터 소진을 감지하면 다음 CLI로 자동 전환 (`claude → codex → gemini`) |
 | `docs-sync` | 원격 프로젝트 README/docs/Markdown 문서 ↔ Obsidian Vault 동기화 |
 
 ---
@@ -72,6 +73,7 @@ Arachne/
 ├── tmux.sh                      # tmux 워크스페이스 매니저 (CLI: tws)
 ├── gemini-task.sh               # Gemini 위임 래퍼 — reader/advisor (CLI: gemini-task, gask)
 ├── codex-task.sh                # Codex 위임 래퍼 — tester/fixer (CLI: codex-task, cask)
+├── arachne-task.sh              # 자동 폴백 캐스케이드 디스패처 (CLI: arachne-task, atask)
 ├── docs-sync.sh                 # 원격 프로젝트 문서 ↔ Obsidian 동기화 (CLI: docs-sync)
 ├── statusline-command.sh        # Claude Code 상태표시줄 렌더러
 │
@@ -84,7 +86,8 @@ Arachne/
 ├── commands/                    # 슬래시 커맨드 (16개)
 ├── agents/                      # 서브에이전트 7개 (planner · code-reviewer · tdd · debugger
 │                                #   · python-reviewer · fastapi-reviewer · react-reviewer)
-├── hooks/                       # 이벤트 훅 (session-start/end, pre-compact, gemini-check)
+├── hooks/                       # 이벤트 훅 (session-start/end, pre-compact, gemini-check,
+│                                #   atask-quota-warn, doc-drift-check)
 ├── mcp-configs/                 # MCP (Model Context Protocol) 서버 설정 템플릿
 ├── tests/                       # 검증 스크립트 (bats + shell)
 └── dotfiles/                    # bash_profile, vimrc (병합 원본)
@@ -147,6 +150,8 @@ Claude Code가 **중심(오케스트레이터 + 주 구현자)**이고, Codex·G
 - **`codex-task` (Codex tester/fixer)**: Claude Code가 `codex exec`를 Bash로 호출 → 테스트·수정 위임
   - 제안 모드(기본): `codex-task "parser 테스트 보강안 제시: $(cat src/parser.c)"` → diff만 반환, 트리 미변경
   - 실행 모드: `codex-task -w "실패하는 test_auth 를 green 까지 수정"` → 직접 쓰고 돌려 수정 (커밋은 Claude)
+- **`atask` (자동 폴백)**: `atask -R impl "..."` 한 줄이 역할 우선순위로 CLI를 시도하고, 쿼터 소진을 감지하면 다음 CLI로 자동 전환 (헤드리스 전용)
+  - 소진 상태는 `atask-quota-warn.sh` 훅이 프롬프트마다 사전 경고 (현재 "중심" CLI 표시)
 - **git-bus 감지 (보조)**: 다른 터미널에서 Gemini/Codex가 직접 커밋한 경우 `gemini-check.sh` 훅이 자동 감지
 
 > 상세 역할·비용 라우팅은 [docs/MULTI-CLI.md](docs/MULTI-CLI.md)·[docs/USAGE.md](docs/USAGE.md) 6장 참고.

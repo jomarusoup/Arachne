@@ -62,6 +62,7 @@ Arachne 문서에 나오는 줄임말을 **풀어 쓴 말(원어)** 과 함께 �
 | --- | --- | --- |
 | **gemini-task** | `gask` | Claude가 Gemini에 **읽기·요약·자문**을 위임하는 래퍼(`gemini -p` 감쌈). reader/advisor 레인. |
 | **codex-task** | `cask` | Claude가 Codex에 **테스트·버그 수정**을 위임하는 래퍼(`codex exec` 감쌈). tester/fixer 레인. |
+| **arachne-task** | `atask` | **자동 폴백 캐스케이드 디스패처** — 역할별 우선순위로 CLI를 시도하고 쿼터 소진 감지 시 다음 CLI로 자동 전환. 헤드리스 전용. |
 
 ---
 

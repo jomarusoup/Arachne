@@ -28,6 +28,8 @@ BIN_TARGETS=(
     "gemini-task.sh:gemini-task"
     "codex-task.sh:cask"
     "codex-task.sh:codex-task"
+    "arachne-task.sh:atask"
+    "arachne-task.sh:arachne-task"
     "docs-sync.sh:docs-sync"
 )
 
