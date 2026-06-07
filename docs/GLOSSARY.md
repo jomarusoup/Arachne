@@ -1,9 +1,9 @@
-# 약어·용어집 (Glossary)
+# Glossary — 약어·용어집
 
 Arachne 문서에 나오는 줄임말을 **풀어 쓴 말(원어)** 과 함께 설명한다.
 처음 보는 약어가 있으면 여기서 찾는다.
 
-## 아키텍처·하네스
+## Architecture & Harness
 
 | 약어 | 풀어 쓴 말 | 설명 |
 | --- | --- | --- |
@@ -15,8 +15,10 @@ Arachne 문서에 나오는 줄임말을 **풀어 쓴 말(원어)** 과 함께 �
 | **PR** | Pull Request | 브랜치 변경을 main에 합치기 전 리뷰를 요청하는 GitHub 단위. |
 | **MCP** | Model Context Protocol | AI 도구가 외부 서버(도구·데이터)에 연결하는 프로토콜. `mcp-configs/`에 템플릿. |
 | **RSC** | React Server Components | 서버에서 렌더되어 자기 JavaScript를 클라이언트로 보내지 않는 React 컴포넌트. |
+| **TWS** | Tmux Workspace Manager (트뮤스 워크스페이스 매니저) | `arachne -s`(=`tws`)로 여는 대화형 tmux 세션 매니저. Claude Code 세션을 생성·접속·삭제. |
+| **IPC** | Inter-Process Communication (프로세스 간 통신) | 소켓·파이프·공유 메모리 등으로 프로세스끼리 데이터를 주고받는 것. 시스템 프로그래밍의 핵심. |
 
-## 개발 방법론
+## 개발 방법론 (Development Methodology)
 
 | 약어 | 풀어 쓴 말 | 설명 |
 | --- | --- | --- |
@@ -26,8 +28,9 @@ Arachne 문서에 나오는 줄임말을 **풀어 쓴 말(원어)** 과 함께 �
 | **SRP** | Single Responsibility Principle (단일 책임 원칙) | 함수·파일은 **한 가지 역할만** 맡는다. 줄 수가 아니라 역할로 분리를 판단. |
 | **DTO** | Data Transfer Object (데이터 전송 객체) | 계층·경계를 넘나들 때 쓰는 순수 데이터 묶음. 입력/출력 스키마 분리에 쓴다. |
 | **DI** | Dependency Injection (의존성 주입) | 객체가 필요로 하는 것을 내부에서 만들지 않고 **밖에서 넣어주는** 설계. FastAPI `Depends(get_db)`가 예. |
+| **E2E** | End-to-End (종단 간) | 시스템을 사용자 관점에서 처음부터 끝까지 통째로 검증하는 테스트. 데몬·IPC 시나리오 또는 Playwright 웹 플로우. |
 
-## 웹·API
+## 웹·API (Web & API)
 
 | 약어 | 풀어 쓴 말 | 설명 |
 | --- | --- | --- |
@@ -39,7 +42,7 @@ Arachne 문서에 나오는 줄임말을 **풀어 쓴 말(원어)** 과 함께 �
 | **REST** | Representational State Transfer | 리소스를 URL로, 동작을 HTTP 메서드로 표현하는 API 설계 양식. |
 | **CWV / LCP** | Core Web Vitals / Largest Contentful Paint | 웹 성능 지표. LCP=가장 큰 콘텐츠가 그려지는 시간. |
 
-## 인프라·동기화
+## 인프라·동기화 (Infrastructure & Sync)
 
 | 약어 | 풀어 쓴 말 | 설명 |
 | --- | --- | --- |
@@ -48,7 +51,7 @@ Arachne 문서에 나오는 줄임말을 **풀어 쓴 말(원어)** 과 함께 �
 | **MOC** | Map of Content (콘텐츠 지도) | Obsidian에서 관련 노트를 묶는 허브 노트. 문서 frontmatter의 `MOC::` 링크. |
 | **frontmatter** | — | 마크다운 파일 맨 위 `--- ... ---` 사이의 메타데이터(제목·날짜·태그 등). |
 
-## Arachne 위임 래퍼
+## Arachne Delegation Wrappers
 
 | 이름 | 풀어 쓴 말 | 설명 |
 | --- | --- | --- |

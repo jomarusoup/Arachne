@@ -7,7 +7,7 @@
 
 ---
 
-## 0. 전체 구조 한눈에
+## 0. Overview at a Glance
 
 | 구성 요소 | 위치 | 호출 방식 | 등록·로드 방식 |
 |---|---|---|---|
@@ -21,7 +21,7 @@
 
 ---
 
-## 1. 슬래시 커맨드 (`commands/`)
+## 1. Slash Commands (`commands/`)
 
 ### 사용법
 채팅 입력창에 `/커맨드명`을 입력하면 해당 워크플로가 실행된다.
@@ -61,7 +61,7 @@ description: /명령어 설명
 
 ---
 
-## 2. 에이전트 (`agents/`)
+## 2. Agents (`agents/`)
 
 ### 사용법
 대부분 **Claude가 상황을 보고 자동 활성화**한다. 명시적으로 부르고 싶으면 작업을 위임하도록 요청하면 된다(예: "code-reviewer로 이 변경 리뷰해줘").
@@ -101,7 +101,7 @@ model: opus               # opus / sonnet / haiku
 
 ---
 
-## 3. 스킬 — 도메인 지식 (`skills/`)
+## 3. Skills — Domain Knowledge (`skills/`)
 
 ### 사용법
 슬래시 커맨드와 달리 **직접 호출하는 것이 아니라**, 관련 작업을 할 때 Claude가 해당 지식 파일을 참조한다. frontmatter가 없는 순수 마크다운 지식 문서다.
@@ -129,7 +129,7 @@ model: opus               # opus / sonnet / haiku
 
 ---
 
-## 4. 훅 (`hooks/`)
+## 4. Hooks (`hooks/`)
 
 ### 사용법
 훅은 직접 실행하지 않는다. Claude Code의 **이벤트가 발생하면 자동 실행**된다.
@@ -175,7 +175,7 @@ model: opus               # opus / sonnet / haiku
 
 ---
 
-## 5. 규칙 (`rules/`)
+## 5. Rules (`rules/`)
 
 ### 사용법
 규칙은 **항상 자동 적용**된다 — 별도 호출 없음.
@@ -198,7 +198,7 @@ model: opus               # opus / sonnet / haiku
 
 ---
 
-## 6. Claude ↔ Codex ↔ Gemini 협업 (3-레인)
+## 6. Claude ↔ Codex ↔ Gemini Collaboration (3-Lane)
 
 **전제**: Claude Code가 중심(오케스트레이터 + 주 구현자). Codex·Gemini는 위임 대상이며, 셋 다 `AGENTS.md` 공통 규약을 공유해 인계 마찰이 작다.
 
@@ -267,14 +267,14 @@ cask -m <model> -C <dir> "..."                                    # 모델·작�
 > 두 AI 사이 채널은 둘이다: **`gask`(동기 호출) + git 히스토리(비동기 메시지 버스).**
 
 ---
-## 7. 설치 · 업데이트 · 동기화 (`arachne`)
+## 7. Install · Update · Sync (`arachne`)
 
 Arachne는 `install.sh`를 통해 설치되며, 설치 후에는 `arachne` 커맨드로 관리할 수 있습니다.
 
 ### 설치 및 업데이트 흐름
 1. **심볼릭 링크**: `CLAUDE.md`, `commands/`, `agents/` 등을 `~/.claude/`에 연결하여 레포 수정이 즉시 반영되게 합니다.
 2. **설정 생성**: `settings.template.json`을 기반으로 홈 경로를 치환하여 `~/.claude/settings.json`을 생성합니다.
-3. **CLI 등록**: `~/.local/bin/`에 `arachne`(관리), `tws`(워크스페이스) 커맨드를 등록합니다.
+3. **CLI 등록**: `~/.local/bin/`에 `arachne`(관리), `tws`(워크스페이스), `gask`/`gemini-task`(Gemini 위임), `cask`/`codex-task`(Codex 위임), `docs-sync`(문서 동기화) 커맨드를 등록합니다.
 
 ### dotfiles 병합 메커니즘 (Safe Merge)
 기존의 단순 심볼릭 링크 방식 대신, 사용자 홈 디렉토리의 `.bash_profile`, `.vimrc` 파일에 Arachne 설정을 **병합**합니다.
@@ -332,7 +332,7 @@ arachne -d
   백업: ~/.claude/settings.json -> settings.json.bak   ← 기존 설정 보존
   생성: ~/.claude/settings.json (from settings.template.json)
   갱신 (ARACHNE 섹션): ~/.bash_profile, ~/.vimrc
-  등록: arachne, tws, gask -> bin
+  등록: arachne, tws, gask, gemini-task, cask, codex-task, docs-sync -> bin
 ```
 
 > **부작용 주의**
@@ -356,7 +356,7 @@ arachne -d
 
 ---
 
-## 8. Tmux 워크스페이스 매니저 (`-s`)
+## 8. Tmux Workspace Manager (`-s`)
 
 Claude Code는 터미널을 점유하므로, 여러 프로젝트나 테스트 환경을 동시에 관리하기 위해 `arachne -s` (또는 `tws`) 명령어를 제공합니다.
 
@@ -376,9 +376,9 @@ Claude Code는 터미널을 점유하므로, 여러 프로젝트나 테스트 �
 
 ---
 
-## 9. 위임 래퍼 (`gask` / `cask`) — CLI 레퍼런스
+## 9. Delegation Wrappers (`gask` / `cask`) — CLI Reference
 
-**언제·왜·비용 라우팅**은 [6장](#6-claude--codex--gemini-협업-3-레인)을 참고. 이 절은 명령 레퍼런스만 다룬다.
+**언제·왜·비용 라우팅**은 [6장](#6-claude--codex--gemini-collaboration-3-lane)을 참고. 이 절은 명령 레퍼런스만 다룬다.
 두 래퍼 모두 내부 CLI 노이즈(stderr)를 걸러 **결과만 stdout**으로 돌려준다. 각각 짧은 별칭과 명시적 이름으로 등록된다
 (`gask`=`gemini-task` → `gemini-task.sh`, `cask`=`codex-task` → `codex-task.sh`).
 
