@@ -121,4 +121,73 @@ LLM 시스템을 짜는 두 방식. **하나의 스펙트럼**이며, 단순한 
 
 ---
 
-> 관련: [MULTI-CLI.md](MULTI-CLI.md)(3-레인 협업·교차 검증) · [GLOSSARY.md](GLOSSARY.md)(약어)
+## 6. 하네스 적용 현황 (Applied to My Harness)
+
+2026-06-07 기준, 위 5개 주제가 이 Arachne 하네스에 실제로 적용됐는지 코드 근거로 판정한다.
+**적용:** 어떻게 동작하는지 상세. **부분/미적용:** 무엇이 비어 있고 **추후 어떻게 적용**할지.
+
+| 주제 | 상태 | 추적 |
+| --- | --- | --- |
+| 1. Agent vs Workflow | ✅ 적용 | — |
+| 2. REST vs MCP | ⚠️ 부분 (MCP 소비만) | 추후 적용 |
+| 3. Prompt Injection 방어 | ❌ 미적용 | **#38** |
+| 4. AI 코드 검증 | ✅ 적용 | — |
+| 5. AI 코드 리뷰 | ✅ 적용 | — |
+
+### 1. Agent vs Workflow — ✅ 적용
+
+이 하네스는 **두 방식을 의도적으로 분리**해 쓴다.
+- **Workflow(고정 경로)**: `commands/*.md` 16개 슬래시 커맨드. 예) `/fix`는 "재현 조건 → 근본 원인
+  분리 → 최소 수정 → 회귀 검증"이라는 **정해진 절차**를 Claude가 그대로 따른다. `atask`의
+  역할별 캐스케이드(`claude→codex→gemini`)도 **고정 우선순위 사슬**이라 워크플로다.
+- **Agent(동적 판단)**: `agents/*.md` 7개 서브에이전트(`planner`·`code-reviewer`·`tdd`·`debugger`·
+  언어별 리뷰어). `rules/common/agents.md`가 "파일 3개+ 수정 → planner, 코드 변경 직후 →
+  code-reviewer"처럼 **상황 기반 자동 활성화**를 정의 — LLM이 런타임에 도구·다음 단계를 고른다.
+- **분리 원칙대로**: 절차가 명확하면 커맨드(워크플로), 판단이 필요하면 에이전트. 단순한 쪽을 먼저 쓴다.
+
+### 2. REST vs MCP — ⚠️ 부분 적용 (추후)
+
+- **있는 것**: MCP를 **소비자**로만 쓴다. `mcp-configs/{filesystem,github}.json`(서버 설정 템플릿) +
+  `settings.template.json`의 `enabledPlugins`(chrome-devtools-mcp·figma·github 등 MCP 플러그인 활성화).
+- **없는 것**: 자작 MCP 서버, REST 연동. 하네스 자체 기능(`gtask`/`ctask`/`atask`)은 MCP가 아니라
+  **셸 래퍼**로 구현돼 있다.
+- **추후 적용**: Arachne 고유 기능(예: 세션 상태·git-bus 조회)을 **MCP 서버로 노출**하면 Claude 외
+  다른 MCP 클라이언트도 재사용 가능. 지금은 셸 래퍼로 충분해 우선순위 낮음.
+
+### 3. Prompt Injection 방어 — ❌ 미적용 → 추후 적용 (#38)
+
+- **현황**: 가장 큰 공백. 위임 래퍼(`gemini-task.sh`·`codex-task.sh`·`arachne-task.sh`)가
+  사용자/파일/stdin 내용을 **그대로** 하위 CLI에 전달한다(살균·이스케이프·신뢰 경계 구분 0건).
+  `ctask -w`/`atask -w`는 workspace-write라 파일 쓰기까지 노출.
+- **위험**: 간접 프롬프트 인젝션 — `gtask "요약: $(cat untrusted.log)"`의 외부 콘텐츠가 모델을 조종 가능.
+- **추후 적용** (이슈 **#38** / [[2026-06-07-postmerge-02-wrapper-input-boundary]]):
+  ① `-w` 쓰기 모드 경고/opt-in, ② 외부 콘텐츠를 지시와 **구획 분리**(`<<UNTRUSTED>>` 마커),
+  ③ 트리 반영 전 `git diff` 검토를 도구 차원에서 유도, ④ "신뢰 못 할 콘텐츠 직접 주입 금지" 문서화.
+
+### 4. AI 코드 검증 — ✅ 적용
+
+노트 §4의 7단계가 하네스에 매핑돼 있다.
+- **테스트**: `tests/*.bats`(56개) — `atask`·hooks·install. CI(`/.github/workflows/ci.yml`)가
+  `bats tests/*.bats` glob로 **새 테스트 자동 포함**.
+- **정적 분석**: CI가 `shellcheck -S warning ./*.sh hooks/*.sh tests/*.sh` 강제. `/verify` 커맨드가
+  언어별 정적+동작 2단계.
+- **교차 모델**: 구현(Claude) ↔ 검증(Codex `ctask`)을 다른 모델이 맡아 맹점 탈상관.
+- **인덱스 드리프트**: `tests/check_index.sh`가 파일↔인덱스 일치 강제(단, 내용 동기화는 #39로 보강 예정).
+- **TDD 정책**: `rules/common/testing.md`(RED→GREEN→REFACTOR, 커버리지 80%+).
+- **남은 함정**: "종료코드 0 ≠ 정확성"은 `atask impl`에서 실제 결함(#26)으로 확인됨 — 검증의 한계를 코드가 증명.
+
+### 5. AI 코드 리뷰 — ✅ 적용
+
+- **상시 리뷰**: `code-reviewer`(+`python-reviewer`·`fastapi-reviewer`·`react-reviewer`)가 코드 변경
+  직후 자동 활성화. 정책은 "CRITICAL·HIGH 수정 후 머지".
+- **실증 사례**: 이번 다중 세션 작업에서 **Codex 감사 세션이 AI(Claude) 구현의 실제 결함 10건**을
+  발견(#26~35) → 구현자·검증자가 다른 모델일 때 맹점이 탈상관된다는 노트 §5 주장을 그대로 입증.
+- **한계도 실증**: 두 AI 세션이 "현재 중심" vs "첫 가용 후보"로 상충했고, 최종 판단은 **사람**이 내렸다.
+  (AI 리뷰는 증강이지 대체가 아니라는 결론.)
+
+> **요약**: 5개 중 **3개 강하게 적용**(Agent/Workflow·검증·리뷰), **1개 부분**(MCP 소비만),
+> **1개 미적용**(인젝션 방어 — #38). 지식↔코드 정합성의 1순위 격차는 **#38**이다.
+
+---
+
+> 관련: [MULTI-CLI.md](MULTI-CLI.md)(3-레인 협업·교차 검증) · [GLOSSARY.md](GLOSSARY.md)(약어) · [postmerge-audit](issue/2026-06-07-postmerge-audit.md)
