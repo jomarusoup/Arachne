@@ -1,16 +1,41 @@
 #!/bin/bash
 ################################################################################
 # FILE NAME   : install.sh
-# DESCRIPTION : Arachne -> ~/.claude 심볼릭 링크 설치 스크립트
+# DESCRIPTION : Arachne 멀티 CLI 설정 설치 스크립트
 # DATA        : 2026-05-05
 # Modification: 2026-06-07
 ################################################################################
 
 set -euo pipefail
 
-# readlink -f 로 심볼릭 링크(arachne -> install.sh)를 해석해야 실제 레포 경로를 얻는다.
+################################################################################
+# FUNCTION    : ResolvePath
+# DESCRIPTION : GNU readlink -f 없이 파일·심볼릭 링크의 절대 경로 계산
+# PARAMETERS  : string path - 해석할 파일 경로
+# RETURNED    : 절대 경로
+################################################################################
+ResolvePath() {
+    local path="$1"
+    local dir
+    local target
+
+    while [ -L "$path" ]; do
+        dir=$(cd -P "$(dirname "$path")" && pwd)
+        target=$(readlink "$path")
+        case "$target" in
+            /*) path="$target" ;;
+            *)  path="$dir/$target" ;;
+        esac
+    done
+
+    dir=$(cd -P "$(dirname "$path")" && pwd)
+    printf '%s/%s\n' "$dir" "$(basename "$path")"
+}
+
+# 심볼릭 링크(arachne -> install.sh)를 해석해야 실제 레포 경로를 얻는다.
 # 미해석 시 arachne 커맨드 실행 위치(~/.local/bin)가 잡혀 update/session 이 실패한다.
-REPO_DIR="$(cd "$(dirname "$(readlink -f "$0")")" && pwd)"
+REPO_SCRIPT="$(ResolvePath "$0")"
+REPO_DIR="$(dirname "$REPO_SCRIPT")"
 CLAUDE_DIR="$HOME/.claude"
 DOTFILES_DIR="$REPO_DIR/dotfiles"
 LOCAL_BIN="$HOME/.local/bin"
@@ -59,9 +84,9 @@ usage() {
     echo "Options:"
     echo "  -i, --install          설치/재설치 수행"
     echo "  -u, --update           git pull 후 최신 상태로 재설치"
-    echo "      --target T          설치 대상 CLI: claude|gemini|codex|all (기본 all)"
+    echo "      --target T          설치 대상 CLI: claude|gemini|codex|copilot|all (기본 all)"
     echo "                          (-i/-u 와 함께 사용. 미감지 CLI는 자동 스킵)"
-    echo "  -c, --check            3개 CLI 연결 상태 점검 (심볼릭 댕글링·Codex stale 탐지)"
+    echo "  -c, --check            CLI 연결 상태 점검 (심볼릭 댕글링·병합본 stale 탐지)"
     echo "  -n, --new P [DIR]      신규 프로젝트 스캐폴딩 (README + docs/{issue,idea,template})"
     echo "                         DIR 생략 시 현재 디렉터리. --no-git 으로 git init 생략"
     echo "  -s, --session          tmux 워크스페이스 매니저(tws) 실행"
@@ -232,9 +257,48 @@ install_codex() {
 }
 
 ################################################################################
+# FUNCTION    : install_copilot
+# DESCRIPTION : GitHub Copilot 타깃 설치.
+#               Copilot CLI 전역 지침은 사용자 내용을 보존하는 마커 병합으로,
+#               VS Code 사용자 지침은 Arachne 전용 .instructions.md 로 생성한다.
+#               일반 파일만 사용해 macOS·Linux·WSL·Git Bash에서 링크 권한 없이 동작한다.
+################################################################################
+install_copilot() {
+    local copilot_dir="$HOME/.copilot"
+    local instructions_dir="$copilot_dir/instructions"
+    local vscode_file="$instructions_dir/arachne.instructions.md"
+    local tmp
+
+    echo "[Arachne] GitHub Copilot 설치 시작: AGENTS.md -> $copilot_dir"
+    mkdir -p "$instructions_dir"
+
+    merge_dotfile \
+        "$REPO_DIR/AGENTS.md" \
+        "$copilot_dir/copilot-instructions.md" \
+        "<!--" \
+        " -->"
+
+    tmp=$(mktemp)
+    {
+        printf '%s\n' "---"
+        printf '%s\n' "name: Arachne Shared Rules"
+        printf '%s\n' "description: Arachne AGENTS.md shared coding rules"
+        printf '%s\n' "applyTo: \"**\""
+        printf '%s\n\n' "---"
+        printf '%s\n' "<!-- === ${ARACHNE_TAG} BEGIN === -->"
+        cat "$REPO_DIR/AGENTS.md"
+        printf '%s\n' "<!-- === ${ARACHNE_TAG} END === -->"
+    } > "$tmp"
+    mv "$tmp" "$vscode_file"
+
+    echo "  생성: $vscode_file"
+    echo "[Arachne] GitHub Copilot 설치 완료"
+}
+
+################################################################################
 # FUNCTION    : detect_cli
 # DESCRIPTION : 대상 CLI 설치 여부 검사 (홈 디렉터리 또는 바이너리 존재)
-# PARAMETERS  : string cli - gemini | codex
+# PARAMETERS  : string cli - gemini | codex | copilot
 # RETURNED    : 0(감지) / 1(미감지)
 ################################################################################
 detect_cli() {
@@ -242,6 +306,7 @@ detect_cli() {
     case "$cli" in
         gemini) [ -d "$HOME/.gemini" ] || command -v gemini >/dev/null 2>&1 ;;
         codex)  [ -d "$HOME/.codex" ]  || command -v codex  >/dev/null 2>&1 ;;
+        copilot) [ -d "$HOME/.copilot" ] || command -v copilot >/dev/null 2>&1 ;;
         *)      return 1 ;;
     esac
 }
@@ -275,6 +340,7 @@ install() {
         claude) install_claude ;;
         gemini) install_gemini ;;
         codex)  install_codex ;;
+        copilot) install_copilot ;;
         all)
             install_claude
             if detect_cli gemini; then
@@ -286,6 +352,11 @@ install() {
                 install_codex
             else
                 echo "[Arachne] Codex CLI 미감지 — 스킵"
+            fi
+            if detect_cli copilot; then
+                install_copilot
+            else
+                echo "[Arachne] GitHub Copilot 미감지 — 스킵"
             fi
             ;;
     esac
@@ -316,10 +387,10 @@ merge_dotfile() {
     # 심볼릭 링크 → 일반 파일로 변환
     if [ -L "${dst}" ]; then
         local link_target
-        link_target=$(readlink -f "${dst}" 2>/dev/null || true)
+        link_target=$(ResolvePath "${dst}" 2>/dev/null || true)
         rm "${dst}"
 
-        if [ "${link_target}" = "$(readlink -f "${src}")" ]; then
+        if [ "${link_target}" = "$(ResolvePath "${src}")" ]; then
             touch "${dst}"
         else
             cp "${link_target}" "${dst}" 2>/dev/null || touch "${dst}"
@@ -510,14 +581,14 @@ parse_target() {
         shift || true
     done
     case "$ARACHNE_TARGET" in
-        claude|gemini|codex|all) ;;
-        *) echo "[ERROR] 알 수 없는 타깃: '$ARACHNE_TARGET' (claude|gemini|codex|all)" >&2; exit 1 ;;
+        claude|gemini|codex|copilot|all) ;;
+        *) echo "[ERROR] 알 수 없는 타깃: '$ARACHNE_TARGET' (claude|gemini|codex|copilot|all)" >&2; exit 1 ;;
     esac
 }
 
 ################################################################################
 # FUNCTION    : check_arachne
-# DESCRIPTION : 3개 CLI 연결 상태 점검 — 심볼릭 댕글링·Codex 마커 stale 탐지.
+# DESCRIPTION : CLI 연결 상태 점검 — 심볼릭 댕글링·병합 파일 stale 탐지.
 #               OK/SKIP/FAIL 출력. 하나라도 FAIL 이면 종료코드 1.
 ################################################################################
 check_arachne() {
@@ -527,7 +598,8 @@ check_arachne() {
     #---------------------------------------------------------------------------
     # Claude — ~/.claude/CLAUDE.md 가 레포 CLAUDE.md 로 해석되는가
     #---------------------------------------------------------------------------
-    if [ "$(readlink -e "$CLAUDE_DIR/CLAUDE.md" 2>/dev/null)" = "$(readlink -e "$REPO_DIR/CLAUDE.md")" ]; then
+    if [ -e "$CLAUDE_DIR/CLAUDE.md" ] \
+        && [ "$(ResolvePath "$CLAUDE_DIR/CLAUDE.md")" = "$(ResolvePath "$REPO_DIR/CLAUDE.md")" ]; then
         echo "  [OK]   Claude : ~/.claude/CLAUDE.md -> 레포"
     else
         echo "  [FAIL] Claude : ~/.claude/CLAUDE.md 가 레포로 연결되지 않음 (arachne -i 필요)"
@@ -538,7 +610,8 @@ check_arachne() {
     # Gemini — 감지된 경우에만. ~/.gemini/GEMINI.md -> 레포 AGENTS.md
     #---------------------------------------------------------------------------
     if detect_cli gemini; then
-        if [ "$(readlink -e "$HOME/.gemini/GEMINI.md" 2>/dev/null)" = "$(readlink -e "$REPO_DIR/AGENTS.md")" ]; then
+        if [ -e "$HOME/.gemini/GEMINI.md" ] \
+            && [ "$(ResolvePath "$HOME/.gemini/GEMINI.md")" = "$(ResolvePath "$REPO_DIR/AGENTS.md")" ]; then
             echo "  [OK]   Gemini : ~/.gemini/GEMINI.md -> AGENTS.md"
         else
             echo "  [FAIL] Gemini : 심볼릭 끊김/불일치 (arachne -i --target gemini 필요)"
@@ -574,6 +647,37 @@ check_arachne() {
         fi
     else
         echo "  [SKIP] Codex  : 미감지"
+    fi
+
+    #---------------------------------------------------------------------------
+    # GitHub Copilot — CLI 전역 지침과 VS Code 사용자 지침이 현재 AGENTS.md 인가
+    #---------------------------------------------------------------------------
+    if detect_cli copilot; then
+        local copilot_cli_file="$HOME/.copilot/copilot-instructions.md"
+        local copilot_vscode_file="$HOME/.copilot/instructions/arachne.instructions.md"
+        local begin="<!-- === ${ARACHNE_TAG} BEGIN === -->"
+        local end="<!-- === ${ARACHNE_TAG} END === -->"
+        local cli_extracted=""
+        local vscode_extracted=""
+
+        if [ -f "$copilot_cli_file" ]; then
+            cli_extracted=$(awk -v b="$begin" -v e="$end" \
+                'index($0,b){s=1;next} index($0,e){s=0;next} s' "$copilot_cli_file")
+        fi
+        if [ -f "$copilot_vscode_file" ]; then
+            vscode_extracted=$(awk -v b="$begin" -v e="$end" \
+                'index($0,b){s=1;next} index($0,e){s=0;next} s' "$copilot_vscode_file")
+        fi
+
+        if [ "$cli_extracted" = "$(cat "$REPO_DIR/AGENTS.md")" ] \
+            && [ "$vscode_extracted" = "$(cat "$REPO_DIR/AGENTS.md")" ]; then
+            echo "  [OK]   Copilot: CLI + VS Code 사용자 지침 최신"
+        else
+            echo "  [FAIL] Copilot: 지침 없음/불일치 (arachne -i --target copilot 필요)"
+            fail=1
+        fi
+    else
+        echo "  [SKIP] Copilot: 미감지"
     fi
 
     if [ "$fail" -eq 0 ]; then

@@ -1,11 +1,13 @@
 # AGENTS.md — 공유 코어 규약
 
-> **이 파일은 단일 진실 공급원(SSOT)이다.** Claude Code · Gemini CLI · Codex CLI가
+> **이 파일은 단일 진실 공급원(SSOT)이다.** Claude Code · Gemini CLI · Codex CLI · GitHub Copilot이
 > 모두 같은 공통 규약을 본다.
 > - **Claude**: 이 규약의 **풀 디테일**을 `rules/`(→`~/.claude/rules/` 심볼릭)에서 네이티브
 >   자동 로드한다. 따라서 Claude는 AGENTS.md를 직접 import하지 않는다(중복이라 불필요).
 > - **Gemini**: `~/.gemini/GEMINI.md` → 이 파일 **심볼릭** (수정 즉시 반영).
 > - **Codex**: `~/.codex/AGENTS.md` ← 이 파일 **마커 병합** (`arachne -i --target codex` 재실행 시 반영).
+> - **GitHub Copilot**: 저장소에서는 루트 `AGENTS.md`와 `.github/copilot-instructions.md` 어댑터를,
+>   사용자 전역에서는 `~/.copilot/` 병합본을 읽는다 (`arachne -i --target copilot`).
 >
 > 여기에는 **CLI 무관한 공통 규약만** 담는다. 특정 도구 전용 기능(Claude의 훅·서브에이전트·
 > 슬래시 커맨드·모델 라우팅 등)은 각 도구의 보충 파일(`CLAUDE.md` 등)에 둔다 — 그래야
@@ -154,4 +156,5 @@
 > **사용 모드**: 각 CLI는 ① **단독**(이 규약을 읽고 혼자 동작) ② **위임 대상**(Claude가 `gemini-task`/
 > `codex-task`로 호출) ③ **페일오버 중심**(상위 CLI 소진 시 중심 이양 — Claude→Codex→Gemini)으로 쓰인다.
 > 단독이든 위임이든 **읽는 공통 규약은 이 파일로 동일**하다. 캐스케이드 표·단독 사용·cross-harness 패키징
-> (같은 자산을 Claude/Codex/Gemini/Cursor/OpenCode로 어댑터 배포)은 `docs/MULTI-CLI.md` §5 참고.
+> (같은 자산을 Claude/Codex/Gemini/Copilot/Cursor/OpenCode로 어댑터 배포)은
+> `docs/MULTI-CLI.md` §5 참고.

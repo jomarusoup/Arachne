@@ -22,7 +22,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "__HOME__/.claude/hooks/gemini-check.sh"
+            "command": "__HOME__/.claude/hooks/git-bus-check.sh"
           },
           {
             "type": "command",

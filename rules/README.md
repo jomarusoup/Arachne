@@ -86,9 +86,10 @@ rules/
 | `rules/common/*` (paths frontmatter 없음) | **매 세션 자동 로드** |
 | `rules/<언어>/*` (paths frontmatter 있음) | **해당 확장자 파일 편집 시** 자동 로드 |
 
-Gemini CLI·Codex CLI는 `rules/` 자동 로더가 없으므로, 공통 규약을 추출한
+Gemini CLI·Codex CLI·GitHub Copilot은 `rules/` 자동 로더가 없으므로, 공통 규약을 추출한
 [`AGENTS.md`](../AGENTS.md)(SSOT)를 본다 — Gemini는 `~/.gemini/GEMINI.md` 심볼릭,
-Codex는 `~/.codex/AGENTS.md` 마커 병합.
+Codex는 `~/.codex/AGENTS.md` 마커 병합, Copilot은 저장소 `AGENTS.md`와
+`~/.copilot/` 사용자 지침을 사용한다.
 
 ### 자동 활성화 (paths 기반)
 

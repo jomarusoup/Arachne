@@ -137,7 +137,7 @@ model: opus               # opus / sonnet / haiku
 ### 등록된 훅 (이 레포 기준)
 | 훅 스크립트 | 이벤트 | 동작 |
 |---|---|---|
-| `gemini-check.sh` | `UserPromptSubmit` | 메시지 입력마다 Gemini/Codex 새 커밋 감지 (git-bus) |
+| `git-bus-check.sh` | `UserPromptSubmit` | 메시지 입력마다 외부 새 커밋 감지 (git-bus) |
 | `atask-quota-warn.sh` | `UserPromptSubmit` | `atask` 상태 파일을 읽어 쿼터 소진 CLI·현재 "중심" 사전 경고 |
 | `doc-drift-check.sh` | `PostToolUse` (`Edit\|Write`) | 기능 파일(스크립트·rules·agents 등) 변경 시 README/docs 갱신 알림 (세션당 1회) |
 | `session-start.sh` | `SessionStart` | 최근 세션 파일 경로 안내 |
@@ -157,7 +157,7 @@ model: opus               # opus / sonnet / haiku
       {
         "matcher": "*",
         "hooks": [
-          { "type": "command", "command": "__HOME__/.claude/hooks/gemini-check.sh" }
+          { "type": "command", "command": "__HOME__/.claude/hooks/git-bus-check.sh" }
         ]
       }
     ]
@@ -263,7 +263,7 @@ codex-task -m <model> -C <dir> "..."                                    # 모델
 
 | 구성 요소 | 역할 |
 |---|---|
-| `hooks/gemini-check.sh` | `UserPromptSubmit` 훅 — `git fetch` 후 `origin` HEAD ↔ 기준점 비교 |
+| `hooks/git-bus-check.sh` | `UserPromptSubmit` 훅 — `git fetch` 후 `origin` HEAD ↔ 기준점 비교 |
 | `.claude/last-seen-commit` | 마지막으로 확인한 리모트 커밋 해시 (gitignore, 추적 안 됨) |
 | `hooks/session-end.sh` | 세션 종료 시 fetch한 리모트 HEAD를 기준점에 기록 |
 
@@ -301,7 +301,7 @@ Arachne는 `install.sh`를 통해 설치되며, 설치 후에는 `arachne` 커�
 | `arachne`, `arachne -h`, `--help` | 도움말 출력 |
 | `arachne -i`, `--install` | `~/.claude/` 심볼릭 링크 + `settings.json` 생성 + dotfiles 병합 + bin 등록 (재설치) |
 | `arachne -u`, `--update` | `git pull` 후 위 설치를 재실행 (동기화 허브) |
-| `arachne -c`, `--check` | 3개 CLI(Claude·Gemini·Codex) 연결 상태 점검 — 심볼릭 댕글링·Codex stale 탐지 |
+| `arachne -c`, `--check` | Claude·Gemini·Codex·Copilot 연결 상태 점검 — 심볼릭 댕글링·병합본 stale 탐지 |
 | `arachne -n <P> [DIR]`, `--new` | 신규 프로젝트 스캐폴딩 — `README.md` + `docs/{issue,idea,template/example.md}`. 모든 문서 frontmatter는 `docs/template/example.md`(SSOT) 파생. `--no-git`로 git init 생략 |
 | `arachne -s`, `--session` | tmux 워크스페이스 매니저 실행 (= `tws`, 8장 참고) |
 | `arachne -e`, `--export-settings` | 현재 `~/.claude/settings.json` → 레포 `settings.template.json`으로 역추출 |
@@ -347,8 +347,8 @@ arachne -d
 
 ### 왜 어느 위치에서 실행해도 동작하나
 
-`arachne`는 `~/.local/bin/arachne → install.sh` 심볼릭 링크다. `install.sh`는 `readlink -f`로
-심링크를 해석해 **실제 레포 경로**를 찾으므로, 현재 작업 디렉터리와 무관하게 올바른 레포에서
+`arachne`는 `~/.local/bin/arachne → install.sh` 심볼릭 링크다. `install.sh`는 POSIX 호환
+`ResolvePath`로 심링크를 해석해 **실제 레포 경로**를 찾으므로, 현재 작업 디렉터리와 무관하게 올바른 레포에서
 `git pull`·재설치가 수행된다.
 
 ### 트러블슈팅
