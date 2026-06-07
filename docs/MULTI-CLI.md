@@ -77,7 +77,7 @@ Arachne 구성요소가 각 CLI에서 실제로 작동하는지. **공통 규약
 | 이벤트 훅 (`hooks/`) | ✅ Session·PreCompact·Prompt | ❌ | ❌ |
 | 스킬 (`skills/`) | ✅ 자동 참조 | ❌ | ❌ |
 | 상태표시줄 (`statusline`) | ✅ | ❌ | ❌ |
-| 작업 위임 래퍼 | ✅ **호출 주체** | `gemini-task`/`gask` 위임 **대상** (reader/advisor) | `codex-task`/`cask` 위임 **대상** (tester/fixer) |
+| 작업 위임 래퍼 | ✅ **호출 주체** | `gemini-task`/`gtask` 위임 **대상** (reader/advisor) | `codex-task`/`ctask` 위임 **대상** (tester/fixer) |
 | MCP 서버 | ✅ `settings.json` | 별도 `~/.gemini` 설정(미관리) | 별도 `~/.codex/config.toml`(미관리) |
 
 > 요점: **공통 규약을 읽는 것**은 셋 다 공유한다. 그 위에 Claude는 Gemini를 `gemini-task`(요약·자문),
@@ -135,7 +135,7 @@ gemini-task "README 초안 작성" > README.md           # 장문 생성 → 파
 에이전트·훅·커맨드는 없다(Codex 자체 기능은 별개). 실측: 프로젝트 AGENTS.md가 없는 중립 디렉터리에서
 `codex exec`가 전역 지침의 고유 토큰을 출력 → 런타임 로딩 확인됨.
 
-**협업 레인**: Codex는 3-레인에서 **tester/fixer**다. Claude가 `codex-task`(=`cask`)로 테스트 작성·실행과
+**협업 레인**: Codex는 3-레인에서 **tester/fixer**다. Claude가 `codex-task`(=`ctask`)로 테스트 작성·실행과
 버그 수정을 위임한다. `codex-task`는 호출마다 테스터/픽서 역할 프리앰블을 주입하고(기능 추가 금지), 결과만
 stdout으로 돌려줘 Claude가 통합·커밋한다. 기본은 read-only 제안 모드, `-w`는 workspace-write 실행 모드.
 
@@ -279,7 +279,7 @@ Claude의 위임 대상이 아니라 **그 자체로** 쓸 수도 있다. 이때
 - **Gemini 단독** — `gemini`(대화형) 또는 `gemini -p "..."`(1회). 매 호출 `~/.gemini/GEMINI.md`(→ AGENTS.md
   심볼릭)를 로드하므로 공통 규약이 그대로 적용된다. 에이전트·훅·커맨드는 없다(§3.2).
 - **Codex 단독** — `codex`(대화형) 또는 `codex exec "..."`(1회). 새 세션마다 `~/.codex/AGENTS.md`(마커 병합본)를
-  로드한다. `cask`/`codex-task` 래퍼 없이 직접 호출하면 tester/fixer 역할 프리앰블은 주입되지 않는다(§3.3).
+  로드한다. `ctask`/`codex-task` 래퍼 없이 직접 호출하면 tester/fixer 역할 프리앰블은 주입되지 않는다(§3.3).
 
 > 단독 사용과 위임 사용의 차이는 **누가 호출하느냐**일 뿐, 읽는 규약은 같다. `gemini-task`/`codex-task`
 > 래퍼는 노이즈 제거 + 역할 프리앰블 주입을 더해 **Claude가 부르기 좋게** 감싼 것이다.

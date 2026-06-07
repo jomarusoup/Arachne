@@ -1,14 +1,14 @@
 #!/bin/bash
 ################################################################################
 # FILE NAME   : codex-task.sh
-# DESCRIPTION : Codex CLI 작업 위임 래퍼 (codex-task / 짧은 별칭 cask) —
+# DESCRIPTION : Codex CLI 작업 위임 래퍼 (codex-task / 짧은 별칭 ctask) —
 #               Claude Code가 별도 터미널 전환 없이 직접 호출해 테스트 작성·실행과
 #               버그 수정을 Codex(tester/fixer 레인)에 위임하고 깨끗한 결과만 받는다.
 #               기본은 read-only 제안 모드(테스트 코드·수정 diff 를 stdout 으로 반환,
 #               Claude 가 적용·커밋). -w 는 workspace-write 실행 모드.
 #               (codex exec 의 헤더/메타/경고를 걸러 stdout 오염 방지)
 # DATA        : 2026-06-06
-# Modification: 2026-06-06
+# Modification: 2026-06-07
 ################################################################################
 
 set -euo pipefail
@@ -39,14 +39,14 @@ readonly ROLE_PREAMBLE='[역할] 너는 이 저장소의 테스터/버그픽서�
 #===============================================================================
 Usage() {
     cat >&2 << 'USAGE'
-Usage: codex-task [-m MODEL] [-w] [-r] [-C DIR] "프롬프트..."   (짧은 별칭: cask)
-       cat test.log | cask "이 실패 원인 분석하고 수정 diff 제시"
+Usage: codex-task [-m MODEL] [-w] [-r] [-C DIR] "프롬프트..."   (짧은 별칭: ctask)
+       cat test.log | ctask "이 실패 원인 분석하고 수정 diff 제시"
 
   Codex CLI 비대화(headless) 작업 위임 래퍼. 결과만 stdout 으로 출력한다.
   레인: tester/fixer — 테스트 작성·실행·버그 수정 (기능 추가는 위임 안 함).
 
 Options:
-  -m MODEL   사용할 Codex 모델 (미지정 시 codex 기본값 / 환경변수 CASK_MODEL)
+  -m MODEL   사용할 Codex 모델 (미지정 시 codex 기본값 / 환경변수 CTASK_MODEL)
   -w         쓰기 모드 (workspace-write) — codex 가 테스트를 직접 쓰고 실행해
              green 까지 수정. 변경은 작업 트리에 남으므로 Claude 가 git diff 검토 후 커밋.
              (미지정 시 read-only 제안 모드: diff 만 반환, 트리 미변경)
@@ -55,9 +55,9 @@ Options:
   -h         이 도움말 출력
 
 Examples:
-  cask "tests/ 의 parser 테스트 보강안 제시: $(cat src/parser.c)"   # 제안만 (read-only)
-  cask -w "실패하는 test_auth 를 green 까지 수정"                   # 직접 실행·수정
-  cask -r "이 함수 리뷰만 해줘"                                     # 역할 주입 없이
+  ctask "tests/ 의 parser 테스트 보강안 제시: $(cat src/parser.c)"   # 제안만 (read-only)
+  ctask -w "실패하는 test_auth 를 green 까지 수정"                   # 직접 실행·수정
+  ctask -r "이 함수 리뷰만 해줘"                                     # 역할 주입 없이
 USAGE
     exit "${1:-0}"
 }
@@ -65,7 +65,7 @@ USAGE
 #-------------------------------------------------------------------------------
 # 인자 파싱
 #-------------------------------------------------------------------------------
-model="${CASK_MODEL:-}"
+model="${CTASK_MODEL:-${CASK_MODEL:-}}"
 sandbox="read-only"
 raw=0
 workdir=""
@@ -77,15 +77,15 @@ while getopts ":m:wrC:h" opt; do
         r)  raw=1 ;;
         C)  workdir="${OPTARG}" ;;
         h)  Usage 0 ;;
-        :)  echo "[cask] -${OPTARG} 옵션은 값이 필요합니다" >&2; Usage 1 ;;
-        \?) echo "[cask] 알 수 없는 옵션: -${OPTARG}" >&2; Usage 1 ;;
+        :)  echo "[ctask] -${OPTARG} 옵션은 값이 필요합니다" >&2; Usage 1 ;;
+        \?) echo "[ctask] 알 수 없는 옵션: -${OPTARG}" >&2; Usage 1 ;;
     esac
 done
 shift $((OPTIND - 1))
 
 prompt="$*"
 if [ -z "${prompt}" ]; then
-    echo "[cask] 프롬프트가 비어 있습니다" >&2
+    echo "[ctask] 프롬프트가 비어 있습니다" >&2
     Usage 1
 fi
 

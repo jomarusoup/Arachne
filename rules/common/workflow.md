@@ -6,8 +6,8 @@
 | 레인 | 담당 CLI | 호출 | 하는 일 |
 | --- | --- | --- | --- |
 | **오케스트레이터 + 주 구현자** | **Claude** | (중심) | 설계·구현·리팩터링·통합·커밋, 보안/임계 리뷰, 설정·마이그레이션·인프라 |
-| **tester / fixer** | **Codex** | `codex-task` (= `cask`) | 테스트 작성·실행, 버그 수정. **기능 추가는 안 함** |
-| **reader / advisor** | **Gemini** | `gemini-task` (= `gask`) | 대용량 읽기·요약, 설계 탐색, 1차 리뷰, 장문 생성. **구현은 안 함** |
+| **tester / fixer** | **Codex** | `codex-task` (= `ctask`) | 테스트 작성·실행, 버그 수정. **기능 추가는 안 함** |
+| **reader / advisor** | **Gemini** | `gemini-task` (= `gtask`) | 대용량 읽기·요약, 설계 탐색, 1차 리뷰, 장문 생성. **구현은 안 함** |
 
 ### 두 개의 우선순위 사슬 (방향이 반대)
 
@@ -53,7 +53,7 @@
 
 ---
 
-## Gemini 위임 — `gemini-task` (= `gask`)
+## Gemini 위임 — `gemini-task` (= `gtask`)
 
 Claude Code가 **별도 터미널 전환 없이 Bash로 `gemini-task`를 직접 호출**해 Gemini에 위임하고
 답변을 받아온다. (`gemini -p` 래퍼, 경고·노이즈 제거 후 답변만 stdout)
@@ -77,7 +77,7 @@ gemini-task -m gemini-2.5-flash "간단 질의"                 # 모델 지정 
 
 ---
 
-## Codex 위임 — `codex-task` (= `cask`)
+## Codex 위임 — `codex-task` (= `ctask`)
 
 Claude Code가 **Bash로 `codex-task`를 직접 호출**해 테스트 작성·실행과 버그 수정을 Codex에
 위임하고 결과만 받아온다. (`codex exec` 래퍼, 헤더·메타·경고 제거 후 결과만 stdout)
