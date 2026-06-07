@@ -5,7 +5,7 @@
 #               쿨다운(소진) 중인 CLI가 있으면 impl 순서의 첫 가용 후보와 회복 시각을 알린다.
 #               atask 의 상태 파일(arachne-quota-state)을 읽기만 한다(부작용 없음).
 # DATA        : 2026-06-07
-# Modification: 2026-06-07
+# Modification: 2026-06-08
 ################################################################################
 
 # 훅은 자동 실행 경로라 -e 제외 (실패해도 세션을 막지 않음)
@@ -28,8 +28,9 @@ while IFS=$'\t' read -r cli until; do
     [ -z "${cli:-}" ] && continue
     [ -z "${until:-}" ] && continue
     if [ "${now}" -lt "${until}" ]; then
-        recover=$(date -d "@${until}" '+%H:%M' 2>/dev/null || echo '?')
-        cooldown_msg="${cooldown_msg}  - ${cli} : 쿨다운 (회복 ~${recover})\n"
+        # 플랫폼 무관 상대 시간 (#37: GNU 전용 `date -d @N` 회피)
+        recover="~$(( (until - now) / 60 ))분 후"
+        cooldown_msg="${cooldown_msg}  - ${cli} : 쿨다운 (회복 ${recover})\n"
         case "${cli}" in
             claude) in_cooldown_claude=1 ;;
             codex)  in_cooldown_codex=1 ;;

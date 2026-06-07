@@ -504,16 +504,16 @@ cat test.log | codex-task "이 실패 원인 분석하고 수정 diff 제시"   
 쿼터 소진을 감지하면 다음 CLI로 자동 전환하고, 소진된 CLI는 쿨다운 동안 건너뛴다.
 
 ```bash
-atask [-R ROLE] [-m MODEL] [-w] [--dry-run] "프롬프트..."
+atask [-R ROLE] [-w] [--dry-run] "프롬프트..."
 ```
 
 | 옵션·요소 | 설명 |
 | --------- | ---- |
 | `-R ROLE` | 캐스케이드 역할: `impl`(기본, claude→codex→gemini) / `read`(gemini→codex→claude) / `test`(codex→claude→gemini) / `review`(gemini→codex→claude) |
-| `-m MODEL` | 하위 codex/gemini 단계로 전달할 모델 |
 | `-w` | codex 단계를 workspace-write 로 실행 |
 | `--dry-run` | 실제 호출 없이 해석된 순서·쿨다운 상태만 출력 |
 | `-h` | 도움말 출력 |
+| 모델 지정 | **옵션 없음(#32)** — 어느 CLI가 실행될지 미리 알 수 없어 단일 모델명이 CLI 모델 공간을 혼합한다. CLI별 모델은 `GTASK_MODEL`(Gemini)·`CTASK_MODEL`(Codex) 환경변수로 지정하거나 해당 래퍼를 직접 호출 |
 | 종료 코드 | 처리한 CLI 결과 전파 / 전 CLI 소진 시 1 |
 | 상태 파일 | `~/.claude/arachne-quota-state` (쿨다운 만료 epoch 기록) |
 | 환경변수 | `ATASK_COOLDOWN_CLAUDE`(기본 18000s) · `ATASK_COOLDOWN_DEFAULT`(기본 3600s) · `ARACHNE_STATE_DIR` |

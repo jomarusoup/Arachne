@@ -10,7 +10,7 @@
 #                 review: gemini → codex → claude  (저비용 1차 리뷰)
 #               헤드리스 호출 전용. 대화형 세션 중간 구제는 못 한다(README 참고).
 # DATA        : 2026-06-07
-# Modification: 2026-06-07
+# Modification: 2026-06-08
 ################################################################################
 
 set -euo pipefail
@@ -18,8 +18,14 @@ set -euo pipefail
 #-------------------------------------------------------------------------------
 # 쿼터·rate limit 소진으로 판단할 출력 패턴. 이 패턴이면 폴백, 아니면 일반 에러로
 # 보고 후 중단(잘못된 입력까지 폴백하면 세 CLI 토큰을 낭비하므로 구분한다).
+# 오판 방지(#31): bare 'quota'·'429' 대신 API 소진 신호에 가까운 표현만 매칭하고,
+# 명백한 일반 오류(NON_QUOTA)는 쿼터 토큰이 섞여 있어도 폴백에서 제외한다.
 #-------------------------------------------------------------------------------
-readonly QUOTA_PATTERN='rate.?limit|usage limit|quota|429|overloaded|resource.?exhausted|RESOURCE_EXHAUSTED|too many requests|insufficient_quota|usage limit reached'
+readonly QUOTA_PATTERN='rate.?limit|rate_limit|usage limit reached|usage limit|429|too many requests|overloaded_error|overloaded|resource.?exhausted|RESOURCE_EXHAUSTED|insufficient_quota|quota exceeded|exceeded your[^.]{0,20}quota'
+
+# 명백한 일반 오류 신호 — 위 패턴이 우연히 매칭돼도 쿼터 소진으로 보지 않는다.
+# (예: "disk quota exceeded"는 API 쿼터가 아니라 디스크 문제)
+readonly NON_QUOTA_PATTERN='syntax error|command not found|no such file|permission denied|parse error|compil|undefined reference|disk quota|inode|invalid argument'
 
 #-------------------------------------------------------------------------------
 # 상태 파일 — 소진된 CLI의 쿨다운 만료 시각(epoch)을 기록해 반복 재시도를 막는다.
@@ -39,7 +45,7 @@ readonly COOLDOWN_DEFAULT="${ATASK_COOLDOWN_DEFAULT:-3600}"
 #===============================================================================
 Usage() {
     cat >&2 << 'USAGE'
-Usage: arachne-task [-R ROLE] [-m MODEL] [-w] [--dry-run] "프롬프트..."   (짧은 별칭: atask)
+Usage: arachne-task [-R ROLE] [-w] [--dry-run] "프롬프트..."   (짧은 별칭: atask)
 
   자동 폴백 캐스케이드 디스패처. 역할별 우선순위로 CLI를 시도하고,
   쿼터 소진을 감지하면 다음 CLI로 자동 전환한다. 결과만 stdout 으로 출력.
@@ -52,10 +58,14 @@ Roles (-R):
 
 Options:
   -R ROLE    캐스케이드 역할 (기본 impl)
-  -m MODEL   하위 CLI 모델 지정 (codex/gemini 단계로 전달)
   -w         codex 단계를 workspace-write 로 실행 (테스트 직접 수정)
   --dry-run  실제 호출 없이 해석된 순서·쿨다운 상태만 출력
   -h         이 도움말 출력
+
+  ※ 모델 지정 옵션은 없다(#32): 어느 CLI가 실행될지 미리 알 수 없어 단일 모델명이
+     서로 다른 CLI 모델 공간을 혼합하기 때문. CLI별 모델은 각 래퍼의 환경변수로 지정한다
+     (Gemini=GTASK_MODEL, Codex=CTASK_MODEL). 특정 모델이 꼭 필요하면 atask 대신
+     해당 래퍼(gtask/ctask)를 직접 호출한다.
 
 Examples:
   atask "결제 모듈 재시도 로직 구현"                 # impl: claude 먼저, 소진 시 제한된 래퍼 폴백
@@ -179,14 +189,36 @@ SetCooldown() {
 # RETURNED    : 0(쿼터 소진) / 1(아님)
 #===============================================================================
 IsQuotaError() {
+    # 명백한 일반 오류면 쿼터로 보지 않는다 (#31 오판 방지)
+    if grep -qiE "${NON_QUOTA_PATTERN}" "$1" "$2" 2>/dev/null; then
+        return 1
+    fi
     grep -qiE "${QUOTA_PATTERN}" "$1" "$2" 2>/dev/null
+}
+
+#===============================================================================
+# FUNCTION    : FmtCooldown
+# DESCRIPTION : 쿨다운 만료 epoch 를 플랫폼 무관한 상대 시간으로 표시 (#37)
+#               GNU 전용 `date -d @N` 대신 epoch 차이를 분 단위로 환산한다.
+# PARAMETERS  : int until - 만료 epoch
+# RETURNED    : "~Nm" (N분 후) 또는 "now"
+#===============================================================================
+FmtCooldown() {
+    local until="$1"
+    local now diff
+    now=$(date +%s)
+    diff=$(( until - now ))
+    if [ "${diff}" -le 0 ]; then
+        echo "now"
+    else
+        echo "~$(( diff / 60 ))m"
+    fi
 }
 
 #-------------------------------------------------------------------------------
 # 인자 파싱 (--dry-run 은 getopts 전에 분리)
 #-------------------------------------------------------------------------------
 role="impl"
-model=""
 write_mode=0
 dry_run=0
 
@@ -200,14 +232,13 @@ for arg in "$@"; do
 done
 set -- "${args[@]:-}"
 
-while getopts ":R:m:wh" opt; do
+while getopts ":R:wh" opt; do
     case "${opt}" in
         R)  role="${OPTARG}" ;;
-        m)  model="${OPTARG}" ;;
         w)  write_mode=1 ;;
         h)  Usage 0 ;;
         :)  echo "[atask] -${OPTARG} 옵션은 값이 필요합니다" >&2; Usage 1 ;;
-        \?) echo "[atask] 알 수 없는 옵션: -${OPTARG}" >&2; Usage 1 ;;
+        \?) echo "[atask] 알 수 없는 옵션: -${OPTARG} (모델 지정은 GTASK_MODEL/CTASK_MODEL 환경변수 사용)" >&2; Usage 1 ;;
     esac
 done
 shift $((OPTIND - 1))
@@ -228,7 +259,7 @@ if [ "${dry_run}" -eq 1 ]; then
     echo "order=${order}"
     for cli in ${order}; do
         if InCooldown "${cli}"; then
-            echo "  ${cli}: cooldown until $(date -d "@$(CooldownUntil "${cli}")" '+%H:%M:%S' 2>/dev/null || CooldownUntil "${cli}")"
+            echo "  ${cli}: cooldown ($(FmtCooldown "$(CooldownUntil "${cli}")") 후 회복)"
         else
             echo "  ${cli}: available"
         fi
@@ -256,7 +287,7 @@ for cli in ${order}; do
         continue
     fi
     if InCooldown "${cli}"; then
-        Warn "skip ${cli} (쿨다운 ~$(date -d "@$(CooldownUntil "${cli}")" '+%H:%M' 2>/dev/null || echo '?'))"
+        Warn "skip ${cli} (쿨다운 $(FmtCooldown "$(CooldownUntil "${cli}")") 후 회복)"
         continue
     fi
 
@@ -267,32 +298,35 @@ for cli in ${order}; do
     #---------------------------------------------------------------------------
     # CLI별 호출. codex/gemini 는 위임 래퍼(codex-task/gemini-task)를 통해 호출.
     #---------------------------------------------------------------------------
+    # 모델은 각 래퍼의 환경변수(GASK_MODEL/CASK_MODEL)로 지정 — atask는 모델을 섞지 않는다(#32)
     rc=0
     case "${cli}" in
         claude)
-            claude_cmd=(claude -p)
-            [ -n "${model}" ] && claude_cmd+=(--model "${model}")
-            claude_cmd+=("${prompt}")
-            "${claude_cmd[@]}" > "${out_file}" 2> "${err_file}" || rc=$?
+            claude -p "${prompt}" > "${out_file}" 2> "${err_file}" || rc=$?
             ;;
         codex)
             codex_cmd=(codex-task)
             [ "${write_mode}" -eq 1 ] && codex_cmd+=(-w)
-            [ -n "${model}" ] && codex_cmd+=(-m "${model}")
             codex_cmd+=("${prompt}")
             "${codex_cmd[@]}" > "${out_file}" 2> "${err_file}" || rc=$?
             ;;
         gemini)
-            gemini_cmd=(gemini-task)
-            [ -n "${model}" ] && gemini_cmd+=(-m "${model}")
-            gemini_cmd+=("${prompt}")
-            "${gemini_cmd[@]}" > "${out_file}" 2> "${err_file}" || rc=$?
+            gemini-task "${prompt}" > "${out_file}" 2> "${err_file}" || rc=$?
             ;;
     esac
 
     if [ "${rc}" -eq 0 ]; then
         cat "${out_file}"
         Warn "처리 완료: ${cli}"
+        #-----------------------------------------------------------------------
+        # #26: impl 역할에서 claude 가 아닌 후보가 처리하면 역할·커밋 권한이
+        # 자동 승계되지 않음을 경고한다. 하위 래퍼(codex-task/gemini-task)의
+        # tester/reader 제약이 유지되며, 종료코드 0 이 구현 완료를 보장하지 않는다.
+        #-----------------------------------------------------------------------
+        if [ "${role}" = "impl" ] && [ "${cli}" != "claude" ]; then
+            Warn "주의: ${cli}는 역할 제한(tester/reader) 래퍼로 실행됨 — 결과·diff를 사람이 검증하고"
+            Warn "      커밋은 Claude가. 종료코드 0이 구현 완료를 보장하지 않음(역할·커밋 자동 승계 아님)."
+        fi
         exit 0
     fi
 

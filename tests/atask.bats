@@ -41,9 +41,10 @@ self="$(basename "$0")"
 var="$(echo "${self}" | tr 'a-z-' 'A-Z_')_BEHAVIOR"
 behavior="${!var:-ok}"
 case "${behavior}" in
-    ok)    echo "OUTPUT_FROM_${self}"; exit 0 ;;
-    quota) echo "Error: 429 rate limit exceeded" >&2; exit 1 ;;
-    err)   echo "Error: syntax error in input" >&2; exit 2 ;;
+    ok)        echo "OUTPUT_FROM_${self}"; exit 0 ;;
+    quota)     echo "Error: 429 rate limit exceeded" >&2; exit 1 ;;
+    err)       echo "Error: syntax error in input" >&2; exit 2 ;;
+    diskquota) echo "Error: disk quota exceeded" >&2; exit 1 ;;
 esac
 MOCK
     chmod +x "${MOCK_BIN}/${name}"
@@ -143,4 +144,53 @@ MOCK
     run bash "${SCRIPT}" -R bogus "작업"
     [ "$status" -eq 1 ]
     [[ "$output" == *"알 수 없는 역할"* ]]
+}
+
+#-------------------------------------------------------------------------------
+# #31: 쿼터 단어가 섞인 일반 오류는 폴백하지 않는다 (오판 방지)
+#-------------------------------------------------------------------------------
+@test "atask(#31): 'disk quota exceeded' 는 쿼터 소진으로 오판하지 않고 중단" {
+    make_mock claude; make_mock codex-task; make_mock gemini-task
+    CLAUDE_BEHAVIOR=diskquota run bash "${SCRIPT}" -R impl "작업"
+    [ "$status" -eq 1 ]
+    [[ "$output" != *"OUTPUT_FROM_codex-task"* ]]
+    [[ "$output" == *"폴백 중단"* ]]
+    # claude 쿨다운이 등록되지 않아야 함
+    [ ! -f "${ARACHNE_STATE_DIR}/arachne-quota-state" ] || ! grep -q "^claude	" "${ARACHNE_STATE_DIR}/arachne-quota-state"
+}
+
+#-------------------------------------------------------------------------------
+# #32: 모델 옵션(-m) 제거 — 알 수 없는 옵션으로 거부
+#-------------------------------------------------------------------------------
+@test "atask(#32): -m 옵션은 제거되어 거부된다" {
+    make_mock claude; make_mock codex-task; make_mock gemini-task
+    run bash "${SCRIPT}" -m gpt-4 "작업"
+    [ "$status" -eq 1 ]
+    [[ "$output" == *"알 수 없는 옵션: -m"* ]]
+}
+
+#-------------------------------------------------------------------------------
+# #37: 쿨다운 표시가 GNU date -d 없이 상대 시간으로 — '?' 없이 표시
+#-------------------------------------------------------------------------------
+@test "atask(#37): --dry-run 쿨다운 표시는 상대 시간(분)으로 출력" {
+    make_mock claude; make_mock codex-task; make_mock gemini-task
+    mkdir -p "${ARACHNE_STATE_DIR}"
+    printf 'claude\t%s\n' "$(( $(date +%s) + 6000 ))" > "${ARACHNE_STATE_DIR}/arachne-quota-state"
+    run bash "${SCRIPT}" --dry-run -R impl "작업"
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"분 후 회복"* || "$output" == *"m 후 회복"* ]]
+    [[ "$output" != *": cooldown until"* ]]
+    [[ "$output" != *"?"* ]]
+}
+
+#-------------------------------------------------------------------------------
+# #26: impl 폴백 시 역할·커밋 자동 승계가 아님을 경고
+#-------------------------------------------------------------------------------
+@test "atask(#26): impl 에서 claude 아닌 후보가 처리하면 역할 비승계 경고" {
+    make_mock claude; make_mock codex-task; make_mock gemini-task
+    CLAUDE_BEHAVIOR=quota run bash "${SCRIPT}" -R impl "작업"
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"OUTPUT_FROM_codex-task"* ]]
+    [[ "$output" == *"역할 제한"* ]]
+    [[ "$output" == *"자동 승계 아님"* ]]
 }
