@@ -167,7 +167,7 @@ LLM 시스템을 짜는 두 방식. **하나의 스펙트럼**이며, 단순한 
 ### 4. AI 코드 검증 — ✅ 적용
 
 노트 §4의 7단계가 하네스에 매핑돼 있다.
-- **테스트**: `tests/*.bats`(56개) — `atask`·hooks·install. CI(`/.github/workflows/ci.yml`)가
+- **테스트**: `tests/*.bats` — `atask`·hooks·install 등. CI(`/.github/workflows/ci.yml`)가
   `bats tests/*.bats` glob로 **새 테스트 자동 포함**.
 - **정적 분석**: CI가 `shellcheck -S warning ./*.sh hooks/*.sh tests/*.sh` 강제. `/verify` 커맨드가
   언어별 정적+동작 2단계.

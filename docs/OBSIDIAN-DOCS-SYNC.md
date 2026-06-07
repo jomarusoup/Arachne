@@ -53,6 +53,22 @@ project-a	user@203.0.113.10	2222	/home/Harness/project-a	$HOME/Obsidian/프로�
 즉, git remote가 아니라 MacBook에서 `user@IP:PORT`로 원격 Linux에 SSH 접속해 문서만 가져온다.
 SSH config를 쓰고 있다면 `ssh_target`에는 별칭도 쓸 수 있다.
 
+### 구형 3컬럼 설정 호환
+
+이전 버전의 다음 형식도 계속 읽을 수 있다.
+
+```text
+# name<TAB>remote_root<TAB>local_dir
+arachne	user@203.0.113.10:/home/Harness/Arachne	$HOME/Obsidian/프로젝트/Arachne
+```
+
+새 설정은 SSH 포트를 명시할 수 있고 필드 의미가 분명한 5컬럼 형식을 권장한다. 구형 설정을
+전환할 때 `remote_root`를 `ssh_target`, `remote_dir`로 나누고 기본 SSH 포트 `22`를 넣는다.
+
+```text
+arachne	user@203.0.113.10	22	/home/Harness/Arachne	$HOME/Obsidian/프로젝트/Arachne
+```
+
 ## 사용
 
 먼저 변경 계획만 본다.

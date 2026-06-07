@@ -24,6 +24,7 @@ aliases:
 > 🔗 멀티 도구 통합 사용·상호작용은 [docs/MULTI-CLI.md](docs/MULTI-CLI.md) 참고
 > 🪟 Windows에서 Claude Code·Codex CLI·Gemini CLI 설치는 [docs/WINDOWS-SETUP.md](docs/WINDOWS-SETUP.md) 참고
 > 🗂️ 원격 프로젝트 문서 ↔ Obsidian 동기화는 [docs/OBSIDIAN-DOCS-SYNC.md](docs/OBSIDIAN-DOCS-SYNC.md)(arachne 설정)·[docs/SYNCTHING-SETUP.md](docs/SYNCTHING-SETUP.md)(자동) 참고
+> ✅ GitHub Actions CI 구조·로컬 재현·실패 대응은 [docs/CI.md](docs/CI.md) 참고
 > 📑 약어(SSOT·TDD·DI·a11y 등) 풀이는 [docs/GLOSSARY.md](docs/GLOSSARY.md) 참고
 > 🧠 AI 엔지니어링 학습 노트(Agent/Workflow·MCP·Prompt Injection 등)는 [docs/AI-ENGINEERING-NOTES.md](docs/AI-ENGINEERING-NOTES.md) 참고
 
@@ -121,6 +122,7 @@ Arachne/
 ├── hooks/                       # 이벤트 훅 (session-start/end, pre-compact, git-bus-check,
 │                                #   atask-quota-warn, doc-drift-check)
 ├── mcp-configs/                 # MCP (Model Context Protocol) 서버 설정 템플릿
+├── docs/CI.md                   # GitHub Actions CI 운영·로컬 재현 가이드
 ├── docs/task/                   # 승인된 실행 작업과 진행 상태 기록
 ├── docs/template/task.md        # 작업 기록 표준 템플릿
 ├── tests/                       # 검증 스크립트 (bats + shell)

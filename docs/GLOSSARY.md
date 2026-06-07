@@ -10,7 +10,7 @@ Arachne 문서에 나오는 줄임말을 **풀어 쓴 말(원어)** 과 함께 �
 | **SSOT** | Single Source of Truth (단일 진실 공급원) | 같은 정보를 여러 곳에 복제하지 않고 **한 곳만 정본**으로 두는 원칙. Arachne에선 `AGENTS.md`가 공통 규약의 SSOT다. Gemini는 심볼릭으로 즉시 보고, Codex는 재설치 때 병합본을 갱신한다. |
 | **드리프트** | drift | 사본·인덱스·문서가 실제(코드·파일)와 시간이 지나며 **점점 어긋나는 현상**. SSOT와 자동 검사(CI)로 막는다. |
 | **CLI** | Command-Line Interface (명령줄 인터페이스) | 터미널에서 명령으로 쓰는 프로그램. 여기선 Claude Code·Gemini CLI·Codex CLI. |
-| **CI** | Continuous Integration (지속적 통합) | push·PR마다 서버에서 자동으로 검사(테스트·린트)를 돌리는 것. **배포(CD)가 아니다.** Arachne는 GitHub Actions로 shellcheck·bats·인덱스 검사를 돌린다. |
+| **CI** | Continuous Integration (지속적 통합) | push·PR마다 서버에서 자동으로 검사(테스트·린트)를 돌리는 것. **배포(CD)가 아니다.** Arachne는 GitHub Actions로 Ubuntu·Windows 검증을 수행한다. 상세는 [CI 운영 가이드](CI.md). |
 | **CD** | Continuous Deployment (지속적 배포) | 검증된 변경을 자동으로 운영에 반영. Arachne엔 없다(심볼릭 링크 설치라 배포 대상이 없음). |
 | **PR** | Pull Request | 브랜치 변경을 main에 합치기 전 리뷰를 요청하는 GitHub 단위. |
 | **MCP** | Model Context Protocol | AI 도구가 외부 서버(도구·데이터)에 연결하는 프로토콜. `mcp-configs/`에 템플릿. |

@@ -180,6 +180,46 @@ model: opus               # opus / sonnet / haiku
 
 종료 코드: `0` 성공(경고 출력 가능), `2` 차단(`PreToolUse`에서만 유효).
 
+### 상태표시줄 (`statusline-command.sh`)
+
+Claude Code 상태표시줄은 `settings.template.json`의 `statusLine.command`로 자동 등록된다.
+직접 실행하는 사용자 명령이 아니라 Claude Code가 상태 JSON을 stdin으로 전달할 때 렌더링된다.
+
+표시 정보:
+
+- 현재 모델과 git 브랜치
+- 컨텍스트 사용률과 입력·출력 token 합계
+- 현재 세션 비용
+- 최근 5시간 비용 예산 잔여율
+- 주간 비용 예산 잔여율과 다음 토요일 정오까지 남은 시간
+
+상태 파일:
+
+| 파일 | 역할 |
+| --- | --- |
+| `~/.claude/usage_limits.json` | 선택적 사용자 예산 설정 |
+| `~/.claude/usage_track.json` | 최근 7일 비용 증가분 기록 |
+| `~/.claude/usage_last.json` | 직전 렌더의 세션 비용 저장 |
+
+예산을 바꾸려면 다음 파일을 만든다.
+
+```json
+{
+  "limit_5h": 5.0,
+  "limit_weekly": 35.0
+}
+```
+
+파일이 없으면 기본값은 5시간 `$5.00`, 주간 `$35.00`이다. 이 값은 서비스 제공자의 실제 사용
+한도나 청구 정책을 조회하는 기능이 아니라 **로컬 비용 추적용 사용자 기준값**이다.
+
+주의:
+
+- `jq`, `awk`, GNU `date -d`가 필요하다.
+- 상태표시줄은 `usage_track.json`과 `usage_last.json`을 갱신하므로 순수 표시 전용 함수가 아니다.
+- macOS 기본 BSD `date`와 Windows 네이티브 셸에서는 시간 계산이 호환되지 않을 수 있다.
+- 추적값은 Claude Code가 stdin으로 제공한 세션 비용의 렌더 간 증가분을 누적한 근사치다.
+
 ---
 
 ## 5. Rules (`rules/`)
@@ -312,10 +352,11 @@ powershell -ExecutionPolicy Bypass -File .\install.ps1 -Install
 | Linux | 지원 | Bash, Git, GNU `readlink`, `sed`, `awk`, `grep` |
 | Windows + WSL2 | 조건부 | Linux 호환 경로지만 이 저장소 CI에서 별도 검증하지 않음 |
 | macOS | 제한적 | GNU coreutils 설치 후 `greadlink` 또는 GNU `readlink`가 PATH에서 우선해야 함 |
-| Windows 네이티브 | 미지원 | PowerShell 설치기와 Windows 링크 처리가 현재 없음 |
+| Windows 네이티브 | 부분 지원 | `install.ps1` 설치는 CI 검증. Git Bash 훅·`atask` 런타임과 통합 Copilot 타깃은 미검증/분리 |
 
 현재 스크립트는 `readlink -f/-e`와 일부 `date -d` 사용 때문에 기본 macOS BSD 도구만으로는
-완전하게 동작하지 않는다. Windows에서는 WSL2 경로를 사용한다.
+완전하게 동작하지 않는다. Windows 네이티브에서는 PowerShell 설치기를 사용하되 Bash 기반 훅과
+위임 래퍼에는 Git for Windows가 필요하고, `tws`는 WSL 또는 별도 tmux 환경에서 사용한다.
 
 ### dotfiles 병합 메커니즘 (Safe Merge)
 기존의 단순 심볼릭 링크 방식 대신, 사용자 홈 디렉토리의 `.bash_profile`, `.vimrc` 파일에 Arachne 설정을 **병합**합니다.
@@ -434,7 +475,7 @@ cat file | gemini-task "이 입력을 요약해줘"      # stdin 입력은 프�
 
 | 옵션·요소 | 설명 |
 | --------- | ---- |
-| `-m MODEL` | 사용할 Gemini 모델 (미지정 시 `gemini` 기본값 또는 환경변수 `GASK_MODEL`) |
+| `-m MODEL` | 사용할 Gemini 모델 (미지정 시 `gemini` 기본값 또는 `GTASK_MODEL`; 구형 `GASK_MODEL`도 호환) |
 | `-h` | 도움말 출력 |
 | 종료 코드 | 내부 `gemini` 호출 결과를 그대로 전파 → 스크립트·파이프라인에 안전 |
 | stdout / stderr | 답변 본문은 stdout, 노이즈 제거 후 남은 진단만 stderr |
@@ -447,7 +488,7 @@ cat test.log | codex-task "이 실패 원인 분석하고 수정 diff 제시"   
 
 | 옵션·요소 | 설명 |
 | --------- | ---- |
-| `-m MODEL` | 사용할 Codex 모델 (미지정 시 `codex` 기본값 또는 환경변수 `CASK_MODEL`) |
+| `-m MODEL` | 사용할 Codex 모델 (미지정 시 `codex` 기본값 또는 `CTASK_MODEL`; 구형 `CASK_MODEL`도 호환) |
 | `-w` | 쓰기 모드(workspace-write) — codex가 테스트를 직접 쓰고 실행해 수정. 기본은 read-only 제안 모드 |
 | `-r` | raw — tester/fixer 역할 프리앰블 없이 프롬프트 그대로 전달 |
 | `-C DIR` | 작업 루트 디렉터리 지정 (`codex -C`) |
