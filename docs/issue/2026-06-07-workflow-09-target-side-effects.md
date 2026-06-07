@@ -18,7 +18,7 @@ FROM:: [[2026-06-07-workflow-audit]]
 - **작성일**: 2026-06-07
 - **심각도**: LOW
 - **영역**: `install.sh:install`, `install_shared`
-- **상태**: 임시 HOME에서 재현 완료
+- **상태**: 해결됨 — 1342d21 (install_shared 를 all 한정, 타깃 설치 격리). task [[2026-06-07-install-update-safety]]
 
 ## 문제
 

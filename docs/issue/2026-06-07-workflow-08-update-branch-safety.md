@@ -18,7 +18,7 @@ FROM:: [[2026-06-07-workflow-audit]]
 - **작성일**: 2026-06-07
 - **심각도**: MEDIUM
 - **영역**: `install.sh:update_arachne`
-- **상태**: 코드 경로 확인 완료
+- **상태**: 해결됨 — 1342d21 (arachne -u 브랜치·dirty 검증, ARACHNE_FORCE 우회). task [[2026-06-07-install-update-safety]]
 
 ## 문제
 

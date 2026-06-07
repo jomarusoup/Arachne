@@ -18,7 +18,7 @@ FROM:: [[2026-06-07-workflow-audit]]
 - **작성일**: 2026-06-07
 - **심각도**: HIGH
 - **영역**: `install.sh:185-200`
-- **상태**: 임시 HOME에서 재현 완료
+- **상태**: 해결됨 — 1342d21 (settings 차이 경고 + .bak·arachne -e 안내). task [[2026-06-07-install-update-safety]]
 
 ## 문제
 
