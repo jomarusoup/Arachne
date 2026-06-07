@@ -1,4 +1,4 @@
-# 멀티-CLI 가이드 — Claude Code · Gemini CLI · Codex CLI
+# Multi-CLI Guide — Claude Code · Gemini CLI · Codex CLI
 
 Arachne는 **하나의 공통 규약(`AGENTS.md`)을 세 개의 AI 코딩 CLI가 동시에 따르도록** 연결한다.
 한 파일만 고치면 세 도구가 같은 규칙으로 움직인다. 이 문서는 각 CLI에서 어떻게 쓰고, 셋이
@@ -8,7 +8,7 @@ Arachne는 **하나의 공통 규약(`AGENTS.md`)을 세 개의 AI 코딩 CLI가
 
 ---
 
-## 1. 큰 그림
+## 1. Big Picture
 
 > **SSOT** = Single Source of Truth(단일 진실 공급원). 같은 정보를 여러 곳에 복제하지 않고
 > **한 곳(`AGENTS.md`)만 정본**으로 두는 원칙. 거기만 고치면 나머지는 그것을 가리키므로,
@@ -41,7 +41,7 @@ graph TD
 
 ---
 
-## 2. 각 CLI는 SSOT를 어떻게 보는가 (비대칭이 핵심)
+## 2. How Each CLI Sees the SSOT (Asymmetry is Key)
 
 | CLI | 연결 파일 | 연결 방식 | 반영 시점 | 무엇을 보나 |
 | --- | --- | --- | --- | --- |
@@ -61,9 +61,9 @@ graph TD
 
 ---
 
-## 3. CLI별 동작 — 무엇이 작동하나
+## 3. Per-CLI Behavior — What Actually Works
 
-### 3.0 능력 매트릭스
+### 3.0 Capability Matrix
 
 Arachne 구성요소가 각 CLI에서 실제로 작동하는지. **공통 규약만 셋이 공유**하고, 나머지는
 대부분 Claude 전용이다(import·이벤트 훅·서브에이전트 개념이 Claude Code에만 있으므로).
@@ -85,7 +85,7 @@ Arachne 구성요소가 각 CLI에서 실제로 작동하는지. **공통 규약
 > 오케스트레이션 자체는 Claude Code 고유 기능이라 이식되지 않는다. (Gemini·Codex가 가진 **자체**
 > 에이전트·MCP 기능은 별개이며 Arachne가 아직 관리하지 않는다 — [설계문서](issue/2026-06-05-multi-cli-ssot.md) Phase 3.)
 
-### 3.1 Claude Code — 풀 스택으로 동작
+### 3.1 Claude Code — Full Stack
 
 별도 설정 불필요 — `arachne -i` 후 자동이다.
 
@@ -105,7 +105,7 @@ Arachne 구성요소가 각 CLI에서 실제로 작동하는지. **공통 규약
 - **언어 규칙**(`rules/<언어>/*`): 해당 확장자 파일을 열면 자동 활성화 (예: `*.rs` 편집 → `rules/rust/*`).
 - 슬래시 커맨드·에이전트·스킬·훅 전체 카탈로그와 상세 예시는 [USAGE.md](USAGE.md).
 
-### 3.2 Gemini CLI — 공통 규약 + gask 위임 대상
+### 3.2 Gemini CLI — Shared Convention + gask Delegation Target (reader/advisor)
 
 **런타임 동작**: Gemini는 매 호출마다 글로벌 컨텍스트 `~/.gemini/GEMINI.md`(→ AGENTS.md 심볼릭)를
 로드한다. 즉 **공통 규약만** 적용되고, 에이전트·훅·커맨드는 없다. 비대화 호출 시 신뢰 폴더 검사가 있어
@@ -128,7 +128,7 @@ gask "README 초안 작성" > README.md           # 장문 생성 → 파일로 
 - `gask`는 Claude가 Gemini에 작업을 위임하는 비용 최적화 경로다([USAGE.md §6](USAGE.md)).
 - `gask`는 헤드리스라 `--skip-trust`를 자동 처리 — 임의 디렉터리에서 불려도 동작한다.
 
-### 3.3 Codex CLI — 공통 규약(병합본) + `cask` 위임 대상 (tester/fixer)
+### 3.3 Codex CLI — Shared Convention (Merged) + `cask` Delegation Target (tester/fixer)
 
 **런타임 동작**: Codex는 새 세션마다 글로벌 지침 `~/.codex/AGENTS.md`를 로드한다. 이 파일엔 SSOT 본문이
 마커(`<!-- === ARACHNE … === -->`)로 병합돼 있고, 마커 밖 사용자 내용은 보존된다. **공통 규약만** 적용되고
@@ -156,9 +156,9 @@ cask -w "실패하는 test_auth 를 green 까지 수정"                   # 직
 
 ---
 
-## 4. 셋은 서로 어떻게 영향을 주는가
+## 4. How the Three Interact
 
-### 4.1 전파 — "한 파일 수정 = 세 CLI"
+### 4.1 Propagation — "Edit One File = Three CLIs"
 
 `AGENTS.md`를 고치면:
 
@@ -171,16 +171,22 @@ cask -w "실패하는 test_auth 를 green 까지 수정"                   # 직
 > `AGENTS.md`(다이제스트) ↔ `rules/`(풀 버전)는 별도 동기화 축이다. 규약을 바꾸면 양쪽을 함께 손봐야 한다.
 > CI의 인덱스 검사가 파일 누락은 잡지만, **내용 동기화는 사람 책임**이다.
 
-### 4.2 협업 — Claude ↔ Gemini 비용 라우팅
+### 4.2 Collaboration — 3-Lane Cost Routing (Claude · Codex · Gemini)
 
-토큰 무겁고 정밀도가 덜 중요한 작업(설계·요약·조사·1차 리뷰·장문 생성)은 Claude가 `gask`로 Gemini에
-위임한다. 구현·디버깅·보안 리뷰·설정 관리는 Claude가 한다. 정책의 단일 출처는
+토큰 무겁고 정밀도가 덜 중요한 작업(설계·요약·조사·1차 리뷰·장문 생성)은 Claude가 `gask`로
+**Gemini(reader/advisor)** 에 위임한다. 테스트 작성·실행과 버그 수정은 `cask`로
+**Codex(tester/fixer)** 에 위임한다. 정밀 구현·통합·디버깅·보안 리뷰·설정 관리, 그리고 **최종 커밋**은
+**Claude(오케스트레이터+주 구현자)** 가 직접 한다. 정책의 단일 출처(SSOT)는
 [`rules/common/workflow.md`](../rules/common/workflow.md), 사람용 설명은 [USAGE.md §6](USAGE.md).
 
-또 다른 채널은 **git-bus**다 — 다른 터미널에서 Gemini가 직접 커밋한 경우, `hooks/gemini-check.sh`가
+방향이 반대인 두 우선순위 사슬:
+- **오프로드(offload, 비용)**: Gemini → Codex → (Claude 안 씀) — 토큰 무거운 일을 싸게 떠넘김
+- **페일오버(failover, 구현 품질)**: Claude → Codex → Gemini — 구현 대타는 Codex 먼저
+
+또 다른 채널은 **git-bus**다 — 다른 터미널에서 Gemini/Codex가 직접 커밋한 경우, `hooks/gemini-check.sh`가
 다음 프롬프트 때 새 커밋을 알린다(비동기 메시지 버스).
 
-### 4.3 독립성 — 서로를 깨지 않는다
+### 4.3 Independence — They Don't Break Each Other
 
 - Codex 병합은 **마커 밖 사용자 내용을 보존**한다(직접 추가한 메모가 재설치로 사라지지 않음).
 - Gemini 심볼릭이 끊겨도(레포 이동 등) Claude·Codex는 영향 없다.
@@ -188,7 +194,7 @@ cask -w "실패하는 test_auth 를 green 까지 수정"                   # 직
 
 ---
 
-## 5. 상태 점검 — `arachne --check`
+## 5. Status Check — `arachne --check`
 
 세 CLI 연결을 한 번에 점검한다. 심볼릭 댕글링과 Codex stale을 잡는다.
 
@@ -209,7 +215,7 @@ arachne --check
 
 ---
 
-## 6. 흔한 작업 흐름
+## 6. Common Workflows
 
 ```bash
 # 규약을 바꾸고 싶다 → AGENTS.md 수정 후
@@ -226,7 +232,7 @@ arachne -i --target codex      # 또는 arachne -i (all)
 
 ---
 
-## 7. 관련 문서
+## 7. Related Docs
 
 - [README.md](../README.md) — 설치·CLI 커맨드 개요
 - [USAGE.md](USAGE.md) — 커맨드·에이전트·스킬·훅·규칙·협업 상세

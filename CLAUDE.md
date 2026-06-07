@@ -52,7 +52,7 @@ Claude Code가 이를 네이티브로 자동 로드한다:
 │
 ├── rules/                           # 항상 적용되는 전역 규칙
 │   ├── common/                      # 언어 무관 공통 규칙 (12개)
-│   │   ├── workflow.md              # Claude/Gemini 역할 분담·행동 규칙
+│   │   ├── workflow.md              # Claude/Codex/Gemini 3-레인 역할 분담·행동 규칙
 │   │   ├── coding-style.md          # 헤더 구조·네이밍·포매팅 공통 원칙
 │   │   ├── patterns.md              # SRP·불변성·에러 처리
 │   │   ├── agents.md                # 에이전트 목록·활성화 기준
