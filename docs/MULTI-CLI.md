@@ -326,7 +326,7 @@ Claude의 위임 대상이 아니라 **그 자체로** 쓸 수도 있다. 이때
 
 Arachne가 `AGENTS.md` 하나를 Claude·Gemini·Codex에 배포하는 것은 더 큰 **이식성 모델(portability
 model)** 의 한 사례다: **공통 소스를 각 하네스의 형식으로 어댑터 변환**해 배포한다. 같은 접근을
-[everything-claude-code(ECC)](https://github.com/) 가 Claude/Codex/Gemini/**Cursor**/**OpenCode**까지 확장한다.
+Claude/Codex/Gemini 외에 **Cursor·OpenCode** 같은 다른 하네스까지 넓힐 수 있다.
 
 | 표면(Surface) | 공통 소스 | 하네스별 어댑터 |
 | --- | --- | --- |
@@ -338,7 +338,7 @@ model)** 의 한 사례다: **공통 소스를 각 하네스의 형식으로 어
 
 > 핵심: **워크플로 모델을 도구마다 새로 만들지 않는다.** 공통 소스를 가장자리(edge)에서 각 하네스 형식으로
 > 변환할 뿐이다. 그래서 어떤 하네스를 단독으로 쓰든 같은 규약·스킬·패턴이 따라온다.
-> Arachne는 현재 Claude(풀)·Gemini(심볼릭)·Codex(병합)를 지원하고, Cursor·OpenCode는 ECC가 다루는 확장 표면이다.
+> Arachne는 현재 Claude(풀)·Gemini(심볼릭)·Codex(병합)를 지원하고, Cursor·OpenCode는 아직 다루지 않는 확장 표면이다.
 
 ---
 

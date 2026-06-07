@@ -113,7 +113,7 @@ arachne -i --target codex; grep SSOT-PROBE ~/.codex/AGENTS.md   # 병합 → 재
 | settings 분기 부재 | 의도된 범위(규약 SSOT와 직교) — Phase 3 |
 
 ## 권장
-- ECC식 generate+validate 모방 금지(Arachne는 심볼릭 설치라 배포 제약 없음).
+- generate+validate 방식 모방 금지(Arachne는 심볼릭 설치라 배포 제약 없음).
 - **점진**: Phase 0 → 1(Claude+Gemini) → 수요 검증 후 2(Codex) → 3.
 - 관련: `AGENTS.md`(SSOT 초안 완성), `install.sh`(`install`·`merge_dotfile`·`case` 변경 대상),
-  `CLAUDE.md`(import 블록 재배선), 참조 `everything-claude-code/scripts/sync-ecc-to-codex.sh`.
+  `CLAUDE.md`(import 블록 재배선).
