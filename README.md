@@ -25,6 +25,7 @@ aliases:
 > 🪟 Windows에서 Claude Code·Codex CLI·Gemini CLI 설치는 [docs/WINDOWS-SETUP.md](docs/WINDOWS-SETUP.md) 참고
 > 🗂️ 원격 프로젝트 문서 ↔ Obsidian 동기화는 [docs/OBSIDIAN-DOCS-SYNC.md](docs/OBSIDIAN-DOCS-SYNC.md)(arachne 설정)·[docs/SYNCTHING-SETUP.md](docs/SYNCTHING-SETUP.md)(자동) 참고
 > 📑 약어(SSOT·TDD·DI·a11y 등) 풀이는 [docs/GLOSSARY.md](docs/GLOSSARY.md) 참고
+> 🧠 AI 엔지니어링 학습 노트(Agent/Workflow·MCP·Prompt Injection 등)는 [docs/AI-ENGINEERING-NOTES.md](docs/AI-ENGINEERING-NOTES.md) 참고
 
 ---
 
