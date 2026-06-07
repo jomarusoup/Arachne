@@ -80,7 +80,7 @@ Bash에서는 `./install.sh -i --target copilot`을 사용합니다. 두 방식 
 | `arachne -i` (`--install`) | 재설치 및 설정 동기화 |
 | `arachne -u` (`--update`) | 최신 상태로 업데이트 (git pull + 재설치) |
 | `arachne -c` (`--check`) | Claude·Gemini·Codex·Copilot 연결 상태 점검 |
-| `arachne -n <P> [DIR]` (`--new`) | 신규 프로젝트 스캐폴딩 (README + docs/{issue,idea,template}) |
+| `arachne -n <P> [DIR]` (`--new`) | 신규 프로젝트 스캐폴딩 (README + docs/{issue,idea,task,template}) |
 | `arachne -s` (`--session`) | **TWS (Tmux Workspace Manager)**: 대화형 세션 매니저 (`tws`와 동일) |
 | `arachne -e` (`--export-settings`) | settings.json → 템플릿 내보내기 |
 | `arachne -d` (`--export-dotfiles`) | dotfiles → 레포 내보내기 |
@@ -121,6 +121,8 @@ Arachne/
 ├── hooks/                       # 이벤트 훅 (session-start/end, pre-compact, git-bus-check,
 │                                #   atask-quota-warn, doc-drift-check)
 ├── mcp-configs/                 # MCP (Model Context Protocol) 서버 설정 템플릿
+├── docs/task/                   # 승인된 실행 작업과 진행 상태 기록
+├── docs/template/task.md        # 작업 기록 표준 템플릿
 ├── tests/                       # 검증 스크립트 (bats + shell)
 └── dotfiles/                    # bash_profile, vimrc (병합 원본)
 ```

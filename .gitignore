@@ -36,3 +36,6 @@ session-env/
 # 생성 파일 (settings.template.json 에서 생성)
 # settings.json 은 install.sh 가 생성하므로 추적 불필요
 # (settings.template.json 만 추적)
+
+# macOS 아티팩트
+.DS_Store

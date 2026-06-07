@@ -26,13 +26,16 @@ run_new() {
 #-------------------------------------------------------------------------------
 # 구조 생성 검증
 #-------------------------------------------------------------------------------
-@test "new: 기록 구조 생성 (README + docs/{issue,idea,template})" {
+@test "new: 기록 구조 생성 (README + docs/{issue,idea,task,template})" {
     run_new myproj "${TMP_DIR}"
     [ "$status" -eq 0 ]
     [ -f "${TMP_DIR}/myproj/README.md" ]
     [ -d "${TMP_DIR}/myproj/docs/issue" ]
     [ -d "${TMP_DIR}/myproj/docs/idea" ]
+    [ -d "${TMP_DIR}/myproj/docs/task" ]
+    [ -f "${TMP_DIR}/myproj/docs/task/README.md" ]
     [ -f "${TMP_DIR}/myproj/docs/template/example.md" ]
+    [ -f "${TMP_DIR}/myproj/docs/template/task.md" ]
 }
 
 @test "new: 빈 디렉터리에 .gitkeep 배치" {
@@ -58,6 +61,14 @@ run_new() {
 @test "new: 복사된 template/example.md 는 원본과 동일" {
     run_new myproj "${TMP_DIR}"
     run diff "${REPO_DIR}/docs/template/example.md" "${TMP_DIR}/myproj/docs/template/example.md"
+    [ "$status" -eq 0 ]
+}
+
+@test "new: task 규약과 템플릿은 원본과 동일" {
+    run_new myproj "${TMP_DIR}"
+    run diff "${REPO_DIR}/docs/task/README.md" "${TMP_DIR}/myproj/docs/task/README.md"
+    [ "$status" -eq 0 ]
+    run diff "${REPO_DIR}/docs/template/task.md" "${TMP_DIR}/myproj/docs/template/task.md"
     [ "$status" -eq 0 ]
 }
 

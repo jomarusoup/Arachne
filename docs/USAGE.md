@@ -338,7 +338,7 @@ powershell -ExecutionPolicy Bypass -File .\install.ps1 -Install
 | `arachne -i`, `--install` | `~/.claude/` 심볼릭 링크 + `settings.json` 생성 + dotfiles 병합 + bin 등록 (재설치) |
 | `arachne -u`, `--update` | `git pull` 후 위 설치를 재실행 (동기화 허브) |
 | `arachne -c`, `--check` | Claude·Gemini·Codex·Copilot 연결 상태 점검 — 심볼릭 댕글링·병합본 stale 탐지 |
-| `arachne -n <P> [DIR]`, `--new` | 신규 프로젝트 스캐폴딩 — `README.md` + `docs/{issue,idea,template/example.md}`. 모든 문서 frontmatter는 `docs/template/example.md`(SSOT) 파생. `--no-git`로 git init 생략 |
+| `arachne -n <P> [DIR]`, `--new` | 신규 프로젝트 스캐폴딩 — `README.md` + `docs/{issue,idea,task,template}`. task 규약과 템플릿을 함께 복사하며 `--no-git`로 git init 생략 |
 | `arachne -s`, `--session` | tmux 워크스페이스 매니저 실행 (= `tws`, 8장 참고) |
 | `arachne -e`, `--export-settings` | 현재 `~/.claude/settings.json` → 레포 `settings.template.json`으로 역추출 |
 | `arachne -d`, `--export-dotfiles` | 로컬 `~/.bash_profile`·`~/.vimrc`의 변경 → 레포 `dotfiles/`로 역추출 |

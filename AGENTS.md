@@ -131,6 +131,14 @@
 | `[refactor]` | 동작 보존 전제. SRP 기준 분리. 점진적·검증 가능 단위 |
 | `[remove]` | 참조 전수 조사 → 저장소 영향 확인 → 하위 호환성 처리 |
 
+### 작업 기록
+
+- 문제 발견·재현·원인 분석은 `docs/issue/`에 기록한다.
+- 실행하기로 결정한 작업은 `docs/task/`에 만들고 `docs/template/task.md`를 사용한다.
+- task는 상태·우선순위·범위·체크리스트·검증·완료 조건·진행 기록을 포함한다.
+- 착수와 완료 시 task 상태와 체크리스트를 실제 결과에 맞게 갱신한다.
+- 상세 작성 규약은 `docs/task/README.md`를 따른다.
+
 ## 9. 언어별 상세 규칙
 
 언어별 `coding-style · patterns · security · testing · hooks` 상세는 `rules/<언어>/`에 있다

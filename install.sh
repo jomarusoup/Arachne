@@ -87,7 +87,7 @@ usage() {
     echo "      --target T          설치 대상 CLI: claude|gemini|codex|copilot|all (기본 all)"
     echo "                          (-i/-u 와 함께 사용. 미감지 CLI는 자동 스킵)"
     echo "  -c, --check            CLI 연결 상태 점검 (심볼릭 댕글링·병합본 stale 탐지)"
-    echo "  -n, --new P [DIR]      신규 프로젝트 스캐폴딩 (README + docs/{issue,idea,template})"
+    echo "  -n, --new P [DIR]      신규 프로젝트 스캐폴딩 (README + docs/{issue,idea,task,template})"
     echo "                         DIR 생략 시 현재 디렉터리. --no-git 으로 git init 생략"
     echo "  -s, --session          tmux 워크스페이스 매니저(tws) 실행"
     echo "  -e, --export-settings  ~/.claude/settings.json -> settings.template.json 내보내기"
@@ -722,8 +722,10 @@ new_project() {
     esac
 
     local tmpl="$REPO_DIR/docs/template/example.md"
-    if [ ! -f "$tmpl" ]; then
-        echo "[ERROR] 문서 템플릿이 없습니다: $tmpl" >&2
+    local task_tmpl="$REPO_DIR/docs/template/task.md"
+    local task_rules="$REPO_DIR/docs/task/README.md"
+    if [ ! -f "$tmpl" ] || [ ! -f "$task_tmpl" ] || [ ! -f "$task_rules" ]; then
+        echo "[ERROR] 문서 템플릿 또는 task 규약이 없습니다" >&2
         exit 1
     fi
 
@@ -736,9 +738,11 @@ new_project() {
     #---------------------------------------------------------------------------
     # 기록 구조 생성
     #---------------------------------------------------------------------------
-    mkdir -p "$dest/docs/issue" "$dest/docs/idea" "$dest/docs/template"
+    mkdir -p "$dest/docs/issue" "$dest/docs/idea" "$dest/docs/task" "$dest/docs/template"
     touch "$dest/docs/issue/.gitkeep" "$dest/docs/idea/.gitkeep"
     cp "$tmpl" "$dest/docs/template/example.md"
+    cp "$task_tmpl" "$dest/docs/template/task.md"
+    cp "$task_rules" "$dest/docs/task/README.md"
 
     #---------------------------------------------------------------------------
     # README.md — example.md frontmatter 치환 (Title·날짜·MOC)
@@ -759,7 +763,7 @@ new_project() {
     fi
 
     echo "[Arachne] 신규 프로젝트 생성: $dest"
-    echo "  구조: README.md, docs/{issue,idea,template/example.md}"
+    echo "  구조: README.md, docs/{issue,idea,task,template}"
     [ "$do_git" -eq 1 ] && echo "  git 저장소 초기화됨"
     return 0
 }
