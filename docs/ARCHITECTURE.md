@@ -202,6 +202,7 @@ Arachne/
 ├── tmux.sh                      # 워크스페이스 매니저 (CLI: tws)
 ├── gemini-task.sh               # Gemini 위임 래퍼 — reader/advisor (CLI: gemini-task, gask)
 ├── codex-task.sh                # Codex 위임 래퍼 — tester/fixer (CLI: codex-task, cask)
+├── arachne-task.sh              # 자동 폴백 캐스케이드 디스패처 (CLI: arachne-task, atask)
 ├── statusline-command.sh
 │
 ├── rules/                       # Claude 전역 행동 규칙
@@ -213,7 +214,8 @@ Arachne/
 ├── commands/                    # 슬래시 커맨드 (16)
 ├── agents/                      # 서브에이전트 7개 (planner·code-reviewer·tdd·debugger
 │                                #   ·python-reviewer·fastapi-reviewer·react-reviewer)
-├── hooks/                       # 이벤트 훅 (session-start/end · pre-compact · gemini-check)
+├── hooks/                       # 이벤트 훅 (session-start/end · pre-compact · gemini-check
+│                                #   · atask-quota-warn · doc-drift-check)
 ├── mcp-configs/                 # MCP 서버 설정 템플릿
 ├── dotfiles/                    # bash_profile · vimrc (병합 원본)
 ├── tests/                       # 검증 (bats + shell)
@@ -242,6 +244,13 @@ sequenceDiagram
     CC->>H: gemini-check.sh
     H->>H: git fetch 후 origin HEAD 비교
     H-->>CC: Gemini/Codex 외부 직접 커밋 감지 시 변경 목록 (git-bus)
+    CC->>H: atask-quota-warn.sh
+    H->>FS: arachne-quota-state 읽기
+    H-->>CC: 쿼터 소진 CLI·현재 중심 사전 경고
+
+    Note over CC: PostToolUse (Edit/Write 후)
+    CC->>H: doc-drift-check.sh
+    H-->>CC: 기능 파일 변경 시 README/docs 갱신 알림 (세션당 1회)
 
     Note over CC: PreCompact (컨텍스트 압축 전)
     CC->>H: pre-compact.sh

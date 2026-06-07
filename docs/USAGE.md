@@ -137,10 +137,15 @@ model: opus               # opus / sonnet / haiku
 ### 등록된 훅 (이 레포 기준)
 | 훅 스크립트 | 이벤트 | 동작 |
 |---|---|---|
-| `gemini-check.sh` | `UserPromptSubmit` | 메시지 입력마다 Gemini 새 커밋 감지 |
+| `gemini-check.sh` | `UserPromptSubmit` | 메시지 입력마다 Gemini/Codex 새 커밋 감지 (git-bus) |
+| `atask-quota-warn.sh` | `UserPromptSubmit` | `atask` 상태 파일을 읽어 쿼터 소진 CLI·현재 "중심" 사전 경고 |
+| `doc-drift-check.sh` | `PostToolUse` (`Edit\|Write`) | 기능 파일(스크립트·rules·agents 등) 변경 시 README/docs 갱신 알림 (세션당 1회) |
 | `session-start.sh` | `SessionStart` | 최근 세션 파일 경로 안내 |
 | `pre-compact.sh` | `PreCompact` | 컨텍스트 압축 전 상태 스냅샷 저장 |
 | `session-end.sh` | `Stop` | 종료 시 스냅샷 + `last-seen-commit` 갱신 |
+
+> `doc-drift-check.sh`는 **문서를 자동 작성하지 않는다** — 자동 생성은 드리프트·노이즈·비용 위험이 커서
+> "갱신 필요" 알림만 한다. 초안이 필요하면 `gemini-task`(gask)로 위임, 인덱스 누락은 `tests/check_index.sh`가 잡는다.
 
 ### 등록 방법
 `~/.claude/settings.json`의 `hooks` 섹션에 이벤트별로 등록한다.
@@ -274,7 +279,7 @@ Arachne는 `install.sh`를 통해 설치되며, 설치 후에는 `arachne` 커�
 ### 설치 및 업데이트 흐름
 1. **심볼릭 링크**: `CLAUDE.md`, `commands/`, `agents/` 등을 `~/.claude/`에 연결하여 레포 수정이 즉시 반영되게 합니다.
 2. **설정 생성**: `settings.template.json`을 기반으로 홈 경로를 치환하여 `~/.claude/settings.json`을 생성합니다.
-3. **CLI 등록**: `~/.local/bin/`에 `arachne`(관리), `tws`(워크스페이스), `gemini-task`/`gask`(Gemini 위임), `codex-task`/`cask`(Codex 위임), `docs-sync`(문서 동기화) 커맨드를 등록합니다.
+3. **CLI 등록**: `~/.local/bin/`에 `arachne`(관리), `tws`(워크스페이스), `gemini-task`/`gask`(Gemini 위임), `codex-task`/`cask`(Codex 위임), `arachne-task`/`atask`(자동 폴백 디스패처), `docs-sync`(문서 동기화) 커맨드를 등록합니다.
 
 ### dotfiles 병합 메커니즘 (Safe Merge)
 기존의 단순 심볼릭 링크 방식 대신, 사용자 홈 디렉토리의 `.bash_profile`, `.vimrc` 파일에 Arachne 설정을 **병합**합니다.
@@ -332,7 +337,7 @@ arachne -d
   백업: ~/.claude/settings.json -> settings.json.bak   ← 기존 설정 보존
   생성: ~/.claude/settings.json (from settings.template.json)
   갱신 (ARACHNE 섹션): ~/.bash_profile, ~/.vimrc
-  등록: arachne, tws, gemini-task, gask, codex-task, cask, docs-sync -> bin
+  등록: arachne, tws, gemini-task, gask, codex-task, cask, arachne-task, atask, docs-sync -> bin
 ```
 
 > **부작용 주의**
@@ -412,3 +417,26 @@ cat test.log | codex-task "이 실패 원인 분석하고 수정 diff 제시"   
 | stdout / stderr | 결과 본문은 stdout, 진짜 에러로 보이는 줄만 stderr |
 
 > 사용 예시·통합 경계(제안/실행 모드)·비용 라우팅은 6장 참고.
+
+### `atask` (= `arachne-task`) — 자동 폴백 캐스케이드 디스패처
+
+`gask`/`cask`가 **단일 CLI 위임**이라면, `atask`는 **역할별 우선순위로 여러 CLI를 자동 폴백**한다.
+쿼터 소진을 감지하면 다음 CLI로 자동 전환하고, 소진된 CLI는 쿨다운 동안 건너뛴다.
+
+```bash
+atask [-R ROLE] [-m MODEL] [-w] [--dry-run] "프롬프트..."
+```
+
+| 옵션·요소 | 설명 |
+| --------- | ---- |
+| `-R ROLE` | 캐스케이드 역할: `impl`(기본, claude→codex→gemini) / `read`(gemini→codex→claude) / `test`(codex→claude→gemini) / `review`(gemini→codex→claude) |
+| `-m MODEL` | 하위 codex/gemini 단계로 전달할 모델 |
+| `-w` | codex 단계를 workspace-write 로 실행 |
+| `--dry-run` | 실제 호출 없이 해석된 순서·쿨다운 상태만 출력 |
+| `-h` | 도움말 출력 |
+| 종료 코드 | 처리한 CLI 결과 전파 / 전 CLI 소진 시 1 |
+| 상태 파일 | `~/.claude/arachne-quota-state` (쿨다운 만료 epoch 기록) |
+| 환경변수 | `ATASK_COOLDOWN_CLAUDE`(기본 18000s) · `ATASK_COOLDOWN_DEFAULT`(기본 3600s) · `ARACHNE_STATE_DIR` |
+
+> **헤드리스 전용** — 대화형 세션 중간 구제는 못 한다. 자동 폴백 동작·한계·역할별 순서의 근거는
+> [MULTI-CLI.md §5.1](MULTI-CLI.md) 참고. 사전 경고는 `atask-quota-warn.sh` 훅(§4)이 담당.

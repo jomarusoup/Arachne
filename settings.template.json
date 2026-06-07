@@ -10,7 +10,9 @@
       "Bash(gask:*)",
       "Bash(gemini-task:*)",
       "Bash(cask:*)",
-      "Bash(codex-task:*)"
+      "Bash(codex-task:*)",
+      "Bash(atask:*)",
+      "Bash(arachne-task:*)"
     ]
   },
   "hooks": {
@@ -21,6 +23,21 @@
           {
             "type": "command",
             "command": "__HOME__/.claude/hooks/gemini-check.sh"
+          },
+          {
+            "type": "command",
+            "command": "__HOME__/.claude/hooks/atask-quota-warn.sh"
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "__HOME__/.claude/hooks/doc-drift-check.sh"
           }
         ]
       }

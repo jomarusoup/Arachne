@@ -248,6 +248,30 @@ flowchart TB
    **Gemini만 소진** → 읽기·요약을 Claude/Codex가 직접(토큰 절약↓, 품질 무관).
    순서 근거는 코딩 스타일 충실도(Codex > Gemini). 정책 SSOT는 [`rules/common/workflow.md`](../rules/common/workflow.md).
 
+#### 자동 폴백 — `atask` (arachne-task)
+
+위 캐스케이드를 **수동 판단 없이 자동 실행**하는 디스패처다. 역할별 우선순위로 CLI를 시도하고,
+출력에서 쿼터·rate limit 패턴을 감지하면 그 CLI를 **쿨다운 등록 후 다음으로 자동 전환**한다.
+
+```bash
+atask "결제 모듈 재시도 로직 구현"            # impl: claude → codex → gemini
+atask -R read "이 로그 에러 원인 요약: $(cat app.log)"   # read: gemini → codex → claude
+atask -R test -w "실패하는 test_auth 를 green 까지"      # test: codex → claude → gemini
+atask --dry-run -R impl "..."                  # 실제 호출 없이 순서·쿨다운 상태만
+```
+
+| 동작 | 설명 |
+| --- | --- |
+| 쿼터 감지 | 출력의 `rate limit`·`quota`·`429`·`overloaded`·`resource exhausted` 등 패턴 |
+| 쿨다운 | 소진 CLI를 `~/.claude/arachne-quota-state`에 기록(기본 Claude 5h·그 외 1h) → 그 동안 건너뜀 |
+| 일반 에러 | 쿼터가 **아닌** 실패(문법 오류 등)는 폴백하지 않고 그대로 중단(세 CLI 토큰 낭비 방지) |
+| 사전 경고 | `atask-quota-warn.sh` 훅이 프롬프트마다 상태 파일을 읽어 현재 "중심"·회복 시각을 배너로 표시 |
+
+> **한계(정직)**: `atask`는 **헤드리스 호출 전용**이다. `claude -p`·`codex-task`·`gemini-task`를 감싸 자동
+> 전환하지만, **대화형 Claude Code 세션이 대화 도중 한도에 걸리면 그 자리에서 매끄럽게 구제하지 못한다** —
+> 새 작업을 `atask`로 시작하거나 `/handoff`로 인계한다. 감지는 에러 문자열 휴리스틱이라 CLI 버전업 시
+> 패턴 유지보수가 필요하다(예측형 아님, 사후 감지).
+
 ### 5.2 Gemini · Codex의 단독 사용
 
 Claude의 위임 대상이 아니라 **그 자체로** 쓸 수도 있다. 이때도 공통 규약은 적용된다.
