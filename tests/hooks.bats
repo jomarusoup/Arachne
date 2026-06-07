@@ -35,12 +35,12 @@ HOOKS_DIR="${REPO_DIR}/hooks"
     [ -x "${HOOKS_DIR}/pre-compact.sh" ]
 }
 
-@test "hooks: gemini-check.sh 존재" {
-    [ -f "${HOOKS_DIR}/gemini-check.sh" ]
+@test "hooks: git-bus-check.sh 존재" {
+    [ -f "${HOOKS_DIR}/git-bus-check.sh" ]
 }
 
-@test "hooks: gemini-check.sh 실행 권한" {
-    [ -x "${HOOKS_DIR}/gemini-check.sh" ]
+@test "hooks: git-bus-check.sh 실행 권한" {
+    [ -x "${HOOKS_DIR}/git-bus-check.sh" ]
 }
 
 @test "hooks: atask-quota-warn.sh 존재·실행권한" {
@@ -71,8 +71,8 @@ HOOKS_DIR="${REPO_DIR}/hooks"
     [ "$status" -eq 0 ]
 }
 
-@test "hooks: gemini-check.sh 문법 오류 없음" {
-    run bash -n "${HOOKS_DIR}/gemini-check.sh"
+@test "hooks: git-bus-check.sh 문법 오류 없음" {
+    run bash -n "${HOOKS_DIR}/git-bus-check.sh"
     [ "$status" -eq 0 ]
 }
 
@@ -117,12 +117,12 @@ HOOKS_DIR="${REPO_DIR}/hooks"
 }
 
 #-------------------------------------------------------------------------------
-# gemini-check.sh: git 레포 외부에서 조용히 종료
+# git-bus-check.sh: git 레포 외부에서 조용히 종료
 #-------------------------------------------------------------------------------
-@test "gemini-check.sh: git 레포 외부에서 종료 0" {
+@test "git-bus-check.sh: git 레포 외부에서 종료 0" {
     # git rev-parse --show-toplevel 이 실패하는 경로에서 실행
     TMP_DIR=$(mktemp -d)
-    run bash -c "cd '${TMP_DIR}' && bash '${HOOKS_DIR}/gemini-check.sh'"
+    run bash -c "cd '${TMP_DIR}' && bash '${HOOKS_DIR}/git-bus-check.sh'"
     [ "$status" -eq 0 ]
     rm -rf "${TMP_DIR}"
 }

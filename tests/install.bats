@@ -3,7 +3,7 @@
 # FILE NAME   : install.bats
 # DESCRIPTION : install.sh 동작 검증 테스트
 # DATA        : 2026-06-01
-# Modification: 2026-06-05
+# Modification: 2026-06-07
 ################################################################################
 
 REPO_DIR="$(cd "$(dirname "$BATS_TEST_FILENAME")/.." && pwd)"
@@ -164,17 +164,64 @@ run_install() {
 }
 
 #-------------------------------------------------------------------------------
+# GitHub Copilot 타깃 설치 검증
+#-------------------------------------------------------------------------------
+@test "copilot: CLI 전역 지침을 마커 병합으로 생성" {
+    run bash "${REPO_DIR}/install.sh" -i --target copilot
+    [ "$status" -eq 0 ]
+    [ -f "${TMP_DIR}/.copilot/copilot-instructions.md" ]
+    grep -qF "<!-- === ARACHNE BEGIN === -->" \
+        "${TMP_DIR}/.copilot/copilot-instructions.md"
+}
+
+@test "copilot: VS Code 사용자 지침은 유효한 frontmatter로 생성" {
+    bash "${REPO_DIR}/install.sh" -i --target copilot
+    local vscode_file="${TMP_DIR}/.copilot/instructions/arachne.instructions.md"
+
+    [ "$(head -1 "$vscode_file")" = "---" ]
+    grep -qF 'applyTo: "**"' "$vscode_file"
+    grep -qF "<!-- === ARACHNE BEGIN === -->" "$vscode_file"
+}
+
+@test "copilot: CLI 사용자 보충 내용 보존" {
+    mkdir -p "${TMP_DIR}/.copilot"
+    echo "USER-COPILOT-SUPPLEMENT" > \
+        "${TMP_DIR}/.copilot/copilot-instructions.md"
+
+    bash "${REPO_DIR}/install.sh" -i --target copilot
+    bash "${REPO_DIR}/install.sh" -i --target copilot
+
+    grep -qF "USER-COPILOT-SUPPLEMENT" \
+        "${TMP_DIR}/.copilot/copilot-instructions.md"
+    run grep -cF "<!-- === ARACHNE BEGIN === -->" \
+        "${TMP_DIR}/.copilot/copilot-instructions.md"
+    [ "$output" -eq 1 ]
+}
+
+#-------------------------------------------------------------------------------
 # --check 연결 점검 검증 (Phase 3)
 #-------------------------------------------------------------------------------
-@test "check: 3 CLI 정상 연결 시 OK 및 exit 0" {
-    # 세 타깃을 모두 설치 → ~/.gemini·~/.codex 디렉터리 생성으로 감지 보장
+@test "check: 모든 CLI 정상 연결 시 OK 및 exit 0" {
+    # 모든 타깃을 설치해 홈 디렉터리 기반 감지를 보장한다.
     bash "${REPO_DIR}/install.sh" -i --target claude
     bash "${REPO_DIR}/install.sh" -i --target gemini
     bash "${REPO_DIR}/install.sh" -i --target codex
+    bash "${REPO_DIR}/install.sh" -i --target copilot
 
     run bash "${REPO_DIR}/install.sh" --check
     [ "$status" -eq 0 ]
     [[ "$output" == *"모든 연결 정상"* ]]
+}
+
+@test "check: Copilot 지침이 AGENTS.md와 다르면 stale 탐지" {
+    bash "${REPO_DIR}/install.sh" -i --target claude
+    bash "${REPO_DIR}/install.sh" -i --target copilot
+    sed -i 's/# AGENTS.md/# STALE.md/' \
+        "${TMP_DIR}/.copilot/instructions/arachne.instructions.md"
+
+    run bash "${REPO_DIR}/install.sh" --check
+    [ "$status" -eq 1 ]
+    [[ "$output" == *"[FAIL] Copilot"* ]]
 }
 
 @test "check: Codex 섹션이 AGENTS.md와 다르면 stale 탐지 (exit 1)" {

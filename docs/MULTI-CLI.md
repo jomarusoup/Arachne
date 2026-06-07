@@ -1,17 +1,17 @@
-# Multi-CLI Guide — Claude Code · Gemini CLI · Codex CLI
+# Multi-CLI Guide — Claude Code · Gemini CLI · Codex CLI · GitHub Copilot
 
-Arachne는 **하나의 공통 규약(`AGENTS.md`)을 세 개의 AI 코딩 CLI가 동시에 따르도록** 연결한다.
+Arachne는 **하나의 공통 규약(`AGENTS.md`)을 여러 AI 코딩 도구가 동시에 따르도록** 연결한다.
 한 파일만 고치면 세 도구가 같은 규칙으로 움직인다. 이 문서는 각 CLI에서 어떻게 쓰고, 셋이
 서로 어떻게 영향을 주고받는지 설명한다.
 
-> 한 줄 요약: **`AGENTS.md` = 단일 진실 공급원(SSOT).** 세 CLI는 이 한 파일을 각자의 방식으로 본다.
+> 한 줄 요약: **`AGENTS.md` = 단일 진실 공급원(SSOT).** 각 도구는 이 파일을 지원 방식에 맞게 본다.
 
 ---
 
 ## 1. Big Picture
 
 > **SSOT** = Single Source of Truth(단일 진실 공급원). 같은 정보를 여러 곳에 복제하지 않고
-> **한 곳(`AGENTS.md`)만 정본**으로 두는 원칙. 거기만 고치면 나머지는 그것을 가리키므로,
+> **한 곳(`AGENTS.md`)만 정본**으로 두는 원칙. 거기만 고치면 나머지는 그것을 가리키거나 재생성하므로,
 > 사본끼리 어긋나는 **드리프트(drift, 문서·설정이 실제와 점점 불일치해지는 현상)** 가 생기지 않는다.
 
 ```mermaid
@@ -19,15 +19,17 @@ graph TD
     SSOT["📄 AGENTS.md<br/>(SSOT · 공통 규약)<br/>← 여기만 고친다"]
     SSOT -->|"심볼릭 링크<br/>(수정 즉시 반영)"| GFILE["~/.gemini/GEMINI.md"]
     SSOT -->|"마커 병합<br/>(재설치 시 반영)"| CFILE["~/.codex/AGENTS.md"]
+    SSOT -->|"저장소 자동 발견 + 사용자 병합"| PFILE[".github/copilot-instructions.md<br/>~/.copilot/"]
     SSOT -.->|"같은 규약을 더 상세히"| RULES["~/.claude/rules/<br/>(+ CLAUDE.md 보충)"]
     GFILE --> GEMINI["🤖 Gemini CLI"]
     CFILE --> CODEX["🤖 Codex CLI"]
+    PFILE --> COPILOT["🤖 GitHub Copilot"]
     RULES --> CLAUDE["🤖 Claude Code"]
 
     classDef ssot fill:#fde68a,stroke:#b45309,color:#111;
     classDef tool fill:#bfdbfe,stroke:#1e40af,color:#111;
     class SSOT ssot;
-    class GEMINI,CODEX,CLAUDE tool;
+    class GEMINI,CODEX,COPILOT,CLAUDE tool;
 ```
 
 > Claude는 `rules/`에서 풀 디테일을 자동 로드하므로 점선(`-.->`)으로 표시했다 — `AGENTS.md`를
@@ -48,6 +50,7 @@ graph TD
 | **Claude Code** | `~/.claude/rules/` (+ `CLAUDE.md`) | 디렉터리 심볼릭 → **네이티브 자동 로드** | 다음 세션 | `rules/`의 **풀 디테일** (AGENTS.md보다 상세) |
 | **Gemini CLI** | `~/.gemini/GEMINI.md` | **AGENTS.md 심볼릭** | **즉시** (재설치 0회) | AGENTS.md 다이제스트 |
 | **Codex CLI** | `~/.codex/AGENTS.md` | **AGENTS.md 마커 병합** | `arachne -i --target codex` 재실행 후 | AGENTS.md 다이제스트 |
+| **GitHub Copilot** | 저장소 `AGENTS.md` + `~/.copilot/` | 자동 발견 + **마커 병합** | 저장소는 즉시, 전역은 `--target copilot` 후 | AGENTS.md 다이제스트 |
 
 **왜 비대칭인가** — import 지원 여부가 도구마다 다르기 때문이다.
 - Claude는 `~/.claude/rules/`를 네이티브로 자동 로드한다. 그래서 Claude는 AGENTS.md를 굳이 import하지
@@ -55,6 +58,9 @@ graph TD
 - Gemini는 글로벌 컨텍스트 파일(`~/.gemini/GEMINI.md`) 하나를 읽는다. 심볼릭이라 **AGENTS.md 수정이 즉시** 반영된다.
 - Codex는 import가 없어 심볼릭 대신 **본문을 병합**한다. 사용자가 직접 추가한 내용(마커 밖)을 보존하되,
   마커 안 본문은 재설치할 때 AGENTS.md로 갱신된다.
+- Copilot은 저장소의 `AGENTS.md`와 `.github/copilot-instructions.md`를 지원한다. 사용자 전역 적용은
+  Copilot CLI용 `~/.copilot/copilot-instructions.md`와 VS Code용
+  `~/.copilot/instructions/arachne.instructions.md`에 설치한다.
 
 > 이 비대칭은 실측으로 검증됨: Gemini·Codex 모두 비대화 모드에서 AGENTS.md에 심은 고유 토큰을
 > 출력함(런타임 로딩 확인). 4장 참고.
@@ -68,17 +74,16 @@ graph TD
 Arachne 구성요소가 각 CLI에서 실제로 작동하는지. **공통 규약만 셋이 공유**하고, 나머지는
 대부분 Claude 전용이다(import·이벤트 훅·서브에이전트 개념이 Claude Code에만 있으므로).
 
-| Arachne 구성요소 | Claude Code | Gemini CLI | Codex CLI |
-| --- | :---: | :---: | :---: |
-| 공통 규약 (`AGENTS.md` / `rules/common`) | ✅ `rules/` 풀버전 자동 로드 | ✅ `GEMINI.md` | ✅ `~/.codex/AGENTS.md` |
-| 언어 규칙 (`rules/<언어>/*`) | ✅ `paths`로 확장자 매칭 시 자동 로드 | ⚠️ AGENTS §9 **경로 포인터만** (본문 자동 로드 X) | ⚠️ 동일 |
-| 서브에이전트 (`agents/`) | ✅ | ❌ | ❌ |
-| 슬래시 커맨드 (`commands/`) | ✅ `/이름` | ❌ | ❌ |
-| 이벤트 훅 (`hooks/`) | ✅ Session·PreCompact·Prompt | ❌ | ❌ |
-| 스킬 (`skills/`) | ✅ 자동 참조 | ❌ | ❌ |
-| 상태표시줄 (`statusline`) | ✅ | ❌ | ❌ |
-| 작업 위임 래퍼 | ✅ **호출 주체** | `gemini-task`/`gask` 위임 **대상** (reader/advisor) | `codex-task`/`cask` 위임 **대상** (tester/fixer) |
-| MCP 서버 | ✅ `settings.json` | 별도 `~/.gemini` 설정(미관리) | 별도 `~/.codex/config.toml`(미관리) |
+| Arachne 구성요소 | Claude Code | Gemini CLI | Codex CLI | GitHub Copilot |
+| --- | :---: | :---: | :---: | :---: |
+| 공통 규약 (`AGENTS.md` / `rules/common`) | ✅ `rules/` 풀버전 | ✅ `GEMINI.md` | ✅ `~/.codex/AGENTS.md` | ✅ 저장소 + 사용자 지침 |
+| 언어 규칙 (`rules/<언어>/*`) | ✅ 자동 로드 | ⚠️ 경로 포인터 | ⚠️ 경로 포인터 | ⚠️ 경로 포인터 |
+| 서브에이전트 (`agents/`) | ✅ | ❌ | ❌ | Copilot 자체 agent 기능 |
+| 슬래시 커맨드 (`commands/`) | ✅ `/이름` | ❌ | ❌ | ❌ Arachne 명령 미이식 |
+| 이벤트 훅 (`hooks/`) | ✅ | ❌ | ❌ | ❌ Arachne 훅 미이식 |
+| 스킬 (`skills/`) | ✅ | ❌ | ❌ | Copilot 자체 skills 위치 별도 |
+| 상태표시줄 (`statusline`) | ✅ | ❌ | ❌ | ❌ |
+| 작업 위임 래퍼 | ✅ 호출 주체 | reader/advisor 대상 | tester/fixer 대상 | 독립 실행 표면 |
 
 > 요점: **공통 규약을 읽는 것**은 셋 다 공유한다. 그 위에 Claude는 Gemini를 `gemini-task`(요약·자문),
 > Codex를 `codex-task`(테스트·수정)로 **위임 호출**한다 — 3-레인 협업. 에이전트·훅·커맨드 같은
@@ -154,6 +159,33 @@ codex-task -w "실패하는 test_auth 를 green 까지 수정"                  
 - **주의**: AGENTS.md를 수정했으면 Codex는 자동 반영이 아니다. `arachne -i --target codex`
   (또는 전체 `arachne -u`)로 재병합해야 한다. 까먹어도 `arachne --check`가 stale을 잡는다.
 
+### 3.4 GitHub Copilot — Repository + User Instructions
+
+저장소에서는 루트 `AGENTS.md`를 직접 읽고, `.github/copilot-instructions.md`가 Copilot 전용
+진입점 역할을 한다. 사용자 전역 설치는 다음 두 표면을 함께 지원한다.
+
+```text
+~/.copilot/copilot-instructions.md              # GitHub Copilot CLI
+~/.copilot/instructions/arachne.instructions.md # VS Code 사용자 프로필
+```
+
+macOS/Linux/WSL/Git Bash:
+
+```bash
+./install.sh -i --target copilot
+```
+
+Windows PowerShell:
+
+```powershell
+Set-ExecutionPolicy -Scope Process Bypass
+.\install-copilot.ps1
+```
+
+둘 다 일반 파일을 생성하므로 Windows Developer Mode나 관리자 심볼릭 링크 권한이 필요 없다.
+VS Code Settings Sync에서 `Prompts and Instructions`를 켜면 사용자 지침을 Windows/macOS 간에도
+동기화할 수 있다.
+
 ---
 
 ## 4. How the Three Interact
@@ -167,6 +199,7 @@ codex-task -w "실패하는 test_auth 를 green 까지 수정"                  
 | Gemini | **즉시** (심볼릭) | 없음 |
 | Claude | 다음 세션 | 없음 (단, 풀 규칙은 `rules/`에서 — AGENTS.md와 함께 갱신 권장) |
 | Codex | 재병합 후 | `arachne -i --target codex` 또는 `arachne -u` |
+| Copilot | 저장소 즉시 / 사용자 전역 재설치 후 | `arachne -i --target copilot` 또는 PowerShell 설치기 |
 
 > `AGENTS.md`(다이제스트) ↔ `rules/`(풀 버전)는 별도 동기화 축이다. 규약을 바꾸면 양쪽을 함께 손봐야 한다.
 > CI의 인덱스 검사가 파일 누락은 잡지만, **내용 동기화는 사람 책임**이다.
@@ -191,7 +224,7 @@ flowchart TB
     GEMINI -.->|"요약·자문 (stdout)"| CLAUDE
     CODEX -.->|"테스트·수정 diff (stdout)"| CLAUDE
     CLAUDE ==>|"통합·스타일 보정·단독 커밋"| GIT
-    GIT -.->|"git-bus: 외부 직접 커밋 감지<br/>(hooks/gemini-check.sh)"| CLAUDE
+    GIT -.->|"git-bus: 외부 직접 커밋 감지<br/>(hooks/git-bus-check.sh)"| CLAUDE
 
     classDef gem fill:#0f3d3e,stroke:#34d399,color:#d1fae5;
     classDef cla fill:#1e3a5f,stroke:#60a5fa,color:#dbeafe;
@@ -210,7 +243,7 @@ flowchart TB
 - **오프로드(offload, 비용)**: Gemini → Codex → (Claude 안 씀) — 토큰 무거운 일을 싸게 떠넘김
 - **페일오버(failover, 구현 품질)**: Claude → Codex → Gemini — 구현 대타는 Codex 먼저
 
-또 다른 채널은 **git-bus**다 — 다른 터미널에서 Gemini/Codex가 직접 커밋한 경우, `hooks/gemini-check.sh`가
+또 다른 채널은 **git-bus**다 — 다른 터미널에서 직접 커밋한 경우, `hooks/git-bus-check.sh`가
 다음 프롬프트 때 새 커밋을 알린다(비동기 메시지 버스).
 
 ### 4.3 Independence — They Don't Break Each Other
@@ -306,7 +339,7 @@ model)** 의 한 사례다: **공통 소스를 각 하네스의 형식으로 어
 
 ## 6. Status Check — `arachne --check`
 
-세 CLI 연결을 한 번에 점검한다. 심볼릭 댕글링과 Codex stale을 잡는다.
+지원 도구 연결을 한 번에 점검한다. 심볼릭 댕글링과 병합본 stale을 잡는다.
 
 ```bash
 arachne --check
@@ -331,7 +364,7 @@ arachne --check
 # 규약을 바꾸고 싶다 → AGENTS.md 수정 후
 vim ~/Arachne/AGENTS.md
 arachne -i --target codex      # Gemini는 자동, Codex만 재병합
-arachne --check                # 세 CLI 정상 확인
+arachne --check                # 지원 도구 연결 확인
 
 # 전부 최신으로 (다른 머신에서 pull 받은 뒤 등)
 arachne -u                     # git pull + 감지된 CLI 전체 재설치

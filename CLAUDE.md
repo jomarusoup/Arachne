@@ -48,7 +48,7 @@ Claude Code가 이를 네이티브로 자동 로드한다:
 │   ├── session-start.sh             # SessionStart  — 최근 세션 안내
 │   ├── session-end.sh               # Stop          — git 기반 스냅샷 저장
 │   ├── pre-compact.sh               # PreCompact    — 압축 전 상태 저장
-│   ├── gemini-check.sh              # UserPromptSubmit — Gemini/Codex 외부 커밋 감지 (git-bus)
+│   ├── git-bus-check.sh             # UserPromptSubmit — 외부 커밋 감지 (git-bus)
 │   ├── atask-quota-warn.sh          # UserPromptSubmit — atask 쿼터 소진·현재 중심 사전 경고
 │   └── doc-drift-check.sh           # PostToolUse — 기능 파일 변경 시 문서 갱신 알림
 │

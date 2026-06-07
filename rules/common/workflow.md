@@ -109,7 +109,7 @@ codex-task -r "이 함수 리뷰만 해줘"                                     
 
 | 시점           | 동작                                                                  |
 | -------------- | --------------------------------------------------------------------- |
-| 메시지 입력 시 | `UserPromptSubmit` 훅 → `gemini-check.sh` (fetch 후 origin HEAD 비교) |
+| 메시지 입력 시 | `UserPromptSubmit` 훅 → `git-bus-check.sh` (fetch 후 origin HEAD 비교) |
 | 세션 종료 시   | `session-end.sh` → 리모트 HEAD를 `.claude/last-seen-commit` 저장      |
 | 감지 시        | 마지막 기준점 이후 새 커밋 목록·변경 파일 출력 후 기준점 갱신         |
 | 중복 방지      | 이미 확인한 커밋은 재출력 안 함                                       |

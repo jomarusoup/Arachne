@@ -14,13 +14,13 @@ aliases:
 저지연 풀스택 시스템 프로그래밍 프레임워크를 위한 **멀티-CLI** 글로벌 설정.
 **C/C++ · Go · Rust** 중심의 실시간 트레이딩·데이터 파이프라인 개발에 최적화.
 
-하나의 공통 규약(`AGENTS.md`, SSOT)을 **Claude Code · Gemini CLI · Codex CLI** 세 도구가
+하나의 공통 규약(`AGENTS.md`, SSOT)을 **Claude Code · Gemini CLI · Codex CLI · GitHub Copilot**이
 동시에 따른다. `~/.claude/` 등을 심볼릭 링크로 이 레포와 연결하므로, 레포를 수정하면 글로벌
 설정에 반영되고 `git push/pull`로 모든 머신을 동기화할 수 있습니다.
 
 > 🗺️ 하네스 구조 다이어그램(Mermaid)은 [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) 참고
 > 📖 skills·agents·커맨드·hooks 사용법은 [docs/USAGE.md](docs/USAGE.md) 참고
-> 🔗 3개 CLI 통합 사용·상호작용은 [docs/MULTI-CLI.md](docs/MULTI-CLI.md) 참고
+> 🔗 멀티 도구 통합 사용·상호작용은 [docs/MULTI-CLI.md](docs/MULTI-CLI.md) 참고
 > 🗂️ 원격 프로젝트 문서 ↔ Obsidian 동기화는 [docs/OBSIDIAN-DOCS-SYNC.md](docs/OBSIDIAN-DOCS-SYNC.md)(arachne 설정)·[docs/SYNCTHING-SETUP.md](docs/SYNCTHING-SETUP.md)(자동) 참고
 > 📑 약어(SSOT·TDD·DI·a11y 등) 풀이는 [docs/GLOSSARY.md](docs/GLOSSARY.md) 참고
 
@@ -41,7 +41,12 @@ cd ~/Arachne
 2. 레포 → `~/.claude/` 심볼릭 링크 생성
 3. `settings.template.json`의 `__HOME__` → 실제 홈 경로로 치환해 `settings.json` 생성
 4. **dotfiles 병합**: `~/.bash_profile`, `~/.vimrc`에 Arachne 설정을 안전하게 병합 (기존 내용 보존)
-5. **CLI 등록**: `~/.local/bin/`에 `arachne`, `tws`, `gemini-task`(=`gask`), `codex-task`(=`cask`), `arachne-task`(=`atask`), `docs-sync` 커맨드 등록
+5. **Copilot 지침**: `arachne -i --target copilot`으로 Copilot CLI와 VS Code 사용자 프로필에 전역 규약 설치
+6. **CLI 등록**: `~/.local/bin/`에 `arachne`, `tws`, `gemini-task`(=`gask`), `codex-task`(=`cask`), `arachne-task`(=`atask`), `docs-sync` 커맨드 등록
+
+Windows 네이티브 PowerShell에서는 `.\install-copilot.ps1`을 실행합니다. macOS/Linux/WSL/Git
+Bash에서는 `./install.sh -i --target copilot`을 사용합니다. 두 방식 모두 심볼릭 링크 권한 없이
+일반 파일로 `~/.copilot/`에 설치합니다.
 
 ### Core CLI Commands
 | 커맨드 | 설명 |
@@ -49,7 +54,7 @@ cd ~/Arachne
 | `arachne`, `arachne -h` | 도움말 출력 |
 | `arachne -i` (`--install`) | 재설치 및 설정 동기화 |
 | `arachne -u` (`--update`) | 최신 상태로 업데이트 (git pull + 재설치) |
-| `arachne -c` (`--check`) | 3개 CLI(Claude·Gemini·Codex) 연결 상태 점검 |
+| `arachne -c` (`--check`) | Claude·Gemini·Codex·Copilot 연결 상태 점검 |
 | `arachne -n <P> [DIR]` (`--new`) | 신규 프로젝트 스캐폴딩 (README + docs/{issue,idea,template}) |
 | `arachne -s` (`--session`) | **TWS (Tmux Workspace Manager)**: 대화형 세션 매니저 (`tws`와 동일) |
 | `arachne -e` (`--export-settings`) | settings.json → 템플릿 내보내기 |
@@ -67,9 +72,11 @@ cd ~/Arachne
 ```
 Arachne/
 ├── CLAUDE.md                    # Claude 전용 보충 지시서 (rules/는 네이티브 자동 로드)
-├── AGENTS.md                    # 공통 규약 SSOT (Single Source of Truth, 단일 진실 공급원 — Claude·Gemini·Codex 공유)
+├── AGENTS.md                    # 공통 규약 SSOT (Claude·Gemini·Codex·Copilot 공유)
+├── .github/copilot-instructions.md # Copilot 저장소 어댑터
 ├── settings.template.json       # ~/.claude/settings.json 템플릿
 ├── install.sh                   # 통합 관리 도구 (CLI: arachne)
+├── install-copilot.ps1          # Windows PowerShell용 Copilot 설치기
 ├── tmux.sh                      # tmux 워크스페이스 매니저 (CLI: tws)
 ├── gemini-task.sh               # Gemini 위임 래퍼 — reader/advisor (CLI: gemini-task, gask)
 ├── codex-task.sh                # Codex 위임 래퍼 — tester/fixer (CLI: codex-task, cask)
@@ -152,7 +159,7 @@ Claude Code가 **중심(오케스트레이터 + 주 구현자)**이고, Codex·G
   - 실행 모드: `codex-task -w "실패하는 test_auth 를 green 까지 수정"` → 직접 쓰고 돌려 수정 (커밋은 Claude)
 - **`atask` (자동 폴백)**: `atask -R impl "..."` 한 줄이 역할 우선순위로 CLI를 시도하고, 쿼터 소진을 감지하면 다음 CLI로 자동 전환 (헤드리스 전용)
   - 소진 상태는 `atask-quota-warn.sh` 훅이 프롬프트마다 사전 경고 (현재 "중심" CLI 표시)
-- **git-bus 감지 (보조)**: 다른 터미널에서 Gemini/Codex가 직접 커밋한 경우 `gemini-check.sh` 훅이 자동 감지
+- **git-bus 감지 (보조)**: 다른 터미널에서 직접 커밋한 경우 `git-bus-check.sh` 훅이 자동 감지
 
 > 상세 역할·비용 라우팅은 [docs/MULTI-CLI.md](docs/MULTI-CLI.md)·[docs/USAGE.md](docs/USAGE.md) 6장 참고.
 > 정책 SSOT(Single Source of Truth, 단일 진실 공급원)는 [`rules/common/workflow.md`](rules/common/workflow.md).

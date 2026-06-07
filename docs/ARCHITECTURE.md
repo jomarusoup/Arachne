@@ -17,8 +17,8 @@ aliases:
 
 ## 1. Big Picture — Repo ↔ Multi-CLI Symlink Wiring
 
-하나의 레포(`Arachne/`)를 `install.sh`(CLI: `arachne`)가 심볼릭 링크로 세 CLI에 연결한다.
-레포를 수정하면 글로벌 설정에 즉시 반영되고, `git push/pull`로 모든 머신이 동기화된다.
+하나의 레포(`Arachne/`)를 설치기가 각 도구의 네이티브 지침 위치에 연결한다.
+심볼릭 링크 또는 마커 병합을 사용하며, `git push/pull`과 재설치로 모든 머신이 동기화된다.
 
 ```mermaid
 flowchart TB
@@ -47,28 +47,33 @@ flowchart TB
     subgraph CODEX["🔷 Codex CLI (~/.codex)"]
         X_MD["AGENTS.md (마커 병합)"]
     end
+    subgraph COPILOT["GitHub Copilot (~/.copilot)"]
+        P_MD["CLI 지침 + VS Code 사용자 지침"]
+    end
     HOME["🏠 ~/.bash_profile · ~/.vimrc<br/>(병합)"]
 
     REPO --> INSTALL
     INSTALL -->|"심볼릭 링크"| CLAUDE
     INSTALL -->|"AGENTS.md 심볼릭"| GEMINI
     INSTALL -->|"AGENTS.md 마커 병합"| CODEX
+    INSTALL -->|"AGENTS.md 사용자 지침 생성"| COPILOT
     INSTALL -->|"dotfiles 병합"| HOME
 
     AGENTS -. "SSOT 공유" .-> G_MD
     AGENTS -. "SSOT 공유" .-> X_MD
+    AGENTS -. "SSOT 공유" .-> P_MD
     RULES --> C_RULES
 
     classDef repo fill:#1f2937,stroke:#60a5fa,color:#e5e7eb;
     classDef cli fill:#0f3d3e,stroke:#34d399,color:#d1fae5;
     class REPO,AGENTS,CLAUDEMD,RULES,SKILLS,CMDS,SUBAG,HOOKSD,SETT,DOTS repo;
-    class CLAUDE,GEMINI,CODEX,C_RULES,C_MISC,G_MD,X_MD cli;
+    class CLAUDE,GEMINI,CODEX,COPILOT,C_RULES,C_MISC,G_MD,X_MD,P_MD cli;
 ```
 
 ### 동작 단계 — `arachne -i` 설치가 실제로 하는 일
 
-`arachne`는 `~/.local/bin/arachne → install.sh` 심볼릭이다. 실행하면 `install.sh`가 `readlink -f`로
-자기 실제 경로를 풀어 **레포 루트(`REPO_DIR`)** 를 찾는다 — 그래서 어느 디렉터리에서 불러도 올바른
+`arachne`는 `~/.local/bin/arachne → install.sh` 심볼릭이다. 실행하면 `install.sh`가 POSIX 호환
+`ResolvePath`로 자기 실제 경로를 풀어 **레포 루트(`REPO_DIR`)** 를 찾는다 — 그래서 어느 디렉터리에서 불러도 올바른
 레포를 가리킨다. 그다음 `install()` 디스패처가 타깃별로 아래를 순서대로 수행한다.
 
 1. **Claude 설치** (`install_claude`)
@@ -84,14 +89,18 @@ flowchart TB
    - Codex는 import를 지원하지 않아 심볼릭 대신 **마커 병합**(`merge_dotfile`): `~/.codex/AGENTS.md`의
      `<!-- === ARACHNE … === -->` 마커 **안쪽만** AGENTS.md 본문으로 갱신하고, 마커 밖 사용자 내용은 보존.
    - 심볼릭이 아니라서 **AGENTS.md를 고친 뒤엔 `arachne -i --target codex`로 재병합**해야 반영된다.
-4. **공통 설치** (`install_shared`, 항상 1회)
+4. **GitHub Copilot 설치** (`install_copilot`, 감지된 경우만)
+   - Copilot CLI용 `~/.copilot/copilot-instructions.md`는 사용자 영역을 보존하며 마커 병합한다.
+   - VS Code용 `~/.copilot/instructions/arachne.instructions.md`는 `applyTo: "**"` frontmatter와 함께 생성한다.
+   - Windows 네이티브는 `install-copilot.ps1`, macOS/Linux/WSL/Git Bash는 `install.sh`를 사용한다.
+5. **공통 설치** (`install_shared`, 항상 1회)
    1. `install_dotfiles` — `~/.bash_profile`·`~/.vimrc`에 `# === ARACHNE BEGIN/END ===` 마커 섹션을
       병합(멱등: 있으면 교체, 없으면 추가, 사용자 영역 중복 줄은 제외).
    2. `register_bin` — `BIN_TARGETS`(arachne · tws · gemini-task · gask · codex-task · cask · docs-sync)를
       `~/.local/bin/`에 심볼릭으로 등록(+`chmod +x`). PATH에 `~/.local/bin`이 없으면 경고 출력.
 
-> **graceful skip**: `all` 타깃에서 Gemini/Codex가 감지되지 않으면(`~/.gemini`·`~/.codex` 부재 + 바이너리
-> 부재) 그 CLI만 건너뛰고 나머지는 정상 설치한다.
+> **graceful skip**: `all` 타깃에서 Gemini/Codex/Copilot이 감지되지 않으면 해당 도구만 건너뛰고
+> 나머지는 정상 설치한다.
 
 ### 동작 단계 — `arachne -u` 동기화 (다중 머신)
 
@@ -130,7 +139,7 @@ flowchart TB
     GEMINI -.->|"요약·자문 (stdout)"| CLAUDE
     CODEX -.->|"테스트·수정 diff (stdout)"| CLAUDE
     CLAUDE ==>|"통합·스타일 보정·단독 커밋"| GIT
-    GIT -.->|"git-bus: 외부 직접 커밋 감지<br/>(hooks/gemini-check.sh)"| CLAUDE
+    GIT -.->|"git-bus: 외부 직접 커밋 감지<br/>(hooks/git-bus-check.sh)"| CLAUDE
 
     classDef gem fill:#0f3d3e,stroke:#34d399,color:#d1fae5;
     classDef cla fill:#1e3a5f,stroke:#60a5fa,color:#dbeafe;
@@ -241,7 +250,7 @@ sequenceDiagram
 
     U->>CC: 프롬프트 입력
     Note over CC: UserPromptSubmit
-    CC->>H: gemini-check.sh
+    CC->>H: git-bus-check.sh
     H->>H: git fetch 후 origin HEAD 비교
     H-->>CC: Gemini/Codex 외부 직접 커밋 감지 시 변경 목록 (git-bus)
     CC->>H: atask-quota-warn.sh
@@ -268,7 +277,7 @@ sequenceDiagram
 
 - **`session-start.sh` (SessionStart)** — 세션이 열릴 때 1회. `.claude/sessions/`에서 가장 최근 스냅샷
   파일을 찾아 "이어받기" 안내(경로)를 출력한다. 직전 세션 맥락을 빠르게 복구하기 위함.
-- **`gemini-check.sh` (UserPromptSubmit)** — 프롬프트를 넣을 때마다. **git-bus의 핵심**:
+- **`git-bus-check.sh` (UserPromptSubmit)** — 프롬프트를 넣을 때마다. **git-bus의 핵심**:
   1. `git fetch -q origin` 으로 리모트 최신을 받는다(로컬 `pull` 없이 감지만).
   2. 비교 기준 HEAD를 정한다 — 리모트 트래킹 브랜치(`origin/<현재브랜치>`)가 있으면 그 HEAD, 없으면 로컬 HEAD.
   3. 기준점 파일 `.claude/last-seen-commit`(gitignore, 추적 안 됨)과 비교.
@@ -283,14 +292,14 @@ sequenceDiagram
   `.claude/last-seen-commit`에 기록해 다음 세션의 git-bus 비교 기준점을 최신화한다.
 
 > **두 AI 간 비동기 채널**: `gemini-task`/`codex-task`(동기 호출)와 별개로, git 히스토리가 **메시지 버스** 역할을 한다 —
-> 누군가 다른 터미널/머신에서 커밋하면 `gemini-check.sh`가 다음 프롬프트 때 그것을 알린다.
+> 누군가 다른 터미널/머신에서 커밋하면 `git-bus-check.sh`가 다음 프롬프트 때 그것을 알린다.
 
 ---
 
 ## 5. SSOT Convention Loading Model
 
 `rules/common/*`는 매 세션, `rules/<언어>/*`는 해당 확장자 편집 시 자동 로드된다.
-세 CLI 공통 규약은 `AGENTS.md` 하나에서 파생된다.
+공통 규약은 `AGENTS.md` 하나에서 파생된다.
 
 ```mermaid
 flowchart TB
@@ -299,6 +308,7 @@ flowchart TB
     AGENTS --> CLAUDE["Claude Code"]
     AGENTS --> GEMINI["Gemini: ~/.gemini/GEMINI.md (심볼릭)"]
     AGENTS --> CODEX["Codex: ~/.codex/AGENTS.md (마커 병합)"]
+    AGENTS --> COPILOT["Copilot: 저장소 자동 발견 + ~/.copilot 사용자 지침"]
 
     CLAUDE --> CM["CLAUDE.md (Claude 전용 보충)"]
     CLAUDE --> RC["rules/common/* — 매 세션 로드"]
@@ -321,9 +331,9 @@ flowchart TB
 2. **파일을 열 때 (언어 규칙)** — 편집 대상 확장자가 `rules/<언어>/*`의 `paths` 패턴과 매칭되면 그 언어
    규칙 5종(coding-style·patterns·security·testing·hooks)이 **추가 로드**된다. 예: `*.rs`/`Cargo.toml`을
    건드리면 `rules/rust/*`, `*.py`면 `rules/python/*`, `*.css/.html/.jsx`면 `rules/web/design-quality`.
-3. **Gemini/Codex (다이제스트 경로)** — 이 둘은 `rules/` 자동 로더가 없어, 같은 규약의 **요약본인
-   `AGENTS.md`** 를 본다(Gemini=심볼릭 즉시, Codex=마커 병합). 언어 규칙은 본문 자동 로드가 아니라
-   `AGENTS.md §9`의 **경로 포인터**로만 안내된다.
+3. **Gemini/Codex/Copilot (다이제스트 경로)** — 이 도구들은 같은 규약의 **요약본인
+   `AGENTS.md`** 를 각자 지원하는 방식으로 본다. 언어 규칙은 본문 자동 로드가 아니라
+   `AGENTS.md §9`의 **경로 포인터**로 안내된다.
 
 > **두 동기화 축을 혼동하지 말 것**: ① 레포→글로벌(심볼릭/병합, `arachne -i`)과 ② `AGENTS.md`(다이제스트)
 > ↔ `rules/`(풀 버전)의 **내용 동기화**는 별개다. 규약을 바꾸면 양쪽을 함께 손봐야 하며, CI 인덱스 검사는

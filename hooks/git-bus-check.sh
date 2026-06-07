@@ -1,6 +1,6 @@
 #!/bin/bash
 ################################################################################
-# FILE NAME   : gemini-check.sh
+# FILE NAME   : git-bus-check.sh
 # DESCRIPTION : Gemini 작업 완료 감지 — 마지막 Claude 세션 이후 새 커밋 확인
 # DATA        : 2026-05-31
 # Modification: 2026-06-04
