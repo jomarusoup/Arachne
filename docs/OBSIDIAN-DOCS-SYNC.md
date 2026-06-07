@@ -81,6 +81,27 @@ docs-sync push arachne
 docs-sync pull arachne --delete
 ```
 
+## 동작 단계 — `docs-sync pull`이 내부적으로 하는 일
+
+`docs-sync pull arachne` 한 줄이 거치는 흐름:
+
+1. **설정 로드** — `~/.config/arachne/docs-sync.conf`를 읽어 탭 구분 컬럼
+   (`name`·`ssh_target`·`ssh_port`·`remote_dir`·`local_dir`)을 파싱한다. 인수에 프로젝트명을 주면
+   그 한 줄만, 생략하면 **모든 프로젝트**를 순회한다. `local_dir`의 `$HOME`·`~`는 실제 경로로 확장된다.
+2. **원격 루트 구성** — `ssh_target`(`user@host`)과 `ssh_port`로 rsync의 원격 소스
+   `user@host:remote_dir/`를 만든다. SSH는 `-e "ssh -p <port>"`로 포트를 넘긴다(SSH config 별칭도 가능).
+3. **rsync 필터 적용** — 문서만 가져오도록 화이트리스트 필터를 건다:
+   - `--include=/README.md` (루트 README만)
+   - `--include=/docs/***` (docs/ 하위 전부)
+   - `--exclude=*` (그 외 전부 제외)
+   순서가 중요하다 — include가 exclude보다 **앞**에 와야 살아남는다.
+4. **전송** — rsync가 **변경분(델타)만** 복사한다. `--dry-run`이면 실제 변경 없이 계획만 출력하고,
+   `--delete`를 주면 원본에서 사라진 파일을 대상에서도 지운다(기본은 보존).
+5. **방향** — `pull`은 원격→로컬(Obsidian), `push`는 로컬→원격으로 소스/대상만 뒤바꿔 같은 필터를 적용한다.
+
+> 핵심: **상시 데몬이 아니라 호출 시 1회 rsync**다. Syncthing(상시 양방향)과 달리 트리거가 명시적이고
+> `--dry-run`으로 항상 미리 볼 수 있어, 가끔·선택적 동기화에 적합하다.
+
 ## 동기화 대상
 
 포함:

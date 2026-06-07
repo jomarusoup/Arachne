@@ -50,6 +50,9 @@ Arachne 문서에 나오는 줄임말을 **풀어 쓴 말(원어)** 과 함께 �
 | **rsync** | remote sync | 변경분만 효율적으로 복사하는 동기화 도구. docs-sync의 엔진. |
 | **MOC** | Map of Content (콘텐츠 지도) | Obsidian에서 관련 노트를 묶는 허브 노트. 문서 frontmatter의 `MOC::` 링크. |
 | **frontmatter** | — | 마크다운 파일 맨 위 `--- ... ---` 사이의 메타데이터(제목·날짜·태그 등). |
+| **P2P** | Peer-to-Peer (단말 간 직접) | 중앙 서버 없이 단말끼리 직접 통신하는 방식. Syncthing이 P2P로 동기화한다. |
+| **BEP** | Block Exchange Protocol | Syncthing이 파일을 블록으로 쪼개 **바뀐 블록만** 주고받는 자체 동기화 프로토콜. |
+| **TLS** | Transport Layer Security | 전송 구간을 암호화하는 표준. Syncthing의 Device ID는 이 TLS 인증서 지문이다. |
 
 ## Arachne Delegation Wrappers
 

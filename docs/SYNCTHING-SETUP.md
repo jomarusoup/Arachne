@@ -4,6 +4,52 @@
 **Syncthing**으로 양방향 자동 동기화한다. 변경된 파일은 양쪽이 온라인일 때 즉시
 전파되며, 충돌 발생 시 양쪽 모두 보존된다.
 
+---
+
+## Syncthing 개요 (Overview)
+
+**Syncthing**은 **중앙 서버 없는 P2P(peer-to-peer, 단말 간 직접) 파일 동기화** 도구다.
+드롭박스처럼 클라우드를 거치지 않고, 등록된 단말끼리 **직접 암호화 채널(TLS)** 로 변경분만
+주고받는다. 핵심 개념:
+
+| 개념 | 설명 |
+| --- | --- |
+| **Device ID** | 단말의 신원 = TLS 인증서(`cert.pem`)의 지문. 위조 불가하며 이 ID로 서로를 인증한다. |
+| **Folder** | 동기화 단위. 양쪽 단말이 같은 **Folder ID**로 공유해야 동기화된다. |
+| **BEP** | Block Exchange Protocol — 파일을 블록으로 쪼개 **바뀐 블록만** 전송하는 자체 프로토콜. |
+| **Folder Type** | `Send & Receive`(양방향)·`Send Only`·`Receive Only`·`Receive Encrypted`(암호 보관). |
+| **Discovery / Relay** | 상대 IP를 찾는 방법(글로벌·로컬 디스커버리)과, 직접 연결 불가 시 우회하는 중계 서버. |
+
+```mermaid
+flowchart LR
+    subgraph PROD["🐧 Prod (Linux, 헤드리스)"]
+        PD["syncthing@Harness.service<br/>(systemd 시스템 서비스)"]
+        PDIR["~/Arachne<br/>(.stignore: README + docs/만)"]
+        PGUI["GUI 127.0.0.1:8384<br/>(외부 비노출)"]
+    end
+    subgraph MAC["🍎 Mac (macOS, GUI)"]
+        MD["Syncthing.app (메뉴바)"]
+        MDIR["Obsidian Vault<br/>…/111. Arachne"]
+        MGUI["GUI localhost:8384"]
+    end
+
+    PD <-->|"TCP 22000<br/>BEP · TLS 암호화 채널<br/>(변경 블록만 양방향)"| MD
+    PDIR --- PD
+    MDIR --- MD
+    PGUI -.-> PD
+    MGUI -.-> MD
+
+    classDef prod fill:#0f3d3e,stroke:#34d399,color:#d1fae5;
+    classDef mac fill:#1e3a5f,stroke:#60a5fa,color:#dbeafe;
+    class PROD,PD,PDIR,PGUI prod;
+    class MAC,MD,MDIR,MGUI mac;
+```
+
+> 이 가이드는 위 토폴로지를 만든다: **Prod는 CLI·systemd 시스템 서비스, Mac은 메뉴바 앱**.
+> 데이터는 22000 포트로 직접 흐르고, 각 GUI(8384)는 자기 단말에서만 연다.
+
+---
+
 ## 동기화 방식 비교
 
 | 방식                 | 트리거               | 방향                       | 충돌 처리                          | 용도                                     |
@@ -291,6 +337,129 @@ Syncthing은 `.stignore` 자체를 동기화하므로 Prod에서 만들면 Mac�
 양쪽 동일 정책이 자동 적용된다.
 
 별도 정책을 원하면 Mac GUI에서 폴더 Edit → **Ignore Patterns** 탭에서 따로 작성한다.
+
+### 5.4 `.stignore` 패턴 문법 레퍼런스
+
+| 문법 | 의미 | 예시 |
+| --- | --- | --- |
+| `*` | 한 경로 구간(슬래시 제외) 매칭 | `*.log` → 모든 로그 파일 |
+| `**` | 여러 구간(슬래시 포함) 매칭 | `build/**` → build 하위 전부 |
+| `/` 시작 | 폴더 루트 기준 절대 경로 | `/README.md` → 루트의 그것만 |
+| `!` 시작 | **예외**(무시하지 않음). 무시 패턴보다 우선 | `!/docs/**` |
+| `(?d)` | 접두사 — 매칭 파일이 대상에 있으면 **삭제 허용** | `(?d)*` |
+| `(?i)` | 접두사 — 대소문자 무시 매칭 | `(?i)*.PDF` |
+| `#include` | 다른 ignore 파일 포함 | `#include .gitignore-like` |
+
+> 화이트리스트 패턴(전부 무시 후 `!`로 되살리기)이 의도가 명확해 권장된다.
+> 줄 순서가 중요하다 — 위에서부터 첫 매칭이 적용되므로 `!` 예외를 `(?d)*` **앞**에 둬도 되고
+> Syncthing은 `!`에 절대 우선권을 준다.
+
+---
+
+## 설정 레퍼런스 (Settings Reference)
+
+설치·페어링 이후 조정할 수 있는 핵심 설정. 값은 GUI(Actions → Settings / 폴더·device Edit)
+또는 `config.xml`(Linux: `~/.local/state/syncthing/config.xml`, Mac:
+`~/Library/Application Support/Syncthing/config.xml`)에서 바꾼다. 설정 변경 후엔 재시작이 필요할 수 있다.
+
+### GUI 인증·보안
+
+헤드리스 Prod는 GUI를 `127.0.0.1`에만 바인딩하지만, 추가로 인증을 걸어두는 게 안전하다.
+
+| 항목 | 설정 위치 | 권장값 |
+| --- | --- | --- |
+| Listen Address | Settings → GUI | `127.0.0.1:8384` (외부 노출 금지) |
+| GUI 인증 | Settings → GUI → User/Password | 설정 권장 (특히 포트 포워딩 시) |
+| HTTPS | Settings → GUI → "Use HTTPS for GUI" | localhost면 선택, 원격 노출이면 필수 |
+| **API Key** | Settings → GUI → API Key | REST API 호출용. 노출 시 재발급 |
+
+```bash
+# CLI로 GUI 인증 설정 (Prod, Harness 사용자)
+syncthing cli config gui user set "admin"
+syncthing cli config gui password set "강한-비밀번호"
+
+# API Key 확인 (REST 호출에 사용)
+grep -oP '(?<=<apikey>)[^<]+' ~/.local/state/syncthing/config.xml
+```
+
+> API Key는 비밀값이다. 커밋·로그에 남기지 말고 환경변수나 별도 보관소로 다룬다.
+
+### 연결·디스커버리·릴레이
+
+상대 단말을 찾고 연결하는 방식. NAT 뒤 환경에서 특히 중요하다.
+
+| 설정 | 의미 | 권장 |
+| --- | --- | --- |
+| **Global Discovery** | Syncthing 공용 디스커버리 서버로 IP 광고·조회 | 공인망이면 켜둠 |
+| **Local Discovery** | 같은 LAN에서 UDP 21027 멀티캐스트로 탐색 | LAN 동일망이면 켜둠 |
+| **Relaying** | 직접 연결 실패 시 공용 릴레이 경유(암호화 유지, 느림) | 폴백용으로 켜둠 |
+| **NAT Traversal** | UPnP로 포트 매핑 시도 | 서버는 끄고 22000 직접 개방 권장 |
+| device **Addresses** | `dynamic`(자동) 또는 `tcp://IP:22000` 명시 | **고정 IP 서버는 명시가 안전** |
+
+```bash
+# 직접 연결 강제 — device 주소를 고정 IP로 박아 릴레이·디스커버리 의존 제거
+syncthing cli config devices <device-id> addresses set "tcp://<원격IP>:22000"
+
+# 현재 연결 방식 확인 (relay 경유인지 direct인지)
+API_KEY=$(grep -oP '(?<=<apikey>)[^<]+' ~/.local/state/syncthing/config.xml)
+curl -s -H "X-API-Key: $API_KEY" http://127.0.0.1:8384/rest/system/connections \
+  | grep -o '"type":"[^"]*"'        # "tcp-client"/"tcp-server"=직접, "relay-*"=릴레이
+```
+
+### File Versioning (삭제·덮어쓰기 복구)
+
+Syncthing은 **삭제·변경도 동기화**하므로, 실수로 지운 파일을 되살리려면 폴더별
+버전 관리를 켠다. 폴더 Edit → **File Versioning** 탭.
+
+| 방식 | 동작 | 용도 |
+| --- | --- | --- |
+| **No Versioning** | 버전 보관 안 함 (기본) | 버전 불필요 |
+| **Trash Can** | 삭제·교체된 파일을 `.stversions/`에 N일 보관 | 가장 간단한 휴지통 |
+| **Simple** | 파일당 최근 N개 버전 보관 | 가벼운 이력 |
+| **Staggered** | 시간대별로 촘촘→성김 보관(최대 보관기간 지정) | 문서 작업 권장 |
+| **External** | 외부 명령에 위임 | 커스텀 백업 연계 |
+
+> Obsidian 노트처럼 자주 고치는 문서는 **Staggered**(예: maxAge 30일)가 안전하다.
+> 버전 파일은 각 단말의 `.stversions/`에 쌓이며 이 폴더는 동기화 대상이 아니다.
+
+### 폴더 고급 옵션
+
+폴더 Edit → **Advanced** 탭에서 조정.
+
+| 옵션 | 의미 | 비고 |
+| --- | --- | --- |
+| **Folder Type** | `sendreceive`/`sendonly`/`receiveonly`/`receiveencrypted` | 양쪽 호환 타입이어야 함 |
+| **Rescan Interval** | 주기적 전체 스캔 간격(초) | 기본 3600. Watch 켜면 길게 둬도 됨 |
+| **Watch for Changes** | inotify/FSEvents로 변경 즉시 감지 | 켜두면 거의 실시간 |
+| **Ignore Permissions** | 파일 권한 비트 동기화 제외 | Linux↔Mac 권한 차이 무시할 때 |
+| **Folder Type 불일치** | 한쪽 plain + 한쪽 encrypted | 동기화 실패 → 트러블슈팅 참고 |
+
+---
+
+## 일상 운영 명령 (CLI · REST)
+
+Prod(헤드리스)에서 자주 쓰는 점검·제어 명령. CLI subcommand가 없는 버전은 `curl` REST로 대체한다.
+
+```bash
+# 공통: API Key 미리 잡아두기 (Harness 사용자)
+API_KEY=$(grep -oP '(?<=<apikey>)[^<]+' ~/.local/state/syncthing/config.xml)
+ST="http://127.0.0.1:8384"
+```
+
+| 작업 | 명령 |
+| --- | --- |
+| 서비스 상태 | `sudo systemctl status syncthing@Harness.service` |
+| 실시간 로그 | `sudo journalctl -u syncthing@Harness.service -f` |
+| 재시작 | `sudo systemctl restart syncthing@Harness.service` |
+| 폴더 즉시 재스캔 | `curl -s -X POST -H "X-API-Key: $API_KEY" "$ST/rest/db/scan?folder=<folder-id>"` |
+| 동기화 진행률 | `curl -s -H "X-API-Key: $API_KEY" "$ST/rest/db/status?folder=<folder-id>"` |
+| 폴더 일시정지 | `curl -s -X PATCH -H "X-API-Key: $API_KEY" -d '{"paused":true}' "$ST/rest/config/folders/<folder-id>"` |
+| 폴더 재개 | `curl -s -X PATCH -H "X-API-Key: $API_KEY" -d '{"paused":false}' "$ST/rest/config/folders/<folder-id>"` |
+| 연결된 peer | `curl -s -H "X-API-Key: $API_KEY" "$ST/rest/system/connections"` |
+| 전체 재시작(API) | `curl -s -X POST -H "X-API-Key: $API_KEY" "$ST/rest/system/restart"` |
+
+> `<folder-id>`는 `syncthing cli config folders list` 또는 `/rest/config/folders`로 확인한다.
+> 진행률(`/rest/db/status`)의 `needBytes`가 0이면 해당 폴더는 최신 상태다.
 
 ---
 
