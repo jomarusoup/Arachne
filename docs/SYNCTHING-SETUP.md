@@ -565,7 +565,16 @@ curl -s -H "X-API-Key: $API_KEY" http://127.0.0.1:8384/rest/<endpoint>
 
 ### `BSD readlink: -e` 옵션 없음 (macOS)
 
-`arachne -c` 등에서 경고가 떠도 동작은 정상. 무시 가능.
+이는 단순 경고가 아니다. Arachne `main`의 설치·점검 스크립트는 GNU `readlink -f/-e`를 사용하므로
+기본 macOS BSD `readlink`만으로는 실패할 수 있다.
+
+```bash
+brew install coreutils
+```
+
+GNU coreutils는 보통 `greadlink` 이름으로 설치된다. `readlink` 호환 shim을 PATH 앞에 두거나
+스크립트가 `greadlink`를 사용하도록 별도 어댑터가 필요하다. Syncthing 자체 동작과 Arachne 설치
+스크립트의 플랫폼 지원은 별개다.
 
 ---
 

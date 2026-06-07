@@ -7,7 +7,7 @@ Arachne 문서에 나오는 줄임말을 **풀어 쓴 말(원어)** 과 함께 �
 
 | 약어 | 풀어 쓴 말 | 설명 |
 | --- | --- | --- |
-| **SSOT** | Single Source of Truth (단일 진실 공급원) | 같은 정보를 여러 곳에 복제하지 않고 **한 곳만 정본**으로 두는 원칙. Arachne에선 `AGENTS.md`가 공통 규약의 SSOT다. 거기만 고치면 세 CLI가 그것을 가리킨다. |
+| **SSOT** | Single Source of Truth (단일 진실 공급원) | 같은 정보를 여러 곳에 복제하지 않고 **한 곳만 정본**으로 두는 원칙. Arachne에선 `AGENTS.md`가 공통 규약의 SSOT다. Gemini는 심볼릭으로 즉시 보고, Codex는 재설치 때 병합본을 갱신한다. |
 | **드리프트** | drift | 사본·인덱스·문서가 실제(코드·파일)와 시간이 지나며 **점점 어긋나는 현상**. SSOT와 자동 검사(CI)로 막는다. |
 | **CLI** | Command-Line Interface (명령줄 인터페이스) | 터미널에서 명령으로 쓰는 프로그램. 여기선 Claude Code·Gemini CLI·Codex CLI. |
 | **CI** | Continuous Integration (지속적 통합) | push·PR마다 서버에서 자동으로 검사(테스트·린트)를 돌리는 것. **배포(CD)가 아니다.** Arachne는 GitHub Actions로 shellcheck·bats·인덱스 검사를 돌린다. |
@@ -62,7 +62,7 @@ Arachne 문서에 나오는 줄임말을 **풀어 쓴 말(원어)** 과 함께 �
 | --- | --- | --- |
 | **gemini-task** | `gask` | Claude가 Gemini에 **읽기·요약·자문**을 위임하는 래퍼(`gemini -p` 감쌈). reader/advisor 레인. |
 | **codex-task** | `cask` | Claude가 Codex에 **테스트·버그 수정**을 위임하는 래퍼(`codex exec` 감쌈). tester/fixer 레인. |
-| **arachne-task** | `atask` | **자동 폴백 캐스케이드 디스패처** — 역할별 우선순위로 CLI를 시도하고 쿼터 소진 감지 시 다음 CLI로 자동 전환. 헤드리스 전용. |
+| **arachne-task** | `atask` | **헤드리스 폴백 디스패처** — 역할별 순서로 CLI 실행 후보를 바꾼다. Codex/Gemini 단계는 기존 tester/fixer·reader/advisor 제약을 유지하며 중심·커밋 권한을 자동 승계하지 않는다. |
 
 ---
 

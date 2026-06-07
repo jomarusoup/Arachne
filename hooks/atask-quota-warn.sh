@@ -2,7 +2,7 @@
 ################################################################################
 # FILE NAME   : atask-quota-warn.sh
 # DESCRIPTION : 프롬프트 입력 시 atask 쿼터 상태를 확인해 사전 경고 —
-#               쿨다운(소진) 중인 CLI가 있으면 현재 "중심"과 회복 시각을 알린다.
+#               쿨다운(소진) 중인 CLI가 있으면 impl 순서의 첫 가용 후보와 회복 시각을 알린다.
 #               atask 의 상태 파일(arachne-quota-state)을 읽기만 한다(부작용 없음).
 # DATA        : 2026-06-07
 # Modification: 2026-06-07
@@ -42,23 +42,23 @@ done < "${STATE_FILE}"
 [ -z "${cooldown_msg}" ] && exit 0
 
 #-------------------------------------------------------------------------------
-# 현재 "중심" 판정 — impl 페일오버 사슬(claude→codex→gemini)에서 첫 가용 CLI
+# impl 실행 후보 판정 — 순서(claude→codex→gemini)에서 첫 가용 CLI
 #-------------------------------------------------------------------------------
 if [ "${in_cooldown_claude}" -eq 0 ]; then
-    center="Claude (정상)"
+    candidate="Claude (정상)"
 elif [ "${in_cooldown_codex}" -eq 0 ]; then
-    center="Codex (L1 — Claude 소진)"
+    candidate="Codex wrapper (Claude 소진, tester/fixer 제약)"
 elif [ "${in_cooldown_gemini}" -eq 0 ]; then
-    center="Gemini (L2 — Claude+Codex 소진, 사람 리뷰 강화)"
+    candidate="Gemini wrapper (Claude+Codex 소진, reader/advisor 제약)"
 else
-    center="없음 (L3 — 전 CLI 소진, 회복 대기)"
+    candidate="없음 (전 CLI 소진, 회복 대기)"
 fi
 
 echo "┌───────────────────────────────────────────────────────────────────────────────"
 echo "│  [atask 쿼터 경고] 사용량 소진 CLI 감지"
 echo -e "${cooldown_msg%\\n}"
-echo "│  현재 중심: ${center}"
-echo "│  → 위임은 atask 가 자동 폴백. 대화형이면 /handoff 로 인계 고려."
+echo "│  impl 첫 가용 후보: ${candidate}"
+echo "│  → 후보 변경은 역할·커밋 권한 승계가 아님. 결과 검증 또는 /handoff 필요."
 echo "└───────────────────────────────────────────────────────────────────────────────"
 
 exit 0

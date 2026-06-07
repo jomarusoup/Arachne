@@ -1,7 +1,7 @@
 ---
 Title: README
 creation: 2026-05-05
-modification: 2026-06-04
+modification: 2026-06-07
 Description: 저지연 풀스택 시스템 프로그래밍을 위한 Claude Code 글로벌 설정 프레임워크
 tags:
 aliases:
@@ -15,8 +15,9 @@ aliases:
 **C/C++ · Go · Rust** 중심의 실시간 트레이딩·데이터 파이프라인 개발에 최적화.
 
 하나의 공통 규약(`AGENTS.md`, SSOT)을 **Claude Code · Gemini CLI · Codex CLI** 세 도구가
-동시에 따른다. `~/.claude/` 등을 심볼릭 링크로 이 레포와 연결하므로, 레포를 수정하면 글로벌
-설정에 반영되고 `git push/pull`로 모든 머신을 동기화할 수 있습니다.
+동시에 따른다. Claude와 Gemini는 레포 심볼릭 링크를 읽고, Codex는 `AGENTS.md`를 마커 병합한
+사본을 읽는다. 따라서 Claude/Gemini 자산은 레포 수정 후 다음 로드부터 반영되지만, Codex 규약은
+`arachne -i --target codex` 재실행이 필요하다. `git push/pull`로 여러 머신의 원본 레포를 동기화한다.
 
 > 🗺️ 하네스 구조 다이어그램(Mermaid)은 [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) 참고
 > 📖 skills·agents·커맨드·hooks 사용법은 [docs/USAGE.md](docs/USAGE.md) 참고
@@ -27,6 +28,18 @@ aliases:
 ---
 
 ## 🚀 Installation
+
+### Platform Support
+
+| 환경 | 지원 상태 | 비고 |
+|---|---|---|
+| Linux | **지원** | Bash, Git, GNU `readlink`, `sed`, `awk`, `grep` 필요 |
+| Windows + WSL2 | **조건부** | Linux 호환 경로지만 이 저장소 CI에서 별도 검증하지 않음 |
+| macOS | **제한적** | 기본 BSD `readlink`는 `-f/-e`가 없어 GNU coreutils 설치와 PATH 설정 필요 |
+| Windows 네이티브 | **미지원** | PowerShell/CMD 설치 경로와 NTFS 링크 처리는 현재 `main`에 없음 |
+
+macOS에서는 예를 들어 `brew install coreutils` 후 GNU 도구가 우선하도록 PATH를 설정해야 한다.
+설치·점검 스크립트는 현재 POSIX 계열 Bash 환경을 전제로 한다.
 
 ```bash
 git clone https://github.com/jomarusoup/Arachne.git ~/Arachne
@@ -57,7 +70,7 @@ cd ~/Arachne
 | `arachne -v` | 버전 정보 |
 | `gemini-task` (= `gask`) | **Gemini 위임 래퍼 (reader/advisor 레인)** — Claude Code가 `gemini -p`를 Bash로 호출해 읽기·요약·자문을 위임 |
 | `codex-task` (= `cask`) | **Codex 위임 래퍼 (tester/fixer 레인)** — Claude Code가 `codex exec`를 Bash로 호출해 테스트 작성·실행·버그 수정을 위임 |
-| `atask` (= `arachne-task`) | **자동 폴백 캐스케이드 디스패처** — 역할별 우선순위로 CLI를 시도하고 쿼터 소진을 감지하면 다음 CLI로 자동 전환 (`claude → codex → gemini`) |
+| `atask` (= `arachne-task`) | **헤드리스 폴백 디스패처** — 역할별 순서로 실행 후보를 바꾸지만 Codex/Gemini 단계는 각각 tester/fixer·reader/advisor 래퍼 제약을 유지 |
 | `docs-sync` | 원격 프로젝트 README/docs/Markdown 문서 ↔ Obsidian Vault 동기화 |
 
 ---
@@ -141,7 +154,8 @@ Claude Code가 **중심(오케스트레이터 + 주 구현자)**이고, Codex·G
 
 방향이 반대인 두 우선순위 사슬:
 - **오프로드 (offload, 비용 기준)**: Gemini → Codex → (Claude 안 씀) — 토큰 무거운 일을 싸게 떠넘김
-- **페일오버 (failover, 구현 품질 기준)**: Claude → Codex → Gemini — Claude 쿼터 소진 시 구현 대타는 Codex 먼저
+- **실행 후보 순서 (availability fallback)**: Claude → Codex → Gemini — 쿼터 소진 시 다음
+  헤드리스 CLI를 시도하지만 역할·커밋 권한이 자동 승계되는 것은 아님
 
 위임 경로:
 - **`gemini-task` (Gemini reader/advisor)**: Claude Code가 터미널 전환 없이 `gemini -p`를 Bash로 호출 → 답변 수신
@@ -150,9 +164,11 @@ Claude Code가 **중심(오케스트레이터 + 주 구현자)**이고, Codex·G
 - **`codex-task` (Codex tester/fixer)**: Claude Code가 `codex exec`를 Bash로 호출 → 테스트·수정 위임
   - 제안 모드(기본): `codex-task "parser 테스트 보강안 제시: $(cat src/parser.c)"` → diff만 반환, 트리 미변경
   - 실행 모드: `codex-task -w "실패하는 test_auth 를 green 까지 수정"` → 직접 쓰고 돌려 수정 (커밋은 Claude)
-- **`atask` (자동 폴백)**: `atask -R impl "..."` 한 줄이 역할 우선순위로 CLI를 시도하고, 쿼터 소진을 감지하면 다음 CLI로 자동 전환 (헤드리스 전용)
-  - 소진 상태는 `atask-quota-warn.sh` 훅이 프롬프트마다 사전 경고 (현재 "중심" CLI 표시)
-- **git-bus 감지 (보조)**: 다른 터미널에서 Gemini/Codex가 직접 커밋한 경우 `gemini-check.sh` 훅이 자동 감지
+- **`atask` (자동 폴백)**: 역할별 순서로 헤드리스 CLI를 시도하고 쿼터 소진 시 다음 후보로 전환
+  - Codex는 `codex-task`, Gemini는 `gemini-task`를 거치므로 각각의 역할 제한이 유지된다.
+  - 특히 `impl` 폴백의 종료코드 0은 기능 구현 완료를 보장하지 않으므로 결과와 diff를 사람이 검증해야 한다.
+- **git-bus 감지 (보조)**: `gemini-check.sh`가 업스트림 브랜치의 새 커밋을 감지한다. 작성 CLI는 판별하지
+  않으며, 업스트림이 설정된 경우 다른 로컬 터미널의 미푸시 커밋은 감지하지 않는다.
 
 > 상세 역할·비용 라우팅은 [docs/MULTI-CLI.md](docs/MULTI-CLI.md)·[docs/USAGE.md](docs/USAGE.md) 6장 참고.
 > 정책 SSOT(Single Source of Truth, 단일 진실 공급원)는 [`rules/common/workflow.md`](rules/common/workflow.md).

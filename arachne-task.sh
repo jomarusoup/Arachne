@@ -4,7 +4,7 @@
 # DESCRIPTION : 자동 폴백 캐스케이드 디스패처 (arachne-task / 짧은 별칭 atask) —
 #               역할별 우선순위 사슬을 따라 CLI를 시도하고, 쿼터 소진(rate limit)을
 #               감지하면 다음 CLI로 자동 전환한다. 소진된 CLI는 쿨다운 동안 건너뛴다.
-#                 impl  : claude → codex → gemini  (구현 품질 페일오버)
+#                 impl  : claude → codex → gemini  (실행 후보 폴백; 하위 래퍼 역할 유지)
 #                 read  : gemini → codex → claude  (비용 오프로드)
 #                 test  : codex  → claude → gemini (검증 우선)
 #                 review: gemini → codex → claude  (저비용 1차 리뷰)
@@ -45,7 +45,7 @@ Usage: arachne-task [-R ROLE] [-m MODEL] [-w] [--dry-run] "프롬프트..."   (�
   쿼터 소진을 감지하면 다음 CLI로 자동 전환한다. 결과만 stdout 으로 출력.
 
 Roles (-R):
-  impl     (기본) claude → codex → gemini   구현·통합 (품질 페일오버)
+  impl     (기본) claude → codex → gemini   실행 후보 순서 (역할 자동 승계 아님)
   read            gemini → codex → claude   읽기·요약·자문 (비용 오프로드)
   test            codex  → claude → gemini  테스트·버그 수정
   review          gemini → codex → claude   저비용 1차 리뷰
@@ -58,7 +58,7 @@ Options:
   -h         이 도움말 출력
 
 Examples:
-  atask "결제 모듈 재시도 로직 구현"                 # impl: claude 먼저, 소진 시 codex
+  atask "결제 모듈 재시도 로직 구현"                 # impl: claude 먼저, 소진 시 제한된 래퍼 폴백
   atask -R read "이 로그 에러 원인 요약: $(cat app.log)"
   atask -R test -w "실패하는 test_auth 를 green 까지"
   atask --dry-run -R impl "..."                       # 순서·쿨다운만 확인

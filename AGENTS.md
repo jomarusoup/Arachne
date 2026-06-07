@@ -148,10 +148,12 @@
 > 위임 호출에는 역할 프리앰블이 주입된다 — Codex는 테스트·수정에 집중(기능 추가 X), Gemini는 읽기·자문에
 > 집중(최종 구현 코드 X). 산출물의 최종 통합·**커밋은 항상 Claude**가 한다.
 > 방향이 반대인 두 우선순위 사슬: **오프로드**(비용) = Gemini → Codex → (Claude 안 씀),
-> **페일오버**(구현 품질) = Claude → Codex → Gemini. 상세 정책은 `rules/common/workflow.md`(SSOT).
+> **실행 후보 폴백**(가용성) = Claude → Codex → Gemini. 후자는 역할·커밋 권한의 자동 승계가 아니다.
+> 상세 정책은 `rules/common/workflow.md`(SSOT).
 > 단계별 동작·다이어그램은 `docs/ARCHITECTURE.md` §2 참고.
 >
 > **사용 모드**: 각 CLI는 ① **단독**(이 규약을 읽고 혼자 동작) ② **위임 대상**(Claude가 `gemini-task`/
-> `codex-task`로 호출) ③ **페일오버 중심**(상위 CLI 소진 시 중심 이양 — Claude→Codex→Gemini)으로 쓰인다.
+> `codex-task`로 호출) ③ **헤드리스 실행 후보**(`atask`가 쿼터 소진 시 다음 CLI를 시도)로 쓰인다.
+> 중심 변경과 커밋 권한 이전은 `/handoff`를 포함한 명시적 사람 인계가 필요하다.
 > 단독이든 위임이든 **읽는 공통 규약은 이 파일로 동일**하다. 캐스케이드 표·단독 사용·cross-harness 패키징
 > (같은 자산을 Claude/Codex/Gemini/Cursor/OpenCode로 어댑터 배포)은 `docs/MULTI-CLI.md` §5 참고.
