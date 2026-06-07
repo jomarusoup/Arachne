@@ -17,7 +17,9 @@
 | 훅 | `hooks/*.sh` | Claude Code 이벤트가 자동 실행 | `settings.json`의 `hooks` 섹션 |
 | 규칙 | `rules/**/*.md` | 공통=매 세션 / 언어=확장자 매칭 시 | `~/.claude/rules/` 네이티브 자동 로드 (paths frontmatter) |
 
-모든 항목은 `~/.claude/`에 심볼릭 링크로 연결되어, **레포 수정 = 즉시 반영**된다(`install.sh` 참고).
+표의 Claude 자산은 `~/.claude/`에 심볼릭 링크로 연결되어 레포 수정 후 다음 로드부터 반영된다.
+예외로 `settings.json`은 템플릿에서 생성되는 실파일이며, Codex의 `AGENTS.md`도 마커 병합 사본이라
+각각 재설치가 필요하다.
 
 ---
 
@@ -137,8 +139,8 @@ model: opus               # opus / sonnet / haiku
 ### 등록된 훅 (이 레포 기준)
 | 훅 스크립트 | 이벤트 | 동작 |
 |---|---|---|
-| `git-bus-check.sh` | `UserPromptSubmit` | 메시지 입력마다 외부 새 커밋 감지 (git-bus) |
-| `atask-quota-warn.sh` | `UserPromptSubmit` | `atask` 상태 파일을 읽어 쿼터 소진 CLI·현재 "중심" 사전 경고 |
+| `git-bus-check.sh` | `UserPromptSubmit` | 메시지 입력마다 업스트림 브랜치의 새 커밋 감지 (작성 CLI 판별 없음) |
+| `atask-quota-warn.sh` | `UserPromptSubmit` | `atask` 상태 파일을 읽어 쿼터 소진 CLI·impl 첫 가용 후보 경고 |
 | `doc-drift-check.sh` | `PostToolUse` (`Edit\|Write`) | 기능 파일(스크립트·rules·agents 등) 변경 시 README/docs 갱신 알림 (세션당 1회) |
 | `session-start.sh` | `SessionStart` | 최근 세션 파일 경로 안내 |
 | `pre-compact.sh` | `PreCompact` | 컨텍스트 압축 전 상태 스냅샷 저장 |
@@ -216,8 +218,9 @@ model: opus               # opus / sonnet / haiku
 | tester / fixer | **Codex** | `codex-task` (`ctask`) | 테스트 작성·실행, 버그 수정 (기능 추가 X) |
 | reader / advisor | **Gemini** | `gemini-task` (`gtask`) | 대용량 읽기·요약, 설계 탐색, 1차 리뷰, 장문 생성 (구현 X) |
 
-> 우선순위 두 사슬: **오프로드**(비용) = Gemini → Codex → (Claude 안 씀), **페일오버**(구현 품질) = Claude → Codex → Gemini.
-> Claude 쿼터 소진 시 구현 대타는 Codex 먼저 — `/handoff`로 인계. Gemini는 코딩 스타일 충실도가 낮아 최종 구현 코드는 안 맡긴다.
+> 우선순위 두 사슬: **오프로드**(비용) = Gemini → Codex → (Claude 안 씀),
+> **실행 후보 폴백** = Claude → Codex → Gemini. 후자는 가용 CLI를 고르는 순서이며,
+> 구현 역할이나 커밋 권한의 자동 승계를 의미하지 않는다.
 
 ### 경로 A — `gemini-task` 직접 호출 (Gemini reader/advisor)
 Claude Code가 **터미널 전환 없이 Bash로 `gemini-task`를 직접 호출**해 답변을 받아온다.
@@ -259,7 +262,8 @@ codex-task -m <model> -C <dir> "..."                                    # 모델
 > 권한: `Bash(ctask:*)`가 `permissions.allow`에 있어 호출마다 승인 프롬프트가 뜨지 않는다.
 
 ### 경로 C — git-bus 감지 (보조)
-본인·가족이 **다른 터미널에서 Gemini/Codex로 직접 커밋**한 경우를 위한 비동기 채널. `gemini-task`/`codex-task`와 공존한다.
+업스트림 브랜치에 추가된 커밋을 다음 프롬프트에서 알리는 비동기 채널이다.
+사람/Gemini/Codex 작성 여부는 판별하지 않으며 업스트림에 푸시되지 않은 로컬 커밋은 감지하지 않는다.
 
 | 구성 요소 | 역할 |
 |---|---|
@@ -290,7 +294,7 @@ powershell -ExecutionPolicy Bypass -File .\install.ps1 -Install
 ```
 
 - 관리자 권한 없이 디렉터리는 junction, 파일은 hard link로 연결하며 실패 시 복사합니다.
-- `~\.local\bin`을 사용자 PATH에 등록하고 `arachne.cmd`, `gask.cmd`, `cask.cmd`,
+- `~\.local\bin`을 사용자 PATH에 등록하고 `arachne.cmd`, `gtask.cmd`, `ctask.cmd`,
   `atask.cmd` 등의 래퍼를 생성합니다. 새 터미널부터 PATH 변경이 적용됩니다.
 - Claude 훅과 위임 래퍼 실행에는 Git for Windows의 `bash.exe`가 필요합니다.
 - `tws`는 Windows 네이티브 미지원이며 WSL 또는 별도 tmux 환경에서만 사용할 수 있습니다.
@@ -300,6 +304,18 @@ powershell -ExecutionPolicy Bypass -File .\install.ps1 -Install
 1. **심볼릭 링크**: `CLAUDE.md`, `commands/`, `agents/` 등을 `~/.claude/`에 연결하여 레포 수정이 즉시 반영되게 합니다.
 2. **설정 생성**: `settings.template.json`을 기반으로 홈 경로를 치환하여 `~/.claude/settings.json`을 생성합니다.
 3. **CLI 등록**: `~/.local/bin/`에 `arachne`(관리), `tws`(워크스페이스), `gemini-task`/`gtask`(Gemini 위임), `codex-task`/`ctask`(Codex 위임), `arachne-task`/`atask`(자동 폴백 디스패처), `docs-sync`(문서 동기화) 커맨드를 등록합니다.
+
+### 지원 플랫폼과 전제
+
+| 환경 | 상태 | 전제 |
+|---|---|---|
+| Linux | 지원 | Bash, Git, GNU `readlink`, `sed`, `awk`, `grep` |
+| Windows + WSL2 | 조건부 | Linux 호환 경로지만 이 저장소 CI에서 별도 검증하지 않음 |
+| macOS | 제한적 | GNU coreutils 설치 후 `greadlink` 또는 GNU `readlink`가 PATH에서 우선해야 함 |
+| Windows 네이티브 | 미지원 | PowerShell 설치기와 Windows 링크 처리가 현재 없음 |
+
+현재 스크립트는 `readlink -f/-e`와 일부 `date -d` 사용 때문에 기본 macOS BSD 도구만으로는
+완전하게 동작하지 않는다. Windows에서는 WSL2 경로를 사용한다.
 
 ### dotfiles 병합 메커니즘 (Safe Merge)
 기존의 단순 심볼릭 링크 방식 대신, 사용자 홈 디렉토리의 `.bash_profile`, `.vimrc` 파일에 Arachne 설정을 **병합**합니다.
@@ -462,4 +478,5 @@ atask [-R ROLE] [-m MODEL] [-w] [--dry-run] "프롬프트..."
 | 환경변수 | `ATASK_COOLDOWN_CLAUDE`(기본 18000s) · `ATASK_COOLDOWN_DEFAULT`(기본 3600s) · `ARACHNE_STATE_DIR` |
 
 > **헤드리스 전용** — 대화형 세션 중간 구제는 못 한다. 자동 폴백 동작·한계·역할별 순서의 근거는
-> [MULTI-CLI.md §5.1](MULTI-CLI.md) 참고. 사전 경고는 `atask-quota-warn.sh` 훅(§4)이 담당.
+> [MULTI-CLI.md §5.1](MULTI-CLI.md) 참고. Codex/Gemini 단계는 기존 역할 래퍼 제약을 유지하므로
+> `impl`의 완료를 보장하지 않는다. 사전 경고는 `atask-quota-warn.sh` 훅(§4)이 담당.

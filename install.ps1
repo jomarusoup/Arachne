@@ -55,9 +55,9 @@ $SCRIPT:LINK_TARGETS = @(
 
 $SCRIPT:BASH_COMMANDS = [ordered]@{
     "tws" = "tmux.sh"
-    "gask" = "gemini-task.sh"
+    "gtask" = "gemini-task.sh"
     "gemini-task" = "gemini-task.sh"
-    "cask" = "codex-task.sh"
+    "ctask" = "codex-task.sh"
     "codex-task" = "codex-task.sh"
     "atask" = "arachne-task.sh"
     "arachne-task" = "arachne-task.sh"

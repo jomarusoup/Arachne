@@ -11,7 +11,7 @@ PowerShell 7 또는 Windows PowerShell 5.1**을 기준으로 하며, Windows 10�
 | **Windows 네이티브 (권장)** | PowerShell, Windows Terminal, Windows 파일 시스템에서 작업 | `install.ps1` |
 | **WSL2** | Linux 도구 체인, tmux, Linux 컨테이너 중심 작업 | WSL 안에서 `install.sh` |
 
-Arachne의 Windows 래퍼(`gask.cmd`, `cask.cmd`, `atask.cmd`)는 Windows에 설치된 CLI를
+Arachne의 Windows 래퍼(`gtask.cmd`, `ctask.cmd`, `atask.cmd`)는 Windows에 설치된 CLI를
 호출한다. WSL에 설치한 CLI는 별도 Linux 환경이므로 Windows 설치와 설정·PATH·홈 디렉터리를
 공유하지 않는다.
 
@@ -222,7 +222,7 @@ Get-Command gemini
 npx @google/gemini-cli
 ```
 
-`npx`는 매번 패키지를 확인하는 실행 방식이므로 Arachne의 `gask` 위임 대상에는 전역 설치를
+`npx`는 매번 패키지를 확인하는 실행 방식이므로 Arachne의 `gtask` 위임 대상에는 전역 설치를
 사용한다.
 
 ### 5.2 Google 계정 인증
@@ -303,7 +303,7 @@ arachne -Install -Target gemini
 위임 래퍼의 등록 여부:
 
 ```powershell
-Get-Command gask, cask, atask
+Get-Command gtask, ctask, atask
 ```
 
 ## 7. WSL2로 설치하는 대안

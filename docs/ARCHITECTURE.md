@@ -2,7 +2,7 @@
 Title: ARCHITECTURE
 creation: 2026-06-06
 modification: 2026-06-07
-Description: Arachne 하네스 구조 다이어그램 (Mermaid) — 심볼릭 배선 · 3-레인 협업 · 훅 · SSOT 로딩 · 워크플로
+Description: Arachne 하네스 구조 다이어그램 (Mermaid) — CLI별 설정 배선 · 3-레인 협업 · 훅 · SSOT 로딩 · 워크플로
 tags:
 aliases:
 ---
@@ -15,10 +15,11 @@ aliases:
 
 ---
 
-## 1. Big Picture — Repo ↔ Multi-CLI Symlink Wiring
+## 1. Big Picture — Repo ↔ Multi-CLI Configuration Wiring
 
-하나의 레포(`Arachne/`)를 설치기가 각 도구의 네이티브 지침 위치에 연결한다.
-심볼릭 링크 또는 마커 병합을 사용하며, `git push/pull`과 재설치로 모든 머신이 동기화된다.
+하나의 레포(`Arachne/`)를 `install.sh`(CLI: `arachne`)가 CLI별 지원 방식으로 연결한다.
+Claude/Gemini는 심볼릭 링크를 사용하지만 Codex는 마커 병합 사본을 사용한다. 따라서 Codex의
+`AGENTS.md` 변경 반영에는 재설치가 필요하며, `git push/pull`은 각 머신의 원본 레포를 동기화한다.
 
 ```mermaid
 flowchart TB
@@ -101,7 +102,8 @@ Git for Windows의 `bash.exe`를 통해 실행한다.
 5. **공통 설치** (`install_shared`, 항상 1회)
    1. `install_dotfiles` — `~/.bash_profile`·`~/.vimrc`에 `# === ARACHNE BEGIN/END ===` 마커 섹션을
       병합(멱등: 있으면 교체, 없으면 추가, 사용자 영역 중복 줄은 제외).
-   2. `register_bin` — `BIN_TARGETS`(arachne · tws · gemini-task · gtask · codex-task · ctask · docs-sync)를
+   2. `register_bin` — `BIN_TARGETS`(arachne · tws · gemini-task · gtask · codex-task · ctask ·
+      arachne-task · atask · docs-sync)를
       `~/.local/bin/`에 심볼릭으로 등록(+`chmod +x`). PATH에 `~/.local/bin`이 없으면 경고 출력.
 
 > **graceful skip**: `all` 타깃에서 Gemini/Codex/Copilot이 감지되지 않으면 해당 도구만 건너뛰고
@@ -114,14 +116,15 @@ Git for Windows의 `bash.exe`를 통해 실행한다.
 3. `settings.json`은 **매번 템플릿에서 재생성**되므로, 직접 수정한 값이 있으면 먼저 `arachne -e`로
    템플릿에 역추출해 둬야 유실되지 않는다(직전 값은 `settings.json.bak`에 남는다).
 
-> **머신 간 동기화 모델**: 레포가 단일 진실 공급원(SSOT)이고, `~/.claude/` 등은 그 심볼릭 그림자다.
+> **머신 간 동기화 모델**: 레포가 단일 진실 공급원(SSOT)이다. Claude/Gemini는 심볼릭 그림자,
+> Codex는 재설치 시 갱신되는 마커 병합 사본이다.
 > 한 머신에서 `git push` → 다른 머신에서 `arachne -u`(= pull + 재설치) 하면 전 머신이 같은 설정으로 수렴한다.
 
 ---
 
 ## 2. Collaboration Architecture — 3-Lane Delegation
 
-§1이 **정적 배선**(레포→세 CLI 심볼릭)이라면, 이 절은 **런타임 협업 구조**다.
+§1이 **정적 배선**(레포→CLI별 심볼릭/병합)이라면, 이 절은 **런타임 협업 구조**다.
 **Claude Code가 중심(오케스트레이터 + 주 구현자 + 유일 커미터)**이고, 토큰 무겁거나 검증성
 작업을 두 위임 대상에게 **역할을 분리해서** 떠넘긴다. 셋 다 같은 `AGENTS.md` 규약을 공유하므로
 인계 마찰이 작다.
@@ -144,7 +147,7 @@ flowchart TB
     GEMINI -.->|"요약·자문 (stdout)"| CLAUDE
     CODEX -.->|"테스트·수정 diff (stdout)"| CLAUDE
     CLAUDE ==>|"통합·스타일 보정·단독 커밋"| GIT
-    GIT -.->|"git-bus: 외부 직접 커밋 감지<br/>(hooks/git-bus-check.sh)"| CLAUDE
+    GIT -.->|"git-bus: 업스트림 새 커밋 감지<br/>(hooks/git-bus-check.sh)"| CLAUDE
 
     classDef gem fill:#0f3d3e,stroke:#34d399,color:#d1fae5;
     classDef cla fill:#1e3a5f,stroke:#60a5fa,color:#dbeafe;
@@ -161,7 +164,7 @@ flowchart TB
 | 축 | 기준 | 우선순위 | 의미 |
 | --- | --- | --- | --- |
 | **오프로드 (offload)** | 비용 | Gemini → Codex → (Claude 안 씀) | 토큰 무거운 일을 싸게 떠넘김 |
-| **페일오버 (failover)** | 구현 품질 | Claude → Codex → Gemini | Claude 쿼터 소진 시 구현 대타는 Codex 먼저 |
+| **실행 후보 폴백** | 가용성 | Claude → Codex → Gemini | 쿼터 소진 시 다음 헤드리스 호출 후보를 시도 |
 
 > **왜 역할을 분리하나** — 구현(Claude)과 검증(Codex)을 **다른 모델**이 맡으면 상관된 맹점(correlated
 > blind spot)이 줄어든다. Gemini는 코딩 스타일 충실도가 낮아 최종 구현 코드는 맡기지 않고 읽기·자문에 둔다.
@@ -174,9 +177,9 @@ flowchart TB
 | 제안 (기본) | 없음 | 테스트·수정 diff를 stdout 반환, 트리 미변경 | 받아서 적용·실행·커밋 |
 | 실행 | `-w` | 직접 쓰고 돌려 green까지 수정, 트리 변경 | `git diff` 검토·스타일 보정·커밋 |
 
-> **사용 모드 & 페일오버**: 각 CLI는 단독·위임 대상·페일오버 중심으로 쓰인다. Claude 쿼터 소진 시
-> 중심이 Codex → Gemini로 이양되는 단계별 캐스케이드(L0~L3)와 단독 사용·cross-harness 패키징은
-> [MULTI-CLI.md §5](MULTI-CLI.md)에 정리돼 있다.
+> **사용 모드 & 폴백**: 각 CLI는 단독 또는 위임 대상으로 쓸 수 있다. `atask`는 쿼터 소진 시 다음
+> 헤드리스 호출 후보를 고르지만, `codex-task`/`gemini-task`의 역할 제한과 Claude 단독 커밋 원칙을
+> 자동으로 바꾸지 않는다. 상세는 [MULTI-CLI.md §5](MULTI-CLI.md)에 정리돼 있다.
 >
 > 정책 단일 출처(SSOT)는 [`rules/common/workflow.md`](../rules/common/workflow.md),
 > 사람용 상세는 [MULTI-CLI.md](MULTI-CLI.md)·[USAGE.md §6](USAGE.md).
@@ -217,6 +220,7 @@ Arachne/
 ├── gemini-task.sh               # Gemini 위임 래퍼 — reader/advisor (CLI: gemini-task, gtask)
 ├── codex-task.sh                # Codex 위임 래퍼 — tester/fixer (CLI: codex-task, ctask)
 ├── arachne-task.sh              # 자동 폴백 캐스케이드 디스패처 (CLI: arachne-task, atask)
+├── docs-sync.sh                 # README/docs ↔ Obsidian 수동 동기화 (CLI: docs-sync)
 ├── statusline-command.sh
 │
 ├── rules/                       # Claude 전역 행동 규칙
@@ -228,7 +232,7 @@ Arachne/
 ├── commands/                    # 슬래시 커맨드 (16)
 ├── agents/                      # 서브에이전트 7개 (planner·code-reviewer·tdd·debugger
 │                                #   ·python-reviewer·fastapi-reviewer·react-reviewer)
-├── hooks/                       # 이벤트 훅 (session-start/end · pre-compact · gemini-check
+├── hooks/                       # 이벤트 훅 (session-start/end · pre-compact · git-bus-check
 │                                #   · atask-quota-warn · doc-drift-check)
 ├── mcp-configs/                 # MCP 서버 설정 템플릿
 ├── dotfiles/                    # bash_profile · vimrc (병합 원본)
@@ -257,10 +261,10 @@ sequenceDiagram
     Note over CC: UserPromptSubmit
     CC->>H: git-bus-check.sh
     H->>H: git fetch 후 origin HEAD 비교
-    H-->>CC: Gemini/Codex 외부 직접 커밋 감지 시 변경 목록 (git-bus)
+    H-->>CC: 업스트림 새 커밋 감지 시 변경 목록 (git-bus)
     CC->>H: atask-quota-warn.sh
     H->>FS: arachne-quota-state 읽기
-    H-->>CC: 쿼터 소진 CLI·현재 중심 사전 경고
+    H-->>CC: 쿼터 소진 CLI·impl 첫 가용 후보 경고
 
     Note over CC: PostToolUse (Edit/Write 후)
     CC->>H: doc-drift-check.sh
@@ -289,15 +293,16 @@ sequenceDiagram
      - 파일이 **없으면**(최초 실행) 현재 HEAD만 조용히 기록하고 종료.
      - 현재 HEAD == 기준점이면 **새 커밋 없음** → 조용히 종료.
   4. 다르면 `git log --oneline <기준점>..<HEAD>`로 **새 커밋 목록 + 변경 파일**을 박스 UI로 출력
-     (다른 터미널에서 Gemini/Codex가 직접 커밋한 것을 알림).
+     (작성 도구와 무관하게 업스트림에 추가된 커밋을 알림).
   5. 기준점을 현재 HEAD로 **갱신** → 같은 커밋을 두 번 알리지 않는다.
 - **`pre-compact.sh` (PreCompact)** — 컨텍스트 압축 직전. 현재 작업 상태를 스냅샷 파일로 저장해
   압축으로 잃을 맥락을 보존한다.
 - **`session-end.sh` (Stop)** — 세션 종료 시. git 기반 스냅샷을 남기고, 방금 fetch한 리모트 HEAD를
   `.claude/last-seen-commit`에 기록해 다음 세션의 git-bus 비교 기준점을 최신화한다.
 
-> **두 AI 간 비동기 채널**: `gemini-task`/`codex-task`(동기 호출)와 별개로, git 히스토리가 **메시지 버스** 역할을 한다 —
-> 누군가 다른 터미널/머신에서 커밋하면 `git-bus-check.sh`가 다음 프롬프트 때 그것을 알린다.
+> **비동기 변경 알림**: `gemini-task`/`codex-task`(동기 호출)와 별개로 업스트림 git 히스토리를
+> 변경 알림으로 사용한다. 훅(`git-bus-check.sh`)은 커밋 작성자가 사람인지 특정 AI인지 판별하지 않으며,
+> 미푸시 로컬 커밋은 업스트림 비교에 포함되지 않는다.
 
 ---
 

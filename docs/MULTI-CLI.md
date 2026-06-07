@@ -227,7 +227,7 @@ flowchart TB
     GEMINI -.->|"요약·자문 (stdout)"| CLAUDE
     CODEX -.->|"테스트·수정 diff (stdout)"| CLAUDE
     CLAUDE ==>|"통합·스타일 보정·단독 커밋"| GIT
-    GIT -.->|"git-bus: 외부 직접 커밋 감지<br/>(hooks/git-bus-check.sh)"| CLAUDE
+    GIT -.->|"git-bus: 업스트림 새 커밋 감지<br/>(hooks/git-bus-check.sh)"| CLAUDE
 
     classDef gem fill:#0f3d3e,stroke:#34d399,color:#d1fae5;
     classDef cla fill:#1e3a5f,stroke:#60a5fa,color:#dbeafe;
@@ -244,10 +244,11 @@ flowchart TB
 
 방향이 반대인 두 우선순위 사슬:
 - **오프로드(offload, 비용)**: Gemini → Codex → (Claude 안 씀) — 토큰 무거운 일을 싸게 떠넘김
-- **페일오버(failover, 구현 품질)**: Claude → Codex → Gemini — 구현 대타는 Codex 먼저
+- **실행 후보 폴백(가용성)**: Claude → Codex → Gemini — 쿼터 소진 시 다음 헤드리스 후보를 시도
 
-또 다른 채널은 **git-bus**다 — 다른 터미널에서 직접 커밋한 경우, `hooks/git-bus-check.sh`가
-다음 프롬프트 때 새 커밋을 알린다(비동기 메시지 버스).
+또 다른 채널은 **git-bus**다. `hooks/git-bus-check.sh`는 업스트림 브랜치 HEAD와 기준점을 비교해
+다음 프롬프트 때 새 커밋을 알린다(비동기 메시지 버스). 작성자나 사용 CLI는 판별하지 않으며, 업스트림이
+있는 경우 다른 로컬 터미널의 미푸시 커밋은 감지 대상이 아니다.
 
 ### 4.3 Independence — They Don't Break Each Other
 
@@ -257,7 +258,7 @@ flowchart TB
 
 ---
 
-## 5. Usage Modes — 단독 · 위임 · 페일오버
+## 5. Usage Modes — 단독 · 위임 · 가용성 폴백
 
 세 CLI는 **함께(오케스트레이션)** 도 쓰고 **따로(단독)** 도 쓴다. 공통 규약(`AGENTS.md`)은 어느 쪽이든
 적용되므로, 단독으로 띄워도 같은 코딩 스타일·패턴·보안 규칙을 따른다.
@@ -270,15 +271,16 @@ flowchart TB
 2. **위임 사용 (3-레인 오케스트레이션)** — Claude가 중심에서 토큰 무거운 읽기·요약·자문은
    `gemini-task`(Gemini, reader/advisor)로, 테스트·버그 수정은 `codex-task`(Codex, tester/fixer)로
    떠넘기고, 정밀 구현·통합·**커밋**은 직접 한다. (§4.2 참고.)
-3. **소진 대응 (페일오버)** — Claude 쿼터가 다 되면 **중심 역할이 Codex → Gemini 순으로 이양**된다.
-   "유일 커미터" 권한도 그 중심을 따라 이동한다.
+3. **소진 대응** — 대화형 중심 이양은 자동화되어 있지 않다. Claude를 사용할 수 없으면 `/handoff`와
+   별도 Codex/Gemini 세션으로 사람이 인계해야 한다. `atask`는 아래 실행 후보 순서만 자동화하며,
+   커밋 권한과 역할 계약을 자동 승계하지 않는다.
 
-   | 단계 | 가용 | 중심 (구현+커밋) | tester/fixer | reader/advisor | 인계·주의 |
-   | --- | --- | --- | --- | --- | --- |
-   | **L0 정상** | C·X·G | **Claude** | Codex (`codex-task`) | Gemini (`gemini-task`) | 기본 3-레인 |
-   | **L1 Claude 소진** | X·G | **Codex** | (Codex 흡수) | Gemini | `/handoff`로 Codex 인계, Gemini 1차 리뷰 보강 |
-   | **L2 +Codex 소진** | G | **Gemini** | 사람+Gemini | (Gemini) | 스타일 충실도↓ → 사람 리뷰 강화, 작은 단위 |
-   | **L3 전부 소진** | — | 사람(수동) | — | — | 쿼터 회복 대기 |
+   | 단계 | 가용 | 자동 실행 후보 | 역할 계약 | 인계·주의 |
+   | --- | --- | --- | --- | --- |
+   | **L0 정상** | C·X·G | Claude | Claude 구현·통합·커밋 | 기본 3-레인 |
+   | **L1 Claude 소진** | X·G | `codex-task` | tester/fixer 제약 유지 | 구현 완료로 간주 금지, 사람 인계 필요 |
+   | **L2 +Codex 소진** | G | `gemini-task` | reader/advisor 제약 유지 | 구현 완료로 간주 금지, 사람 인계 필요 |
+   | **L3 전부 소진** | — | 없음 | — | 쿼터 회복 대기 |
 
    분기(중심=Claude 유지, 위임 대상 하나만 소진): **Codex만 소진** → Claude가 테스트도 직접(맹점 탈상관↓),
    **Gemini만 소진** → 읽기·요약을 Claude/Codex가 직접(토큰 절약↓, 품질 무관).
@@ -286,7 +288,7 @@ flowchart TB
 
 #### 자동 폴백 — `atask` (arachne-task)
 
-위 캐스케이드를 **수동 판단 없이 자동 실행**하는 디스패처다. 역할별 우선순위로 CLI를 시도하고,
+헤드리스 CLI의 **실행 후보 순서**를 자동화하는 디스패처다. 역할별 우선순위로 CLI를 시도하고,
 출력에서 쿼터·rate limit 패턴을 감지하면 그 CLI를 **쿨다운 등록 후 다음으로 자동 전환**한다.
 
 ```bash
@@ -301,12 +303,12 @@ atask --dry-run -R impl "..."                  # 실제 호출 없이 순서·�
 | 쿼터 감지 | 출력의 `rate limit`·`quota`·`429`·`overloaded`·`resource exhausted` 등 패턴 |
 | 쿨다운 | 소진 CLI를 `~/.claude/arachne-quota-state`에 기록(기본 Claude 5h·그 외 1h) → 그 동안 건너뜀 |
 | 일반 에러 | 쿼터가 **아닌** 실패(문법 오류 등)는 폴백하지 않고 그대로 중단(세 CLI 토큰 낭비 방지) |
-| 사전 경고 | `atask-quota-warn.sh` 훅이 프롬프트마다 상태 파일을 읽어 현재 "중심"·회복 시각을 배너로 표시 |
+| 사전 경고 | `atask-quota-warn.sh` 훅이 상태 파일에서 impl 순서의 첫 가용 후보와 회복 시각을 표시 |
 
-> **한계(정직)**: `atask`는 **헤드리스 호출 전용**이다. `claude -p`·`codex-task`·`gemini-task`를 감싸 자동
-> 전환하지만, **대화형 Claude Code 세션이 대화 도중 한도에 걸리면 그 자리에서 매끄럽게 구제하지 못한다** —
-> 새 작업을 `atask`로 시작하거나 `/handoff`로 인계한다. 감지는 에러 문자열 휴리스틱이라 CLI 버전업 시
-> 패턴 유지보수가 필요하다(예측형 아님, 사후 감지).
+> **한계(정직)**: `atask`는 **헤드리스 호출 전용**이다. Codex와 Gemini 단계는 각각 `codex-task`
+> (tester/fixer)와 `gemini-task`(reader/advisor)를 호출하므로 `impl` 요청의 역할을 그대로 보존하지 않는다.
+> 하위 명령의 종료코드 0도 실제 구현 완료나 diff 생성을 검증하지 않는다. 대화형 세션 중간 구제와 중심
+> 이양은 `/handoff`와 사람 검토가 필요하다. 쿼터 감지는 에러 문자열 휴리스틱이다.
 
 ### 5.2 Gemini · Codex의 단독 사용
 
