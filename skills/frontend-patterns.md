@@ -268,7 +268,7 @@ export function CreateMarketForm() {
 
 ## React 19 / 서버 컴포넌트 (App Router·RSC)
 
-신규 코드 기준. (출처: everything-claude-code `react-patterns` — Arachne 스타일로 반영)
+신규 코드 기준. (Arachne 스타일로 작성)
 
 ### 서버/클라이언트 컴포넌트 경계
 

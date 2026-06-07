@@ -6,7 +6,7 @@ description: FastAPI 프로덕션 패턴 — 앱 팩토리(create_app·lifespan)
 # FastAPI 프로덕션 패턴
 
 FastAPI 서비스를 위한 프로덕션 지향 패턴.
-(출처: everything-claude-code `fastapi-patterns` — Arachne 스타일로 재작성)
+(Arachne 스타일로 작성)
 
 ## 언제 활성화하나
 

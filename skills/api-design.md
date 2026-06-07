@@ -6,7 +6,7 @@ description: REST API 설계 패턴 — 리소스 네이밍, HTTP 상태 코드 
 # REST API 설계 패턴
 
 일관되고 개발자 친화적인 REST API를 위한 관례와 모범 사례.
-(출처: everything-claude-code `api-design` — Arachne 스타일로 재작성)
+(Arachne 스타일로 작성)
 
 ## 언제 활성화하나
 
