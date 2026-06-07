@@ -208,41 +208,41 @@ model: opus               # opus / sonnet / haiku
 | 레인 | CLI | 호출 | 하는 일 |
 |---|---|---|---|
 | 오케스트레이터 + 주 구현자 | **Claude** | (중심) | 설계·구현·리팩터링·통합·커밋, 보안 리뷰, 설정·마이그레이션·인프라 |
-| tester / fixer | **Codex** | `cask` (`codex-task`) | 테스트 작성·실행, 버그 수정 (기능 추가 X) |
-| reader / advisor | **Gemini** | `gask` (`gemini-task`) | 대용량 읽기·요약, 설계 탐색, 1차 리뷰, 장문 생성 (구현 X) |
+| tester / fixer | **Codex** | `codex-task` (`cask`) | 테스트 작성·실행, 버그 수정 (기능 추가 X) |
+| reader / advisor | **Gemini** | `gemini-task` (`gask`) | 대용량 읽기·요약, 설계 탐색, 1차 리뷰, 장문 생성 (구현 X) |
 
 > 우선순위 두 사슬: **오프로드**(비용) = Gemini → Codex → (Claude 안 씀), **페일오버**(구현 품질) = Claude → Codex → Gemini.
 > Claude 쿼터 소진 시 구현 대타는 Codex 먼저 — `/handoff`로 인계. Gemini는 코딩 스타일 충실도가 낮아 최종 구현 코드는 안 맡긴다.
 
-### 경로 A — `gask` 직접 호출 (Gemini reader/advisor)
-Claude Code가 **터미널 전환 없이 Bash로 `gask`를 직접 호출**해 답변을 받아온다.
-`gask`(=`gemini-task`)는 `gemini -p`의 경고·노이즈를 걸러 **답변만 stdout**으로 돌려주는 래퍼다 (`gemini-task.sh` → `~/.local/bin/gask`).
+### 경로 A — `gemini-task` 직접 호출 (Gemini reader/advisor)
+Claude Code가 **터미널 전환 없이 Bash로 `gemini-task`를 직접 호출**해 답변을 받아온다.
+`gemini-task`(=`gask`)는 `gemini -p`의 경고·노이즈를 걸러 **답변만 stdout**으로 돌려주는 래퍼다 (`gemini-task.sh` → `~/.local/bin/gask`).
 
 ```bash
-gask "이 설계 검토해줘: $(cat module.c)"            # 자문 → 답변 stdout
-gask "이 로그 에러 원인만 요약: $(cat app.log)"      # 요약 → 답변 stdout
-gask "README 초안 작성" > README.md                  # 생성 → 파일로 (내용 재독 금지)
-gask -m gemini-2.5-flash "간단 질의"                 # 모델 지정 (선택)
+gemini-task "이 설계 검토해줘: $(cat module.c)"            # 자문 → 답변 stdout
+gemini-task "이 로그 에러 원인만 요약: $(cat app.log)"      # 요약 → 답변 stdout
+gemini-task "README 초안 작성" > README.md                  # 생성 → 파일로 (내용 재독 금지)
+gemini-task -m gemini-2.5-flash "간단 질의"                 # 모델 지정 (선택)
 ```
 
 #### 비용 라우팅 — 핵심
 | 패턴 | 예시 | 방식 | 비용 |
 |---|---|---|---|
-| **끌어오기 (요약·자문)** | 대용량 읽기, 설계 검토, 조사 | `gask "..."` → 답변 사용 | 🟢 절약 (큰 입력 → 작은 출력) |
-| **쏟아내기 (문서 생성)** | README, 설계 문서, 장문 | `gask "..." > file` → **재독 금지** | 🔴 읽으면 절약 상쇄 |
+| **끌어오기 (요약·자문)** | 대용량 읽기, 설계 검토, 조사 | `gemini-task "..."` → 답변 사용 | 🟢 절약 (큰 입력 → 작은 출력) |
+| **쏟아내기 (문서 생성)** | README, 설계 문서, 장문 | `gemini-task "..." > file` → **재독 금지** | 🔴 읽으면 절약 상쇄 |
 
 > Gemini 답을 Claude 컨텍스트로 끌어오는 건 **요약·자문일 때만**. 장문 생성은 파일로 빼고 Claude는 존재만 확인한다 — 다시 읽으면 절약이 사라진다.
 > 권한: `settings.json`의 `permissions.allow`에 `Bash(gask:*)`가 있어 호출마다 승인 프롬프트가 뜨지 않는다.
 
-### 경로 B — `cask` 직접 호출 (Codex tester/fixer)
-Claude Code가 **Bash로 `cask`를 직접 호출**해 테스트·수정을 위임하고 결과만 받아온다.
-`cask`(=`codex-task`)는 `codex exec`의 헤더·메타·경고를 걸러 **결과만 stdout**으로 돌려준다 (`codex-task.sh` → `~/.local/bin/cask`).
+### 경로 B — `codex-task` 직접 호출 (Codex tester/fixer)
+Claude Code가 **Bash로 `codex-task`를 직접 호출**해 테스트·수정을 위임하고 결과만 받아온다.
+`codex-task`(=`cask`)는 `codex exec`의 헤더·메타·경고를 걸러 **결과만 stdout**으로 돌려준다 (`codex-task.sh` → `~/.local/bin/cask`).
 
 ```bash
-cask "tests/ 의 parser 테스트 보강안 제시: $(cat src/parser.c)"  # 제안만 (read-only 기본)
-cask -w "실패하는 test_auth 를 green 까지 수정"                   # 직접 실행·수정 (workspace-write)
-cask -r "이 함수 리뷰만 해줘"                                     # 역할 주입 없이 raw
-cask -m <model> -C <dir> "..."                                    # 모델·작업 디렉터리 지정
+codex-task "tests/ 의 parser 테스트 보강안 제시: $(cat src/parser.c)"  # 제안만 (read-only 기본)
+codex-task -w "실패하는 test_auth 를 green 까지 수정"                   # 직접 실행·수정 (workspace-write)
+codex-task -r "이 함수 리뷰만 해줘"                                     # 역할 주입 없이 raw
+codex-task -m <model> -C <dir> "..."                                    # 모델·작업 디렉터리 지정
 ```
 
 | 모드 | 플래그 | Codex | Claude |
@@ -250,11 +250,11 @@ cask -m <model> -C <dir> "..."                                    # 모델·작�
 | 제안 (기본) | 없음 | 테스트 코드·수정 diff 반환, 트리 미변경 | 적용·실행·커밋 |
 | 실행 | `-w` | 직접 쓰고 돌려 green 까지 수정 | `git diff` 검토·스타일 보정·커밋 |
 
-> `cask`는 블로킹·순차 실행이라 두 모델이 같은 파일을 동시에 건드리지 않는다. **커밋은 항상 Claude.**
+> `codex-task`는 블로킹·순차 실행이라 두 모델이 같은 파일을 동시에 건드리지 않는다. **커밋은 항상 Claude.**
 > 권한: `Bash(cask:*)`가 `permissions.allow`에 있어 호출마다 승인 프롬프트가 뜨지 않는다.
 
 ### 경로 C — git-bus 감지 (보조)
-본인·가족이 **다른 터미널에서 Gemini/Codex로 직접 커밋**한 경우를 위한 비동기 채널. `gask`/`cask`와 공존한다.
+본인·가족이 **다른 터미널에서 Gemini/Codex로 직접 커밋**한 경우를 위한 비동기 채널. `gemini-task`/`codex-task`와 공존한다.
 
 | 구성 요소 | 역할 |
 |---|---|
@@ -264,7 +264,7 @@ cask -m <model> -C <dir> "..."                                    # 모델·작�
 
 리모트 HEAD가 기준점과 다르면 새 커밋 목록·변경 파일을 박스 UI로 출력하고 기준점을 갱신(중복 알림 방지)한다. 기준점 파일이 없으면 최초 1회는 조용히 기록만 한다.
 
-> 두 AI 사이 채널은 둘이다: **`gask`(동기 호출) + git 히스토리(비동기 메시지 버스).**
+> 두 AI 사이 채널은 둘이다: **`gemini-task`(동기 호출) + git 히스토리(비동기 메시지 버스).**
 
 ---
 ## 7. Install · Update · Sync (`arachne`)
@@ -274,7 +274,7 @@ Arachne는 `install.sh`를 통해 설치되며, 설치 후에는 `arachne` 커�
 ### 설치 및 업데이트 흐름
 1. **심볼릭 링크**: `CLAUDE.md`, `commands/`, `agents/` 등을 `~/.claude/`에 연결하여 레포 수정이 즉시 반영되게 합니다.
 2. **설정 생성**: `settings.template.json`을 기반으로 홈 경로를 치환하여 `~/.claude/settings.json`을 생성합니다.
-3. **CLI 등록**: `~/.local/bin/`에 `arachne`(관리), `tws`(워크스페이스), `gask`/`gemini-task`(Gemini 위임), `cask`/`codex-task`(Codex 위임), `docs-sync`(문서 동기화) 커맨드를 등록합니다.
+3. **CLI 등록**: `~/.local/bin/`에 `arachne`(관리), `tws`(워크스페이스), `gemini-task`/`gask`(Gemini 위임), `codex-task`/`cask`(Codex 위임), `docs-sync`(문서 동기화) 커맨드를 등록합니다.
 
 ### dotfiles 병합 메커니즘 (Safe Merge)
 기존의 단순 심볼릭 링크 방식 대신, 사용자 홈 디렉토리의 `.bash_profile`, `.vimrc` 파일에 Arachne 설정을 **병합**합니다.
@@ -332,7 +332,7 @@ arachne -d
   백업: ~/.claude/settings.json -> settings.json.bak   ← 기존 설정 보존
   생성: ~/.claude/settings.json (from settings.template.json)
   갱신 (ARACHNE 섹션): ~/.bash_profile, ~/.vimrc
-  등록: arachne, tws, gask, gemini-task, cask, codex-task, docs-sync -> bin
+  등록: arachne, tws, gemini-task, gask, codex-task, cask, docs-sync -> bin
 ```
 
 > **부작용 주의**
@@ -376,16 +376,16 @@ Claude Code는 터미널을 점유하므로, 여러 프로젝트나 테스트 �
 
 ---
 
-## 9. Delegation Wrappers (`gask` / `cask`) — CLI Reference
+## 9. Delegation Wrappers (`gemini-task` / `codex-task`) — CLI Reference
 
 **언제·왜·비용 라우팅**은 [6장](#6-claude--codex--gemini-collaboration-3-lane)을 참고. 이 절은 명령 레퍼런스만 다룬다.
 두 래퍼 모두 내부 CLI 노이즈(stderr)를 걸러 **결과만 stdout**으로 돌려준다. 각각 짧은 별칭과 명시적 이름으로 등록된다
-(`gask`=`gemini-task` → `gemini-task.sh`, `cask`=`codex-task` → `codex-task.sh`).
+(`gemini-task`=`gask` → `gemini-task.sh`, `codex-task`=`cask` → `codex-task.sh`).
 
-### `gask` (= `gemini-task`) — Gemini reader/advisor
+### `gemini-task` (= `gask`) — Gemini reader/advisor
 ```bash
-gask [-m MODEL] "프롬프트..."
-cat file | gask "이 입력을 요약해줘"      # stdin 입력은 프롬프트에 자동 append
+gemini-task [-m MODEL] "프롬프트..."
+cat file | gemini-task "이 입력을 요약해줘"      # stdin 입력은 프롬프트에 자동 append
 ```
 
 | 옵션·요소 | 설명 |
@@ -395,10 +395,10 @@ cat file | gask "이 입력을 요약해줘"      # stdin 입력은 프롬프트
 | 종료 코드 | 내부 `gemini` 호출 결과를 그대로 전파 → 스크립트·파이프라인에 안전 |
 | stdout / stderr | 답변 본문은 stdout, 노이즈 제거 후 남은 진단만 stderr |
 
-### `cask` (= `codex-task`) — Codex tester/fixer
+### `codex-task` (= `cask`) — Codex tester/fixer
 ```bash
-cask [-m MODEL] [-w] [-r] [-C DIR] "프롬프트..."
-cat test.log | cask "이 실패 원인 분석하고 수정 diff 제시"   # stdin 자동 append
+codex-task [-m MODEL] [-w] [-r] [-C DIR] "프롬프트..."
+cat test.log | codex-task "이 실패 원인 분석하고 수정 diff 제시"   # stdin 자동 append
 ```
 
 | 옵션·요소 | 설명 |

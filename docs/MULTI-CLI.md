@@ -34,7 +34,7 @@ graph TD
 > 직접 읽는 게 아니라 같은 규약의 상세판을 본다. 자세한 비대칭은 2장.
 
 - **공통 규약**(작업 원칙·코딩 스타일·패턴·보안·테스트·git·이슈·언어 포인터)은 `AGENTS.md`에만 둔다.
-- **도구 전용 기능**(Claude의 서브에이전트·훅·슬래시 커맨드·모델 라우팅·`gask`)은 `CLAUDE.md`에만 둔다.
+- **도구 전용 기능**(Claude의 서브에이전트·훅·슬래시 커맨드·모델 라우팅·`gemini-task`)은 `CLAUDE.md`에만 둔다.
   → 공유 규약과 도구 전용이 파일 단위로 분리돼 **드리프트가 구조적으로 차단**된다.
 
 > 📖 이 문서의 약어(SSOT·TDD·DI·a11y 등)는 [GLOSSARY.md](GLOSSARY.md)에 풀이돼 있다.
@@ -77,11 +77,11 @@ Arachne 구성요소가 각 CLI에서 실제로 작동하는지. **공통 규약
 | 이벤트 훅 (`hooks/`) | ✅ Session·PreCompact·Prompt | ❌ | ❌ |
 | 스킬 (`skills/`) | ✅ 자동 참조 | ❌ | ❌ |
 | 상태표시줄 (`statusline`) | ✅ | ❌ | ❌ |
-| 작업 위임 래퍼 | ✅ **호출 주체** | `gask`/`gemini-task` 위임 **대상** (reader/advisor) | `cask`/`codex-task` 위임 **대상** (tester/fixer) |
+| 작업 위임 래퍼 | ✅ **호출 주체** | `gemini-task`/`gask` 위임 **대상** (reader/advisor) | `codex-task`/`cask` 위임 **대상** (tester/fixer) |
 | MCP 서버 | ✅ `settings.json` | 별도 `~/.gemini` 설정(미관리) | 별도 `~/.codex/config.toml`(미관리) |
 
-> 요점: **공통 규약을 읽는 것**은 셋 다 공유한다. 그 위에 Claude는 Gemini를 `gask`(요약·자문),
-> Codex를 `cask`(테스트·수정)로 **위임 호출**한다 — 3-레인 협업. 에이전트·훅·커맨드 같은
+> 요점: **공통 규약을 읽는 것**은 셋 다 공유한다. 그 위에 Claude는 Gemini를 `gemini-task`(요약·자문),
+> Codex를 `codex-task`(테스트·수정)로 **위임 호출**한다 — 3-레인 협업. 에이전트·훅·커맨드 같은
 > 오케스트레이션 자체는 Claude Code 고유 기능이라 이식되지 않는다. (Gemini·Codex가 가진 **자체**
 > 에이전트·MCP 기능은 별개이며 Arachne가 아직 관리하지 않는다 — [설계문서](issue/2026-06-05-multi-cli-ssot.md) Phase 3.)
 
@@ -98,18 +98,18 @@ Arachne 구성요소가 각 CLI에서 실제로 작동하는지. **공통 규약
 ```
 /add  /fix  /tdd  /verify  /refactor …      # 슬래시 커맨드 — 워크플로 실행
 "code-reviewer로 이 변경 리뷰해줘"            # 서브에이전트 위임
-"이 설계 gask로 검토해줘"                     # Claude가 Bash로 gask 호출 → Gemini 위임
+"이 설계 gemini-task로 검토해줘"                     # Claude가 Bash로 gemini-task 호출 → Gemini 위임
 ```
 
 - **공통 규칙**(`rules/common/*`): 매 세션 자동 로드 — 입력 불필요.
 - **언어 규칙**(`rules/<언어>/*`): 해당 확장자 파일을 열면 자동 활성화 (예: `*.rs` 편집 → `rules/rust/*`).
 - 슬래시 커맨드·에이전트·스킬·훅 전체 카탈로그와 상세 예시는 [USAGE.md](USAGE.md).
 
-### 3.2 Gemini CLI — Shared Convention + gask Delegation Target (reader/advisor)
+### 3.2 Gemini CLI — Shared Convention + gemini-task Delegation Target (reader/advisor)
 
 **런타임 동작**: Gemini는 매 호출마다 글로벌 컨텍스트 `~/.gemini/GEMINI.md`(→ AGENTS.md 심볼릭)를
 로드한다. 즉 **공통 규약만** 적용되고, 에이전트·훅·커맨드는 없다. 비대화 호출 시 신뢰 폴더 검사가 있어
-헤드리스 환경에선 `--skip-trust`가 필요하다(`gask`가 자동 처리). 실측: `gemini --skip-trust -p`가
+헤드리스 환경에선 `--skip-trust`가 필요하다(`gemini-task`가 자동 처리). 실측: `gemini --skip-trust -p`가
 AGENTS.md에 심은 고유 토큰을 출력 → 런타임 로딩 확인됨.
 
 **어떻게 쓰나**:
@@ -119,24 +119,24 @@ AGENTS.md에 심은 고유 토큰을 출력 → 런타임 로딩 확인됨.
 gemini                                        # 대화형 세션
 gemini -p "이 모듈 설계 검토해줘"             # 비대화 1회 질의
 
-# (2) Claude 안에서 위임 (권장) — gask 래퍼, 답변만 stdout
-gask "이 설계 검토해줘: $(cat module.c)"      # 자문
-gask "이 로그 에러 원인만 요약: $(cat app.log)"
-gask "README 초안 작성" > README.md           # 장문 생성 → 파일로 (재독 금지)
+# (2) Claude 안에서 위임 (권장) — gemini-task 래퍼, 답변만 stdout
+gemini-task "이 설계 검토해줘: $(cat module.c)"      # 자문
+gemini-task "이 로그 에러 원인만 요약: $(cat app.log)"
+gemini-task "README 초안 작성" > README.md           # 장문 생성 → 파일로 (재독 금지)
 ```
 
-- `gask`는 Claude가 Gemini에 작업을 위임하는 비용 최적화 경로다([USAGE.md §6](USAGE.md)).
-- `gask`는 헤드리스라 `--skip-trust`를 자동 처리 — 임의 디렉터리에서 불려도 동작한다.
+- `gemini-task`는 Claude가 Gemini에 작업을 위임하는 비용 최적화 경로다([USAGE.md §6](USAGE.md)).
+- `gemini-task`는 헤드리스라 `--skip-trust`를 자동 처리 — 임의 디렉터리에서 불려도 동작한다.
 
-### 3.3 Codex CLI — Shared Convention (Merged) + `cask` Delegation Target (tester/fixer)
+### 3.3 Codex CLI — Shared Convention (Merged) + `codex-task` Delegation Target (tester/fixer)
 
 **런타임 동작**: Codex는 새 세션마다 글로벌 지침 `~/.codex/AGENTS.md`를 로드한다. 이 파일엔 SSOT 본문이
 마커(`<!-- === ARACHNE … === -->`)로 병합돼 있고, 마커 밖 사용자 내용은 보존된다. **공통 규약만** 적용되고
 에이전트·훅·커맨드는 없다(Codex 자체 기능은 별개). 실측: 프로젝트 AGENTS.md가 없는 중립 디렉터리에서
 `codex exec`가 전역 지침의 고유 토큰을 출력 → 런타임 로딩 확인됨.
 
-**협업 레인**: Codex는 3-레인에서 **tester/fixer**다. Claude가 `cask`(=`codex-task`)로 테스트 작성·실행과
-버그 수정을 위임한다. `cask`는 호출마다 테스터/픽서 역할 프리앰블을 주입하고(기능 추가 금지), 결과만
+**협업 레인**: Codex는 3-레인에서 **tester/fixer**다. Claude가 `codex-task`(=`cask`)로 테스트 작성·실행과
+버그 수정을 위임한다. `codex-task`는 호출마다 테스터/픽서 역할 프리앰블을 주입하고(기능 추가 금지), 결과만
 stdout으로 돌려줘 Claude가 통합·커밋한다. 기본은 read-only 제안 모드, `-w`는 workspace-write 실행 모드.
 
 **어떻게 쓰나**:
@@ -146,9 +146,9 @@ codex                                         # 대화형 — 새 세션에 공�
 codex exec "이 함수 리뷰해줘"                  # 비대화 1회 (raw)
 codex exec -C <작업디렉터리> --skip-git-repo-check "..."   # 디렉터리·git 밖 실행
 
-# Claude 안에서 위임 (권장) — cask 래퍼, 결과만 stdout
-cask "tests/ 의 parser 테스트 보강안 제시: $(cat src/parser.c)"  # 제안만 (read-only)
-cask -w "실패하는 test_auth 를 green 까지 수정"                   # 직접 실행·수정
+# Claude 안에서 위임 (권장) — codex-task 래퍼, 결과만 stdout
+codex-task "tests/ 의 parser 테스트 보강안 제시: $(cat src/parser.c)"  # 제안만 (read-only)
+codex-task -w "실패하는 test_auth 를 green 까지 수정"                   # 직접 실행·수정
 ```
 
 - **주의**: AGENTS.md를 수정했으면 Codex는 자동 반영이 아니다. `arachne -i --target codex`
@@ -175,7 +175,7 @@ cask -w "실패하는 test_auth 를 green 까지 수정"                   # 직
 
 §1~3이 **규약 공유**(한 파일을 셋이 본다)라면, 이 절은 **런타임 위임**이다. Claude가 중심에서
 역할을 분리해 떠넘긴다. 토큰 무겁고 정밀도가 덜 중요한 작업(설계·요약·조사·1차 리뷰·장문 생성)은
-`gask`로 **Gemini(reader/advisor)** 에, 테스트 작성·실행과 버그 수정은 `cask`로
+`gemini-task`로 **Gemini(reader/advisor)** 에, 테스트 작성·실행과 버그 수정은 `codex-task`로
 **Codex(tester/fixer)** 에 위임한다. 정밀 구현·통합·디버깅·보안 리뷰·설정 관리, 그리고 **최종 커밋**은
 **Claude(오케스트레이터+주 구현자)** 가 직접 한다.
 
@@ -186,8 +186,8 @@ flowchart TB
     CODEX["🔷 Codex — tester/fixer<br/>테스트 작성·실행·버그 수정<br/>(기능 추가 X)"]
     GIT["📦 git (main)"]
 
-    CLAUDE -->|"gask 위임"| GEMINI
-    CLAUDE -->|"cask 위임"| CODEX
+    CLAUDE -->|"gemini-task 위임"| GEMINI
+    CLAUDE -->|"codex-task 위임"| CODEX
     GEMINI -.->|"요약·자문 (stdout)"| CLAUDE
     CODEX -.->|"테스트·수정 diff (stdout)"| CLAUDE
     CLAUDE ==>|"통합·스타일 보정·단독 커밋"| GIT
@@ -221,7 +221,66 @@ flowchart TB
 
 ---
 
-## 5. Status Check — `arachne --check`
+## 5. Usage Modes — 단독 · 위임 · 페일오버
+
+세 CLI는 **함께(오케스트레이션)** 도 쓰고 **따로(단독)** 도 쓴다. 공통 규약(`AGENTS.md`)은 어느 쪽이든
+적용되므로, 단독으로 띄워도 같은 코딩 스타일·패턴·보안 규칙을 따른다.
+
+### 5.1 Claude Code의 세 가지 모드
+
+1. **단독 사용 (풀 스택)** — `claude`만 띄워서 쓴다. `rules/`(공통+언어) 자동 로드, 서브에이전트·슬래시
+   커맨드·훅·스킬·상태표시줄이 전부 동작한다. 위임 없이 Claude 혼자 설계·구현·리뷰·커밋까지 한다.
+   (§3.1 참고.)
+2. **위임 사용 (3-레인 오케스트레이션)** — Claude가 중심에서 토큰 무거운 읽기·요약·자문은
+   `gemini-task`(Gemini, reader/advisor)로, 테스트·버그 수정은 `codex-task`(Codex, tester/fixer)로
+   떠넘기고, 정밀 구현·통합·**커밋**은 직접 한다. (§4.2 참고.)
+3. **소진 대응 (페일오버)** — Claude 쿼터가 다 되면 **중심 역할이 Codex → Gemini 순으로 이양**된다.
+   "유일 커미터" 권한도 그 중심을 따라 이동한다.
+
+   | 단계 | 가용 | 중심 (구현+커밋) | tester/fixer | reader/advisor | 인계·주의 |
+   | --- | --- | --- | --- | --- | --- |
+   | **L0 정상** | C·X·G | **Claude** | Codex (`codex-task`) | Gemini (`gemini-task`) | 기본 3-레인 |
+   | **L1 Claude 소진** | X·G | **Codex** | (Codex 흡수) | Gemini | `/handoff`로 Codex 인계, Gemini 1차 리뷰 보강 |
+   | **L2 +Codex 소진** | G | **Gemini** | 사람+Gemini | (Gemini) | 스타일 충실도↓ → 사람 리뷰 강화, 작은 단위 |
+   | **L3 전부 소진** | — | 사람(수동) | — | — | 쿼터 회복 대기 |
+
+   분기(중심=Claude 유지, 위임 대상 하나만 소진): **Codex만 소진** → Claude가 테스트도 직접(맹점 탈상관↓),
+   **Gemini만 소진** → 읽기·요약을 Claude/Codex가 직접(토큰 절약↓, 품질 무관).
+   순서 근거는 코딩 스타일 충실도(Codex > Gemini). 정책 SSOT는 [`rules/common/workflow.md`](../rules/common/workflow.md).
+
+### 5.2 Gemini · Codex의 단독 사용
+
+Claude의 위임 대상이 아니라 **그 자체로** 쓸 수도 있다. 이때도 공통 규약은 적용된다.
+
+- **Gemini 단독** — `gemini`(대화형) 또는 `gemini -p "..."`(1회). 매 호출 `~/.gemini/GEMINI.md`(→ AGENTS.md
+  심볼릭)를 로드하므로 공통 규약이 그대로 적용된다. 에이전트·훅·커맨드는 없다(§3.2).
+- **Codex 단독** — `codex`(대화형) 또는 `codex exec "..."`(1회). 새 세션마다 `~/.codex/AGENTS.md`(마커 병합본)를
+  로드한다. `cask`/`codex-task` 래퍼 없이 직접 호출하면 tester/fixer 역할 프리앰블은 주입되지 않는다(§3.3).
+
+> 단독 사용과 위임 사용의 차이는 **누가 호출하느냐**일 뿐, 읽는 규약은 같다. `gemini-task`/`codex-task`
+> 래퍼는 노이즈 제거 + 역할 프리앰블 주입을 더해 **Claude가 부르기 좋게** 감싼 것이다.
+
+### 5.3 Cross-Harness Packaging — 같은 자산, 여러 하네스
+
+Arachne가 `AGENTS.md` 하나를 Claude·Gemini·Codex에 배포하는 것은 더 큰 **이식성 모델(portability
+model)** 의 한 사례다: **공통 소스를 각 하네스의 형식으로 어댑터 변환**해 배포한다. 같은 접근을
+[everything-claude-code(ECC)](https://github.com/) 가 Claude/Codex/Gemini/**Cursor**/**OpenCode**까지 확장한다.
+
+| 표면(Surface) | 공통 소스 | 하네스별 어댑터 |
+| --- | --- | --- |
+| 규약·지침 | `AGENTS.md` · `rules/` | Claude `rules/` 자동 로드 · Codex `AGENTS.md` 병합 · Gemini `GEMINI.md` 심볼릭 · Cursor rules · OpenCode instructions |
+| 스킬 | `skills/*` | Claude 플러그인 · Codex 플러그인 · `.agents/skills` · Cursor 복사 · OpenCode 플러그인 |
+| 훅 | `hooks/*` | Claude 네이티브 훅 · OpenCode 이벤트 · Cursor 어댑터 · **Codex는 지침 기반** |
+| 커맨드 | `commands/*` | Claude 슬래시 커맨드 · CLI 엔트리포인트 · 호환 shim |
+| MCP | `mcp-configs/` | 하네스별 네이티브 MCP import |
+
+> 핵심: **워크플로 모델을 도구마다 새로 만들지 않는다.** 공통 소스를 가장자리(edge)에서 각 하네스 형식으로
+> 변환할 뿐이다. 그래서 어떤 하네스를 단독으로 쓰든 같은 규약·스킬·패턴이 따라온다.
+> Arachne는 현재 Claude(풀)·Gemini(심볼릭)·Codex(병합)를 지원하고, Cursor·OpenCode는 ECC가 다루는 확장 표면이다.
+
+---
+
+## 6. Status Check — `arachne --check`
 
 세 CLI 연결을 한 번에 점검한다. 심볼릭 댕글링과 Codex stale을 잡는다.
 
@@ -242,7 +301,7 @@ arachne --check
 
 ---
 
-## 6. Common Workflows
+## 7. Common Workflows
 
 ```bash
 # 규약을 바꾸고 싶다 → AGENTS.md 수정 후
@@ -259,7 +318,7 @@ arachne -i --target codex      # 또는 arachne -i (all)
 
 ---
 
-## 7. Related Docs
+## 8. Related Docs
 
 - [README.md](../README.md) — 설치·CLI 커맨드 개요
 - [USAGE.md](USAGE.md) — 커맨드·에이전트·스킬·훅·규칙·협업 상세

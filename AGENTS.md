@@ -140,9 +140,18 @@
 
 > **도구별 보충**: 이 공유 코어 외에, 각 도구는 자기만의 보충 설정을 가진다.
 > 예) Claude Code는 `CLAUDE.md`/`rules/`에 서브에이전트·이벤트 훅·슬래시 커맨드·모델
-> 라우팅·위임 래퍼(`gask`=Gemini reader/advisor, `cask`=Codex tester/fixer)를 추가로
+> 라우팅·위임 래퍼(`gemini-task`=Gemini reader/advisor, `codex-task`=Codex tester/fixer)를 추가로
 > 정의한다. 그 내용은 다른 도구와 공유되지 않으므로 이 파일에 넣지 않는다.
 >
 > **3-레인 협업**: Claude=오케스트레이터+주 구현자, Codex=tester/fixer, Gemini=reader/advisor.
-> Codex가 `cask`로 호출되면 그 호출에 테스터/픽서 역할 프리앰블이 주입된다 — 테스트
-> 작성·실행·버그 수정에 집중하고 기능 추가는 하지 않는다. 산출물의 최종 통합·커밋은 Claude가 한다.
+> Claude가 `gemini-task`로 Gemini에 읽기·요약·자문을, `codex-task`로 Codex에 테스트·버그 수정을 위임한다.
+> 위임 호출에는 역할 프리앰블이 주입된다 — Codex는 테스트·수정에 집중(기능 추가 X), Gemini는 읽기·자문에
+> 집중(최종 구현 코드 X). 산출물의 최종 통합·**커밋은 항상 Claude**가 한다.
+> 방향이 반대인 두 우선순위 사슬: **오프로드**(비용) = Gemini → Codex → (Claude 안 씀),
+> **페일오버**(구현 품질) = Claude → Codex → Gemini. 상세 정책은 `rules/common/workflow.md`(SSOT).
+> 단계별 동작·다이어그램은 `docs/ARCHITECTURE.md` §2 참고.
+>
+> **사용 모드**: 각 CLI는 ① **단독**(이 규약을 읽고 혼자 동작) ② **위임 대상**(Claude가 `gemini-task`/
+> `codex-task`로 호출) ③ **페일오버 중심**(상위 CLI 소진 시 중심 이양 — Claude→Codex→Gemini)으로 쓰인다.
+> 단독이든 위임이든 **읽는 공통 규약은 이 파일로 동일**하다. 캐스케이드 표·단독 사용·cross-harness 패키징
+> (같은 자산을 Claude/Codex/Gemini/Cursor/OpenCode로 어댑터 배포)은 `docs/MULTI-CLI.md` §5 참고.
