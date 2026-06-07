@@ -87,7 +87,7 @@ flowchart TB
 4. **공통 설치** (`install_shared`, 항상 1회)
    1. `install_dotfiles` — `~/.bash_profile`·`~/.vimrc`에 `# === ARACHNE BEGIN/END ===` 마커 섹션을
       병합(멱등: 있으면 교체, 없으면 추가, 사용자 영역 중복 줄은 제외).
-   2. `register_bin` — `BIN_TARGETS`(arachne · tws · gemini-task · gask · codex-task · cask · docs-sync)를
+   2. `register_bin` — `BIN_TARGETS`(arachne · tws · gemini-task · gtask · codex-task · ctask · docs-sync)를
       `~/.local/bin/`에 심볼릭으로 등록(+`chmod +x`). PATH에 `~/.local/bin`이 없으면 경고 출력.
 
 > **graceful skip**: `all` 타깃에서 Gemini/Codex가 감지되지 않으면(`~/.gemini`·`~/.codex` 부재 + 바이너리
@@ -115,8 +115,8 @@ flowchart TB
 | 레인 (Lane) | CLI | 위임 호출 | 역할 | 안 하는 것 |
 | --- | --- | --- | --- | --- |
 | 중심 | **Claude** | (직접) | 설계·구현·리팩터링·통합·**커밋**, 보안/임계 리뷰, 인프라 | — |
-| reader / advisor | **Gemini** | `gemini-task` (`gask`) | 대용량 읽기·요약, 설계 탐색, 1차 리뷰, 장문 생성 | 최종 구현 코드 |
-| tester / fixer | **Codex** | `codex-task` (`cask`) | 테스트 작성·실행, 버그 수정 | 기능 추가 |
+| reader / advisor | **Gemini** | `gemini-task` (`gtask`) | 대용량 읽기·요약, 설계 탐색, 1차 리뷰, 장문 생성 | 최종 구현 코드 |
+| tester / fixer | **Codex** | `codex-task` (`ctask`) | 테스트 작성·실행, 버그 수정 | 기능 추가 |
 
 ```mermaid
 flowchart TB
@@ -173,7 +173,7 @@ flowchart TB
 
 1. **분류·라우팅** — Claude가 작업을 본다. "테스트·검증성" → tester/fixer 레인(Codex). "대용량 읽기·요약"
    이면 reader/advisor 레인(Gemini), "정밀 구현·임계 판단"이면 Claude가 직접.
-2. **위임 호출** — Claude가 `Bash`로 `codex-task`(=`codex-task.sh`)를 부른다. 권한 `Bash(cask:*)`가 허용돼 있어
+2. **위임 호출** — Claude가 `Bash`로 `codex-task`(=`codex-task.sh`)를 부른다. 권한 `Bash(ctask:*)`가 허용돼 있어
    승인 프롬프트 없이 실행된다.
 3. **래퍼 전처리** — `codex-task`가 호출에 **tester/fixer 역할 프리앰블**을 주입한다(기능 추가 금지). `-w`면
    `codex exec`를 workspace-write로, 기본은 read-only 제안 모드로 돌린다.
@@ -200,8 +200,8 @@ Arachne/
 ├── settings.template.json       # ~/.claude/settings.json 템플릿
 ├── install.sh                   # 통합 관리 도구 (CLI: arachne)
 ├── tmux.sh                      # 워크스페이스 매니저 (CLI: tws)
-├── gemini-task.sh               # Gemini 위임 래퍼 — reader/advisor (CLI: gemini-task, gask)
-├── codex-task.sh                # Codex 위임 래퍼 — tester/fixer (CLI: codex-task, cask)
+├── gemini-task.sh               # Gemini 위임 래퍼 — reader/advisor (CLI: gemini-task, gtask)
+├── codex-task.sh                # Codex 위임 래퍼 — tester/fixer (CLI: codex-task, ctask)
 ├── arachne-task.sh              # 자동 폴백 캐스케이드 디스패처 (CLI: arachne-task, atask)
 ├── statusline-command.sh
 │

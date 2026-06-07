@@ -7,9 +7,9 @@
   "model": "sonnet",
   "permissions": {
     "allow": [
-      "Bash(gask:*)",
+      "Bash(gtask:*)",
       "Bash(gemini-task:*)",
-      "Bash(cask:*)",
+      "Bash(ctask:*)",
       "Bash(codex-task:*)",
       "Bash(atask:*)",
       "Bash(arachne-task:*)"

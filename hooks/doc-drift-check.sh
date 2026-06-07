@@ -5,7 +5,7 @@
 #               수정되면 README/docs 갱신을 상기시키는 PostToolUse 훅.
 #               문서를 자동 생성하지는 않는다 — 자동 작성은 드리프트·노이즈·비용
 #               위험이 커서, 여기서는 "갱신 필요" 알림만 한다(세션당 1회로 스로틀).
-#               초안이 필요하면 안내대로 gemini-task(gask)로 위임한다.
+#               초안이 필요하면 안내대로 gemini-task(gtask)로 위임한다.
 # DATA        : 2026-06-07
 # Modification: 2026-06-07
 ################################################################################
@@ -49,6 +49,6 @@ touch "${marker}" 2>/dev/null || true
 base=$(basename "${file_path}")
 echo "[문서 드리프트] 기능 파일 변경 감지: ${base}"
 echo "  → README.md·docs/ 반영이 필요한지 확인하세요 (구조·명령·동작 변경 시)."
-echo "  → 초안은 gemini-task(gask)로 위임 가능. 인덱스 누락은 tests/check_index.sh 가 잡습니다."
+echo "  → 초안은 gemini-task(gtask)로 위임 가능. 인덱스 누락은 tests/check_index.sh 가 잡습니다."
 
 exit 0

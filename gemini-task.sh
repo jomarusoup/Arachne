@@ -1,12 +1,12 @@
 #!/bin/bash
 ################################################################################
 # FILE NAME   : gemini-task.sh
-# DESCRIPTION : Gemini CLI 작업 위임 래퍼 (gemini-task / 짧은 별칭 gask) —
+# DESCRIPTION : Gemini CLI 작업 위임 래퍼 (gemini-task / 짧은 별칭 gtask) —
 #               Claude Code가 별도 터미널 전환 없이 직접 호출해 설계·조사·요약을
 #               Gemini(reader/advisor 레인)에 위임하고 깨끗한 답변만 받는다.
 #               (gemini -p 의 경고/노이즈를 걸러 stdout 오염 방지)
 # DATA        : 2026-06-04
-# Modification: 2026-06-06
+# Modification: 2026-06-07
 ################################################################################
 
 set -euo pipefail
@@ -23,20 +23,20 @@ readonly NOISE_PATTERN='True color|Ripgrep is not available|^Warning:|^Loaded|^D
 #===============================================================================
 Usage() {
     cat >&2 << 'USAGE'
-Usage: gemini-task [-m MODEL] "프롬프트..."   (짧은 별칭: gask)
-       cat file | gask "이 입력을 요약해줘"
+Usage: gemini-task [-m MODEL] "프롬프트..."   (짧은 별칭: gtask)
+       cat file | gtask "이 입력을 요약해줘"
 
   Gemini CLI 비대화(headless) 작업 위임 래퍼. 답변만 stdout 으로 출력한다.
   레인: reader/advisor — 대용량 읽기·요약·설계 탐색·1차 리뷰 (구현은 위임 안 함).
 
 Options:
-  -m MODEL   사용할 Gemini 모델 (미지정 시 gemini 기본값 / 환경변수 GASK_MODEL)
+  -m MODEL   사용할 Gemini 모델 (미지정 시 gemini 기본값 / 환경변수 GTASK_MODEL)
   -h         이 도움말 출력
 
 Examples:
-  gask "이 함수 설계 검토해줘: $(cat module.c)"   # 자문 → 답변 stdout
-  gask "이 로그 에러 원인만 요약: $(cat app.log)" # 요약 → 답변 stdout
-  gask "README 초안 작성" > README.md             # 생성 → 파일로 (내용 재독 금지)
+  gtask "이 함수 설계 검토해줘: $(cat module.c)"   # 자문 → 답변 stdout
+  gtask "이 로그 에러 원인만 요약: $(cat app.log)" # 요약 → 답변 stdout
+  gtask "README 초안 작성" > README.md             # 생성 → 파일로 (내용 재독 금지)
 USAGE
     exit "${1:-0}"
 }
@@ -44,21 +44,21 @@ USAGE
 #-------------------------------------------------------------------------------
 # 인자 파싱
 #-------------------------------------------------------------------------------
-model="${GASK_MODEL:-}"
+model="${GTASK_MODEL:-${GASK_MODEL:-}}"
 
 while getopts ":m:h" opt; do
     case "${opt}" in
         m)  model="${OPTARG}" ;;
         h)  Usage 0 ;;
-        :)  echo "[gask] -${OPTARG} 옵션은 값이 필요합니다" >&2; Usage 1 ;;
-        \?) echo "[gask] 알 수 없는 옵션: -${OPTARG}" >&2; Usage 1 ;;
+        :)  echo "[gtask] -${OPTARG} 옵션은 값이 필요합니다" >&2; Usage 1 ;;
+        \?) echo "[gtask] 알 수 없는 옵션: -${OPTARG}" >&2; Usage 1 ;;
     esac
 done
 shift $((OPTIND - 1))
 
 prompt="$*"
 if [ -z "${prompt}" ]; then
-    echo "[gask] 프롬프트가 비어 있습니다" >&2
+    echo "[gtask] 프롬프트가 비어 있습니다" >&2
     Usage 1
 fi
 

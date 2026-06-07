@@ -3,7 +3,7 @@
 # FILE NAME   : install.bats
 # DESCRIPTION : install.sh 동작 검증 테스트
 # DATA        : 2026-06-01
-# Modification: 2026-06-05
+# Modification: 2026-06-07
 ################################################################################
 
 REPO_DIR="$(cd "$(dirname "$BATS_TEST_FILENAME")/.." && pwd)"
@@ -54,6 +54,16 @@ run_install() {
 @test "install: skills/ 심볼릭 링크 생성" {
     run_install
     [ -L "${TMP_DIR}/.claude/skills" ]
+}
+
+@test "install: task 명령 별칭은 gtask ctask atask 로 등록" {
+    run_install
+
+    [ -L "${TMP_DIR}/.local/bin/gtask" ]
+    [ -L "${TMP_DIR}/.local/bin/ctask" ]
+    [ -L "${TMP_DIR}/.local/bin/atask" ]
+    [ ! -e "${TMP_DIR}/.local/bin/gask" ]
+    [ ! -e "${TMP_DIR}/.local/bin/cask" ]
 }
 
 #-------------------------------------------------------------------------------

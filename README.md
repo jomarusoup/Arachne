@@ -41,7 +41,7 @@ cd ~/Arachne
 2. 레포 → `~/.claude/` 심볼릭 링크 생성
 3. `settings.template.json`의 `__HOME__` → 실제 홈 경로로 치환해 `settings.json` 생성
 4. **dotfiles 병합**: `~/.bash_profile`, `~/.vimrc`에 Arachne 설정을 안전하게 병합 (기존 내용 보존)
-5. **CLI 등록**: `~/.local/bin/`에 `arachne`, `tws`, `gemini-task`(=`gask`), `codex-task`(=`cask`), `arachne-task`(=`atask`), `docs-sync` 커맨드 등록
+5. **CLI 등록**: `~/.local/bin/`에 `arachne`, `tws`, `gemini-task`(=`gtask`), `codex-task`(=`ctask`), `arachne-task`(=`atask`), `docs-sync` 커맨드 등록
 
 ### Core CLI Commands
 | 커맨드 | 설명 |
@@ -55,8 +55,8 @@ cd ~/Arachne
 | `arachne -e` (`--export-settings`) | settings.json → 템플릿 내보내기 |
 | `arachne -d` (`--export-dotfiles`) | dotfiles → 레포 내보내기 |
 | `arachne -v` | 버전 정보 |
-| `gemini-task` (= `gask`) | **Gemini 위임 래퍼 (reader/advisor 레인)** — Claude Code가 `gemini -p`를 Bash로 호출해 읽기·요약·자문을 위임 |
-| `codex-task` (= `cask`) | **Codex 위임 래퍼 (tester/fixer 레인)** — Claude Code가 `codex exec`를 Bash로 호출해 테스트 작성·실행·버그 수정을 위임 |
+| `gemini-task` (= `gtask`) | **Gemini 위임 래퍼 (reader/advisor 레인)** — Claude Code가 `gemini -p`를 Bash로 호출해 읽기·요약·자문을 위임 |
+| `codex-task` (= `ctask`) | **Codex 위임 래퍼 (tester/fixer 레인)** — Claude Code가 `codex exec`를 Bash로 호출해 테스트 작성·실행·버그 수정을 위임 |
 | `atask` (= `arachne-task`) | **자동 폴백 캐스케이드 디스패처** — 역할별 우선순위로 CLI를 시도하고 쿼터 소진을 감지하면 다음 CLI로 자동 전환 (`claude → codex → gemini`) |
 | `docs-sync` | 원격 프로젝트 README/docs/Markdown 문서 ↔ Obsidian Vault 동기화 |
 
@@ -71,8 +71,8 @@ Arachne/
 ├── settings.template.json       # ~/.claude/settings.json 템플릿
 ├── install.sh                   # 통합 관리 도구 (CLI: arachne)
 ├── tmux.sh                      # tmux 워크스페이스 매니저 (CLI: tws)
-├── gemini-task.sh               # Gemini 위임 래퍼 — reader/advisor (CLI: gemini-task, gask)
-├── codex-task.sh                # Codex 위임 래퍼 — tester/fixer (CLI: codex-task, cask)
+├── gemini-task.sh               # Gemini 위임 래퍼 — reader/advisor (CLI: gemini-task, gtask)
+├── codex-task.sh                # Codex 위임 래퍼 — tester/fixer (CLI: codex-task, ctask)
 ├── arachne-task.sh              # 자동 폴백 캐스케이드 디스패처 (CLI: arachne-task, atask)
 ├── docs-sync.sh                 # 원격 프로젝트 문서 ↔ Obsidian 동기화 (CLI: docs-sync)
 ├── statusline-command.sh        # Claude Code 상태표시줄 렌더러
@@ -136,8 +136,8 @@ Claude Code가 **중심(오케스트레이터 + 주 구현자)**이고, Codex·G
 | 레인 (Lane) | CLI | 위임 호출 | 하는 일 |
 |---|---|---|---|
 | **오케스트레이터 + 주 구현자** | **Claude** | (중심) | 설계·구현·리팩터링·통합·커밋, 보안/임계 리뷰, 설정·마이그레이션·인프라 |
-| **tester / fixer** | **Codex** | `codex-task` (=`cask`) | 테스트 작성·실행, 버그 수정 — **기능 추가는 안 함** |
-| **reader / advisor** | **Gemini** | `gemini-task` (=`gask`) | 대용량 읽기·요약, 설계 탐색, 1차 리뷰, 장문 생성 — **구현은 안 함** |
+| **tester / fixer** | **Codex** | `codex-task` (=`ctask`) | 테스트 작성·실행, 버그 수정 — **기능 추가는 안 함** |
+| **reader / advisor** | **Gemini** | `gemini-task` (=`gtask`) | 대용량 읽기·요약, 설계 탐색, 1차 리뷰, 장문 생성 — **구현은 안 함** |
 
 방향이 반대인 두 우선순위 사슬:
 - **오프로드 (offload, 비용 기준)**: Gemini → Codex → (Claude 안 씀) — 토큰 무거운 일을 싸게 떠넘김
