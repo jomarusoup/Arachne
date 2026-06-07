@@ -28,11 +28,26 @@ aliases:
 
 ## 🚀 Installation
 
+### macOS / Linux
+
 ```bash
 git clone https://github.com/jomarusoup/Arachne.git ~/Arachne
 cd ~/Arachne
 ./install.sh      # 최초 1회 — 이후 arachne 커맨드 사용 가능
 ```
+
+### Windows (PowerShell)
+
+```powershell
+git clone https://github.com/jomarusoup/Arachne.git "$HOME\Arachne"
+Set-Location "$HOME\Arachne"
+powershell -ExecutionPolicy Bypass -File .\install.ps1 -Install
+```
+
+Windows 설치기는 관리자 권한 없이 디렉터리 junction과 파일 hard link를 우선 사용하고,
+불가능하면 복사로 폴백합니다. Claude 훅과 `gask`/`cask`/`atask`는 Bash 스크립트이므로
+[Git for Windows](https://gitforwindows.org/)의 `bash.exe`가 PATH에 있어야 합니다.
+`tws`는 Windows 네이티브에서 지원하지 않으며 WSL 등 tmux 환경에서 사용합니다.
 
 최초 설치 후 재설치 또는 설정 동기화는 `arachne -i`를 사용합니다.
 
@@ -69,7 +84,7 @@ Arachne/
 ├── CLAUDE.md                    # Claude 전용 보충 지시서 (rules/는 네이티브 자동 로드)
 ├── AGENTS.md                    # 공통 규약 SSOT (Single Source of Truth, 단일 진실 공급원 — Claude·Gemini·Codex 공유)
 ├── settings.template.json       # ~/.claude/settings.json 템플릿
-├── install.sh                   # 통합 관리 도구 (CLI: arachne)
+├── install.sh / install.ps1     # Unix / Windows 통합 관리 도구 (CLI: arachne)
 ├── tmux.sh                      # tmux 워크스페이스 매니저 (CLI: tws)
 ├── gemini-task.sh               # Gemini 위임 래퍼 — reader/advisor (CLI: gemini-task, gask)
 ├── codex-task.sh                # Codex 위임 래퍼 — tester/fixer (CLI: codex-task, cask)

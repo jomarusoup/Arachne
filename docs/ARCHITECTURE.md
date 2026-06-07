@@ -71,6 +71,11 @@ flowchart TB
 자기 실제 경로를 풀어 **레포 루트(`REPO_DIR`)** 를 찾는다 — 그래서 어느 디렉터리에서 불러도 올바른
 레포를 가리킨다. 그다음 `install()` 디스패처가 타깃별로 아래를 순서대로 수행한다.
 
+Windows에서는 `~\.local\bin\arachne.cmd → install.ps1` 래퍼가 같은 역할을 한다.
+`install.ps1`은 관리자 권한이 필요한 파일 심볼릭 링크 대신 디렉터리 junction과 파일 hard link를
+우선 사용하고, 파일 시스템 제약이 있으면 복사로 폴백한다. Bash 기반 훅과 위임 명령은
+Git for Windows의 `bash.exe`를 통해 실행한다.
+
 1. **Claude 설치** (`install_claude`)
    1. `~/.claude/` 생성(`mkdir -p`).
    2. `SYMLINK_TARGETS`(CLAUDE.md · commands · agents · rules · hooks · skills · statusline)를 하나씩:
