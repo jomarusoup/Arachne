@@ -157,7 +157,7 @@ model: opus               # opus / sonnet / haiku
       {
         "matcher": "*",
         "hooks": [
-          { "type": "command", "command": "__HOME__/.claude/hooks/git-bus-check.sh" }
+          { "type": "command", "command": "bash \"__HOME__/.claude/hooks/git-bus-check.sh\"" }
         ]
       }
     ]
@@ -274,7 +274,27 @@ codex-task -m <model> -C <dir> "..."                                    # 모델
 ---
 ## 7. Install · Update · Sync (`arachne`)
 
-Arachne는 `install.sh`를 통해 설치되며, 설치 후에는 `arachne` 커맨드로 관리할 수 있습니다.
+Arachne는 macOS/Linux에서 `install.sh`, Windows에서 `install.ps1`을 통해 설치되며,
+설치 후에는 공통으로 `arachne` 커맨드로 관리할 수 있습니다.
+
+### Windows 설치
+
+Claude Code·Codex CLI·Gemini CLI 자체를 아직 설치하지 않았다면
+[WINDOWS-SETUP.md](WINDOWS-SETUP.md)에서 Git for Windows·Node.js 준비, 각 CLI 설치와 인증,
+네이티브 PowerShell/WSL2 선택 기준을 먼저 확인합니다.
+
+```powershell
+git clone https://github.com/jomarusoup/Arachne.git "$HOME\Arachne"
+Set-Location "$HOME\Arachne"
+powershell -ExecutionPolicy Bypass -File .\install.ps1 -Install
+```
+
+- 관리자 권한 없이 디렉터리는 junction, 파일은 hard link로 연결하며 실패 시 복사합니다.
+- `~\.local\bin`을 사용자 PATH에 등록하고 `arachne.cmd`, `gask.cmd`, `cask.cmd`,
+  `atask.cmd` 등의 래퍼를 생성합니다. 새 터미널부터 PATH 변경이 적용됩니다.
+- Claude 훅과 위임 래퍼 실행에는 Git for Windows의 `bash.exe`가 필요합니다.
+- `tws`는 Windows 네이티브 미지원이며 WSL 또는 별도 tmux 환경에서만 사용할 수 있습니다.
+- Windows PowerShell에서는 `arachne -Target codex -Install`처럼 PowerShell 인자 형식도 사용할 수 있습니다.
 
 ### 설치 및 업데이트 흐름
 1. **심볼릭 링크**: `CLAUDE.md`, `commands/`, `agents/` 등을 `~/.claude/`에 연결하여 레포 수정이 즉시 반영되게 합니다.
@@ -307,6 +327,9 @@ Arachne는 `install.sh`를 통해 설치되며, 설치 후에는 `arachne` 커�
 | `arachne -e`, `--export-settings` | 현재 `~/.claude/settings.json` → 레포 `settings.template.json`으로 역추출 |
 | `arachne -d`, `--export-dotfiles` | 로컬 `~/.bash_profile`·`~/.vimrc`의 변경 → 레포 `dotfiles/`로 역추출 |
 | `arachne -v`, `--version` | 버전 정보 출력 |
+
+Windows PowerShell 설치기는 현재 설치·업데이트·점검·버전 기능을 지원합니다.
+프로젝트 스캐폴딩, settings/dotfiles 내보내기, tmux 세션 관리는 macOS/Linux 또는 WSL에서 실행합니다.
 
 > 하위호환: 옛 단어형(`install` / `update` / `session` / `export-settings` / `export-dotfiles`)도 별칭으로 여전히 동작한다.
 

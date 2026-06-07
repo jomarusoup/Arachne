@@ -1,7 +1,7 @@
 ---
 Title: README
 creation: 2026-05-05
-modification: 2026-06-04
+modification: 2026-06-07
 Description: 저지연 풀스택 시스템 프로그래밍을 위한 Claude Code 글로벌 설정 프레임워크
 tags:
 aliases:
@@ -21,6 +21,7 @@ aliases:
 > 🗺️ 하네스 구조 다이어그램(Mermaid)은 [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) 참고
 > 📖 skills·agents·커맨드·hooks 사용법은 [docs/USAGE.md](docs/USAGE.md) 참고
 > 🔗 멀티 도구 통합 사용·상호작용은 [docs/MULTI-CLI.md](docs/MULTI-CLI.md) 참고
+> 🪟 Windows에서 Claude Code·Codex CLI·Gemini CLI 설치는 [docs/WINDOWS-SETUP.md](docs/WINDOWS-SETUP.md) 참고
 > 🗂️ 원격 프로젝트 문서 ↔ Obsidian 동기화는 [docs/OBSIDIAN-DOCS-SYNC.md](docs/OBSIDIAN-DOCS-SYNC.md)(arachne 설정)·[docs/SYNCTHING-SETUP.md](docs/SYNCTHING-SETUP.md)(자동) 참고
 > 📑 약어(SSOT·TDD·DI·a11y 등) 풀이는 [docs/GLOSSARY.md](docs/GLOSSARY.md) 참고
 
@@ -28,11 +29,30 @@ aliases:
 
 ## 🚀 Installation
 
+### macOS / Linux
+
 ```bash
 git clone https://github.com/jomarusoup/Arachne.git ~/Arachne
 cd ~/Arachne
 ./install.sh      # 최초 1회 — 이후 arachne 커맨드 사용 가능
 ```
+
+### Windows (PowerShell)
+
+먼저 Claude Code·Codex CLI·Gemini CLI와 Git for Windows, Node.js를 설치합니다.
+명령별 인증·업데이트·WSL2 대안은
+[Windows 상세 설치 가이드](docs/WINDOWS-SETUP.md)를 따릅니다.
+
+```powershell
+git clone https://github.com/jomarusoup/Arachne.git "$HOME\Arachne"
+Set-Location "$HOME\Arachne"
+powershell -ExecutionPolicy Bypass -File .\install.ps1 -Install
+```
+
+Windows 설치기는 관리자 권한 없이 디렉터리 junction과 파일 hard link를 우선 사용하고,
+불가능하면 복사로 폴백합니다. Claude 훅과 `gask`/`cask`/`atask`는 Bash 스크립트이므로
+[Git for Windows](https://gitforwindows.org/)의 `bash.exe`가 PATH에 있어야 합니다.
+`tws`는 Windows 네이티브에서 지원하지 않으며 WSL 등 tmux 환경에서 사용합니다.
 
 최초 설치 후 재설치 또는 설정 동기화는 `arachne -i`를 사용합니다.
 
@@ -75,7 +95,7 @@ Arachne/
 ├── AGENTS.md                    # 공통 규약 SSOT (Claude·Gemini·Codex·Copilot 공유)
 ├── .github/copilot-instructions.md # Copilot 저장소 어댑터
 ├── settings.template.json       # ~/.claude/settings.json 템플릿
-├── install.sh                   # 통합 관리 도구 (CLI: arachne)
+├── install.sh / install.ps1     # Unix / Windows 통합 관리 도구 (CLI: arachne)
 ├── install-copilot.ps1          # Windows PowerShell용 Copilot 설치기
 ├── tmux.sh                      # tmux 워크스페이스 매니저 (CLI: tws)
 ├── gemini-task.sh               # Gemini 위임 래퍼 — reader/advisor (CLI: gemini-task, gtask)

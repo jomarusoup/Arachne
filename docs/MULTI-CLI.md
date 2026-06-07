@@ -1,5 +1,7 @@
 # Multi-CLI Guide — Claude Code · Gemini CLI · Codex CLI · GitHub Copilot
 
+> Windows에서 CLI를 처음 설치하는 절차는 [WINDOWS-SETUP.md](WINDOWS-SETUP.md)를 참고한다.
+
 Arachne는 **하나의 공통 규약(`AGENTS.md`)을 여러 AI 코딩 도구가 동시에 따르도록** 연결한다.
 한 파일만 고치면 세 도구가 같은 규칙으로 움직인다. 이 문서는 각 CLI에서 어떻게 쓰고, 셋이
 서로 어떻게 영향을 주고받는지 설명한다.

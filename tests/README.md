@@ -27,6 +27,9 @@ bats tests/
 bats tests/install.bats
 bats tests/hooks.bats
 bash tests/validate_settings.sh
+
+# Windows (PowerShell)
+pwsh -File tests/install_windows.ps1
 ```
 
 ## 테스트 목록
@@ -39,6 +42,7 @@ bash tests/validate_settings.sh
 | `new_project.bats` | `arachne new` — 구조 생성·frontmatter 치환·git init·안전성 | bats |
 | `check_index.sh` | 인덱스 ↔ 실제 파일 일치 (skills·commands·agents·rules) | bash |
 | `validate_settings.sh` | `settings.template.json` — JSON 유효성·필수 키 | bash + jq |
+| `install_windows.ps1` | `install.ps1` — junction/hard link·설정·Codex 병합·CMD 래퍼 | PowerShell |
 
 ## validate_settings.sh
 

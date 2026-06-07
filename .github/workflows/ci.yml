@@ -28,3 +28,13 @@ jobs:
 
       - name: 인덱스 ↔ 실제 파일 일치
         run: bash tests/check_index.sh
+
+  verify-windows:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: PowerShell 설치기 검증
+        shell: pwsh
+        run: ./tests/install_windows.ps1
