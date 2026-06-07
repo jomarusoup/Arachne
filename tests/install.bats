@@ -254,3 +254,62 @@ run_install() {
     [ "$status" -eq 1 ]
     [[ "$output" == *"[FAIL] Claude"* ]]
 }
+
+#-------------------------------------------------------------------------------
+# #34: 특정 CLI 타깃 설치는 공통 인프라(dotfiles·전체 bin)를 건드리지 않는다
+#-------------------------------------------------------------------------------
+@test "install(#34): --target gemini 는 공통 설치(bin/dotfiles)를 생략" {
+    run bash "${REPO_DIR}/install.sh" -i --target gemini
+    [ "$status" -eq 0 ]
+    [ -L "${TMP_DIR}/.gemini/GEMINI.md" ]
+    [ ! -e "${TMP_DIR}/.local/bin/arachne" ]
+    [[ "$output" == *"공통 설치(dotfiles·bin) 생략"* ]]
+}
+
+@test "install(#34): 전체 설치(-i)는 공통 bin 을 등록" {
+    run_install
+    [ -L "${TMP_DIR}/.local/bin/arachne" ]
+}
+
+#-------------------------------------------------------------------------------
+# #28: 사용자 수정된 settings.json 을 조용히 덮어쓰지 않고 경고 + .bak 보존
+#-------------------------------------------------------------------------------
+@test "install(#28): 사용자 수정 settings.json 교체 시 경고 + .bak 보존" {
+    run_install
+    echo '{"USER_EDIT_XYZ": true}' > "${TMP_DIR}/.claude/settings.json"
+    run bash "${REPO_DIR}/install.sh" -i
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"사용자 수정이 교체됩니다"* ]]
+    grep -qF "USER_EDIT_XYZ" "${TMP_DIR}/.claude/settings.json.bak"
+}
+
+#-------------------------------------------------------------------------------
+# #33: arachne -u 는 dirty 작업트리에서 중단(ARACHNE_FORCE 로 우회)
+#-------------------------------------------------------------------------------
+make_mock_git() {
+    mkdir -p "${TMP_DIR}/mockbin"
+    cat > "${TMP_DIR}/mockbin/git" << 'GITMOCK'
+#!/bin/bash
+case "$1" in
+    rev-parse) [ "$2" = "--abbrev-ref" ] && echo "feature-x" || echo "deadbeef" ;;
+    diff)      exit 1 ;;   # dirty (diff·diff --cached 모두 변경 있음)
+    pull)      echo "[mockgit] pull" ;;
+    *)         exit 0 ;;
+esac
+GITMOCK
+    chmod +x "${TMP_DIR}/mockbin/git"
+}
+
+@test "update(#33): dirty 작업트리에서 arachne -u 중단(exit 1)" {
+    make_mock_git
+    PATH="${TMP_DIR}/mockbin:${PATH}" run bash "${REPO_DIR}/install.sh" -u
+    [ "$status" -eq 1 ]
+    [[ "$output" == *"작업트리에 커밋되지 않은 변경"* ]]
+}
+
+@test "update(#33): ARACHNE_FORCE=1 은 dirty 검증을 우회" {
+    make_mock_git
+    PATH="${TMP_DIR}/mockbin:${PATH}" ARACHNE_FORCE=1 run bash "${REPO_DIR}/install.sh" -u
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"강제"* ]]
+}

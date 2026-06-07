@@ -120,6 +120,26 @@ show_version() {
 update_arachne() {
     echo "[Arachne] 업데이트 시작 (git pull)"
     cd "$REPO_DIR" || { echo "[ERROR] 레포 디렉터리 진입 실패: $REPO_DIR" >&2; exit 1; }
+
+    #---------------------------------------------------------------------------
+    # #33: pull·재설치 전에 레포 상태를 검증한다. 비-main 브랜치는 경고하고,
+    #      커밋되지 않은 변경(dirty)이 있으면 pull 충돌·재설치 손실 위험이 있어 중단한다.
+    #      ARACHNE_FORCE=1 로 강제 진행 가능.
+    #---------------------------------------------------------------------------
+    local branch
+    branch=$(git rev-parse --abbrev-ref HEAD 2>/dev/null || echo "?")
+    if [ "$branch" != "main" ]; then
+        echo "  [주의] 현재 브랜치가 main 이 아닙니다: $branch — 의도한 브랜치인지 확인하세요." >&2
+    fi
+    if ! git diff --quiet 2>/dev/null || ! git diff --cached --quiet 2>/dev/null; then
+        echo "  [중단] 작업트리에 커밋되지 않은 변경이 있습니다 — git pull 충돌·재설치 손실 위험." >&2
+        echo "         커밋/스태시 후 다시 실행하거나, 무시하려면 ARACHNE_FORCE=1 arachne -u" >&2
+        if [ "${ARACHNE_FORCE:-0}" != "1" ]; then
+            exit 1
+        fi
+        echo "  [강제] ARACHNE_FORCE=1 — 검증 무시하고 진행" >&2
+    fi
+
     git pull
     echo "[Arachne] 최신 소스 기반 재설치 진행"
     install
@@ -211,17 +231,27 @@ install_claude() {
     echo "[Arachne] Claude 설치 시작: $REPO_DIR -> $CLAUDE_DIR"
     mkdir -p "$CLAUDE_DIR"
 
-    for target in "${SYMLINK_TARGETS[@]}"; do
-        backup_and_link "$REPO_DIR/$target" "$CLAUDE_DIR/$target"
+    # local 선언 — 동적 스코프에서 호출자(install)의 변수를 덮어쓰지 않도록 한다
+    local link_target
+    for link_target in "${SYMLINK_TARGETS[@]}"; do
+        backup_and_link "$REPO_DIR/$link_target" "$CLAUDE_DIR/$link_target"
     done
 
     # settings.json: __HOME__ 치환 후 생성 (심볼릭 링크 아님)
+    # #28: 기존 settings.json 이 템플릿 생성본과 다르면(=사용자 수정) 조용히 덮어쓰지 않고
+    #      경고한다. 직전 값은 .bak 에 보존하되, 보존하려면 arachne -e 로 템플릿에 반영하도록 안내.
     local settings_dst="$CLAUDE_DIR/settings.json"
+    local new_settings
+    new_settings=$(sed "s|__HOME__|$HOME|g" "$REPO_DIR/settings.template.json")
     if [ -e "$settings_dst" ] && [ ! -L "$settings_dst" ]; then
-        echo "  백업: $settings_dst -> $settings_dst.bak"
         cp "$settings_dst" "$settings_dst.bak"
+        echo "  백업: $settings_dst -> $settings_dst.bak"
+        if ! printf '%s\n' "$new_settings" | diff -q - "$settings_dst" >/dev/null 2>&1; then
+            echo "  [주의] 기존 settings.json 이 템플릿 생성본과 다릅니다 — 사용자 수정이 교체됩니다." >&2
+            echo "         보존하려면 먼저 'arachne -e' 로 변경을 템플릿에 반영하세요 (직전 값은 .bak 에 보존)." >&2
+        fi
     fi
-    sed "s|__HOME__|$HOME|g" "$REPO_DIR/settings.template.json" > "$settings_dst"
+    printf '%s\n' "$new_settings" > "$settings_dst"
     echo "  생성: $settings_dst (from settings.template.json)"
 
     echo "[Arachne] Claude 설치 완료"
@@ -336,7 +366,8 @@ install_shared() {
 #               all 은 감지된 CLI 에만 설치(미감지 시 graceful skip)
 ################################################################################
 install() {
-    case "${ARACHNE_TARGET:-all}" in
+    local target="${ARACHNE_TARGET:-all}"
+    case "$target" in
         claude) install_claude ;;
         gemini) install_gemini ;;
         codex)  install_codex ;;
@@ -360,7 +391,16 @@ install() {
             fi
             ;;
     esac
-    install_shared
+
+    #---------------------------------------------------------------------------
+    # #34: 공통 설치(dotfiles 병합 + 전체 bin 등록)는 전체 설치(all)에서만 수행.
+    # 특정 CLI 타깃 지정 시 공통 인프라(~/.bash_profile·~/.local/bin)를 건드리지 않는다.
+    #---------------------------------------------------------------------------
+    if [ "$target" = "all" ]; then
+        install_shared
+    else
+        echo "[Arachne] 타깃 '$target' — 공통 설치(dotfiles·bin) 생략 (전체 설치는 'arachne -i')"
+    fi
 }
 
 ################################################################################
