@@ -23,6 +23,100 @@ Arachne의 CI(Continuous Integration, 지속적 통합)는 GitHub Actions에서 
 워크플로의 목적, 로컬 재현법, 실패 해석, 유지보수 절차를 설명한다. 문서와 YAML이 다르면 실제
 GitHub Actions 동작을 결정하는 YAML이 우선한다.
 
+## 0. 개요 — 왜 CI이고 어떻게 짜였나
+
+### 왜 CI를 쓰는가
+
+수동 검사는 잊히고 사람마다 다르다. CI는 **매 변경마다 같은 검사를 기계적으로** 돌려 다음을 보장한다.
+
+- **회귀 차단** — main에 들어간 변경이 기존 동작(셸 스크립트·설치·설정·문서 인덱스)을 깨지 않는지 자동 확인.
+- **자기규칙 강제** — 하네스가 규정한 `shellcheck`·`bats`·인덱스 일치를 **자기 자신에게도** 강제한다.
+  규칙·문서와 실제 코드가 어긋나는 **드리프트**를 구조적으로 막는다.
+- **크로스 플랫폼** — Linux·Windows 두 러너에서 동시에 검증해 "내 OS에선 통과"하는 함정을 방지한다.
+- **PR 게이트** — 병합 전에 통과를 요구하면, 깨진 변경이 main에 들어오는 것을 사전에 막는다.
+- **재현 가능성** — 로컬에서 동일 명령(§5)으로 그대로 재현 가능 → "내 머신에선 됐는데" 문제를 줄인다.
+- **저비용·안전** — 외부 CLI를 mock·임시 홈으로 격리해 API 키·과금·실제 계정 없이 빠르게 돈다(§10).
+
+> 한계도 분명하다 — CI 통과가 "모델 응답 정확성·전 플랫폼 호환·보안 무결성"을 보장하진 않는다(§11).
+> CI는 **정의된 자동 검사 범위 안에서만** 회귀를 차단한다.
+
+### 구조 한눈에
+
+```mermaid
+flowchart TB
+    TRIG["트리거<br/>push → main · PR(base=main)"] --> CI{{"GitHub Actions: CI<br/>(두 job 병렬)"}}
+    CI --> V["🐧 verify<br/>ubuntu-latest"]
+    CI --> W["🪟 verify-windows<br/>windows-latest"]
+
+    subgraph VERIFY["verify — Linux 검증 (순차 step)"]
+        direction TB
+        V1["checkout"] --> V2["shellcheck · bats 설치"]
+        V2 --> V3["ShellCheck<br/>./*.sh hooks/*.sh tests/*.sh"]
+        V3 --> V4["Bats<br/>tests/*.bats (전체)"]
+        V4 --> V5["validate_settings.sh<br/>settings 템플릿"]
+        V5 --> V6["check_index.sh<br/>문서 인덱스 드리프트"]
+    end
+
+    subgraph WIN["verify-windows — Windows 검증"]
+        direction TB
+        W1["checkout"] --> W2["install_windows.ps1<br/>PowerShell 설치기"]
+    end
+
+    V --> VERIFY
+    W --> WIN
+    VERIFY --> GATE{"두 job 모두 통과?"}
+    WIN --> GATE
+    GATE -->|yes| OK["✅ 머지 가능"]
+    GATE -->|no| FAIL["❌ 실패 — 회귀 차단"]
+
+    classDef job fill:#0f3d3e,stroke:#34d399,color:#d1fae5;
+    classDef gate fill:#3b2f5e,stroke:#a78bfa,color:#ede9fe;
+    class V,W job;
+    class GATE,CI gate;
+```
+
+핵심은 **glob 기반 자동 포함**이다. ShellCheck는 `./*.sh hooks/*.sh tests/*.sh`, Bats는 `tests/*.bats`를
+글로브로 잡으므로, 그 위치에 스크립트·테스트를 추가하면 **CI YAML 수정 없이 자동으로 검사 대상에 들어간다**
+(§3.3·§3.4). 새 위치·새 PowerShell 테스트만 YAML 갱신이 필요하다(§8).
+
+### 세팅·설정 방법
+
+CI를 처음 켜거나 다른 저장소/포크에 적용할 때의 절차다. **워크플로 파일만 있으면 GitHub가 자동 인식**하므로
+별도 등록 도구는 없다 — 나머지는 GitHub 저장소 설정(UI)이다.
+
+```mermaid
+flowchart LR
+    A["1. .github/workflows/ci.yml<br/>저장소에 존재"] --> B["2. GitHub Actions 활성화<br/>(Settings → Actions)"]
+    B --> C["3. main에 push / PR 생성<br/>→ 자동 실행"]
+    C --> D["4. Branch protection<br/>필수 check 지정 (§9)"]
+    D --> E["5. (선택) Secrets·로컬 사전검증"]
+```
+
+1. **워크플로 파일 — 이미 포함됨**
+   - `.github/workflows/ci.yml`이 저장소에 있으면 GitHub가 자동으로 워크플로로 등록한다. 별도 설치 불필요.
+   - main에 들어가 있으면 이후 `push`/`pull_request`(§1)에서 바로 동작한다.
+2. **GitHub Actions 활성화 확인**
+   - 저장소 **Settings → Actions → General**에서 Actions 실행을 허용한다(최소 필요 action 허용 권장).
+   - **포크한 저장소**는 Actions 탭에서 한 번 *"I understand my workflows, enable them"* 을 눌러야 워크플로가 켜진다.
+   - 조직 정책으로 막혀 있으면 조직 관리자가 Actions를 허용해야 한다.
+3. **브랜치 보호로 게이트화 (권장)**
+   - **Settings → Branches → Add branch ruleset(또는 protection rule) → `main`**.
+   - *Require status checks to pass* 를 켜고 필수 check로 **`verify`** 와 **`verify-windows`** 를 지정한다.
+   - 상세 권장값(최신 main 요구·강제 push 제한 등)은 [§9](#9-branch-protection-권장-설정).
+   - ⚠️ job 이름을 바꾸면 여기 필수 check 이름도 다시 지정해야 한다.
+4. **Secrets 설정 (현재 불필요)**
+   - 현재 CI는 외부 AI 인증을 쓰지 않아 API 키가 없어도 된다(§10). 추후 E2E를 추가하면
+     **Settings → Secrets and variables → Actions**에 최소 권한 토큰을 등록하고 fork PR엔 secret이 안 가는 점을 고려한다.
+5. **로컬 사전 검증 세팅 (권장)**
+   - PR 전 CI와 동일 검사를 로컬에서 돌리도록 도구를 깐다(§5): `shellcheck`·`bats`·`jq`(+macOS는 `coreutils`).
+   - 자동화하려면 `pre-push` git 훅에 §5의 한 줄 명령을 넣어, push 전에 실패를 잡는다.
+6. **다른 저장소·신규 프로젝트에 적용**
+   - `.github/workflows/ci.yml`과 `tests/`를 복사한다. job 이름을 유지하면 브랜치 보호 설정을 그대로 재사용할 수 있다.
+   - `arachne -n`으로 만든 신규 프로젝트는 문서 구조(`docs/{issue,idea,task,template}`)는 받지만 **CI YAML은 포함하지 않으므로** 필요하면 별도로 복사한다.
+7. **워크플로 커스터마이즈**
+   - 수동 실행이 필요하면 트리거에 `workflow_dispatch:` 추가, 정기 검증은 `schedule:` 추가.
+   - macOS 검증이 필요하면 `macos-latest` job을 추가하고 §5.2의 명령을 step으로 넣는다(현재는 없음, §11).
+
 ## 1. 실행 조건
 
 CI는 다음 이벤트에만 실행된다.
