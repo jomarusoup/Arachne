@@ -1,7 +1,7 @@
 ---
 Title: "Arachne CI 운영 가이드"
 creation: 2026-06-07
-modification: 2026-06-07
+modification: 2026-06-08
 tags:
  - "arachne"
  - "ci"
@@ -14,6 +14,9 @@ MOC:: [[Arachne]]
 FROM:: [[empty]]
 
 # Arachne CI 운영 가이드
+
+> 소문자 경로를 요구하는 도구와 사용자를 위해 최신 CI 가이드는 [ci.md](ci.md)에도 정리되어 있다.
+> 이 파일은 기존 링크 호환을 위해 유지한다.
 
 Arachne의 CI(Continuous Integration, 지속적 통합)는 GitHub Actions에서 저장소의 셸 스크립트,
 설치 동작, 설정 템플릿, 문서 인덱스를 자동 검증한다. 현재 CI는 **검증 전용**이며 패키지 배포,
@@ -543,4 +546,3 @@ CI 또는 테스트를 변경할 때:
 - [ ] 선택 검사가 의존성 부재로 조용히 SKIP되지 않는가
 - [ ] README, `tests/README.md`, 이 문서가 현재 YAML과 일치하는가
 - [ ] branch protection의 필수 check 이름이 여전히 유효한가
-
