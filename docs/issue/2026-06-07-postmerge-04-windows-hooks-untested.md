@@ -18,7 +18,7 @@ FROM:: [[2026-06-07-postmerge-audit]]
 - **작성일**: 2026-06-07
 - **심각도**: MEDIUM
 - **영역**: `settings.template.json`, `hooks/*.sh`, `arachne-task.sh`, `tests/install_windows.ps1`
-- **상태**: 커버리지 공백 확인
+- **상태**: 해결됨 — 7fd1cc6 (Git Bash 훅·atask 스모크를 Windows CI·bats에 추가). task [[2026-06-07-windows-runtime-verification]]
 - **GitHub**: #40
 
 ## 문제
