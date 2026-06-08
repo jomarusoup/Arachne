@@ -8,19 +8,46 @@ on:
     branches: [main]
 
 jobs:
-  verify:
+  verify-ubuntu:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Install shellcheck & bats
-        run: sudo apt-get update -qq && sudo apt-get install -y shellcheck bats
+      - name: Install Ubuntu verification tools
+        run: sudo apt-get update -qq && sudo apt-get install -y shellcheck bats jq
 
       - name: Shellcheck (모든 셸 스크립트 — glob 으로 드리프트 차단)
         run: shellcheck -S warning ./*.sh hooks/*.sh tests/*.sh
 
       - name: Bats (전체 *.bats — 새 테스트 자동 포함)
+        run: bats tests/*.bats
+
+      - name: settings.json 템플릿 검증
+        run: bash tests/validate_settings.sh
+
+      - name: 인덱스 ↔ 실제 파일 일치
+        run: bash tests/check_index.sh
+
+      - name: 규약 동기화 (AGENTS.md ↔ rules)
+        run: bash tests/check_convention_sync.sh
+
+  verify-rocky:
+    runs-on: ubuntu-latest
+    container: rockylinux:9
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Rocky verification tools
+        run: |
+          dnf install -y epel-release
+          dnf install -y ShellCheck bats git jq
+
+      - name: Shellcheck (RHEL/Rocky 패키지 기준)
+        run: shellcheck -S warning ./*.sh hooks/*.sh tests/*.sh
+
+      - name: Bats (RHEL/Rocky 런타임)
         run: bats tests/*.bats
 
       - name: settings.json 템플릿 검증
@@ -45,3 +72,29 @@ jobs:
       - name: Git Bash 훅·atask 런타임 스모크 (#40)
         shell: bash
         run: bash tests/smoke_hooks.sh
+
+  verify-macos:
+    runs-on: macos-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install macOS verification tools
+        run: |
+          brew install shellcheck bats-core jq coreutils
+          echo "$(brew --prefix coreutils)/libexec/gnubin" >> "$GITHUB_PATH"
+
+      - name: Shellcheck (macOS)
+        run: shellcheck -S warning ./*.sh hooks/*.sh tests/*.sh
+
+      - name: Bats (macOS)
+        run: bats tests/*.bats
+
+      - name: settings.json 템플릿 검증
+        run: bash tests/validate_settings.sh
+
+      - name: 인덱스 ↔ 실제 파일 일치
+        run: bash tests/check_index.sh
+
+      - name: 규약 동기화 (AGENTS.md ↔ rules)
+        run: bash tests/check_convention_sync.sh

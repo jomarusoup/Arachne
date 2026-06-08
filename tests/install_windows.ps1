@@ -48,7 +48,7 @@ try {
     #---------------------------------------------------------------------------
     # Claude 설치 및 Windows 경로 치환
     #---------------------------------------------------------------------------
-    RunInstaller @("-Install", "-Target", "claude")
+    RunInstaller -Arguments @("-Install", "-Target", "claude")
     AssertTrue (Test-Path (Join-Path $SCRIPT:TEST_HOME ".claude\CLAUDE.md")) "Claude file"
     AssertTrue (Test-Path (Join-Path $SCRIPT:TEST_HOME ".claude\commands")) "commands directory"
 
@@ -61,15 +61,15 @@ try {
     #---------------------------------------------------------------------------
     # Gemini 연결과 Codex 마커 병합 멱등성
     #---------------------------------------------------------------------------
-    RunInstaller @("-Install", "-Target", "gemini")
+    RunInstaller -Arguments @("-Install", "-Target", "gemini")
     AssertTrue (Test-Path (Join-Path $SCRIPT:TEST_HOME ".gemini\GEMINI.md")) "Gemini file"
 
     $codex_dir = Join-Path $SCRIPT:TEST_HOME ".codex"
     New-Item -ItemType Directory -Path $codex_dir -Force | Out-Null
     $codex_path = Join-Path $codex_dir "AGENTS.md"
     [System.IO.File]::WriteAllText($codex_path, "USER-CONTENT`n")
-    RunInstaller @("-Install", "-Target", "codex")
-    RunInstaller @("-Install", "-Target", "codex")
+    RunInstaller -Arguments @("-Install", "-Target", "codex")
+    RunInstaller -Arguments @("-Install", "-Target", "codex")
     $codex_text = [System.IO.File]::ReadAllText($codex_path)
     AssertTrue ($codex_text.Contains("USER-CONTENT")) "Codex user content preserved"
     $marker_count = ([regex]::Matches($codex_text, "<!-- === ARACHNE BEGIN === -->")).Count
