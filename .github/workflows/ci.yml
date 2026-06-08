@@ -29,6 +29,9 @@ jobs:
       - name: 인덱스 ↔ 실제 파일 일치
         run: bash tests/check_index.sh
 
+      - name: 규약 동기화 (AGENTS.md ↔ rules)
+        run: bash tests/check_convention_sync.sh
+
   verify-windows:
     runs-on: windows-latest
     steps:

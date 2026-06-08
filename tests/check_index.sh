@@ -30,10 +30,12 @@ CheckReferenced() {
         base=$(basename "$path")
         [ "$base" = "README.md" ] && continue
 
-        # 인덱스가 stem(확장자 없는 파일명)으로 참조하는 경우도 허용
+        # 인덱스가 stem(확장자 없는 파일명)으로 참조하는 경우도 허용.
+        # #35: 부분일치 오탐 방지 — 단어 경계(-w)로 매칭해 더 긴 단어의 일부로 우연히
+        #      통과하는 false-negative 를 막는다 (예: 'api-design' 이 'api-designer' 에 매칭 X).
         local stem="${base%.md}"
-        if ! grep -qF "$base" "$REPO_DIR/$index_file" \
-           && ! grep -qF "$stem" "$REPO_DIR/$index_file"; then
+        if ! grep -qwF "$base" "$REPO_DIR/$index_file" \
+           && ! grep -qwF "$stem" "$REPO_DIR/$index_file"; then
             echo "  [DRIFT] $src_dir/$base 가 $index_file 에 없음"
             missing=1
         fi

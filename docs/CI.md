@@ -265,9 +265,30 @@ bash tests/check_index.sh
 현재 한계:
 
 - Markdown 구조를 파싱하지 않고 파일명 또는 stem 문자열 포함 여부를 검사한다.
+  - 단, stem 은 **단어 경계**로 매칭한다(#35) — 더 긴 단어의 일부로 우연히 통과하는 false-negative 차단.
 - 문서가 실제로 기능을 정확히 설명하는지는 검사하지 않는다.
 - `docs/task/`, `docs/issue/`, 일반 사용자 문서의 상호 링크는 검사하지 않는다.
 - 문서가 삭제된 파일을 참조하는 역방향 검사도 없다.
+
+### 3.7 규약 동기화 검사
+
+```bash
+bash tests/check_convention_sync.sh
+```
+
+`AGENTS.md`(다이제스트)와 `rules/common/*`(풀버전)의 **내용 동기화**를 검사한다(#39). 파일명 인덱스가
+아니라, 핵심 규약 토큰이 양쪽 정본에 모두 존재하는지 본다 — 한쪽만 고쳐 Gemini/Codex(AGENTS.md)와
+Claude(rules)가 다른 규약을 보게 되는 드리프트를 차단한다.
+
+| 토큰 그룹 | 정본(rules) | 검사 토큰(예) |
+| --- | --- | --- |
+| 네이밍 | `rules/common/coding-style.md` | `snake_case` `PascalCase` `SCREAMING_SNAKE_CASE` … |
+| TDD 단계 | `rules/common/testing.md` | `RED` `GREEN` `REFACTOR` `AAA` |
+| git type | `rules/common/git-workflow.md` | `feat` `fix` `refactor` `docs` `test` `chore` `perf` `style` |
+
+- 각 토큰은 `AGENTS.md` **와** 매핑된 rules 파일에 **단어 경계**로 존재해야 한다. 한쪽에만 있으면 `[DRIFT]`로 실패한다.
+- 한계: 전체 본문의 의미 등가성까지 검증하지 않는다. 새 핵심 규약을 추가하면 이 스크립트의 토큰 목록도 갱신한다.
+- 테스트는 `CONV_SYNC_REPO` 환경변수로 픽스처 디렉터리를 주입해 검증한다.
 
 ## 4. Windows Job: `verify-windows`
 
