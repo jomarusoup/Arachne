@@ -14,9 +14,9 @@ FROM:: [[2026-06-07-harness-role-platform-accuracy]]
 
 # [task] 하네스 역할·플랫폼 설명 정확화 반영 검증 및 #36 종료
 
-- **상태**: planned
+- **상태**: done
 - **우선순위**: low
-- **담당**: unassigned
+- **담당**: Claude (Opus)
 - **관련 문서**: #36, [[2026-06-07-harness-role-platform-accuracy]]
 
 ## 목표
@@ -31,9 +31,9 @@ FROM:: [[2026-06-07-harness-role-platform-accuracy]]
 
 ## 작업 목록
 
-- [ ] Codex 재병합·macOS coreutils·"실행 후보 폴백(역할 승계 아님)" 서술이 일관되게 남아 있는지 확인
-- [ ] 병합 충돌 해결 과정에서 누락·중복된 정확화 항목이 없는지 점검
-- [ ] 문제 없으면 `gh issue close 36` (수용 근거 코멘트 포함)
+- [x] 정확화 서술 검증: "실행 후보 폴백"(7파일)·"마커 병합 사본"(10)·"coreutils"(6)·"자동 승계 아님"(6) 모두 main에 일관 존재
+- [x] 모순 점검: USAGE 지원 표가 "Windows 부분 지원(install.ps1 CI 검증, Git Bash 훅·atask 미검증)"으로 정확. 옛 "Windows 미지원" 단정 없음. `tws Windows 미지원`은 사실(tmux는 WSL만)이라 정확
+- [x] `gh issue close 36` (수용 근거 코멘트 포함)
 
 ## 검증
 
@@ -52,3 +52,10 @@ git grep -n "실행 후보 폴백\|마커 병합 사본\|coreutils" -- '*.md'
 ### 2026-06-07
 
 - task 생성: 내용은 병합으로 반영됨 → 검증·종료만 남은 저우선 작업.
+
+### 2026-06-08
+
+- 검증 완료: 정확화 서술이 main에 일관 존재(실행후보폴백 7파일·마커병합 10·coreutils 6·자동승계아님 6).
+  USAGE 지원 표가 "Windows 부분 지원(install.ps1 CI 검증, Git Bash 훅·atask 미검증)"으로 정확 — 옛 "미지원" 단정 없음.
+- 신규 코드 변경 없음(검증·종료 task). 상태 → **done**, GitHub #36 close 예정.
+- 후속: Git Bash 훅·atask 런타임 "미검증"은 별도 task(windows-runtime-verification, #40)에서 다룬다.
