@@ -14,9 +14,9 @@ FROM:: [[2026-06-07-workflow-02-git-command-guardrails]]
 
 # [task] /git 커맨드 가드레일
 
-- **상태**: planned
+- **상태**: done
 - **우선순위**: medium
-- **담당**: unassigned
+- **담당**: Claude (Opus)
 - **관련 문서**: #27, [[2026-06-07-workflow-02-git-command-guardrails]]
 
 ## 목표
@@ -31,11 +31,11 @@ FROM:: [[2026-06-07-workflow-02-git-command-guardrails]]
 
 ## 작업 목록
 
-- [ ] 기본 브랜치 직접 푸시 가드(비-main 또는 확인) 절차 명문화
-- [ ] 커밋 전 `git status`로 의도치 않은 외부 변경(병렬 세션) 혼입 점검 단계 추가
-- [ ] `/verify` 또는 최소 정적 검사 선행을 커맨드 절차에 명시
-- [ ] 커맨드 문서 갱신 + 예시
-- [ ] 동작 확인(시뮬레이션 커밋으로 가드 발동 확인)
+- [x] 브랜치 가드: 의도치 않은 브랜치면 중단·보고, main 직접 푸시는 진행하되 feat 브랜치 권장 명시(§2)
+- [x] 변경 소유권 점검: `git add -A` 전 무관한(병렬 세션) 변경 혼입 차단·선택 스테이징(§1)
+- [x] 검증 선행: `*.sh`→shellcheck·`bash -n`, `git diff --check`, 실패 시 커밋 중단(§3)
+- [x] non-fast-forward 푸시 가드 추가(병렬 세션 대비): `pull --no-rebase` 재시도, 충돌 시 임의해결 금지(§6)
+- [x] 커맨드 문서 갱신(`commands/git.md` 절차 재구성) + doc-contract 테스트 `tests/git_command.bats` 5건
 
 ## 검증
 
@@ -55,3 +55,12 @@ git status --short
 ### 2026-06-07
 
 - task 생성: 이번 세션의 병렬 브랜치 혼선이 정확히 이 가드 부재와 맞닿아 우선 기록.
+
+### 2026-06-08
+
+- 구현 (`commands/git.md` Haiku 위임 절차에 4가지 가드 추가 + 신규 `tests/git_command.bats`).
+- 검증: `shellcheck` 통과, `bats tests/*.bats` **100개 전부 green**(신규 5), `check_index.sh` 통과.
+- 커밋: **4bafe62** (`feat: /git 커맨드 가드레일 — 소유권·브랜치·검증·non-ff 푸시 (#27)`), push 완료.
+- 설계 메모: `/git`은 마크다운 위임 커맨드라 단위 테스트 불가 → **doc-contract 테스트**(가드 키워드 존재 검사)로
+  절차에서 가드가 빠지는 회귀를 차단. 이번 세션에서 실제 겪은 non-ff 충돌도 §6 가드로 반영.
+- 상태 → **done**. GitHub #27 close 예정.

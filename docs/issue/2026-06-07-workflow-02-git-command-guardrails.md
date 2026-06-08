@@ -18,7 +18,7 @@ FROM:: [[2026-06-07-workflow-audit]]
 - **작성일**: 2026-06-07
 - **심각도**: HIGH
 - **영역**: `commands/git.md`, Git 워크플로우
-- **상태**: 정적 경로 확인 완료
+- **상태**: 해결됨 — 4bafe62 (commands/git.md에 소유권·브랜치·검증·non-ff 가드 추가). task [[2026-06-07-git-command-guardrails]]
 
 ## 문제
 
