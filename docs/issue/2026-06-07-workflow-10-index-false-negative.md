@@ -18,7 +18,7 @@ FROM:: [[2026-06-07-workflow-audit]]
 - **작성일**: 2026-06-07
 - **심각도**: LOW
 - **영역**: `tests/check_index.sh:CheckReferenced`
-- **상태**: 반례 파일로 재현 완료
+- **상태**: 해결됨 — c7afec6 (check_index stem 매칭을 단어경계 -w로 강화). task [[2026-06-07-drift-detection-content-sync]]
 
 ## 문제
 

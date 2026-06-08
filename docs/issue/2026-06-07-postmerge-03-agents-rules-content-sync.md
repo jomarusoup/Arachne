@@ -18,7 +18,7 @@ FROM:: [[2026-06-07-postmerge-audit]]
 - **작성일**: 2026-06-07
 - **심각도**: MEDIUM
 - **영역**: `tests/check_index.sh`, `AGENTS.md`, `rules/common/*`
-- **상태**: 설계 검토 필요
+- **상태**: 해결됨 — c7afec6 (check_convention_sync.sh 신설, AGENTS↔rules 토큰 일치 CI 검사). task [[2026-06-07-drift-detection-content-sync]]
 - **GitHub**: #39
 
 ## 문제
