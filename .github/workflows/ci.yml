@@ -42,7 +42,7 @@ jobs:
       - name: Install Rocky verification tools
         run: |
           dnf install -y epel-release
-          dnf install -y ShellCheck bats git jq
+          dnf install -y ShellCheck bats diffutils git jq
 
       - name: Shellcheck (RHEL/Rocky 패키지 기준)
         run: shellcheck -S warning ./*.sh hooks/*.sh tests/*.sh
@@ -75,14 +75,18 @@ jobs:
 
   verify-macos:
     runs-on: macos-latest
+    env:
+      LANG: en_US.UTF-8
+      LC_ALL: en_US.UTF-8
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
       - name: Install macOS verification tools
         run: |
-          brew install shellcheck bats-core jq coreutils
+          brew install shellcheck bats-core jq coreutils bash
           echo "$(brew --prefix coreutils)/libexec/gnubin" >> "$GITHUB_PATH"
+          echo "$(brew --prefix bash)/bin" >> "$GITHUB_PATH"
 
       - name: Shellcheck (macOS)
         run: shellcheck -S warning ./*.sh hooks/*.sh tests/*.sh

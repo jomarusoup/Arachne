@@ -18,7 +18,7 @@ FROM:: [[empty]]
 - **상태**: done
 - **우선순위**: high
 - **담당**: Codex
-- **관련 문서**: [ci.md](../ci.md), [ci.yml](../../.github/workflows/ci.yml)
+- **관련 문서**: [CI.md](../CI.md), [ci.yml](../../.github/workflows/ci.yml)
 
 ## 목표
 
@@ -30,7 +30,7 @@ GitHub Actions CI를 Ubuntu, Red Hat/Rocky, Windows, macOS job으로 분리해 �
 - 포함:
   - `.github/workflows/ci.yml` 플랫폼별 job 분리
   - Windows 설치 테스트의 PowerShell 인자 전달 수정
-  - `docs/ci.md` 플랫폼별 Mermaid 흐름과 운영 절차 갱신
+  - `docs/CI.md` 플랫폼별 Mermaid 흐름과 운영 절차 갱신
 - 제외:
   - 실제 외부 Claude/Codex/Gemini/Copilot API 호출 E2E
   - 배포 또는 릴리스 자동화
@@ -41,7 +41,7 @@ GitHub Actions CI를 Ubuntu, Red Hat/Rocky, Windows, macOS job으로 분리해 �
 - [x] 별도 브랜치 `ci-platform-split`에서 작업한다.
 - [x] Ubuntu, Red Hat/Rocky, Windows, macOS job을 workflow에 분리한다.
 - [x] Windows 설치 테스트의 `-Install` 인자 전달 실패를 수정한다.
-- [x] `docs/ci.md`를 실제 플랫폼 분기와 일치하게 갱신한다.
+- [x] `docs/CI.md`를 실제 플랫폼 분기와 일치하게 갱신한다.
 - [x] 정적 검사와 가능한 로컬 검증을 실행한다.
 
 ## 검증
@@ -76,8 +76,7 @@ pwsh -File .\tests\install_windows.ps1
   오류가 발생했다.
 - 구현: CI job을 `verify-ubuntu`, `verify-rocky`, `verify-windows`, `verify-macos`로 분리하고,
   Windows 테스트 호출을 `RunInstaller -Arguments @(...)`로 고쳐 `-Install`이 named switch로 전달되게 했다.
-- 문서: `docs/ci.md`를 플랫폼별 Mermaid 흐름과 로컬 재현 절차 중심으로 갱신하고, `docs/CI.md`는
-  대문자 경로 호환 안내 문서로 축소했다.
+- 문서: `docs/CI.md`를 플랫폼별 Mermaid 흐름과 로컬 재현 절차 중심으로 갱신했다.
 - 검증 통과:
   - `git diff --check`
   - `bash -n tests/validate_settings.sh tests/check_index.sh tests/check_convention_sync.sh tests/smoke_hooks.sh`

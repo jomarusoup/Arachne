@@ -32,14 +32,14 @@ function AssertTrue {
 ################################################################################
 # FUNCTION    : RunInstaller
 # DESCRIPTION : 격리 홈을 사용해 Windows 설치기 실행
-# PARAMETERS  : string[] arguments - 설치기 인자
+# PARAMETERS  : string target - 설치 대상
 ################################################################################
 function RunInstaller {
-    param([string[]]$Arguments)
+    param([string]$Target)
 
     $env:ARACHNE_HOME = $SCRIPT:TEST_HOME
     $env:ARACHNE_SKIP_PATH = "1"
-    & $SCRIPT:INSTALLER @Arguments
+    & $SCRIPT:INSTALLER -Install -Target $Target
 }
 
 try {
@@ -48,7 +48,7 @@ try {
     #---------------------------------------------------------------------------
     # Claude 설치 및 Windows 경로 치환
     #---------------------------------------------------------------------------
-    RunInstaller -Arguments @("-Install", "-Target", "claude")
+    RunInstaller -Target "claude"
     AssertTrue (Test-Path (Join-Path $SCRIPT:TEST_HOME ".claude\CLAUDE.md")) "Claude file"
     AssertTrue (Test-Path (Join-Path $SCRIPT:TEST_HOME ".claude\commands")) "commands directory"
 
@@ -61,15 +61,15 @@ try {
     #---------------------------------------------------------------------------
     # Gemini 연결과 Codex 마커 병합 멱등성
     #---------------------------------------------------------------------------
-    RunInstaller -Arguments @("-Install", "-Target", "gemini")
+    RunInstaller -Target "gemini"
     AssertTrue (Test-Path (Join-Path $SCRIPT:TEST_HOME ".gemini\GEMINI.md")) "Gemini file"
 
     $codex_dir = Join-Path $SCRIPT:TEST_HOME ".codex"
     New-Item -ItemType Directory -Path $codex_dir -Force | Out-Null
     $codex_path = Join-Path $codex_dir "AGENTS.md"
     [System.IO.File]::WriteAllText($codex_path, "USER-CONTENT`n")
-    RunInstaller -Arguments @("-Install", "-Target", "codex")
-    RunInstaller -Arguments @("-Install", "-Target", "codex")
+    RunInstaller -Target "codex"
+    RunInstaller -Target "codex"
     $codex_text = [System.IO.File]::ReadAllText($codex_path)
     AssertTrue ($codex_text.Contains("USER-CONTENT")) "Codex user content preserved"
     $marker_count = ([regex]::Matches($codex_text, "<!-- === ARACHNE BEGIN === -->")).Count

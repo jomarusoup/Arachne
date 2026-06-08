@@ -10,10 +10,10 @@ GitHub Actions의 실행 조건, job별 범위, 로컬 CI 전체 재현, 실패 
 ```bash
 # bats-core (Bash Automated Testing System)
 # Ubuntu/Debian
-sudo apt install bats
+sudo apt install bats diffutils jq shellcheck
 
 # macOS
-brew install bats-core
+brew install bats-core bash coreutils jq shellcheck
 
 # 또는 직접 설치
 git clone https://github.com/bats-core/bats-core.git
@@ -43,9 +43,15 @@ pwsh -File tests/install_windows.ps1
 | `hooks.bats` | `hooks/*.sh` — 존재·권한·문법·기본 동작 | bats |
 | `atask.bats` | `arachne-task.sh` — 역할 순서·쿼터 폴백·쿨다운·오류 처리 | bats |
 | `docs_sync.bats` | `docs-sync.sh` — 설정 생성·목록·문법 | bats |
+| `drift.bats` | 인덱스·규약 드리프트 검사 fixture | bats |
+| `git_command.bats` | `/git` 커맨드 문서 계약 | bats |
 | `new_project.bats` | `arachne new` — 문서 구조·템플릿·git init·입력 안전성 | bats |
+| `smoke.bats` | 훅·`atask` 런타임 스모크 | bats |
+| `wrapper_security.bats` | `gtask`/`ctask` wrapper 프리앰블·raw·쓰기 경고 | bats |
 | `check_index.sh` | 인덱스 ↔ 실제 파일 일치 (skills·commands·agents·rules) | bash |
+| `check_convention_sync.sh` | `AGENTS.md` ↔ `rules/common/*` 핵심 토큰 동기화 | bash |
 | `validate_settings.sh` | `settings.template.json` — JSON 유효성·필수 키 | bash + jq |
+| `smoke_hooks.sh` | Windows Git Bash와 Ubuntu smoke job 공용 런타임 스모크 | bash |
 | `install_windows.ps1` | `install.ps1` — 링크·경로 치환·Gemini/Codex·CMD 래퍼 | PowerShell |
 
 ## validate_settings.sh
