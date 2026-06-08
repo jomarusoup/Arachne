@@ -18,7 +18,7 @@ FROM:: [[2026-06-07-workflow-audit]]
 - **작성일**: 2026-06-07
 - **심각도**: HIGH
 - **영역**: `commands/save-session.md`, `hooks/pre-compact.sh`, `hooks/session-start.sh`, `hooks/session-end.sh`
-- **상태**: 임시 프로젝트와 HOME에서 재현 완료
+- **상태**: 해결됨 — 62f552b (save-session 경로를 훅과 동일한 ~/.claude/sessions 절대경로로 일치). task [[2026-06-07-claude-state-and-session]]
 
 ## 문제
 

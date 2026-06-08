@@ -18,7 +18,7 @@ FROM:: [[2026-06-07-workflow-audit]]
 - **작성일**: 2026-06-07
 - **심각도**: MEDIUM
 - **영역**: `hooks/session-end.sh`, `hooks/gemini-check.sh`
-- **상태**: 일반 Git 저장소에서 재현 완료
+- **상태**: 해결됨 — 62f552b (session-end·git-bus 기준점 기록 전 .claude mkdir 보장). task [[2026-06-07-claude-state-and-session]]
 
 ## 문제
 
