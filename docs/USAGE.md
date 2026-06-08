@@ -357,7 +357,7 @@ powershell -ExecutionPolicy Bypass -File .\install.ps1 -Install
 | Linux | 지원 | Bash, Git, GNU `readlink`, `sed`, `awk`, `grep` |
 | Windows + WSL2 | 조건부 | Linux 호환 경로지만 이 저장소 CI에서 별도 검증하지 않음 |
 | macOS | 제한적 | GNU coreutils 설치 후 `greadlink` 또는 GNU `readlink`가 PATH에서 우선해야 함 |
-| Windows 네이티브 | 부분 지원 | `install.ps1` 설치는 CI 검증. Git Bash 훅·`atask` 런타임과 통합 Copilot 타깃은 미검증/분리 |
+| Windows 네이티브 | 부분 지원 | `install.ps1` 설치 + **Git Bash 훅·`atask` 런타임 스모크**(`tests/smoke_hooks.sh`)를 CI 검증(#40). 통합 Copilot 타깃은 분리 |
 
 현재 스크립트는 `readlink -f/-e`와 일부 `date -d` 사용 때문에 기본 macOS BSD 도구만으로는
 완전하게 동작하지 않는다. Windows 네이티브에서는 PowerShell 설치기를 사용하되 Bash 기반 훅과

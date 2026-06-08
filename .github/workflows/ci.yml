@@ -41,3 +41,7 @@ jobs:
       - name: PowerShell 설치기 검증
         shell: pwsh
         run: ./tests/install_windows.ps1
+
+      - name: Git Bash 훅·atask 런타임 스모크 (#40)
+        shell: bash
+        run: bash tests/smoke_hooks.sh
