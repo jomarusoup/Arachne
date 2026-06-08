@@ -126,3 +126,38 @@ HOOKS_DIR="${REPO_DIR}/hooks"
     [ "$status" -eq 0 ]
     rm -rf "${TMP_DIR}"
 }
+
+#-------------------------------------------------------------------------------
+# #30: .claude 부재 시에도 기준점(last-seen-commit)을 생성한다 (mkdir 보장)
+#-------------------------------------------------------------------------------
+@test "git-bus-check.sh(#30): .claude 부재 신규 레포에서 기준점 파일 생성" {
+    TMP_REPO=$(mktemp -d)
+    git -C "${TMP_REPO}" init -q
+    git -C "${TMP_REPO}" -c user.email=t@t -c user.name=t commit -q --allow-empty -m init
+    run bash -c "cd '${TMP_REPO}' && bash '${HOOKS_DIR}/git-bus-check.sh'"
+    [ "$status" -eq 0 ]
+    [ -f "${TMP_REPO}/.claude/last-seen-commit" ]
+    rm -rf "${TMP_REPO}"
+}
+
+@test "session-end.sh(#30): .claude 부재 시 기준점 디렉터리 생성 후 기록" {
+    TMP_REPO=$(mktemp -d)
+    TMP_HOME=$(mktemp -d)
+    git -C "${TMP_REPO}" init -q
+    git -C "${TMP_REPO}" -c user.email=t@t -c user.name=t commit -q --allow-empty -m init
+    run bash -c "cd '${TMP_REPO}' && HOME='${TMP_HOME}' bash '${HOOKS_DIR}/session-end.sh'"
+    [ "$status" -eq 0 ]
+    [ -f "${TMP_REPO}/.claude/last-seen-commit" ]
+    rm -rf "${TMP_REPO}" "${TMP_HOME}"
+}
+
+#-------------------------------------------------------------------------------
+# #29: 세션 저장(save-session)·복원(훅) 경로 일치 — 홈 절대경로
+#-------------------------------------------------------------------------------
+@test "session(#29): save-session 저장 경로가 훅의 읽기 경로와 일치" {
+    grep -q 'HOME/.claude/sessions' "${HOOKS_DIR}/session-start.sh"
+    grep -q 'HOME/.claude/sessions' "${HOOKS_DIR}/session-end.sh"
+    grep -q '~/.claude/sessions' "${REPO_DIR}/commands/save-session.md"
+    # 옛 프로젝트 상대경로(`.claude/sessions/` 단독)로 안내하지 않아야 함
+    ! grep -qE '저장 위치: `\.claude/sessions' "${REPO_DIR}/commands/save-session.md"
+}

@@ -1,9 +1,10 @@
 #!/bin/bash
 ################################################################################
 # FILE NAME   : git-bus-check.sh
-# DESCRIPTION : Gemini 작업 완료 감지 — 마지막 Claude 세션 이후 새 커밋 확인
+# DESCRIPTION : git-bus — 업스트림 브랜치의 새 커밋 감지(작성 CLI 판별 없음).
+#               마지막 기준점(.claude/last-seen-commit) 이후 새 커밋을 다음 프롬프트에 알린다.
 # DATA        : 2026-05-31
-# Modification: 2026-06-04
+# Modification: 2026-06-08
 ################################################################################
 
 # 훅은 자동 실행·의도적 continue 경로라 -e 제외 (실패해도 세션을 막지 않음)
@@ -35,11 +36,13 @@ fi
 
 STATE_FILE="$REPO_DIR/.claude/last-seen-commit"
 
+# #30: 모든 기준점 write(최초·갱신) 전에 .claude 디렉터리를 보장한다 — 부재 시 저장 실패 방지
+mkdir -p "$(dirname "$STATE_FILE")"
+
 #-------------------------------------------------------------------------------
 # 최초 실행 — 현재 HEAD 저장 후 종료
 #-------------------------------------------------------------------------------
 if [ ! -f "$STATE_FILE" ]; then
-    mkdir -p "$(dirname "$STATE_FILE")"
     echo "$CURRENT_HEAD" > "$STATE_FILE"
     exit 0
 fi

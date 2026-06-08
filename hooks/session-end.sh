@@ -4,7 +4,7 @@
 # DESCRIPTION : Stop Hook — 세션 종료 시 git 기반 프로젝트 상태 스냅샷 생성,
 #               Gemini 감지 기준점(last-seen-commit) 갱신
 # DATA        : 2026-05-05
-# Modification: 2026-06-04
+# Modification: 2026-06-08
 ################################################################################
 
 # 훅은 자동 실행·의도적 continue 경로라 -e 제외 (실패해도 세션을 막지 않음)
@@ -82,6 +82,8 @@ UpdateGeminiRef() {
     fi
     [ -z "$current_head" ] && return
 
+    # #30: .claude 디렉터리가 없으면(갓 clone 등) 생성 후 기록 — 없으면 기준점 저장이 조용히 실패
+    mkdir -p "$repo_dir/.claude"
     echo "$current_head" > "$repo_dir/.claude/last-seen-commit"
 }
 

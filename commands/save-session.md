@@ -6,7 +6,11 @@ description: 세션 요약을 파일로 저장 — 컨텍스트 70% 도달 시 �
 컨텍스트 70% 도달 시 반드시 실행.
 다음 세션이 이 파일 하나만 읽으면 맥락을 이어받을 수 있게 작성.
 
-저장 위치: `.claude/sessions/YYYY-MM-DD-[주제].md`
+저장 위치: `~/.claude/sessions/YYYY-MM-DD-[주제].md`
+
+> **경로 일치(중요)**: 반드시 홈 절대경로 `~/.claude/sessions/`에 저장한다. `session-start.sh`(복원
+> 안내)·`session-end.sh`(자동 스냅샷)가 같은 `$HOME/.claude/sessions/`를 읽고 쓰므로, 프로젝트 상대경로
+> `./.claude/...`에 저장하면 인계가 끊긴다. 파일명은 날짜로 시작(`YYYY-MM-DD-`)해야 수동 세션으로 우선 인식된다.
 
 ## 저장 형식
 
