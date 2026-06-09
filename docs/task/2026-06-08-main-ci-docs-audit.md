@@ -88,3 +88,11 @@ bash tests/check_convention_sync.sh
   - `bash tests/check_convention_sync.sh`
 - 미실행: 현재 작업 환경에 `pwsh`, Docker/Rocky, macOS가 없어 Windows/Rocky/macOS 실제 runner 통과는
   다음 GitHub Actions 실행에서 확인해야 한다.
+
+### 2026-06-09
+
+- 후속 CI run `27146410199` 확인:
+  - Ubuntu, Rocky, Windows는 통과했다.
+  - macOS의 Bash/UTF-8 설정은 정상 적용되어 한국어 테스트명 101개를 모두 인식했다.
+  - 별도 결함인 GNU 전용 `sed -i` 호출 때문에 `tests/install.bats` 1건이 실패했다.
+- 후속 수정은 [macOS sed CI 호환성 task](2026-06-09-macos-sed-ci-fix.md)로 분리했다.

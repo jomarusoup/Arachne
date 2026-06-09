@@ -3,7 +3,7 @@
 # FILE NAME   : install.bats
 # DESCRIPTION : install.sh 동작 검증 테스트
 # DATA        : 2026-06-01
-# Modification: 2026-06-07
+# Modification: 2026-06-09
 ################################################################################
 
 REPO_DIR="$(cd "$(dirname "$BATS_TEST_FILENAME")/.." && pwd)"
@@ -226,8 +226,9 @@ run_install() {
 @test "check: Copilot 지침이 AGENTS.md와 다르면 stale 탐지" {
     bash "${REPO_DIR}/install.sh" -i --target claude
     bash "${REPO_DIR}/install.sh" -i --target copilot
-    sed -i 's/# AGENTS.md/# STALE.md/' \
-        "${TMP_DIR}/.copilot/instructions/arachne.instructions.md"
+    copilot_file="${TMP_DIR}/.copilot/instructions/arachne.instructions.md"
+    sed 's/# AGENTS.md/# STALE.md/' "$copilot_file" > "${copilot_file}.tmp"
+    mv "${copilot_file}.tmp" "$copilot_file"
 
     run bash "${REPO_DIR}/install.sh" --check
     [ "$status" -eq 1 ]
