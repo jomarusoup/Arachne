@@ -354,14 +354,14 @@ powershell -ExecutionPolicy Bypass -File .\install.ps1 -Install
 
 | 환경 | 상태 | 전제 |
 |---|---|---|
-| Linux | 지원 | Bash, Git, GNU `readlink`, `sed`, `awk`, `grep` |
+| Linux | 지원 | Bash, Git, 표준 Unix 도구 |
 | Windows + WSL2 | 조건부 | Linux 호환 경로지만 이 저장소 CI에서 별도 검증하지 않음 |
-| macOS | 제한적 | GNU coreutils 설치 후 `greadlink` 또는 GNU `readlink`가 PATH에서 우선해야 함 |
+| macOS | 지원 | 기본 설치 지원. 전체 기여자 테스트는 Homebrew coreutils 필요 |
 | Windows 네이티브 | 부분 지원 | `install.ps1` 설치 + **Git Bash 훅·`atask` 런타임 스모크**(`tests/smoke_hooks.sh`)를 CI 검증(#40). 통합 Copilot 타깃은 분리 |
 
-현재 스크립트는 `readlink -f/-e`와 일부 `date -d` 사용 때문에 기본 macOS BSD 도구만으로는
-완전하게 동작하지 않는다. Windows 네이티브에서는 PowerShell 설치기를 사용하되 Bash 기반 훅과
-위임 래퍼에는 Git for Windows가 필요하고, `tws`는 WSL 또는 별도 tmux 환경에서 사용한다.
+설치기와 기여자 테스트의 도구 요구사항은 다르다. 기능별 정확한 범위는
+[COMPATIBILITY.md](COMPATIBILITY.md)를 따른다. Windows 네이티브에서는 PowerShell 설치기를
+사용하되 Bash 기반 훅과 위임 래퍼에는 Git for Windows가 필요하다.
 
 ### dotfiles 병합 메커니즘 (Safe Merge)
 기존의 단순 심볼릭 링크 방식 대신, 사용자 홈 디렉토리의 `.bash_profile`, `.vimrc` 파일에 Arachne 설정을 **병합**합니다.
@@ -384,8 +384,8 @@ powershell -ExecutionPolicy Bypass -File .\install.ps1 -Install
 | `arachne -i`, `--install` | `~/.claude/` 심볼릭 링크 + `settings.json` 생성 + dotfiles 병합 + bin 등록 (재설치) |
 | `arachne -u`, `--update` | `git pull` 후 위 설치를 재실행 (동기화 허브) |
 | `arachne -c`, `--check` | Claude·Gemini·Codex·Copilot 연결 상태 점검 — 심볼릭 댕글링·병합본 stale 탐지 |
-| `arachne -n <P> [DIR]`, `--new` | 신규 프로젝트 스캐폴딩 — 문서 구조, `.arachne/` 검증 runner, GitHub Actions workflow 생성. `--no-git`로 git init 생략 |
-| `arachne init-ci [DIR]`, `--init-ci` | 기존 프로젝트에 `.arachne/verify.sh`, `.arachne/commands`, `.github/workflows/arachne.yml` 생성/갱신 |
+| `arachne -n <P> [DIR] --profile <PROFILE>`, `--new` | 신규 프로젝트 스캐폴딩. `--no-git`, `minimal|python|web|python-web` 지원 |
+| `arachne init-ci [DIR] --profile <PROFILE>`, `--init-ci` | 기존 프로젝트에 profile 기반 검증 runner와 workflow 생성/갱신 |
 | `arachne project-check [DIR]`, `--project-check` | 프로젝트의 `.arachne/verify.sh`를 실행하고 실패 상태를 그대로 반환 |
 | `arachne -s`, `--session` | tmux 워크스페이스 매니저 실행 (= `tws`, 8장 참고) |
 | `arachne -e`, `--export-settings` | 현재 `~/.claude/settings.json` → 레포 `settings.template.json`으로 역추출 |
@@ -404,6 +404,7 @@ Arachne 자체 `.github/workflows/ci.yml`은 Arachne 저장소만 검증한다. 
 
 ```text
 .arachne/
+├── profile         # Arachne가 관리하는 CI profile
 ├── verify.sh       # Arachne가 관리하는 공통 runner
 └── commands        # 프로젝트가 관리하는 검증 명령, 한 줄에 하나
 .github/workflows/
@@ -413,21 +414,12 @@ Arachne 자체 `.github/workflows/ci.yml`은 Arachne 저장소만 검증한다. 
 기존 프로젝트 초기화:
 
 ```bash
-arachne init-ci
+arachne init-ci --profile python-web
 ```
 
-`.arachne/commands`에는 프로젝트가 실제 사용하는 명령을 명시한다.
-
-```bash
-# Go
-go test ./...
-go vet ./...
-
-# JavaScript/TypeScript 예시
-npm ci
-npm test
-npm run build
-```
+profile별 기본 명령과 GitHub 런타임은 자동 생성된다. 상세 계약은
+[PROJECT-CI.md](PROJECT-CI.md), 도구 기준은 [PYTHON-WEB-PROFILE.md](PYTHON-WEB-PROFILE.md)를
+따른다.
 
 명령은 위에서 아래로 프로젝트 루트에서 실행되며 첫 실패 상태가 그대로 반환된다. `init-ci`를 다시
 실행하면 관리 파일인 `verify.sh`와 workflow는 최신 템플릿으로 갱신하고 사용자 소유

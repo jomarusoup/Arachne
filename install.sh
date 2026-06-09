@@ -89,7 +89,9 @@ usage() {
     echo "  -c, --check            CLI 연결 상태 점검 (심볼릭 댕글링·병합본 stale 탐지)"
     echo "  -n, --new P [DIR]      신규 프로젝트 스캐폴딩 (README + docs/{issue,idea,task,template})"
     echo "                         DIR 생략 시 현재 디렉터리. --no-git 으로 git init 생략"
+    echo "                         --profile minimal|python|web|python-web (기본 minimal)"
     echo "      --init-ci [DIR]    프로젝트 검증 runner + GitHub Actions workflow 생성/갱신"
+    echo "                         --profile minimal|python|web|python-web (기본 minimal)"
     echo "      --project-check [DIR]"
     echo "                         프로젝트의 .arachne/verify.sh 실행 (기본 현재 디렉터리)"
     echo "  -s, --session          tmux 워크스페이스 매니저(tws) 실행"
@@ -732,14 +734,57 @@ check_arachne() {
 }
 
 ################################################################################
+# FUNCTION    : validate_project_profile
+# DESCRIPTION : 프로젝트 CI profile 이름 검증
+# PARAMETERS  : string profile - minimal|python|web|python-web
+# RETURNED    : 유효하면 0, 아니면 1
+################################################################################
+validate_project_profile() {
+    local profile="$1"
+
+    case "$profile" in
+        minimal|python|web|python-web) return 0 ;;
+        *)
+            echo "[ERROR] 알 수 없는 profile: '$profile' (minimal|python|web|python-web)" >&2
+            return 1
+            ;;
+    esac
+}
+
+################################################################################
 # FUNCTION    : init_project_ci
 # DESCRIPTION : 프로젝트에 로컬·GitHub CI 공통 검증 자산 설치 또는 갱신
-# PARAMETERS  : string project_dir - 대상 프로젝트 경로, 기본 현재 디렉터리
+# PARAMETERS  : 위치인자 project_dir + --profile minimal|python|web|python-web
 ################################################################################
 init_project_ci() {
-    local project_dir="${1:-$PWD}"
+    local profile="minimal"
+    local positional=()
+    while [ $# -gt 0 ]; do
+        case "$1" in
+            --profile=*) profile="${1#--profile=}" ;;
+            --profile)
+                shift
+                [ $# -gt 0 ] || {
+                    echo "[ERROR] --profile 값이 필요합니다" >&2
+                    return 1
+                }
+                profile="$1"
+                ;;
+            -*) echo "[ERROR] 알 수 없는 옵션: $1" >&2; return 1 ;;
+            *) positional+=("$1") ;;
+        esac
+        shift
+    done
+
+    if [ "${#positional[@]}" -gt 1 ]; then
+        echo "[ERROR] 프로젝트 디렉터리는 하나만 지정할 수 있습니다" >&2
+        return 1
+    fi
+    validate_project_profile "$profile" || return 1
+
+    local project_dir="${positional[0]:-$PWD}"
     local verify_tmpl="$REPO_DIR/templates/project/verify.sh"
-    local commands_tmpl="$REPO_DIR/templates/project/commands"
+    local commands_tmpl="$REPO_DIR/templates/project/profiles/$profile/commands"
     local workflow_tmpl="$REPO_DIR/templates/project/arachne.yml"
     local managed_path
     local project_abs
@@ -760,6 +805,7 @@ init_project_ci() {
         "$project_abs/.github" \
         "$project_abs/.github/workflows" \
         "$project_abs/.arachne/verify.sh" \
+        "$project_abs/.arachne/profile" \
         "$project_abs/.github/workflows/arachne.yml"; do
         if [ -L "$managed_path" ]; then
             echo "[ERROR] 프로젝트 CI 관리 경로가 심볼릭 링크입니다: $managed_path" >&2
@@ -771,6 +817,7 @@ init_project_ci() {
     cp "$verify_tmpl" "$project_abs/.arachne/verify.sh"
     chmod +x "$project_abs/.arachne/verify.sh"
     cp "$workflow_tmpl" "$project_abs/.github/workflows/arachne.yml"
+    printf '%s\n' "$profile" > "$project_abs/.arachne/profile"
 
     if [ ! -f "$project_abs/.arachne/commands" ]; then
         cp "$commands_tmpl" "$project_abs/.arachne/commands"
@@ -780,7 +827,8 @@ init_project_ci() {
     fi
 
     echo "[Arachne] 프로젝트 CI 초기화 완료: $project_abs"
-    echo "  관리: .arachne/verify.sh, .github/workflows/arachne.yml"
+    echo "  profile: $profile"
+    echo "  관리: .arachne/profile, .arachne/verify.sh, .github/workflows/arachne.yml"
     return 0
 }
 
@@ -815,14 +863,25 @@ check_project() {
 # DESCRIPTION : 신규 프로젝트를 기록 가능한 문서 구조로 스캐폴딩.
 #               모든 문서 frontmatter 는 docs/template/example.md(SSOT)에서 파생.
 # PARAMETERS  : 위치인자 project_name [parent_dir] + 플래그 --no-git
+#               --profile minimal|python|web|python-web
 #               parent_dir 생략 시 현재 디렉터리. 대상 존재 시 거부.
 ################################################################################
 new_project() {
     local do_git=1
+    local profile="minimal"
     local positional=()
     while [ $# -gt 0 ]; do
         case "$1" in
             --no-git) do_git=0 ;;
+            --profile=*) profile="${1#--profile=}" ;;
+            --profile)
+                shift
+                [ $# -gt 0 ] || {
+                    echo "[ERROR] --profile 값이 필요합니다" >&2
+                    exit 1
+                }
+                profile="$1"
+                ;;
             -*)       echo "[ERROR] 알 수 없는 옵션: $1" >&2; exit 1 ;;
             *)        positional+=("$1") ;;
         esac
@@ -842,6 +901,7 @@ new_project() {
     case "$proj" in
         */*|.*) echo "[ERROR] 프로젝트명에 '/'·선행 '.' 사용 불가: $proj" >&2; exit 1 ;;
     esac
+    validate_project_profile "$profile" || exit 1
 
     local tmpl="$REPO_DIR/docs/template/example.md"
     local task_tmpl="$REPO_DIR/docs/template/task.md"
@@ -887,9 +947,10 @@ new_project() {
     #---------------------------------------------------------------------------
     # 프로젝트 로컬 검증 + GitHub Actions CI
     #---------------------------------------------------------------------------
-    init_project_ci "$dest"
+    init_project_ci "$dest" --profile "$profile"
 
     echo "[Arachne] 신규 프로젝트 생성: $dest"
+    echo "  profile: $profile"
     echo "  구조: README.md, docs/{issue,idea,task,template}, .arachne, .github/workflows"
     [ "$do_git" -eq 1 ] && echo "  git 저장소 초기화됨"
     return 0
@@ -908,7 +969,7 @@ case "${1:-}" in
     -u|--update|update)                       shift; parse_target "$@"; update_arachne ;;
     -c|--check|check)                         check_arachne ;;
     -n|--new|new)                             shift; new_project "$@" ;;
-    --init-ci|init-ci)                        shift; init_project_ci "${1:-$PWD}" ;;
+    --init-ci|init-ci)                        shift; init_project_ci "$@" ;;
     --project-check|project-check)            shift; check_project "${1:-$PWD}" ;;
     -s|--session|session)                     run_session ;;
     -e|--export-settings|export-settings)     export_settings ;;

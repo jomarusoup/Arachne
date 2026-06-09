@@ -173,7 +173,8 @@ LLM 시스템을 짜는 두 방식. **하나의 스펙트럼**이며, 단순한 
 - **정적 분석**: CI가 `shellcheck -S warning ./*.sh hooks/*.sh tests/*.sh` 강제. `/verify` 커맨드가
   언어별 정적+동작 2단계.
 - **교차 모델**: 구현(Claude) ↔ 검증(Codex `ctask`)을 다른 모델이 맡아 맹점 탈상관.
-- **인덱스 드리프트**: `tests/check_index.sh`가 파일↔인덱스 일치 강제(단, 내용 동기화는 #39로 보강 예정).
+- **인덱스 드리프트**: `tests/check_index.sh`가 파일↔인덱스 일치를,
+  `tests/check_convention_sync.sh`가 공통 규약 핵심 내용 동기화를 검사한다.
 - **TDD 정책**: `rules/common/testing.md`(RED→GREEN→REFACTOR, 커버리지 80%+).
 - **남은 함정**: "종료코드 0 ≠ 정확성"은 `atask impl`에서 실제 결함(#26)으로 확인됨 — 검증의 한계를 코드가 증명.
 
