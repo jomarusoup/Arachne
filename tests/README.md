@@ -46,6 +46,7 @@ pwsh -File tests/install_windows.ps1
 | `drift.bats` | 인덱스·규약 드리프트 검사 fixture | bats |
 | `git_command.bats` | `/git` 커맨드 문서 계약 | bats |
 | `new_project.bats` | `arachne new` — 문서 구조·템플릿·git init·입력 안전성 | bats |
+| `project_ci.bats` | 사용 프로젝트 `init-ci`·`project-check`·실패 상태 전파 | bats |
 | `smoke.bats` | 훅·`atask` 런타임 스모크 | bats |
 | `wrapper_security.bats` | `gtask`/`ctask` wrapper 프리앰블·raw·쓰기 경고 | bats |
 | `check_index.sh` | 인덱스 ↔ 실제 파일 일치 (skills·commands·agents·rules) | bash |

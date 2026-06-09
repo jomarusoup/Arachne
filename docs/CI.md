@@ -20,6 +20,10 @@ Arachne의 CI(Continuous Integration, 지속적 통합)는 GitHub Actions에서 
 설치 동작, 설정 템플릿, 문서 인덱스, Windows 런타임 스모크를 자동 검증한다. 현재 CI는 검증 전용이며
 패키지 배포나 릴리스 생성 같은 CD(Continuous Deployment)는 수행하지 않는다.
 
+이 workflow는 **Arachne 저장소 자체**만 검증한다. Arachne를 사용하는 다른 프로젝트는
+`arachne init-ci`로 프로젝트별 `.github/workflows/arachne.yml`을 생성하고, 프로젝트가 소유한
+`.arachne/commands`에 빌드·린트·테스트 명령을 정의한다.
+
 실행 정의의 정본은 [`.github/workflows/ci.yml`](../.github/workflows/ci.yml)이다. 문서와 YAML이
 다르면 실제 GitHub Actions 동작을 결정하는 YAML이 우선한다.
 
@@ -348,6 +352,26 @@ CI 통과가 다음을 보장하지는 않는다.
 - 모든 Windows 버전, PowerShell 버전, 파일 시스템 조합 호환
 - 장시간 실제 사용자 워크플로의 안정성
 - 공급망 공격 부재
+- Arachne를 설치한 모든 외부 프로젝트의 빌드·테스트 통과
 
 CI는 정의된 자동 검사 범위 안에서 회귀를 차단하는 장치다. 새 운영 리스크가 발견되면 해당 리스크를
 재현하는 테스트를 추가하고 workflow에 연결해야 한다.
+
+## 12. 사용 프로젝트 CI
+
+```mermaid
+flowchart LR
+    G["로컬 /git"] --> P["arachne project-check"]
+    PR["GitHub main PR/push"] --> W[".github/workflows/arachne.yml"]
+    W --> V["bash .arachne/verify.sh"]
+    P --> V
+    V --> C[".arachne/commands<br/>프로젝트 lint/build/test"]
+```
+
+`verify.sh`와 workflow는 Arachne가 관리하고, `commands`는 프로젝트가 관리한다. 따라서 Arachne가
+언어별 명령을 추측하지 않으며 프로젝트가 실제 사용하는 검증을 명시한다.
+
+```bash
+arachne init-ci /path/to/project
+arachne project-check /path/to/project
+```

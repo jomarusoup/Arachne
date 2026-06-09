@@ -3,6 +3,7 @@
 # FILE NAME   : new_project.bats
 # DESCRIPTION : arachne new <project> 스캐폴딩 동작 검증
 # DATA        : 2026-06-06
+# Modification: 2026-06-09
 ################################################################################
 
 REPO_DIR="$(cd "$(dirname "$BATS_TEST_FILENAME")/.." && pwd)"
@@ -36,6 +37,16 @@ run_new() {
     [ -f "${TMP_DIR}/myproj/docs/task/README.md" ]
     [ -f "${TMP_DIR}/myproj/docs/template/example.md" ]
     [ -f "${TMP_DIR}/myproj/docs/template/task.md" ]
+}
+
+@test "new: 프로젝트 검증 스크립트와 GitHub Actions workflow 생성" {
+    run_new myproj "${TMP_DIR}"
+    [ "$status" -eq 0 ]
+    [ -x "${TMP_DIR}/myproj/.arachne/verify.sh" ]
+    [ -f "${TMP_DIR}/myproj/.arachne/commands" ]
+    [ -f "${TMP_DIR}/myproj/.github/workflows/arachne.yml" ]
+    grep -qF "bash .arachne/verify.sh" \
+        "${TMP_DIR}/myproj/.github/workflows/arachne.yml"
 }
 
 @test "new: 빈 디렉터리에 .gitkeep 배치" {

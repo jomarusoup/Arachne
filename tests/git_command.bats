@@ -5,6 +5,7 @@
 #               /git 은 Haiku 위임 마크다운 커맨드라, 가드가 절차에서 빠지지 않도록
 #               문서 계약(doc-contract)을 검사한다.
 # DATA        : 2026-06-08
+# Modification: 2026-06-09
 ################################################################################
 
 setup() {
@@ -30,6 +31,11 @@ setup() {
     grep -q "검증 선행" "${GIT_CMD}"
     grep -q "shellcheck" "${GIT_CMD}"
     grep -q "git diff --check" "${GIT_CMD}"
+}
+
+@test "git command: Arachne 프로젝트 검증을 로컬 CI 게이트로 실행" {
+    grep -q "arachne project-check" "${GIT_CMD}"
+    grep -q ".arachne/verify.sh" "${GIT_CMD}"
 }
 
 @test "git command(#27): non-fast-forward 푸시 가드 명시" {

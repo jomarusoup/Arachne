@@ -1,0 +1,28 @@
+################################################################################
+# FILE NAME   : arachne.yml
+# DESCRIPTION : Arachne 사용 프로젝트의 GitHub Actions 검증 workflow
+# DATA        : 2026-06-09
+# Modification: 2026-06-09
+################################################################################
+
+name: Arachne Project CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  project-check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Run project verification
+        run: bash .arachne/verify.sh
+

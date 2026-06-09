@@ -81,7 +81,9 @@ Bash에서는 `./install.sh -i --target copilot`을 사용합니다. 두 방식 
 | `arachne -i` (`--install`) | 재설치 및 설정 동기화 |
 | `arachne -u` (`--update`) | 최신 상태로 업데이트 (git pull + 재설치) |
 | `arachne -c` (`--check`) | Claude·Gemini·Codex·Copilot 연결 상태 점검 |
-| `arachne -n <P> [DIR]` (`--new`) | 신규 프로젝트 스캐폴딩 (README + docs/{issue,idea,task,template}) |
+| `arachne -n <P> [DIR]` (`--new`) | 신규 프로젝트 스캐폴딩 (문서 구조 + 프로젝트 검증 + GitHub Actions) |
+| `arachne init-ci [DIR]` | 기존 프로젝트에 `.arachne/verify.sh`와 GitHub Actions workflow 생성/갱신 |
+| `arachne project-check [DIR]` | `.arachne/commands`에 정의한 프로젝트 검증을 로컬에서 실행 |
 | `arachne -s` (`--session`) | **TWS (Tmux Workspace Manager)**: 대화형 세션 매니저 (`tws`와 동일) |
 | `arachne -e` (`--export-settings`) | settings.json → 템플릿 내보내기 |
 | `arachne -d` (`--export-dotfiles`) | dotfiles → 레포 내보내기 |
@@ -90,6 +92,24 @@ Bash에서는 `./install.sh -i --target copilot`을 사용합니다. 두 방식 
 | `codex-task` (= `ctask`) | **Codex 위임 래퍼 (tester/fixer 레인)** — Claude Code가 `codex exec`를 Bash로 호출해 테스트 작성·실행·버그 수정을 위임 |
 | `atask` (= `arachne-task`) | **헤드리스 폴백 디스패처** — 역할별 순서로 실행 후보를 바꾸지만 Codex/Gemini 단계는 각각 tester/fixer·reader/advisor 래퍼 제약을 유지 |
 | `docs-sync` | 원격 프로젝트 README/docs/Markdown 문서 ↔ Obsidian Vault 동기화 |
+
+---
+
+### Project CI
+
+Arachne 저장소의 CI는 하네스 자체를 검증한다. Arachne를 사용하는 각 프로젝트는 별도의 프로젝트 CI를
+가져야 하며, 다음 명령으로 생성한다.
+
+```bash
+cd /path/to/project
+arachne init-ci
+printf '%s\n' 'go test ./...' >> .arachne/commands  # 프로젝트에 맞게 수정
+arachne project-check
+```
+
+생성되는 `.github/workflows/arachne.yml`은 `main` push와 `main` 대상 PR에서
+`bash .arachne/verify.sh`를 실행한다. Claude Code의 `/git`도 같은 runner를 커밋 전에 실행하므로
+로컬과 GitHub의 검증 기준이 일치한다.
 
 ---
 
