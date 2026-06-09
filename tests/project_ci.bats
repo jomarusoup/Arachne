@@ -49,11 +49,11 @@ teardown() {
     grep -qF "uv sync --frozen" "${PROJECT_DIR}/.arachne/commands"
     grep -qF "pnpm install --frozen-lockfile" \
         "${PROJECT_DIR}/.arachne/commands"
-    grep -qF "actions/setup-python@v5" \
+    grep -qF "actions/setup-python@v6" \
         "${PROJECT_DIR}/.github/workflows/arachne.yml"
-    grep -qF "astral-sh/setup-uv@v6" \
+    grep -qF "astral-sh/setup-uv@v8" \
         "${PROJECT_DIR}/.github/workflows/arachne.yml"
-    grep -qF "actions/setup-node@v4" \
+    grep -qF "actions/setup-node@v6" \
         "${PROJECT_DIR}/.github/workflows/arachne.yml"
     grep -qF "corepack enable" \
         "${PROJECT_DIR}/.github/workflows/arachne.yml"

@@ -12,7 +12,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Install Ubuntu verification tools
         run: sudo apt-get update -qq && sudo apt-get install -y shellcheck bats jq
@@ -37,7 +37,7 @@ jobs:
     container: rockylinux:9
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Install Rocky verification tools
         run: |
@@ -63,7 +63,7 @@ jobs:
     runs-on: windows-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: PowerShell 설치기 검증
         shell: pwsh
@@ -80,7 +80,7 @@ jobs:
       LC_ALL: en_US.UTF-8
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Install macOS verification tools
         run: |

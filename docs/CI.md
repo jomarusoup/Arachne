@@ -100,7 +100,7 @@ sequenceDiagram
     participant T as tests/
     participant D as docs/rules
 
-    G->>P: actions/checkout@v4
+    G->>P: actions/checkout@v6
     P->>P: 플랫폼별 shellcheck/bats/jq 설치
     P->>T: shellcheck -S warning ./*.sh hooks/*.sh tests/*.sh
     P->>T: bats tests/*.bats
