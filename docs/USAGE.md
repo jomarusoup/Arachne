@@ -384,7 +384,9 @@ powershell -ExecutionPolicy Bypass -File .\install.ps1 -Install
 | `arachne -i`, `--install` | `~/.claude/` 심볼릭 링크 + `settings.json` 생성 + dotfiles 병합 + bin 등록 (재설치) |
 | `arachne -u`, `--update` | `git pull` 후 위 설치를 재실행 (동기화 허브) |
 | `arachne -c`, `--check` | Claude·Gemini·Codex·Copilot 연결 상태 점검 — 심볼릭 댕글링·병합본 stale 탐지 |
-| `arachne -n <P> [DIR]`, `--new` | 신규 프로젝트 스캐폴딩 — `README.md` + `docs/{issue,idea,task,template}`. task 규약과 템플릿을 함께 복사하며 `--no-git`로 git init 생략 |
+| `arachne -n <P> [DIR]`, `--new` | 신규 프로젝트 스캐폴딩 — 문서 구조, `.arachne/` 검증 runner, GitHub Actions workflow 생성. `--no-git`로 git init 생략 |
+| `arachne init-ci [DIR]`, `--init-ci` | 기존 프로젝트에 `.arachne/verify.sh`, `.arachne/commands`, `.github/workflows/arachne.yml` 생성/갱신 |
+| `arachne project-check [DIR]`, `--project-check` | 프로젝트의 `.arachne/verify.sh`를 실행하고 실패 상태를 그대로 반환 |
 | `arachne -s`, `--session` | tmux 워크스페이스 매니저 실행 (= `tws`, 8장 참고) |
 | `arachne -e`, `--export-settings` | 현재 `~/.claude/settings.json` → 레포 `settings.template.json`으로 역추출 |
 | `arachne -d`, `--export-dotfiles` | 로컬 `~/.bash_profile`·`~/.vimrc`의 변경 → 레포 `dotfiles/`로 역추출 |
@@ -394,6 +396,51 @@ Windows PowerShell 설치기는 현재 설치·업데이트·점검·버전 기�
 프로젝트 스캐폴딩, settings/dotfiles 내보내기, tmux 세션 관리는 macOS/Linux 또는 WSL에서 실행합니다.
 
 > 하위호환: 옛 단어형(`install` / `update` / `session` / `export-settings` / `export-dotfiles`)도 별칭으로 여전히 동작한다.
+
+### 사용 프로젝트 검증
+
+Arachne 자체 `.github/workflows/ci.yml`은 Arachne 저장소만 검증한다. 다른 프로젝트가 Arachne를
+사용한다고 해서 중앙 CI가 자동 실행되지는 않는다. 각 프로젝트에서 다음 구조를 버전 관리한다.
+
+```text
+.arachne/
+├── verify.sh       # Arachne가 관리하는 공통 runner
+└── commands        # 프로젝트가 관리하는 검증 명령, 한 줄에 하나
+.github/workflows/
+└── arachne.yml     # main push/PR에서 verify.sh 실행
+```
+
+기존 프로젝트 초기화:
+
+```bash
+arachne init-ci
+```
+
+`.arachne/commands`에는 프로젝트가 실제 사용하는 명령을 명시한다.
+
+```bash
+# Go
+go test ./...
+go vet ./...
+
+# JavaScript/TypeScript 예시
+npm ci
+npm test
+npm run build
+```
+
+명령은 위에서 아래로 프로젝트 루트에서 실행되며 첫 실패 상태가 그대로 반환된다. `init-ci`를 다시
+실행하면 관리 파일인 `verify.sh`와 workflow는 최신 템플릿으로 갱신하고 사용자 소유
+`.arachne/commands`는 보존한다.
+
+로컬 검증:
+
+```bash
+arachne project-check
+```
+
+Claude Code의 `/git`은 `.arachne/verify.sh`가 있는 프로젝트에서 이 명령을 커밋 전에 실행한다.
+GitHub Actions는 같은 파일을 `bash .arachne/verify.sh`로 실행한다.
 
 ```bash
 # 재설치 / 새 스크립트·심볼릭 링크 추가 후 재등록

@@ -3,7 +3,7 @@
 # FILE NAME   : install.sh
 # DESCRIPTION : Arachne 멀티 CLI 설정 설치 스크립트
 # DATA        : 2026-05-05
-# Modification: 2026-06-07
+# Modification: 2026-06-09
 ################################################################################
 
 set -euo pipefail
@@ -89,6 +89,9 @@ usage() {
     echo "  -c, --check            CLI 연결 상태 점검 (심볼릭 댕글링·병합본 stale 탐지)"
     echo "  -n, --new P [DIR]      신규 프로젝트 스캐폴딩 (README + docs/{issue,idea,task,template})"
     echo "                         DIR 생략 시 현재 디렉터리. --no-git 으로 git init 생략"
+    echo "      --init-ci [DIR]    프로젝트 검증 runner + GitHub Actions workflow 생성/갱신"
+    echo "      --project-check [DIR]"
+    echo "                         프로젝트의 .arachne/verify.sh 실행 (기본 현재 디렉터리)"
     echo "  -s, --session          tmux 워크스페이스 매니저(tws) 실행"
     echo "  -e, --export-settings  ~/.claude/settings.json -> settings.template.json 내보내기"
     echo "  -d, --export-dotfiles  ~/.bash_profile, ~/.vimrc, ~/.zshrc -> dotfiles/ 내보내기"
@@ -729,6 +732,85 @@ check_arachne() {
 }
 
 ################################################################################
+# FUNCTION    : init_project_ci
+# DESCRIPTION : 프로젝트에 로컬·GitHub CI 공통 검증 자산 설치 또는 갱신
+# PARAMETERS  : string project_dir - 대상 프로젝트 경로, 기본 현재 디렉터리
+################################################################################
+init_project_ci() {
+    local project_dir="${1:-$PWD}"
+    local verify_tmpl="$REPO_DIR/templates/project/verify.sh"
+    local commands_tmpl="$REPO_DIR/templates/project/commands"
+    local workflow_tmpl="$REPO_DIR/templates/project/arachne.yml"
+    local managed_path
+    local project_abs
+
+    if [ ! -d "$project_dir" ]; then
+        echo "[ERROR] 프로젝트 디렉터리가 없습니다: $project_dir" >&2
+        return 1
+    fi
+    if [ ! -f "$verify_tmpl" ] || [ ! -f "$commands_tmpl" ] \
+        || [ ! -f "$workflow_tmpl" ]; then
+        echo "[ERROR] 프로젝트 CI 템플릿이 없습니다: $REPO_DIR/templates/project" >&2
+        return 1
+    fi
+
+    project_abs=$(cd "$project_dir" && pwd)
+    for managed_path in \
+        "$project_abs/.arachne" \
+        "$project_abs/.github" \
+        "$project_abs/.github/workflows" \
+        "$project_abs/.arachne/verify.sh" \
+        "$project_abs/.github/workflows/arachne.yml"; do
+        if [ -L "$managed_path" ]; then
+            echo "[ERROR] 프로젝트 CI 관리 경로가 심볼릭 링크입니다: $managed_path" >&2
+            return 1
+        fi
+    done
+
+    mkdir -p "$project_abs/.arachne" "$project_abs/.github/workflows"
+    cp "$verify_tmpl" "$project_abs/.arachne/verify.sh"
+    chmod +x "$project_abs/.arachne/verify.sh"
+    cp "$workflow_tmpl" "$project_abs/.github/workflows/arachne.yml"
+
+    if [ ! -f "$project_abs/.arachne/commands" ]; then
+        cp "$commands_tmpl" "$project_abs/.arachne/commands"
+        echo "  생성: .arachne/commands"
+    else
+        echo "  보존: .arachne/commands"
+    fi
+
+    echo "[Arachne] 프로젝트 CI 초기화 완료: $project_abs"
+    echo "  관리: .arachne/verify.sh, .github/workflows/arachne.yml"
+    return 0
+}
+
+################################################################################
+# FUNCTION    : check_project
+# DESCRIPTION : 프로젝트에 설치된 공통 검증 runner 실행
+# PARAMETERS  : string project_dir - 대상 프로젝트 경로, 기본 현재 디렉터리
+# RETURNED    : 검증 runner의 종료 상태
+################################################################################
+check_project() {
+    local project_dir="${1:-$PWD}"
+    local project_abs
+    local verify_script
+
+    if [ ! -d "$project_dir" ]; then
+        echo "[ERROR] 프로젝트 디렉터리가 없습니다: $project_dir" >&2
+        return 1
+    fi
+
+    project_abs=$(cd "$project_dir" && pwd)
+    verify_script="$project_abs/.arachne/verify.sh"
+    if [ ! -f "$verify_script" ]; then
+        echo "[ERROR] 프로젝트 CI가 초기화되지 않았습니다: arachne init-ci \"$project_abs\"" >&2
+        return 1
+    fi
+
+    bash "$verify_script"
+}
+
+################################################################################
 # FUNCTION    : new_project
 # DESCRIPTION : 신규 프로젝트를 기록 가능한 문서 구조로 스캐폴딩.
 #               모든 문서 frontmatter 는 docs/template/example.md(SSOT)에서 파생.
@@ -802,8 +884,13 @@ new_project() {
         git -C "$dest" init -q
     fi
 
+    #---------------------------------------------------------------------------
+    # 프로젝트 로컬 검증 + GitHub Actions CI
+    #---------------------------------------------------------------------------
+    init_project_ci "$dest"
+
     echo "[Arachne] 신규 프로젝트 생성: $dest"
-    echo "  구조: README.md, docs/{issue,idea,task,template}"
+    echo "  구조: README.md, docs/{issue,idea,task,template}, .arachne, .github/workflows"
     [ "$do_git" -eq 1 ] && echo "  git 저장소 초기화됨"
     return 0
 }
@@ -821,6 +908,8 @@ case "${1:-}" in
     -u|--update|update)                       shift; parse_target "$@"; update_arachne ;;
     -c|--check|check)                         check_arachne ;;
     -n|--new|new)                             shift; new_project "$@" ;;
+    --init-ci|init-ci)                        shift; init_project_ci "${1:-$PWD}" ;;
+    --project-check|project-check)            shift; check_project "${1:-$PWD}" ;;
     -s|--session|session)                     run_session ;;
     -e|--export-settings|export-settings)     export_settings ;;
     -d|--export-dotfiles|export-dotfiles)     export_dotfiles ;;

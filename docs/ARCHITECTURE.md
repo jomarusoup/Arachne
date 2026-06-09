@@ -237,6 +237,7 @@ Arachne/
 ├── mcp-configs/                 # MCP 서버 설정 템플릿
 ├── dotfiles/                    # bash_profile · vimrc (병합 원본)
 ├── tests/                       # 검증 (bats + shell)
+├── templates/project/           # 사용 프로젝트용 verify.sh·commands·GitHub Actions 템플릿
 └── docs/ · .github/workflows/   # 문서 · CI
 ```
 

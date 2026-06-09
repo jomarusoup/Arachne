@@ -32,6 +32,9 @@ git branch --show-current
   (`rules/common/git-workflow.md`).
 
 ### 3. 검증 선행 (커밋 전 가드)
+- `.arachne/verify.sh`가 있으면 가장 먼저 `arachne project-check`를 실행한다.
+  - 이 명령은 GitHub Actions의 `bash .arachne/verify.sh`와 동일한 프로젝트 검증 계약이다.
+  - 실패하면 이후 커밋·푸시를 중단하고 실패한 `.arachne/commands` 항목을 보고한다.
 - 변경에 `*.sh` 포함 시: `shellcheck -S warning <파일>` 와 `bash -n <파일>`.
 - 테스트·스크립트 영향 시: `bats tests/*.bats`(또는 관련 파일만).
 - 공통: `git diff --check`(공백 오류·충돌 마커). **검증 실패면 커밋하지 말고 보고**한다.
