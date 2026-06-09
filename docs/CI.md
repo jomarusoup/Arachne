@@ -247,7 +247,9 @@ bash tests/smoke_hooks.sh
 
 ## 7. macOS Job: `verify-macos`
 
-macOS는 BSD 기본 도구와 오래된 `/bin/bash` 차이를 조기에 잡는다. `tests/check_index.sh`와
+macOS는 BSD 기본 도구와 오래된 `/bin/bash` 차이를 조기에 잡는다. 테스트 코드도 GNU 전용
+`sed -i` 대신 임시 파일 생성 후 교체처럼 GNU/BSD 양쪽에서 동작하는 방식을 사용해야 한다.
+`tests/check_index.sh`와
 `tests/check_convention_sync.sh`는 `readlink -f`를 사용하므로 CI에서는 Homebrew `coreutils`를 설치하고
 GNU 도구 경로를 `GITHUB_PATH`에 추가한다. Bats의 한국어 테스트명 처리를 안정화하기 위해 Homebrew
 `bash`와 UTF-8 locale도 명시한다.
@@ -311,7 +313,7 @@ flowchart TB
 - 테스트를 약화하기 전에 실제 계약이 바뀐 것인지 확인한다.
 - Windows 실패는 PowerShell 인자 바인딩, 경로 구분자, `.cmd` wrapper, Git Bash PATH를 우선 확인한다.
 - Rocky 실패는 EPEL, 패키지명, root 컨테이너, 기본 도구 누락을 우선 확인한다.
-- macOS 실패는 BSD/GNU 옵션 차이와 `coreutils` PATH를 우선 확인한다.
+- macOS 실패는 `sed -i` 같은 BSD/GNU 옵션 차이와 `coreutils` PATH를 우선 확인한다.
 
 ## 9. PR 체크리스트
 
