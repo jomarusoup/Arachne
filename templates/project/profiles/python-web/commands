@@ -1,0 +1,14 @@
+# Python and Web profile. The project owns both toolchains and lockfiles.
+git diff --check
+uv sync --frozen
+uv run ruff format --check .
+uv run ruff check .
+uv run mypy .
+uv run pytest
+uv run pip-audit
+pnpm install --frozen-lockfile
+pnpm lint
+pnpm typecheck
+pnpm test
+pnpm build
+pnpm exec playwright test

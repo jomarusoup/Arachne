@@ -1,7 +1,7 @@
 ---
 Title: "Arachne CI 운영 가이드"
 creation: 2026-06-08
-modification: 2026-06-08
+modification: 2026-06-09
 tags:
  - "arachne"
  - "ci"
@@ -100,7 +100,7 @@ sequenceDiagram
     participant T as tests/
     participant D as docs/rules
 
-    G->>P: actions/checkout@v4
+    G->>P: actions/checkout@v6
     P->>P: 플랫폼별 shellcheck/bats/jq 설치
     P->>T: shellcheck -S warning ./*.sh hooks/*.sh tests/*.sh
     P->>T: bats tests/*.bats
@@ -368,10 +368,12 @@ flowchart LR
     V --> C[".arachne/commands<br/>프로젝트 lint/build/test"]
 ```
 
-`verify.sh`와 workflow는 Arachne가 관리하고, `commands`는 프로젝트가 관리한다. 따라서 Arachne가
-언어별 명령을 추측하지 않으며 프로젝트가 실제 사용하는 검증을 명시한다.
+`verify.sh`, profile, workflow는 Arachne가 관리하고, `commands`는 프로젝트가 관리한다.
 
 ```bash
-arachne init-ci /path/to/project
+arachne init-ci /path/to/project --profile python-web
 arachne project-check /path/to/project
 ```
+
+profile별 런타임, 파일 소유권, branch protection, 실패 해석의 정본은
+[PROJECT-CI.md](PROJECT-CI.md)다.

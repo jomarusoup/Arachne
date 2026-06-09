@@ -1,0 +1,8 @@
+# Web profile. The project owns package.json and pnpm-lock.yaml.
+git diff --check
+pnpm install --frozen-lockfile
+pnpm lint
+pnpm typecheck
+pnpm test
+pnpm build
+pnpm exec playwright test

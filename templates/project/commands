@@ -1,4 +1,0 @@
-# Arachne project verification commands.
-# Add one Bash command per line. Commands run from the project root in order.
-git diff --check
-

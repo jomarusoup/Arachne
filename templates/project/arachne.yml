@@ -21,8 +21,58 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
+
+      - name: Detect Arachne profile
+        id: profile
+        shell: bash
+        run: |
+          profile="$(cat .arachne/profile 2>/dev/null || printf 'minimal')"
+          case "$profile" in
+            minimal)
+              python=false
+              web=false
+              ;;
+            python)
+              python=true
+              web=false
+              ;;
+            web)
+              python=false
+              web=true
+              ;;
+            python-web)
+              python=true
+              web=true
+              ;;
+            *)
+              echo "::error::Unknown Arachne profile: $profile"
+              exit 1
+              ;;
+          esac
+          echo "python=$python" >> "$GITHUB_OUTPUT"
+          echo "web=$web" >> "$GITHUB_OUTPUT"
+
+      - name: Set up Python
+        if: steps.profile.outputs.python == 'true'
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+
+      - name: Set up uv
+        if: steps.profile.outputs.python == 'true'
+        uses: astral-sh/setup-uv@v8
+
+      - name: Set up Node.js
+        if: steps.profile.outputs.web == 'true'
+        uses: actions/setup-node@v6
+        with:
+          node-version: "22"
+          package-manager-cache: false
+
+      - name: Enable Corepack
+        if: steps.profile.outputs.web == 'true'
+        run: corepack enable
 
       - name: Run project verification
         run: bash .arachne/verify.sh
-

@@ -1,0 +1,2 @@
+# Minimal Arachne project verification.
+git diff --check

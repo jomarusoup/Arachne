@@ -1,18 +1,19 @@
 ---
 Title: README
 creation: 2026-05-05
-modification: 2026-06-07
-Description: 저지연 풀스택 시스템 프로그래밍을 위한 Claude Code 글로벌 설정 프레임워크
+modification: 2026-06-09
+Description: Python·Web과 시스템 개발을 위한 멀티 CLI 엔지니어링 하네스
 tags:
 aliases:
 ---
 > MOC::
 > FROM::
 
-# 🕷️ Arachne
+# Arachne
 
-저지연 풀스택 시스템 프로그래밍 프레임워크를 위한 **멀티-CLI** 글로벌 설정.
-**C/C++ · Go · Rust** 중심의 실시간 트레이딩·데이터 파이프라인 개발에 최적화.
+Python·Web과 C/C++·Go·Rust 시스템 개발에 공통 규약, 역할 분담, 프로젝트 검증을 제공하는
+**멀티 CLI 엔지니어링 하네스**다. 현재 우선 profile은 Python·Web이며 systems·network 자산도
+선택적으로 사용할 수 있다.
 
 하나의 공통 규약(`AGENTS.md`, SSOT)을 **Claude Code · Gemini CLI · Codex CLI · GitHub Copilot**이
 동시에 따른다. Claude와 Gemini는 레포 심볼릭 링크를 읽고, Codex는 `AGENTS.md`를 마커 병합한
@@ -25,6 +26,9 @@ aliases:
 > 🪟 Windows에서 Claude Code·Codex CLI·Gemini CLI 설치는 [docs/WINDOWS-SETUP.md](docs/WINDOWS-SETUP.md) 참고
 > 🗂️ 원격 프로젝트 문서 ↔ Obsidian 동기화는 [docs/OBSIDIAN-DOCS-SYNC.md](docs/OBSIDIAN-DOCS-SYNC.md)(arachne 설정)·[docs/SYNCTHING-SETUP.md](docs/SYNCTHING-SETUP.md)(자동) 참고
 > ✅ GitHub Actions CI 구조·로컬 재현·실패 대응은 [docs/CI.md](docs/CI.md) 참고
+> 🧭 전체 문서 인덱스와 독자별 진입점은 [docs/README.md](docs/README.md) 참고
+> 🐍 Python·Web 기본 스택과 profile은 [docs/PYTHON-WEB-PROFILE.md](docs/PYTHON-WEB-PROFILE.md) 참고
+> 🔁 사용 프로젝트 CI 운영 계약은 [docs/PROJECT-CI.md](docs/PROJECT-CI.md) 참고
 > 📑 약어(SSOT·TDD·DI·a11y 등) 풀이는 [docs/GLOSSARY.md](docs/GLOSSARY.md) 참고
 > 🧠 AI 엔지니어링 학습 노트(Agent/Workflow·MCP·Prompt Injection 등)는 [docs/AI-ENGINEERING-NOTES.md](docs/AI-ENGINEERING-NOTES.md) 참고
 
@@ -34,8 +38,9 @@ aliases:
 
 ### macOS / Linux
 
-> macOS는 기본 BSD `readlink`에 `-f/-e`가 없어 GNU coreutils가 필요합니다 — `brew install coreutils`
-> 후 GNU 도구가 우선하도록 PATH를 설정하세요. 설치·점검 스크립트는 POSIX 계열 Bash 환경을 전제합니다.
+> 기본 설치기는 macOS BSD 도구로 동작한다. 전체 저장소 테스트와 일부 상태표시줄 기능은 GNU
+> coreutils를 사용하므로 기여자는 `brew install coreutils`가 필요하다. 기능별 범위는
+> [호환성 표](docs/COMPATIBILITY.md)를 참고한다.
 
 ```bash
 git clone https://github.com/jomarusoup/Arachne.git ~/Arachne
@@ -81,8 +86,8 @@ Bash에서는 `./install.sh -i --target copilot`을 사용합니다. 두 방식 
 | `arachne -i` (`--install`) | 재설치 및 설정 동기화 |
 | `arachne -u` (`--update`) | 최신 상태로 업데이트 (git pull + 재설치) |
 | `arachne -c` (`--check`) | Claude·Gemini·Codex·Copilot 연결 상태 점검 |
-| `arachne -n <P> [DIR]` (`--new`) | 신규 프로젝트 스캐폴딩 (문서 구조 + 프로젝트 검증 + GitHub Actions) |
-| `arachne init-ci [DIR]` | 기존 프로젝트에 `.arachne/verify.sh`와 GitHub Actions workflow 생성/갱신 |
+| `arachne -n <P> [DIR] --profile <P>` | 신규 프로젝트 스캐폴딩. profile 기본값은 `minimal` |
+| `arachne init-ci [DIR] --profile <P>` | 기존 프로젝트에 profile 기반 검증과 GitHub Actions 생성/갱신 |
 | `arachne project-check [DIR]` | `.arachne/commands`에 정의한 프로젝트 검증을 로컬에서 실행 |
 | `arachne -s` (`--session`) | **TWS (Tmux Workspace Manager)**: 대화형 세션 매니저 (`tws`와 동일) |
 | `arachne -e` (`--export-settings`) | settings.json → 템플릿 내보내기 |
@@ -102,14 +107,14 @@ Arachne 저장소의 CI는 하네스 자체를 검증한다. Arachne를 사용�
 
 ```bash
 cd /path/to/project
-arachne init-ci
-printf '%s\n' 'go test ./...' >> .arachne/commands  # 프로젝트에 맞게 수정
+arachne init-ci --profile python-web
 arachne project-check
 ```
 
 생성되는 `.github/workflows/arachne.yml`은 `main` push와 `main` 대상 PR에서
 `bash .arachne/verify.sh`를 실행한다. Claude Code의 `/git`도 같은 runner를 커밋 전에 실행하므로
-로컬과 GitHub의 검증 기준이 일치한다.
+로컬과 GitHub의 검증 기준이 일치한다. `minimal`, `python`, `web`, `python-web`의 도구·소유권·
+갱신 정책은 [PROJECT-CI.md](docs/PROJECT-CI.md)가 정본이다.
 
 ---
 
@@ -143,9 +148,14 @@ Arachne/
 │                                #   atask-quota-warn, doc-drift-check)
 ├── mcp-configs/                 # MCP (Model Context Protocol) 서버 설정 템플릿
 ├── docs/CI.md                   # GitHub Actions CI 운영·로컬 재현 가이드
+├── docs/PROJECT-CI.md           # Arachne 사용 프로젝트의 CI 계약
+├── docs/PYTHON-WEB-PROFILE.md   # Python·Web profile 기술 기준
+├── docs/COMPATIBILITY.md        # 기능별 플랫폼 지원표
+├── docs/decisions/              # Architecture Decision Record
 ├── docs/task/                   # 승인된 실행 작업과 진행 상태 기록
 ├── docs/template/task.md        # 작업 기록 표준 템플릿
 ├── tests/                       # 검증 스크립트 (bats + shell)
+├── templates/project/           # profile별 프로젝트 CI 템플릿
 └── dotfiles/                    # bash_profile, vimrc (병합 원본)
 ```
 

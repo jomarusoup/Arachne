@@ -49,6 +49,21 @@ run_new() {
         "${TMP_DIR}/myproj/.github/workflows/arachne.yml"
 }
 
+@test "new: web profile 프로젝트 검증 계약 생성" {
+    run_new myproj "${TMP_DIR}" --profile web
+    [ "$status" -eq 0 ]
+    [ "$(cat "${TMP_DIR}/myproj/.arachne/profile")" = "web" ]
+    grep -qF "pnpm install --frozen-lockfile" \
+        "${TMP_DIR}/myproj/.arachne/commands"
+}
+
+@test "new: 알 수 없는 profile 거부" {
+    run_new myproj "${TMP_DIR}" --profile unknown
+    [ "$status" -ne 0 ]
+    [[ "$output" == *"알 수 없는 profile"* ]]
+    [ ! -e "${TMP_DIR}/myproj" ]
+}
+
 @test "new: 빈 디렉터리에 .gitkeep 배치" {
     run_new myproj "${TMP_DIR}"
     [ -f "${TMP_DIR}/myproj/docs/issue/.gitkeep" ]

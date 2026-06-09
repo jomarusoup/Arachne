@@ -1,7 +1,7 @@
 ---
 Title: ARCHITECTURE
 creation: 2026-06-06
-modification: 2026-06-07
+modification: 2026-06-09
 Description: Arachne 하네스 구조 다이어그램 (Mermaid) — CLI별 설정 배선 · 3-레인 협업 · 훅 · SSOT 로딩 · 워크플로
 tags:
 aliases:
