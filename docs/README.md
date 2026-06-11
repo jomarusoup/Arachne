@@ -20,6 +20,7 @@ flowchart TD
     R["처음 사용하는 사람"] --> U["USAGE.md"]
     P["Python·Web 프로젝트"] --> PW["PYTHON-WEB-PROFILE.md"]
     P --> PC["PROJECT-CI.md"]
+    P --> DH["DATA-HANDLING.md"]
     M["하네스 유지보수자"] --> A["ARCHITECTURE.md"]
     M --> CI["CI.md"]
     M --> C["COMPATIBILITY.md"]
@@ -35,6 +36,7 @@ flowchart TD
 | 자체 CI | [CI](CI.md) | Arachne 저장소 GitHub Actions |
 | 사용 프로젝트 CI | [PROJECT-CI](PROJECT-CI.md) | profile, commands, workflow, branch protection |
 | Python·Web 기준 | [PYTHON-WEB-PROFILE](PYTHON-WEB-PROFILE.md) | 기본 도구와 확장 원칙 |
+| 데이터 분류·처리 | [DATA-HANDLING](DATA-HANDLING.md) | PII 분류표, 노출 표면, 암호화 경계, DB quality gate |
 | 플랫폼 지원 | [COMPATIBILITY](COMPATIBILITY.md) | 기능별 Linux/macOS/Windows 범위 |
 | CLI 간 역할 | [MULTI-CLI](MULTI-CLI.md) | Claude, Codex, Gemini, Copilot 연계 |
 | Windows 설치 | [WINDOWS-SETUP](WINDOWS-SETUP.md) | PowerShell, Git Bash, WSL |

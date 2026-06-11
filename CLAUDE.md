@@ -41,6 +41,7 @@ Claude Code가 이를 네이티브로 자동 로드한다:
 │   ├── python-review.md             # /python-review — Python 코드 리뷰
 │   ├── fastapi-review.md            # /fastapi-review — FastAPI 리뷰
 │   ├── react-review.md              # /react-review — React/Next 리뷰
+│   ├── database-review.md           # /database-review — DB schema·migration 리뷰
 │   ├── tdd.md                       # /tdd        — TDD 사이클
 │   ├── e2e.md                       # /e2e        — E2E 테스트
 │   └── refactor.md                  # /refactor   — SRP 리팩터링

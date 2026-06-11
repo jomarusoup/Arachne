@@ -1,0 +1,19 @@
+[project]
+name = "python-db-fixture"
+version = "0.1.0"
+description = "Arachne 데이터 계약 quality gate 기준 프로젝트"
+requires-python = ">=3.10"
+dependencies = [
+    "sqlalchemy>=2.0",
+    "alembic>=1.13",
+    "pydantic>=2.7",
+]
+
+[dependency-groups]
+dev = [
+    "pytest>=8.0",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests/data_contract"]
+pythonpath = ["."]

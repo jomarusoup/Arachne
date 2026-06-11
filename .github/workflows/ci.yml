@@ -36,6 +36,28 @@ jobs:
       - name: 규약 동기화 (AGENTS.md ↔ rules)
         run: bash tests/check_convention_sync.sh
 
+  # 데이터 계약 게이트 — uv 가용 환경에서 alembic·pytest 실행 검증까지 수행
+  # (다른 job 의 bats 는 uv 가 없어 정적 계약 검사만 수행)
+  verify-data-contract:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Install bats
+        run: sudo apt-get update -qq && sudo apt-get install -y bats jq
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v8
+
+      - name: 데이터 계약 게이트 (정적 + 실행 검증)
+        run: bats tests/data_contract.bats
+
   verify-rocky:
     runs-on: ubuntu-latest
     container: rockylinux:9

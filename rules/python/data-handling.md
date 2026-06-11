@@ -7,7 +7,7 @@ paths:
 
 > JSON 직렬화·DB 트랜잭션·민감 데이터의 **항상 적용되는 짧은 경계 규칙**.
 > 상세 예시와 선택 기준은 스킬 `json-contracts` · `database-migrations` · `postgres-patterns` 참고.
-> (분류·운영 기준 문서 `docs/DATA-HANDLING.md`는 docs/task/2026-06-09-data-handling-hardening.md 의 예정 산출물)
+> 분류표·노출 표면·암호화 경계·quality gate 정본은 `docs/DATA-HANDLING.md` 참고.
 
 ## JSON 경계
 

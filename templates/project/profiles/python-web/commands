@@ -14,3 +14,7 @@ pnpm build
 # CI runners start without browsers. Locally run `pnpm exec playwright install` once.
 if [ -n "${CI:-}" ]; then pnpm exec playwright install --with-deps; fi
 pnpm exec playwright test
+
+# Optional DB gate for SQLAlchemy/Alembic projects (docs/DATA-HANDLING.md).
+# uv run alembic upgrade head
+# uv run pytest tests/data_contract -q

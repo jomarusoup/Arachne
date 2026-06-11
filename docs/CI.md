@@ -40,6 +40,7 @@ flowchart TB
     CI --> R["verify-rocky<br/>ubuntu host<br/>rockylinux:9 container"]
     CI --> W["verify-windows<br/>windows-latest"]
     CI --> M["verify-macos<br/>macos-latest"]
+    CI --> DC["verify-data-contract<br/>ubuntu-latest + uv"]
 
     U --> U1["apt-get<br/>shellcheck bats jq"]
     U1 --> COMMON_U["Linux 공통 검증"]
@@ -53,10 +54,13 @@ flowchart TB
     M --> M1["brew<br/>shellcheck bats-core jq coreutils"]
     M1 --> COMMON_M["Unix 공통 검증"]
 
+    DC --> DC1["setup-python + setup-uv<br/>bats tests/data_contract.bats"]
+
     COMMON_U --> GATE{"모든 job 통과?"}
     COMMON_R --> GATE
     W2 --> GATE
     COMMON_M --> GATE
+    DC1 --> GATE
 
     GATE -->|yes| OK["병합 가능"]
     GATE -->|no| BLOCK["병합 차단<br/>실패 job부터 재현"]
@@ -68,6 +72,7 @@ flowchart TB
 | `verify-rocky` | Red Hat/Rocky 계열 | `ubuntu-latest` + `container: rockylinux:9` | RHEL 계열 패키지, root 컨테이너, GNU userland 차이 검증 |
 | `verify-windows` | Windows | `windows-latest` + `pwsh` + Git Bash | PowerShell 설치기, Windows 경로/링크/wrapper, Git Bash 훅 스모크 검증 |
 | `verify-macos` | macOS | `macos-latest` + Homebrew | BSD/macOS 기본 도구 차이, `coreutils` 필요 경로, Unix 테스트 호환성 검증 |
+| `verify-data-contract` | Ubuntu Linux | `ubuntu-latest` + `setup-uv` | DB·JSON 데이터 계약 게이트 — `python-db` fixture의 alembic·pytest 실행 검증 (다른 job은 uv 부재로 정적 검사만) |
 
 ## 2. 실행 조건
 

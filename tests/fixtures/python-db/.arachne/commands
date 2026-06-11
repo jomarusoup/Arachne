@@ -1,0 +1,4 @@
+# python-db fixture — 데이터 계약 quality gate (docs/DATA-HANDLING.md)
+uv sync
+uv run alembic upgrade head
+uv run pytest tests/data_contract -q

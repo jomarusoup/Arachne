@@ -53,6 +53,7 @@ description: /명령어 설명
 | `/tdd` `/verify` `/e2e` | TDD 사이클 · 2단계 검증 · E2E 테스트 |
 | `/design` `/python-review` | 설계 문서 · Python 코드 리뷰 |
 | `/fastapi-review` `/react-review` | FastAPI API 리뷰 · React/Next 웹 리뷰 |
+| `/database-review` | DB schema·쿼리·migration·데이터 보안 리뷰 |
 | `/issue` `/status` | GitHub 이슈 순차 처리 · 프로젝트 현황 |
 | `/git` `/handoff` `/save-session` `/learn` | 커밋·푸시 · 전환 저장 · 세션 요약 · 패턴 학습 |
 

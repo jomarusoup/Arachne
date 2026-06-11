@@ -1,0 +1,6 @@
+# 로컬 실행 산출물 — fixture 정본에 포함하지 않는다
+.venv/
+uv.lock
+*.db
+__pycache__/
+.pytest_cache/
