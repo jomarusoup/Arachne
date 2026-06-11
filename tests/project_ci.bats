@@ -51,7 +51,7 @@ teardown() {
         "${PROJECT_DIR}/.arachne/commands"
     grep -qF "actions/setup-python@v6" \
         "${PROJECT_DIR}/.github/workflows/arachne.yml"
-    grep -qF "astral-sh/setup-uv@v8" \
+    grep -qF "astral-sh/setup-uv@v8.2.0" \
         "${PROJECT_DIR}/.github/workflows/arachne.yml"
     grep -qF "actions/setup-node@v6" \
         "${PROJECT_DIR}/.github/workflows/arachne.yml"

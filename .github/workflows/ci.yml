@@ -53,7 +53,8 @@ jobs:
           python-version: "3.12"
 
       - name: Set up uv
-        uses: astral-sh/setup-uv@v8
+        # setup-uv 는 v8 메이저 별칭 태그를 게시하지 않는다 — 정확한 버전 고정 필요
+        uses: astral-sh/setup-uv@v8.2.0
 
       - name: 데이터 계약 게이트 (정적 + 실행 검증)
         run: bats tests/data_contract.bats
