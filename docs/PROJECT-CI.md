@@ -76,6 +76,11 @@ workflow는 profile을 읽고 필요한 런타임만 준비한다.
 - `web`, `python-web`: Node.js 22와 Corepack
 - `minimal`: 추가 런타임 없음
 
+> **minimal의 의도**: `minimal`은 `git diff --check`(공백 오류)만 실행하는 **의도적 최소
+> 게이트**다. clean checkout인 CI에서는 사실상 통과 자리표시자이며, 실질 검증은 프로젝트가
+> `.arachne/commands`에 자기 명령을 추가하는 순간 시작된다. 언어 도구를 강제하지 않기 위한
+> 설계 결정이다 (감사 F-06).
+
 그 후 모든 profile이 `bash .arachne/verify.sh`를 호출한다. commands의 첫 실패 상태가 job 실패로
 전파된다.
 

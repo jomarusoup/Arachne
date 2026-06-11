@@ -290,6 +290,8 @@ sequenceDiagram
   파일을 찾아 "이어받기" 안내(경로)를 출력한다. 직전 세션 맥락을 빠르게 복구하기 위함.
 - **`git-bus-check.sh` (UserPromptSubmit)** — 프롬프트를 넣을 때마다. **git-bus의 핵심**:
   1. `git fetch -q origin` 으로 리모트 최신을 받는다(로컬 `pull` 없이 감지만).
+     매 프롬프트 네트워크 왕복을 막기 위해 기본 300초 간격으로 스로틀된다
+     (`.claude/last-fetch-epoch` 스탬프, `GIT_BUS_FETCH_INTERVAL` 초로 조정).
   2. 비교 기준 HEAD를 정한다 — 리모트 트래킹 브랜치(`origin/<현재브랜치>`)가 있으면 그 HEAD, 없으면 로컬 HEAD.
   3. 기준점 파일 `.claude/last-seen-commit`(gitignore, 추적 안 됨)과 비교.
      - 파일이 **없으면**(최초 실행) 현재 HEAD만 조용히 기록하고 종료.

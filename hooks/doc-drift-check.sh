@@ -46,6 +46,9 @@ marker="${state_dir}/.docdrift-seen-${session_id:-nosession}"
 mkdir -p "${state_dir}" 2>/dev/null || true
 touch "${marker}" 2>/dev/null || true
 
+# F-09: 세션마다 쌓이는 마커의 무한 누적 방지 — 7일 지난 마커는 정리
+find "${state_dir}" -maxdepth 1 -name '.docdrift-seen-*' -mtime +7 -delete 2>/dev/null || true
+
 base=$(basename "${file_path}")
 echo "[문서 드리프트] 기능 파일 변경 감지: ${base}"
 echo "  → README.md·docs/ 반영이 필요한지 확인하세요 (구조·명령·동작 변경 시)."

@@ -40,7 +40,13 @@ $SCRIPT:ARACHNE_HOME = if ($env:ARACHNE_HOME) {
 $SCRIPT:CLAUDE_DIR = Join-Path $SCRIPT:ARACHNE_HOME ".claude"
 $SCRIPT:LOCAL_BIN = Join-Path $SCRIPT:ARACHNE_HOME ".local\bin"
 $SCRIPT:ARACHNE_TAG = "ARACHNE"
-$SCRIPT:ARACHNE_VERSION = "1.1.0"
+# 버전 정본은 레포 루트 VERSION 파일 (F-07: 설치기별 하드코딩 드리프트 방지)
+$SCRIPT:VERSION_FILE = Join-Path $SCRIPT:REPO_DIR "VERSION"
+$SCRIPT:ARACHNE_VERSION = if (Test-Path $SCRIPT:VERSION_FILE) {
+    (Get-Content $SCRIPT:VERSION_FILE -Raw).Trim()
+} else {
+    "unknown"
+}
 $SCRIPT:UTF8_NO_BOM = New-Object System.Text.UTF8Encoding($false)
 
 $SCRIPT:LINK_TARGETS = @(

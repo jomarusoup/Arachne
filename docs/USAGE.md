@@ -141,7 +141,7 @@ model: opus               # opus / sonnet / haiku
 ### 등록된 훅 (이 레포 기준)
 | 훅 스크립트 | 이벤트 | 동작 |
 |---|---|---|
-| `git-bus-check.sh` | `UserPromptSubmit` | 메시지 입력마다 업스트림 브랜치의 새 커밋 감지 (작성 CLI 판별 없음) |
+| `git-bus-check.sh` | `UserPromptSubmit` | 업스트림 브랜치의 새 커밋 감지 (작성 CLI 판별 없음). fetch는 기본 300초 간격 스로틀 — `GIT_BUS_FETCH_INTERVAL`로 조정 |
 | `atask-quota-warn.sh` | `UserPromptSubmit` | `atask` 상태 파일을 읽어 쿼터 소진 CLI·impl 첫 가용 후보 경고 |
 | `doc-drift-check.sh` | `PostToolUse` (`Edit\|Write`) | 기능 파일(스크립트·rules·agents 등) 변경 시 README/docs 갱신 알림 (세션당 1회) |
 | `session-start.sh` | `SessionStart` | 최근 세션 파일 경로 안내 |
@@ -315,8 +315,9 @@ codex-task -m <model> -C <dir> "..."                                    # 모델
 
 | 구성 요소 | 역할 |
 |---|---|
-| `hooks/git-bus-check.sh` | `UserPromptSubmit` 훅 — `git fetch` 후 `origin` HEAD ↔ 기준점 비교 |
+| `hooks/git-bus-check.sh` | `UserPromptSubmit` 훅 — `git fetch`(300초 스로틀) 후 `origin` HEAD ↔ 기준점 비교 |
 | `.claude/last-seen-commit` | 마지막으로 확인한 리모트 커밋 해시 (gitignore, 추적 안 됨) |
+| `.claude/last-fetch-epoch` | 마지막 fetch 시각 — 스로틀 기준 (gitignore, `GIT_BUS_FETCH_INTERVAL` 초) |
 | `hooks/session-end.sh` | 세션 종료 시 fetch한 리모트 HEAD를 기준점에 기록 |
 
 리모트 HEAD가 기준점과 다르면 새 커밋 목록·변경 파일을 박스 UI로 출력하고 기준점을 갱신(중복 알림 방지)한다. 기준점 파일이 없으면 최초 1회는 조용히 기록만 한다.

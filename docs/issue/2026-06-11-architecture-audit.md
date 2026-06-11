@@ -77,10 +77,13 @@ FROM:: [[empty]]
 
 | Phase | 내용 | 상태 |
 | --- | --- | --- |
-| **1** | CHANGELOG-AUDIT A-01~A-10 (병합 손상·인덱스·Playwright·보안 소수정·문서 정합) | ✅ 본 감사에서 완료 |
-| **2** | F-03~F-06, F-08~F-10: statusline 이식성, fetch 스로틀, git-bus 출력 방어, minimal 게이트 실질화, -c 전체 링크 검사, 마커 정리, convention sync 토큰 그룹 확장 | 제안 |
-| **3** | F-01·F-07 + Missing Design 1~3: uninstall/recovery, 버전·릴리스 정책, 훅 로그 | 제안 |
-| **4** | 구조 단순화(승인 필요): ① 3-레인 사람용 문서의 표 사본 제거 ② install.sh에서 project-ci 서브커맨드 분리 ③ 2·3순위 언어 rules/skills의 pack화(설치 선택제) | 제안 |
+| **1** | CHANGELOG-AUDIT A-01~A-11 (병합 손상·인덱스·Playwright·테스트 밀폐·보안 소수정·문서 정합) | ✅ 완료 (2026-06-11) |
+| **2** | A-12~A-19: fetch 스로틀(F-04), 레인 토큰 동기화 검사(F-02), VERSION 단일화(F-07), -c 전체 링크 검사(F-08), 마커 정리(F-09), PATH 검사(F-10), git-bus 출력 방어(F-05), minimal 의도 문서화(F-06 결정 종결) | ✅ 완료 (2026-06-11) |
+| **3** | F-01(uninstall/recovery)·F-03(statusline macOS)·릴리스 태그 정책·훅 로그 | 트리거 대기 — [followup task](../task/2026-06-11-audit-followup.md) |
+| **4** | 구조 단순화(승인 필요): ① 3-레인 사람용 문서의 표 사본 제거 ② install.sh에서 project-ci 서브커맨드 분리 ③ 2·3순위 언어 rules/skills의 pack화(설치 선택제) | 보류 — 같은 task에 트리거 명시 |
+
+> 잔존 항목의 상세·트리거 조건·검증 명령은
+> [docs/task/2026-06-11-audit-followup.md](../task/2026-06-11-audit-followup.md)가 정본이다.
 
 ## 원본 템플릿 대비 구조 평가
 

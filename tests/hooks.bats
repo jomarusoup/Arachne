@@ -140,6 +140,33 @@ HOOKS_DIR="${REPO_DIR}/hooks"
     rm -rf "${TMP_REPO}"
 }
 
+#-------------------------------------------------------------------------------
+# F-04: fetch 스로틀 — 스탬프 파일 기록, 간격 내에는 갱신 안 함
+#-------------------------------------------------------------------------------
+@test "git-bus-check.sh(F-04): fetch 스탬프 파일 생성" {
+    TMP_REPO=$(mktemp -d)
+    git -C "${TMP_REPO}" init -q
+    git -C "${TMP_REPO}" -c user.email=t@t -c user.name=t commit -q --allow-empty -m init
+    run bash -c "cd '${TMP_REPO}' && bash '${HOOKS_DIR}/git-bus-check.sh'"
+    [ "$status" -eq 0 ]
+    [ -f "${TMP_REPO}/.claude/last-fetch-epoch" ]
+    rm -rf "${TMP_REPO}"
+}
+
+@test "git-bus-check.sh(F-04): 간격 내 스탬프는 갱신하지 않음" {
+    TMP_REPO=$(mktemp -d)
+    git -C "${TMP_REPO}" init -q
+    git -C "${TMP_REPO}" -c user.email=t@t -c user.name=t commit -q --allow-empty -m init
+    mkdir -p "${TMP_REPO}/.claude"
+    stamp_before=$(( $(date +%s) - 10 ))
+    echo "${stamp_before}" > "${TMP_REPO}/.claude/last-fetch-epoch"
+
+    run bash -c "cd '${TMP_REPO}' && bash '${HOOKS_DIR}/git-bus-check.sh'"
+    [ "$status" -eq 0 ]
+    [ "$(cat "${TMP_REPO}/.claude/last-fetch-epoch")" = "${stamp_before}" ]
+    rm -rf "${TMP_REPO}"
+}
+
 @test "session-end.sh(#30): .claude 부재 시 기준점 디렉터리 생성 후 기록" {
     TMP_REPO=$(mktemp -d)
     TMP_HOME=$(mktemp -d)

@@ -41,7 +41,9 @@ DOTFILES_DIR="$REPO_DIR/dotfiles"
 LOCAL_BIN="$HOME/.local/bin"
 ARACHNE_TAG="ARACHNE"
 PROG="arachne"
-ARACHNE_VERSION="1.0.0"
+# 버전 정본은 레포 루트 VERSION 파일 (F-07: 설치기별 하드코딩 드리프트 방지)
+ARACHNE_VERSION="$(cat "$REPO_DIR/VERSION" 2>/dev/null | tr -d '[:space:]')"
+ARACHNE_VERSION="${ARACHNE_VERSION:-unknown}"
 ENTRY_NAME="$(basename "$0")"
 
 # "스크립트명:커맨드명" 형식 — git pull 시 심볼릭 링크라 자동 업데이트됨
@@ -221,10 +223,14 @@ register_bin() {
 
     echo "[Arachne] bin 등록 완료"
 
-    if ! echo "$PATH" | grep -q "$LOCAL_BIN"; then
-        echo "  주의: $LOCAL_BIN 이 PATH에 없습니다. ~/.bash_profile에 추가하세요:"
-        echo "    export PATH=\"\$HOME/.local/bin:\$PATH\""
-    fi
+    # F-10: 부분 문자열 grep 은 유사 경로(~/.local/binx 등)에 오탐 — 정확한 항목 매칭
+    case ":$PATH:" in
+        *":$LOCAL_BIN:"*) ;;
+        *)
+            echo "  주의: $LOCAL_BIN 이 PATH에 없습니다. ~/.bash_profile에 추가하세요:"
+            echo "    export PATH=\"\$HOME/.local/bin:\$PATH\""
+            ;;
+    esac
 }
 
 ################################################################################
@@ -648,13 +654,25 @@ check_arachne() {
     echo "[Arachne] 연결 상태 점검"
 
     #---------------------------------------------------------------------------
-    # Claude — ~/.claude/CLAUDE.md 가 레포 CLAUDE.md 로 해석되는가
+    # Claude — SYMLINK_TARGETS 전체가 레포로 해석되고 settings.json 이 존재하는가
+    # (F-08: CLAUDE.md 하나만 보면 rules/hooks 등 부분 끊김을 놓친다)
     #---------------------------------------------------------------------------
-    if [ -e "$CLAUDE_DIR/CLAUDE.md" ] \
-        && [ "$(ResolvePath "$CLAUDE_DIR/CLAUDE.md")" = "$(ResolvePath "$REPO_DIR/CLAUDE.md")" ]; then
-        echo "  [OK]   Claude : ~/.claude/CLAUDE.md -> 레포"
+    local claude_fail=0
+    local claude_target
+    for claude_target in "${SYMLINK_TARGETS[@]}"; do
+        if [ ! -e "$CLAUDE_DIR/$claude_target" ] \
+            || [ "$(ResolvePath "$CLAUDE_DIR/$claude_target")" != "$(ResolvePath "$REPO_DIR/$claude_target")" ]; then
+            echo "  [FAIL] Claude : ~/.claude/$claude_target 가 레포로 연결되지 않음 (arachne -i 필요)"
+            claude_fail=1
+        fi
+    done
+    if [ ! -f "$CLAUDE_DIR/settings.json" ]; then
+        echo "  [FAIL] Claude : ~/.claude/settings.json 없음 (arachne -i 필요)"
+        claude_fail=1
+    fi
+    if [ "$claude_fail" -eq 0 ]; then
+        echo "  [OK]   Claude : ~/.claude 링크 ${#SYMLINK_TARGETS[@]}개 + settings.json -> 레포"
     else
-        echo "  [FAIL] Claude : ~/.claude/CLAUDE.md 가 레포로 연결되지 않음 (arachne -i 필요)"
         fail=1
     fi
 
