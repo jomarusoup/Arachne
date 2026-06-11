@@ -156,6 +156,10 @@ FROM:: [[2026-06-11-architecture-audit]]
 | Python | 87 | data-handling-hardening P1 (DB fixture gate·OpenAPI 검사·/database-review) | 87→91 |
 | Codex/Gemini 전달층 | 55/43 | cross-harness 패키징(MULTI-CLI §5.4) — 언어 규칙 어댑터 배포 | +5~10 |
 
+각 도구를 **현재 점수의 상한까지** 뽑아 쓰는 운영 방법(질문법·모드 선택·결과 처리)은
+[MULTI-CLI.md §5.5 도구별 최대 활용 가이드](../MULTI-CLI.md)가 정본이다 — 자산 추가 없이
+호출자의 수동 규율로 상한에 붙이는 방법과, 그래도 남는 자동 집행 격차를 함께 기술한다.
+
 > 단, 1·2·3순위 선언(Python·Web > Go > C/C++/Rust)과 충돌하지 않게 — Go/C 보강은
 > 실제 프로젝트가 생길 때(트리거 도래 시) 진행한다. [[2026-06-11-audit-followup]] 원칙과 동일.
 
