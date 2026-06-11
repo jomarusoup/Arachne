@@ -7,6 +7,10 @@ on:
   pull_request:
     branches: [main]
 
+# 검증 전용 CI — 저장소 내용 읽기만 필요 (최소 권한, 프로젝트 템플릿 arachne.yml 과 동일 정책)
+permissions:
+  contents: read
+
 jobs:
   verify-ubuntu:
     runs-on: ubuntu-latest

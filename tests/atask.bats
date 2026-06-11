@@ -125,9 +125,19 @@ MOCK
 
 @test "atask: 미설치 CLI 는 건너뛴다" {
     # codex-task 만 만들고 claude 는 만들지 않음 → impl 에서 claude skip.
-    # 호스트의 실제 claude(~/.local/bin)를 타지 않도록 PATH 를 격리(coreutils만 허용).
+    # 디렉터리 허용(/usr/bin 등)만으로는 호스트에 /usr/bin/claude 가 있으면 실제
+    # CLI 가 호출돼 비결정 실패·토큰 소모가 난다(A-11). 필요한 도구만 심볼릭한
+    # 밀폐 PATH 를 구성해 어떤 호스트 배치에서도 claude 미감지를 보장한다.
     make_mock codex-task
-    PATH="${MOCK_BIN}:/usr/bin:/bin" run bash "${SCRIPT}" -R impl "작업"
+
+    local safe_bin="${TMP_DIR}/safebin"
+    mkdir -p "${safe_bin}"
+    local tool
+    for tool in bash sh cat date grep head cut mkdir mktemp mv rm basename tr sed wc; do
+        ln -s "$(command -v "${tool}")" "${safe_bin}/${tool}" 2>/dev/null || true
+    done
+
+    PATH="${MOCK_BIN}:${safe_bin}" run bash "${SCRIPT}" -R impl "작업"
     [ "$status" -eq 0 ]
     [[ "$output" == *"skip claude (미설치)"* ]]
     [[ "$output" == *"OUTPUT_FROM_codex-task"* ]]

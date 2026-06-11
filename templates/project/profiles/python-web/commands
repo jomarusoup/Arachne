@@ -11,4 +11,6 @@ pnpm lint
 pnpm typecheck
 pnpm test
 pnpm build
+# CI runners start without browsers. Locally run `pnpm exec playwright install` once.
+if [ -n "${CI:-}" ]; then pnpm exec playwright install --with-deps; fi
 pnpm exec playwright test

@@ -118,6 +118,37 @@ run_install() {
 }
 
 #-------------------------------------------------------------------------------
+# dotfiles 병합 회귀 (A-01): 사용자 함수의 '{'·'}' 줄과 중복 제거가 충돌해
+# 병합본 문법이 깨지지 않아야 한다
+#-------------------------------------------------------------------------------
+@test "dotfiles: 사용자 함수 있는 .bash_profile 병합 후에도 문법 유효" {
+    cat > "${TMP_DIR}/.bash_profile" <<'EOF'
+my_user_func()
+{
+    echo "user function"
+}
+umask 002
+EOF
+
+    run_install
+
+    run bash -n "${TMP_DIR}/.bash_profile"
+    [ "$status" -eq 0 ]
+}
+
+@test "dotfiles: 사용자 영역과 중복된 export/alias 는 섹션에서 제외" {
+    echo "alias ls='ls -aF'" > "${TMP_DIR}/.bash_profile"
+
+    run_install
+
+    # ARACHNE 섹션 안에는 동일 alias 가 다시 들어가지 않아야 한다
+    section=$(awk '/=== ARACHNE BEGIN ===/{s=1;next} /=== ARACHNE END ===/{s=0} s' \
+        "${TMP_DIR}/.bash_profile")
+    run grep -cxF "alias ls='ls -aF'" <<< "${section}"
+    [ "$output" -eq 0 ]
+}
+
+#-------------------------------------------------------------------------------
 # --export-settings 검증
 #-------------------------------------------------------------------------------
 @test "export-settings: settings.json -> template 내보내기" {

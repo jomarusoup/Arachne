@@ -107,5 +107,6 @@ workflow에 service나 artifact가 필요하면 프로젝트가 관리 파일을
 | 명령 없음 | `.arachne/commands`에 비주석 명령 존재 여부 |
 | `uv`/`pnpm` lock 실패 | lockfile 커밋과 frozen 상태 |
 | script 없음 | `package.json` scripts 또는 Python dev dependency |
+| Playwright browser 없음 | CI는 commands의 `CI` 조건부 install 줄, 로컬은 `pnpm exec playwright install` 1회 실행 |
 | 로컬만 통과 | 런타임 버전, 비밀값, 서비스 의존성 |
 | CI만 통과 | 로컬에서 `arachne project-check` 실행 여부 |

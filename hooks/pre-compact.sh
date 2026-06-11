@@ -15,43 +15,6 @@ mkdir -p "$SESSION_DIR"
 DATE=$(date +%Y-%m-%d-%H%M)
 FILE="$SESSION_DIR/auto-${DATE}.md"
 
-#===============================================================================
-# FUNCTION    : CollectProjectState
-# DESCRIPTION : git 기반 현재 프로젝트 상태 수집 후 출력
-#===============================================================================
-CollectProjectState() {
-    #---------------------------------------------------------------------------
-    # git 상태
-    #---------------------------------------------------------------------------
-    local branch
-    branch=$(git rev-parse --abbrev-ref HEAD 2>/dev/null || echo "N/A")
-
-    local last_commits
-    last_commits=$(git log --oneline -5 2>/dev/null || echo "(git 없음)")
-
-    local changed_files
-    changed_files=$(git status --short 2>/dev/null || echo "")
-
-    local changed_count=0
-    [ -n "$changed_files" ] && changed_count=$(echo "$changed_files" | wc -l | tr -d ' ')
-
-    #---------------------------------------------------------------------------
-    # 빌드 산출물 감지 — 시스템 프로그래밍 프로젝트 고려
-    #---------------------------------------------------------------------------
-    local build_info=""
-    if [ -f "Makefile" ] || [ -f "CMakeLists.txt" ]; then
-        local bin_count
-        bin_count=$(find . -maxdepth 3 -type f -perm /111 ! -path './.git/*' ! -name '*.sh' 2>/dev/null | wc -l | tr -d ' ')
-        build_info="- 실행 파일: ${bin_count}개 감지"
-    elif [ -f "package.json" ]; then
-        build_info="- 패키지: $(node -e "console.log(require('./package.json').name+'@'+require('./package.json').version)" 2>/dev/null || echo "N/A")"
-    elif [ -f "go.mod" ]; then
-        build_info="- Go 모듈: $(head -1 go.mod 2>/dev/null | awk '{print $2}')"
-    fi
-
-    echo "$branch" "$last_commits" "$changed_files" "$changed_count" "$build_info"
-}
-
 #---------------------------------------------------------------------------
 # 상태 수집 및 파일 작성
 #---------------------------------------------------------------------------

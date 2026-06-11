@@ -412,7 +412,8 @@ install() {
 # FUNCTION    : merge_dotfile
 # DESCRIPTION : dotfiles/ 내용을 사용자 파일에 ARACHNE 섹션으로 병합
 #               기존 파일 내용 유지, 섹션이 있으면 갱신 / 없으면 끝에 추가
-#               중복 감지: 사용자 영역에 이미 존재하는 줄은 섹션에서 제외
+#               중복 감지: 사용자 영역에 이미 있는 export/alias 줄만 섹션에서 제외
+#               (블록 구조 줄까지 제외하면 병합본 문법이 깨지므로 범위 한정)
 # PARAMETERS  : string src            - dotfiles/ 내 원본 경로
 #               string dst            - 홈 디렉터리 내 대상 경로
 #               string comment_char   - 형식별 주석 시작 문자 (기본: #, vimrc: ", md: <!--)
@@ -466,12 +467,18 @@ merge_dotfile() {
             printf '%s\n' "${line}" >> "${tmp_filtered}"
             continue
         fi
-        # 사용자 영역에 이미 존재하면 스킵
-        if printf '%s\n' "${user_content}" | grep -qxF "${trimmed}" 2>/dev/null; then
-            skipped=$((skipped + 1))
-        else
-            printf '%s\n' "${line}" >> "${tmp_filtered}"
-        fi
+        # 중복 제거는 한 줄로 의미가 완결되는 export/alias 만 대상으로 한다.
+        # 임의 줄까지 제외하면 사용자 파일의 '{'·'}' 같은 블록 구조 줄과 우연히
+        # 일치한 함수 본문이 빠져 병합본 문법이 깨진다 (CHANGELOG-AUDIT A-01).
+        case "${trimmed}" in
+            export\ *|alias\ *)
+                if printf '%s\n' "${user_content}" | grep -qxF "${trimmed}" 2>/dev/null; then
+                    skipped=$((skipped + 1))
+                    continue
+                fi
+                ;;
+        esac
+        printf '%s\n' "${line}" >> "${tmp_filtered}"
     done < "${src}"
 
     # 실질 내용(주석·공백 제외)이 남아있는지 확인

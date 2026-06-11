@@ -55,7 +55,9 @@ flowchart LR
 
 `minimal`은 `git diff --check`만 실행한다. `python`은 `uv sync --frozen` 후 Ruff, mypy, pytest,
 pip-audit를 실행한다. `web`은 `pnpm install --frozen-lockfile` 후 lint, typecheck, test, build,
-Playwright를 실행한다. `python-web`은 두 집합을 순서대로 실행한다.
+Playwright를 실행한다. `python-web`은 두 집합을 순서대로 실행한다. Playwright 직전에는 `CI`
+환경변수가 설정된 경우에만 `playwright install --with-deps`를 실행한다 — GitHub runner는
+브라우저 없이 시작하고, 로컬은 1회 수동 설치를 전제한다.
 
 명령이 성공하려면 프로젝트가 해당 script와 개발 의존성을 선언해야 한다. 누락된 도구를 조용히
 건너뛰지 않는다.

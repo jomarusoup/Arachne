@@ -2,7 +2,7 @@
 ################################################################################
 # FILE NAME   : session-end.sh
 # DESCRIPTION : Stop Hook — 세션 종료 시 git 기반 프로젝트 상태 스냅샷 생성,
-#               Gemini 감지 기준점(last-seen-commit) 갱신
+#               git-bus 기준점(last-seen-commit) 갱신
 # DATA        : 2026-05-05
 # Modification: 2026-06-08
 ################################################################################
@@ -61,10 +61,10 @@ TEMPLATE
 }
 
 #===============================================================================
-# FUNCTION    : UpdateGeminiRef
-# DESCRIPTION : Gemini 감지 기준점 — fetch 후 리모트 HEAD를 last-seen-commit 에 저장
+# FUNCTION    : UpdateUpstreamRef
+# DESCRIPTION : git-bus 기준점 — fetch 후 리모트 HEAD를 last-seen-commit 에 저장
 #===============================================================================
-UpdateGeminiRef() {
+UpdateUpstreamRef() {
     local repo_dir
     repo_dir=$(git rev-parse --show-toplevel 2>/dev/null)
     [ -z "$repo_dir" ] && return
@@ -100,4 +100,4 @@ else
     echo "[세션 종료] ⚠️  /save-session 미실행 → auto-${DATE}.md 자동 생성"
 fi
 
-UpdateGeminiRef
+UpdateUpstreamRef

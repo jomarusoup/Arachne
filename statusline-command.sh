@@ -44,9 +44,11 @@ echo "{\"cost\": $session_cost, \"ts\": $NOW}" > "$LAST_FILE"
 if awk "BEGIN { exit ($delta > 0.00001) ? 0 : 1 }"; then
   [ ! -f "$TRACK_FILE" ] && echo "[]" > "$TRACK_FILE"
   # 7일 이전 항목 제거 + 새 항목 추가
+  # 임시 파일은 mktemp 사용 — 고정 /tmp 경로는 공유 시스템에서 심볼릭 공격에 취약 (CHANGELOG-AUDIT A-04)
   CUTOFF=$((NOW - 604800))
-  jq "[.[] | select(.ts >= $CUTOFF)] + [{\"ts\": $NOW, \"cost\": $delta}]" "$TRACK_FILE" > /tmp/.claude_track_tmp \
-    && mv /tmp/.claude_track_tmp "$TRACK_FILE"
+  track_tmp=$(mktemp) \
+    && jq "[.[] | select(.ts >= $CUTOFF)] + [{\"ts\": $NOW, \"cost\": $delta}]" "$TRACK_FILE" > "$track_tmp" \
+    && mv "$track_tmp" "$TRACK_FILE"
 fi
 
 # --- 5h window cost ---
