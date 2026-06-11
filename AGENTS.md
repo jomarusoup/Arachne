@@ -168,3 +168,11 @@
 > 단독이든 위임이든 **읽는 공통 규약은 이 파일로 동일**하다. 캐스케이드 표·단독 사용·cross-harness 패키징
 > (같은 자산을 Claude/Codex/Gemini/Copilot/Cursor/OpenCode로 어댑터 배포)은
 > `docs/MULTI-CLI.md` §5 참고.
+>
+> **단독 사용 원칙 — 사상 동일 · 수단 상이 · 집행은 CI**: 이 규약(스타일·패턴·보안·테스트·git·이슈)은
+> 어느 CLI를 단독으로 쓰든 동일하게 적용된다. 다만 **집행 수단**은 도구마다 다르다 — Claude는
+> 훅·서브에이전트·언어 규칙 자동 로드가 규율을 강제하고, 다른 CLI는 이 문서(텍스트 규약)를 따른다.
+> 3-레인 역할 제한(tester/fixer·reader/advisor)과 "커밋은 Claude"는 **Claude가 오케스트레이터일 때의
+> 계약**이며, 단독 사용 시에는 세션을 모는 사람이 커밋을 결정한다. 어느 CLI가 작성했든 **최종 게이트는
+> 프로젝트 CI**(`.arachne/verify.sh`·GitHub Actions)로 동일하다. Codex/Gemini가 없는 Claude 단독
+> 환경(솔로 모드)에서는 Claude가 세 레인을 모두 직접 수행한다 — `rules/common/workflow.md` 참고.

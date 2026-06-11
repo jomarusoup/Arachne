@@ -252,6 +252,11 @@ Claude Code 상태표시줄은 `settings.template.json`의 `statusLine.command`�
 
 **전제**: Claude Code가 중심(오케스트레이터 + 주 구현자). Codex·Gemini는 위임 대상이며, 셋 다 `AGENTS.md` 공통 규약을 공유해 인계 마찰이 작다.
 
+> **Codex·Gemini가 없어도 된다**: 이 장의 위임 경로는 선택 사항이다. Claude Code만 설치된
+> 환경(솔로 모드)에서도 규칙·에이전트·스킬·훅·커맨드 등 하네스 기능 전부가 그대로 동작하며,
+> Claude가 세 레인을 직접 수행한다. 상세는 [MULTI-CLI.md §5.3](MULTI-CLI.md), 행동 규칙은
+> [`rules/common/workflow.md`](../rules/common/workflow.md)의 "솔로 모드" 절.
+
 > **정책 SSOT**: 비용 라우팅·역할 분담의 **단일 출처는 [`rules/common/workflow.md`](../rules/common/workflow.md)** (Claude가 실제로 따르는 행동 규칙). 이 절은 사람용 설명이며, 충돌 시 workflow.md가 우선한다.
 
 ### 역할 분담 (3-레인)
@@ -525,7 +530,7 @@ cat file | gemini-task "이 입력을 요약해줘"      # stdin 입력은 프�
 | --------- | ---- |
 | `-m MODEL` | 사용할 Gemini 모델 (미지정 시 `gemini` 기본값 또는 `GTASK_MODEL`; 구형 `GASK_MODEL`도 호환) |
 | `-h` | 도움말 출력 |
-| 종료 코드 | 내부 `gemini` 호출 결과를 그대로 전파 → 스크립트·파이프라인에 안전 |
+| 종료 코드 | 내부 `gemini` 호출 결과를 그대로 전파 → 스크립트·파이프라인에 안전. **Gemini CLI 미설치 시 127 + 안내 메시지** (솔로 모드) |
 | stdout / stderr | 답변 본문은 stdout, 노이즈 제거 후 남은 진단만 stderr |
 
 ### `codex-task` (= `ctask`) — Codex tester/fixer
@@ -541,7 +546,7 @@ cat test.log | codex-task "이 실패 원인 분석하고 수정 diff 제시"   
 | `-r` | raw — tester/fixer 역할 프리앰블 없이 프롬프트 그대로 전달 |
 | `-C DIR` | 작업 루트 디렉터리 지정 (`codex -C`) |
 | `-h` | 도움말 출력 |
-| 종료 코드 | 내부 `codex` 호출 결과를 그대로 전파 |
+| 종료 코드 | 내부 `codex` 호출 결과를 그대로 전파. **Codex CLI 미설치 시 127 + 안내 메시지** (솔로 모드) |
 | stdout / stderr | 결과 본문은 stdout, 진짜 에러로 보이는 줄만 stderr |
 
 > 사용 예시·통합 경계(제안/실행 모드)·비용 라우팅은 6장 참고.
@@ -561,6 +566,7 @@ atask [-R ROLE] [-w] [--dry-run] "프롬프트..."
 | `-w` | codex 단계를 workspace-write 로 실행 |
 | `--dry-run` | 실제 호출 없이 해석된 순서·쿨다운 상태만 출력 |
 | `-h` | 도움말 출력 |
+| 미설치 스킵 | 하위 CLI 미설치(종료코드 127)는 쿨다운 없이 다음 후보로 — Claude 단독 환경 지원 |
 | 모델 지정 | **옵션 없음(#32)** — 어느 CLI가 실행될지 미리 알 수 없어 단일 모델명이 CLI 모델 공간을 혼합한다. CLI별 모델은 `GTASK_MODEL`(Gemini)·`CTASK_MODEL`(Codex) 환경변수로 지정하거나 해당 래퍼를 직접 호출 |
 | 종료 코드 | 처리한 CLI 결과 전파 / 전 CLI 소진 시 1 |
 | 상태 파일 | `~/.claude/arachne-quota-state` (쿨다운 만료 epoch 기록) |

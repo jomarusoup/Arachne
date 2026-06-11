@@ -196,6 +196,12 @@ Arachne/
 
 ## 🤝 Multi-CLI Collaboration (3-Lane)
 
+> **Claude Code만 있어도 됩니다(솔로 모드)** — Codex·Gemini·Copilot 미설치 환경에서도 규칙·
+> 에이전트·스킬·훅·커맨드·프로젝트 CI 전부가 그대로 동작하며, 설치기는 미감지 CLI를 자동으로
+> 건너뜁니다. 위임 명령(`gtask`/`ctask`)은 미설치 시 안내와 함께 127로 실패하고 `atask`는 다음
+> 후보로 넘어갑니다. 상세: [MULTI-CLI.md §5.3](docs/MULTI-CLI.md). 협업 규율의 계층 원칙
+> (사상 동일·수단 상이·집행은 CI)은 [MULTI-CLI.md §5.0](docs/MULTI-CLI.md) 참고.
+
 Claude Code가 **중심(오케스트레이터 + 주 구현자)**이고, Codex·Gemini는 위임 대상입니다.
 세 CLI가 같은 공통 규약(`AGENTS.md`)을 공유하므로 인계 마찰이 작습니다.
 **토큰 무겁고 정밀도가 덜 중요한 일은 위임으로 떠넘기고, 정밀 구현·통합·커밋은 Claude가 맡습니다.**
