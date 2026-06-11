@@ -228,10 +228,11 @@ Arachne/
 │   ├── c · cpp · golang · rust  # 언어별 규칙
 │   ├── python · javascript · bash
 │   └── web/                     # design-quality
-├── skills/                      # 워크플로·도메인 스킬 (28)
+├── skills/                      # 워크플로·도메인 스킬 (31)
 ├── commands/                    # 슬래시 커맨드 (16)
-├── agents/                      # 서브에이전트 7개 (planner·code-reviewer·tdd·debugger
-│                                #   ·python-reviewer·fastapi-reviewer·react-reviewer)
+├── agents/                      # 서브에이전트 8개 (planner·code-reviewer·tdd·debugger
+│                                #   ·python-reviewer·fastapi-reviewer·react-reviewer
+│                                #   ·database-reviewer)
 ├── hooks/                       # 이벤트 훅 (session-start/end · pre-compact · git-bus-check
 │                                #   · atask-quota-warn · doc-drift-check)
 ├── mcp-configs/                 # MCP 서버 설정 템플릿

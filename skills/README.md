@@ -1,6 +1,6 @@
 # Skills
 
-Claude Code 세션에서 호출 가능한 워크플로·도메인 스킬 모음 (28개).
+Claude Code 세션에서 호출 가능한 워크플로·도메인 스킬 모음 (31개).
 
 ---
 
@@ -37,6 +37,14 @@ Claude Code 세션에서 호출 가능한 워크플로·도메인 스킬 모음 
 | `api-design` | REST 설계 — 리소스 네이밍·상태 코드·봉투·커서/오프셋 페이지네이션·버전·레이트리밋 |
 | `fastapi-patterns` | FastAPI 프로덕션 — 앱 팩토리·DI·스키마 분리·async·중앙 에러 핸들러·테스트 |
 | `make-interfaces-feel-better` | 동심 radius·광학 정렬·모션·히트 영역 등 UI 폴리시 디테일 |
+
+## 데이터·DB
+
+| 스킬 | 설명 |
+|---|---|
+| `json-contracts` | Python(Pydantic v2)·TypeScript 간 JSON wire contract — datetime·Decimal·missing/null·schema versioning |
+| `database-migrations` | Alembic migration 안전 운영 — expand-contract·CONCURRENTLY·backfill·forward-fix |
+| `postgres-patterns` | PostgreSQL 설계·운영 — 타입·제약·인덱스 선택·EXPLAIN 증거·pool/timeout·RLS |
 
 ## TDD·검증
 

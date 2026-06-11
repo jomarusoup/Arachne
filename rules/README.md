@@ -54,7 +54,8 @@ rules/
 │   ├── patterns.md              — Protocol, dataclass DTO, context manager
 │   ├── security.md              — bandit, SQL 인젝션, Pydantic 검증
 │   ├── testing.md               — pytest, fixture, 모킹
-│   └── fastapi.md               — async DI, 스키마 분리, 시스템 전환 브릿지
+│   ├── fastapi.md               — async DI, 스키마 분리, 시스템 전환 브릿지
+│   └── data-handling.md         — JSON 경계, SQLAlchemy 세션·트랜잭션, migration, 민감 데이터
 │
 ├── web/                         # 웹 디자인 품질 (프론트엔드 공통)
 │   └── design-quality.md        — 안티-템플릿 정책, 필수 품질, 스타일 방향

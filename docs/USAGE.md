@@ -13,7 +13,7 @@
 |---|---|---|---|
 | 슬래시 커맨드 | `commands/*.md` | 채팅에 `/이름` 입력 | YAML frontmatter(`description`) 자동 인식 |
 | 에이전트 | `agents/*.md` | Claude가 자동 활성화 / `Task`·`Agent` 호출 | YAML frontmatter(`name`,`tools`,`model`) |
-| 스킬(지식) | `skills/*.md` | 관련 작업 시 Claude가 참조 | frontmatter 없음 — 마크다운 본문 |
+| 스킬(지식) | `skills/*.md` | 관련 작업 시 Claude가 참조 | YAML frontmatter(`name`,`description`) + 마크다운 본문 |
 | 훅 | `hooks/*.sh` | Claude Code 이벤트가 자동 실행 | `settings.json`의 `hooks` 섹션 |
 | 규칙 | `rules/**/*.md` | 공통=매 세션 / 언어=확장자 매칭 시 | `~/.claude/rules/` 네이티브 자동 로드 (paths frontmatter) |
 
@@ -97,6 +97,7 @@ model: opus               # opus / sonnet / haiku
 | `python-reviewer` | sonnet | PEP 8·타입 힌트·보안·이디엄 Python 리뷰 |
 | `fastapi-reviewer` | sonnet | FastAPI async·DI·스키마·API 보안 리뷰 |
 | `react-reviewer` | sonnet | React/Next 렌더·Hooks·a11y·XSS·성능 리뷰 |
+| `database-reviewer` | sonnet | DB schema·쿼리·migration·ORM 변경 리뷰 (read-first) |
 
 ### 병렬 실행
 독립적인 작업은 여러 에이전트를 동시에 돌릴 수 있다(예: 모듈 A 보안 분석 + 모듈 B 성능 검토 + 모듈 C 리뷰 → 3개 동시).
@@ -106,7 +107,7 @@ model: opus               # opus / sonnet / haiku
 ## 3. Skills — Domain Knowledge (`skills/`)
 
 ### 사용법
-슬래시 커맨드와 달리 **직접 호출하는 것이 아니라**, 관련 작업을 할 때 Claude가 해당 지식 파일을 참조한다. frontmatter가 없는 순수 마크다운 지식 문서다.
+슬래시 커맨드와 달리 **직접 호출하는 것이 아니라**, 관련 작업을 할 때 Claude가 해당 지식 파일을 참조한다. `name`·`description` YAML frontmatter와 마크다운 본문으로 구성된 지식 문서다.
 
 - 예: Rust 저지연 코드를 작성할 때 → `rust-patterns`, `latency-critical-systems` 참조
 - 예: C/C++ 메모리 문제 → `memory-check`, `build-debug` 참조
@@ -123,11 +124,12 @@ model: opus               # opus / sonnet / haiku
 | 시스템 프로그래밍 | `latency-critical-systems` `trading-systems` `performance-profiling` `build-debug` `memory-check` `cpp-testing` `error-handling` |
 | 언어별 패턴·테스팅 | `rust-patterns` `rust-testing` `golang-patterns` `golang-testing` `go-http-patterns` `python-patterns` `python-testing` |
 | 백엔드·웹 | `backend-patterns` `frontend-patterns` `api-design` `fastapi-patterns` `make-interfaces-feel-better` |
+| 데이터·DB | `json-contracts` `database-migrations` `postgres-patterns` |
 | 워크플로·보안·기타 | `tdd-workflow` `verification-loop` `security-review` `security-scan` `docker-patterns` `agentic-engineering` |
 | 네트워크 | `network-config-validation` `network-interface-health` `netmiko-ssh-automation` |
 
 ### 새 스킬 추가
-`skills/새스킬.md` 생성 → "언제 / 어떻게 / 예시" 3요소로 작성. frontmatter 불필요.
+`skills/새스킬.md` 생성 → `name`·`description` frontmatter를 달고 "언제 / 어떻게 / 예시" 3요소로 작성.
 
 ---
 
@@ -241,7 +243,8 @@ Claude Code 상태표시줄은 `settings.template.json`의 `statusLine.command`�
 | `*.js` `*.ts` | `rules/javascript/*` |
 | `*.sh` | `rules/bash/*` |
 
-각 언어 폴더는 `coding-style · hooks · patterns · security · testing` 5개 파일로 구성된다.
+각 언어 폴더는 `coding-style · hooks · patterns · security · testing` 5개 파일을 기본으로 한다
+(Python은 `fastapi`·`data-handling` 추가, web은 `design-quality` 단일 파일).
 
 ---
 

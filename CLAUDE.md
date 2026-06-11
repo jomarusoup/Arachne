@@ -24,7 +24,8 @@ Claude Code가 이를 네이티브로 자동 로드한다:
 │   ├── debugger.md                  # GDB·valgrind·strace·perf (model: sonnet)
 │   ├── python-reviewer.md           # Python 특화 코드 리뷰 (model: sonnet)
 │   ├── fastapi-reviewer.md          # FastAPI async·DI·API 리뷰 (model: sonnet)
-│   └── react-reviewer.md            # React/Next 렌더·a11y·XSS 리뷰 (model: sonnet)
+│   ├── react-reviewer.md            # React/Next 렌더·a11y·XSS 리뷰 (model: sonnet)
+│   └── database-reviewer.md         # DB schema·쿼리·migration 리뷰 (model: sonnet)
 │
 ├── commands/                        # 슬래시 커맨드 (/명령어)
 │   ├── add.md                       # /add        — 기능 추가
@@ -70,7 +71,7 @@ Claude Code가 이를 네이티브로 자동 로드한다:
 │   ├── cpp/        # C++ (coding-style·hooks·patterns·security·testing)
 │   ├── golang/     # Go (coding-style·hooks·patterns·security·testing)
 │   ├── rust/       # Rust (coding-style·hooks·patterns·security·testing)
-│   ├── python/     # Python (coding-style·hooks·patterns·security·testing·fastapi)
+│   ├── python/     # Python (coding-style·hooks·patterns·security·testing·fastapi·data-handling)
 │   ├── web/        # 웹 디자인 품질 (design-quality)
 │   ├── javascript/ # JS/TS (coding-style·hooks·patterns·security·testing)
 │   └── bash/       # Bash/Shell (coding-style·hooks·patterns·security·testing)
@@ -79,7 +80,7 @@ Claude Code가 이를 네이티브로 자동 로드한다:
 │   ├── bash_profile                 # → ~/.bash_profile (sgrep 등 유틸 포함)
 │   └── vimrc                        # → ~/.vimrc
 │
-├── skills/                          # 워크플로·도메인 스킬 (28개, README.md 참고)
+├── skills/                          # 워크플로·도메인 스킬 (31개, README.md 참고)
 │   ├── build-debug.md / memory-check.md                             # Harness 전용
 │   ├── cpp-testing.md / latency-critical-systems.md / error-handling.md
 │   ├── trading-systems.md / performance-profiling.md
@@ -88,6 +89,7 @@ Claude Code가 이를 네이티브로 자동 로드한다:
 │   ├── python-patterns.md / python-testing.md                       # Python
 │   ├── backend-patterns.md / frontend-patterns.md / make-interfaces-feel-better.md  # 백엔드·웹
 │   ├── api-design.md / fastapi-patterns.md                            # API·FastAPI
+│   ├── database-migrations.md / postgres-patterns.md / json-contracts.md  # 데이터·DB
 │   ├── agentic-engineering.md                                       # 메타·하네스
 │   ├── tdd-workflow.md / verification-loop.md
 │   ├── security-review.md / security-scan.md
@@ -118,7 +120,7 @@ description: /명령어 설명  # /help 에서 표시되는 설명
 ---
 ```
 
-**skills/** — 워크플로 스킬 (frontmatter 없음, 마크다운 본문만)
+**skills/** — 워크플로 스킬 (`name`·`description` YAML frontmatter + 마크다운 본문)
 - 구성: 언제 사용하는지 / 어떻게 동작하는지 / 예시
 
 **rules/** — 지시서. `@import` 하지 않는다 — `~/.claude/rules/` 심볼릭으로 네이티브 자동 로드

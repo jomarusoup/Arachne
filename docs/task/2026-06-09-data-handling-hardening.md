@@ -16,7 +16,7 @@ FROM:: [[2026-06-09-ecc-data-handling-gap]]
 
 # [task] DB·JSON 데이터 처리 하드닝
 
-- **상태**: planned
+- **상태**: in-progress (P0 자산 작성·인덱스 연결 완료)
 - **우선순위**: high
 - **담당**: unassigned
 - **관련 문서**: [[2026-06-09-ecc-data-handling-gap]], [[0001-python-web-profile]]
@@ -215,6 +215,12 @@ PII field response/log/cache 포함 -> gate 실패
 - 신규 자산이 skills/agents/commands/USAGE 인덱스와 GitHub CI에 연결된다.
 
 ## 진행 기록
+
+### 2026-06-11
+
+- P0 산출물 5종(`rules/python/data-handling.md`, `skills/{json-contracts,database-migrations,postgres-patterns}.md`,
+  `agents/database-reviewer.md`)을 커밋하고 skills/agents/rules 인덱스와 USAGE·CLAUDE.md에 연결했다
+  (아키텍처 감사 A-02). `docs/DATA-HANDLING.md`·`/database-review` command·CI gate는 미착수.
 
 ### 2026-06-09
 

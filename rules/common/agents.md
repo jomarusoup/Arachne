@@ -13,6 +13,7 @@
 | `python-reviewer` | PEP 8·타입 힌트·보안·이디엄 Python 리뷰 | `.py` 코드 변경 직후 |
 | `fastapi-reviewer` | async·DI·스키마·API 보안 리뷰 | FastAPI 엔드포인트 변경 직후 |
 | `react-reviewer` | 렌더·Hooks·a11y·XSS·성능 리뷰 | `.jsx`·`.tsx` 등 웹 코드 변경 직후 |
+| `database-reviewer` | DB schema·쿼리·migration·ORM 리뷰 (read-first) | migration·SQL·ORM 모델·repository 변경 직후 |
 
 ## 즉시 활성화 기준
 
@@ -27,6 +28,7 @@
 | 신규 기능 구현 시작 | **tdd** |
 | `.py` 변경 (FastAPI면 `fastapi-reviewer`) | **python-reviewer** |
 | `.jsx`·`.tsx`·React/Next 변경 | **react-reviewer** |
+| migration·SQL·ORM 모델·repository 변경 | **database-reviewer** |
 
 ## 병렬 실행
 
