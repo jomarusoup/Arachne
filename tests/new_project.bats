@@ -3,7 +3,7 @@
 # FILE NAME   : new_project.bats
 # DESCRIPTION : arachne new <project> 스캐폴딩 동작 검증
 # DATA        : 2026-06-06
-# Modification: 2026-06-09
+# Modification: 2026-06-12
 ################################################################################
 
 REPO_DIR="$(cd "$(dirname "$BATS_TEST_FILENAME")/.." && pwd)"
@@ -96,6 +96,45 @@ run_new() {
     [ "$status" -eq 0 ]
     run diff "${REPO_DIR}/docs/template/task.md" "${TMP_DIR}/myproj/docs/template/task.md"
     [ "$status" -eq 0 ]
+}
+
+#-------------------------------------------------------------------------------
+# 지침 스텁 — 프로젝트 AGENTS.md(SSOT) + CLAUDE.md 포인터
+#-------------------------------------------------------------------------------
+@test "new: AGENTS.md 스텁 생성 (프로젝트명 치환 + 필수 섹션)" {
+    run_new myproj "${TMP_DIR}"
+    [ "$status" -eq 0 ]
+    [ -f "${TMP_DIR}/myproj/AGENTS.md" ]
+    grep -qF "# myproj" "${TMP_DIR}/myproj/AGENTS.md"
+    grep -qF "## 구조" "${TMP_DIR}/myproj/AGENTS.md"
+    grep -qF "## 빌드·검증" "${TMP_DIR}/myproj/AGENTS.md"
+    grep -qF "## grep 키워드 매핑" "${TMP_DIR}/myproj/AGENTS.md"
+    grep -qF "## 학습된 패턴" "${TMP_DIR}/myproj/AGENTS.md"
+    run grep -F "{{PROJECT}}" "${TMP_DIR}/myproj/AGENTS.md"
+    [ "$status" -ne 0 ]   # 플레이스홀더가 남아있으면 안 됨
+}
+
+@test "new: CLAUDE.md 는 AGENTS.md 포인터" {
+    run_new myproj "${TMP_DIR}"
+    [ "$status" -eq 0 ]
+    [ -f "${TMP_DIR}/myproj/CLAUDE.md" ]
+    grep -qF "@AGENTS.md" "${TMP_DIR}/myproj/CLAUDE.md"
+    run grep -F "{{PROJECT}}" "${TMP_DIR}/myproj/CLAUDE.md"
+    [ "$status" -ne 0 ]
+}
+
+@test "new: 프로젝트명의 sed 메타문자(&) 오치환 없음" {
+    run_new "AT&T" "${TMP_DIR}"
+    [ "$status" -eq 0 ]
+    grep -qF "# AT&T" "${TMP_DIR}/AT&T/AGENTS.md"
+    run grep -F "{{PROJECT}}" "${TMP_DIR}/AT&T/AGENTS.md"
+    [ "$status" -ne 0 ]
+}
+
+@test "new: AGENTS.md 스텁 섹션은 미기재 마커 포함" {
+    run_new myproj "${TMP_DIR}"
+    [ "$status" -eq 0 ]
+    grep -qF "<!-- 미기재:" "${TMP_DIR}/myproj/AGENTS.md"
 }
 
 #-------------------------------------------------------------------------------

@@ -67,6 +67,12 @@ graph TD
 > 이 비대칭은 실측으로 검증됨: Gemini·Codex 모두 비대화 모드에서 AGENTS.md에 심은 고유 토큰을
 > 출력함(런타임 로딩 확인). 4장 참고.
 
+**프로젝트 레벨도 같은 패턴** — `arachne -n`이 프로젝트 루트에 `AGENTS.md`(프로젝트 SSOT 스텁:
+구조·빌드·검증·grep 키워드·학습된 패턴 섹션) + `CLAUDE.md`(`@AGENTS.md` 포인터)를 생성한다.
+Copilot은 저장소 AGENTS.md를 자동 발견하고, Codex/Gemini 위임·Claude 모두 한 파일을 본다.
+스텁은 비워서 생성되며(미기재 마커) 자동 기록하지 않는다 — `/learn`과 diff 승인으로만 채운다.
+미기재 섹션이 남아 있으면 `session-end.sh`가 세션 스냅샷에 채우기 제안을 남긴다(알림만, 자동 작성 금지).
+
 ---
 
 ## 3. Per-CLI Behavior — What Actually Works

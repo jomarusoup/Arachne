@@ -3,7 +3,7 @@
 # FILE NAME   : install.sh
 # DESCRIPTION : Arachne 멀티 CLI 설정 설치 스크립트
 # DATA        : 2026-05-05
-# Modification: 2026-06-09
+# Modification: 2026-06-12
 ################################################################################
 
 set -euo pipefail
@@ -89,7 +89,8 @@ usage() {
     echo "      --target T          설치 대상 CLI: claude|gemini|codex|copilot|all (기본 all)"
     echo "                          (-i/-u 와 함께 사용. 미감지 CLI는 자동 스킵)"
     echo "  -c, --check            CLI 연결 상태 점검 (심볼릭 댕글링·병합본 stale 탐지)"
-    echo "  -n, --new P [DIR]      신규 프로젝트 스캐폴딩 (README + docs/{issue,idea,task,template})"
+    echo "  -n, --new P [DIR]      신규 프로젝트 스캐폴딩 (README + AGENTS/CLAUDE 지침 스텁"
+    echo "                         + docs/{issue,idea,task,template})"
     echo "                         DIR 생략 시 현재 디렉터리. --no-git 으로 git init 생략"
     echo "                         --profile minimal|python|web|python-web (기본 minimal)"
     echo "      --init-ci [DIR]    프로젝트 검증 runner + GitHub Actions workflow 생성/갱신"
@@ -931,7 +932,10 @@ new_project() {
     local tmpl="$REPO_DIR/docs/template/example.md"
     local task_tmpl="$REPO_DIR/docs/template/task.md"
     local task_rules="$REPO_DIR/docs/task/README.md"
-    if [ ! -f "$tmpl" ] || [ ! -f "$task_tmpl" ] || [ ! -f "$task_rules" ]; then
+    local agents_tmpl="$REPO_DIR/templates/project/AGENTS.md"
+    local claude_tmpl="$REPO_DIR/templates/project/CLAUDE.md"
+    if [ ! -f "$tmpl" ] || [ ! -f "$task_tmpl" ] || [ ! -f "$task_rules" ] \
+        || [ ! -f "$agents_tmpl" ] || [ ! -f "$claude_tmpl" ]; then
         echo "[ERROR] 문서 템플릿 또는 task 규약이 없습니다" >&2
         exit 1
     fi
@@ -963,6 +967,17 @@ new_project() {
     printf '\n# %s\n' "$proj" >> "$dest/README.md"
 
     #---------------------------------------------------------------------------
+    # 지침 스텁 — AGENTS.md(프로젝트 SSOT) + CLAUDE.md(포인터)
+    # 섹션 골격만 생성하고 본문은 비워둔다(미기재 마커). 자동 기록은 하지 않으며
+    # /learn·사람 승인으로만 채운다 — 지침 파일은 매 세션 로드되는 반복 비용이므로.
+    #---------------------------------------------------------------------------
+    # sed replacement 메타문자(& \) 이스케이프 — 프로젝트명 "AT&T" 등 오치환 방지
+    local proj_safe
+    proj_safe=$(printf '%s' "${proj}" | sed 's/[&\\]/\\&/g')
+    sed "s/{{PROJECT}}/${proj_safe}/g" "$agents_tmpl" > "$dest/AGENTS.md"
+    sed "s/{{PROJECT}}/${proj_safe}/g" "$claude_tmpl" > "$dest/CLAUDE.md"
+
+    #---------------------------------------------------------------------------
     # git 초기화 (기본) — --no-git 으로 생략
     #---------------------------------------------------------------------------
     if [ "$do_git" -eq 1 ]; then
@@ -976,7 +991,7 @@ new_project() {
 
     echo "[Arachne] 신규 프로젝트 생성: $dest"
     echo "  profile: $profile"
-    echo "  구조: README.md, docs/{issue,idea,task,template}, .arachne, .github/workflows"
+    echo "  구조: README.md, AGENTS.md, CLAUDE.md, docs/{issue,idea,task,template}, .arachne, .github/workflows"
     [ "$do_git" -eq 1 ] && echo "  git 저장소 초기화됨"
     return 0
 }

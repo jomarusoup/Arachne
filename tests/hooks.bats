@@ -179,6 +179,39 @@ HOOKS_DIR="${REPO_DIR}/hooks"
 }
 
 #-------------------------------------------------------------------------------
+# 지침 스텁 넛지 — AGENTS.md 미기재 섹션을 스냅샷에 제안으로만 기록
+#-------------------------------------------------------------------------------
+@test "session-end.sh: AGENTS.md 미기재 섹션 있으면 스냅샷에 넛지 기록" {
+    TMP_REPO=$(mktemp -d)
+    TMP_HOME=$(mktemp -d)
+    git -C "${TMP_REPO}" init -q
+    git -C "${TMP_REPO}" -c user.email=t@t -c user.name=t commit -q --allow-empty -m init
+    printf '# t\n## 구조\n<!-- 미기재: x -->\n' > "${TMP_REPO}/AGENTS.md"
+
+    run bash -c "cd '${TMP_REPO}' && HOME='${TMP_HOME}' bash '${HOOKS_DIR}/session-end.sh'"
+    [ "$status" -eq 0 ]
+    grep -q '미기재' "${TMP_HOME}"/.claude/sessions/auto-*.md
+    rm -rf "${TMP_REPO}" "${TMP_HOME}"
+}
+
+@test "session-end.sh: AGENTS.md 없거나 다 채워지면 넛지 없음" {
+    TMP_REPO=$(mktemp -d)
+    TMP_HOME=$(mktemp -d)
+    git -C "${TMP_REPO}" init -q
+    git -C "${TMP_REPO}" -c user.email=t@t -c user.name=t commit -q --allow-empty -m init
+    printf '# t\n## 구조\n- src/: 코어\n' > "${TMP_REPO}/AGENTS.md"
+
+    run bash -c "cd '${TMP_REPO}' && HOME='${TMP_HOME}' bash '${HOOKS_DIR}/session-end.sh'"
+    [ "$status" -eq 0 ]
+    # glob 미확장 시 grep 이 exit 2 로 실패해도 ! 가 통과시키므로 파일을 특정해 검사
+    local session_file
+    session_file=$(ls "${TMP_HOME}"/.claude/sessions/auto-*.md 2>/dev/null | head -1)
+    [ -n "$session_file" ]
+    ! grep -q '미기재' "$session_file"
+    rm -rf "${TMP_REPO}" "${TMP_HOME}"
+}
+
+#-------------------------------------------------------------------------------
 # #29: 세션 저장(save-session)·복원(훅) 경로 일치 — 홈 절대경로
 #-------------------------------------------------------------------------------
 @test "session(#29): save-session 저장 경로가 훅의 읽기 경로와 일치" {

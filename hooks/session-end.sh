@@ -4,7 +4,7 @@
 # DESCRIPTION : Stop Hook — 세션 종료 시 git 기반 프로젝트 상태 스냅샷 생성,
 #               git-bus 기준점(last-seen-commit) 갱신
 # DATA        : 2026-05-05
-# Modification: 2026-06-08
+# Modification: 2026-06-12
 ################################################################################
 
 # 훅은 자동 실행·의도적 continue 경로라 -e 제외 (실패해도 세션을 막지 않음)
@@ -58,6 +58,22 @@ ${changed_files:-"(없음)"}
 2. CLAUDE.md 확인
 3. git status 확인
 TEMPLATE
+
+    #---------------------------------------------------------------------------
+    # 지침 스텁 넛지 — 프로젝트 AGENTS.md 에 미기재 섹션이 남아 있으면 제안만 기록
+    # (자동 작성 금지 — doc-drift-check.sh 와 같은 원칙. 반영은 diff 승인 후)
+    #---------------------------------------------------------------------------
+    local repo_root
+    repo_root=$(git rev-parse --show-toplevel 2>/dev/null || echo "$PWD")
+
+    local unfilled
+    if [ -f "$repo_root/AGENTS.md" ]; then
+        unfilled=$(grep -c '<!-- 미기재:' "$repo_root/AGENTS.md" 2>/dev/null || true)
+        if [ "${unfilled:-0}" -gt 0 ]; then
+            echo "4. AGENTS.md 미기재 섹션 ${unfilled}개 — 이번 세션에서 파악된" >> "$file"
+            echo "   구조·빌드·grep 키워드가 있으면 채우기 제안 (diff 승인 후 반영)" >> "$file"
+        fi
+    fi
 }
 
 #===============================================================================
