@@ -23,7 +23,11 @@ param(
     [switch]$Version,
 
     [ValidateSet("claude", "gemini", "codex", "all")]
-    [string]$Target = "all"
+    [string]$Target = "all",
+
+    [switch]$WithExtras,
+
+    [switch]$Extras
 )
 
 Set-StrictMode -Version Latest
@@ -98,6 +102,8 @@ function ShowUsage {
     Write-Output "  -i, -Install          install or reinstall"
     Write-Output "  -u, -Update           git pull, then reinstall"
     Write-Output "  -Target T             claude|gemini|codex|all (default: all)"
+    Write-Output "  -WithExtras           with -Install: set up extras (UA / taste-skill / codegraph)"
+    Write-Output "  -Extras               run extras setup only (interactive menu)"
     Write-Output "  -c, -Check            verify Claude, Gemini, and Codex wiring"
     Write-Output "  -h, -Help             show help"
     Write-Output "  -v, -Version          show version"
@@ -361,6 +367,47 @@ function InstallHarness {
 }
 
 ################################################################################
+# FUNCTION    : RunExtras
+# DESCRIPTION : 확장 도구 통합 설치 스크립트(setup-extras.ps1) 실행
+#               UA·taste-skill 로컬 마켓플레이스 + codegraph CLI(+래퍼)
+################################################################################
+function RunExtras {
+    param([string[]]$ExtraArgs = @())
+
+    $extras = Join-Path $SCRIPT:REPO_DIR "setup-extras.ps1"
+    if (-not (Test-Path $extras)) {
+        Write-Warning "[Arachne] setup-extras.ps1 not found; skip extras"
+        return
+    }
+    & $extras @ExtraArgs
+}
+
+################################################################################
+# FUNCTION    : MaybeRunExtras
+# DESCRIPTION : -Install 후 확장 도구 설정 분기. Claude 타깃(all|claude)에서만 동작.
+#               -WithExtras 지정 시 실행, 미지정 시 대화형일 때만 설치 여부 질의.
+################################################################################
+function MaybeRunExtras {
+    if ($Target -ne "all" -and $Target -ne "claude") {
+        return
+    }
+
+    if ($WithExtras) {
+        if ([Environment]::UserInteractive) { RunExtras } else { RunExtras @("--all") }
+        return
+    }
+
+    if ([Environment]::UserInteractive) {
+        $reply = Read-Host "[Arachne] Set up extras (Understand-Anything / taste-skill / codegraph)? [y/N]"
+        if ($reply -match '^(y|yes)$') {
+            RunExtras
+        } else {
+            Write-Output "[Arachne] Skipped extras (run later: arachne -Extras)"
+        }
+    }
+}
+
+################################################################################
 # FUNCTION    : TestLinkedPath
 # DESCRIPTION : 링크 대상 또는 복사 폴백 대상이 존재하는지 검사
 # PARAMETERS  : string path - 검사 대상
@@ -437,8 +484,11 @@ if ($Version) {
         exit $LASTEXITCODE
     }
     InstallHarness
+} elseif ($Extras) {
+    RunExtras
 } elseif ($Install -or $MyInvocation.InvocationName -ne "&") {
     InstallHarness
+    MaybeRunExtras
 } else {
     ShowUsage
 }

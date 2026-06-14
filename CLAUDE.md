@@ -44,7 +44,8 @@ Claude Code가 이를 네이티브로 자동 로드한다:
 │   ├── database-review.md           # /database-review — DB schema·migration 리뷰
 │   ├── tdd.md                       # /tdd        — TDD 사이클
 │   ├── e2e.md                       # /e2e        — E2E 테스트
-│   └── refactor.md                  # /refactor   — SRP 리팩터링
+│   ├── refactor.md                  # /refactor   — SRP 리팩터링
+│   └── codegraph.md                 # /codegraph  — 코드 그래프·영향 분석 (확장 도구)
 │
 ├── hooks/                           # 이벤트 기반 자동화
 │   ├── session-start.sh             # SessionStart  — 최근 세션 안내

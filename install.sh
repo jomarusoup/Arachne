@@ -88,6 +88,8 @@ usage() {
     echo "  -u, --update           git pull 후 최신 상태로 재설치"
     echo "      --target T          설치 대상 CLI: claude|gemini|codex|copilot|all (기본 all)"
     echo "                          (-i/-u 와 함께 사용. 미감지 CLI는 자동 스킵)"
+    echo "      --with-extras       -i 와 함께: 확장 도구(UA·taste-skill·codegraph) 설정"
+    echo "      --extras            확장 도구 통합 설치만 단독 실행 (대화형 선택 메뉴)"
     echo "  -c, --check            CLI 연결 상태 점검 (심볼릭 댕글링·병합본 stale 탐지)"
     echo "  -n, --new P [DIR]      신규 프로젝트 스캐폴딩 (README + AGENTS/CLAUDE 지침 스텁"
     echo "                         + docs/{issue,idea,task,template})"
@@ -416,6 +418,48 @@ install() {
 }
 
 ################################################################################
+# FUNCTION    : run_extras
+# DESCRIPTION : 확장 도구 통합 설치 스크립트(setup-extras.sh) 실행
+#               UA·taste-skill 로컬 마켓플레이스 + codegraph CLI(+래퍼)
+# PARAMETERS  : 나머지 인자 - setup-extras.sh 로 그대로 전달
+################################################################################
+run_extras() {
+    local extras="$REPO_DIR/setup-extras.sh"
+    if [ ! -f "$extras" ]; then
+        echo "[Arachne] setup-extras.sh 없음 — 확장 도구 설정 스킵" >&2
+        return 0
+    fi
+    bash "$extras" "$@"
+}
+
+################################################################################
+# FUNCTION    : maybe_run_extras
+# DESCRIPTION : -i 설치 후 확장 도구 설정 분기. Claude 타깃(all|claude)에서만 동작.
+#               --with-extras 지정 시 실행(비TTY는 --all), 미지정 시 대화형일 때만
+#               설치 여부를 질의한다(무인자=help 원칙 유지 — 비대화형은 조용히 스킵).
+################################################################################
+maybe_run_extras() {
+    case "${ARACHNE_TARGET:-all}" in
+        all|claude) ;;
+        *) return 0 ;;
+    esac
+
+    if [ "${ARACHNE_WITH_EXTRAS:-0}" -eq 1 ]; then
+        if [ -t 0 ]; then run_extras; else run_extras --all; fi
+        return 0
+    fi
+
+    if [ -t 0 ]; then
+        local reply
+        read -r -p "[Arachne] 확장 도구(Understand-Anything·taste-skill·codegraph)도 설정할까요? [y/N] " reply || true
+        case "$reply" in
+            [yY]|[yY][eE][sS]) run_extras ;;
+            *) echo "[Arachne] 확장 도구 설정 건너뜀 (나중에 'arachne --extras' 로 가능)" ;;
+        esac
+    fi
+}
+
+################################################################################
 # FUNCTION    : merge_dotfile
 # DESCRIPTION : dotfiles/ 내용을 사용자 파일에 ARACHNE 섹션으로 병합
 #               기존 파일 내용 유지, 섹션이 있으면 갱신 / 없으면 끝에 추가
@@ -630,12 +674,15 @@ export_settings() {
 # PARAMETERS  : 커맨드 뒤 나머지 인자들 ("$@")
 ################################################################################
 ARACHNE_TARGET="all"
+ARACHNE_WITH_EXTRAS=0
 parse_target() {
     ARACHNE_TARGET="all"
+    ARACHNE_WITH_EXTRAS=0
     while [ $# -gt 0 ]; do
         case "$1" in
-            --target=*) ARACHNE_TARGET="${1#--target=}" ;;
-            --target)   shift || true; ARACHNE_TARGET="${1:-}" ;;
+            --target=*)    ARACHNE_TARGET="${1#--target=}" ;;
+            --target)      shift || true; ARACHNE_TARGET="${1:-}" ;;
+            --with-extras) ARACHNE_WITH_EXTRAS=1 ;;
         esac
         shift || true
     done
@@ -1005,8 +1052,9 @@ case "${1:-}" in
         fi
         ;;
     "-h"|--help|help)                         usage ;;
-    -i|--install|install)                     shift; parse_target "$@"; install ;;
+    -i|--install|install)                     shift; parse_target "$@"; install; maybe_run_extras ;;
     -u|--update|update)                       shift; parse_target "$@"; update_arachne ;;
+    --extras|extras)                          shift; run_extras "$@" ;;
     -c|--check|check)                         check_arachne ;;
     -n|--new|new)                             shift; new_project "$@" ;;
     --init-ci|init-ci)                        shift; init_project_ci "$@" ;;
