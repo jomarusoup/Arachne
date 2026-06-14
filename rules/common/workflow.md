@@ -134,6 +134,9 @@ codex-task -r "이 함수 리뷰만 해줘"                                     
 
 - **파일 전체 읽기 금지** — `sgrep <키워드>`로 위치 먼저, 해당 범위만 Read
   - `sgrep`은 `~/.bash_profile`의 전용 검색 함수로 전 확장자를 커버
+  - 심볼 정의·호출 관계·변경 영향 범위는 `codegraph`가 설치된 경우(`command -v codegraph`)
+    `sgrep` 본문 훑기 전에 먼저 쓴다 — 다중 grep 왕복을 인덱스 한 번으로 대체한다(미설치 시
+    `sgrep` 폴백). 조사 라우팅 상세는 `rules/common/performance.md`
   - 대용량 일괄 분석은 Read 대신 `gemini-task`로 Gemini에 요약 위임 (Claude 입력 토큰 절약)
 - **테스트·검증은 `codex-task`로 Codex에 위임 고려** — 구현(Claude)과 검증(Codex)을 다른
   모델이 맡으면 상관된 맹점이 줄어든다. 기본은 제안 모드, 직접 수정은 `-w`.

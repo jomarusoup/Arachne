@@ -53,6 +53,10 @@ paths:
 3. 타이포그래피를 신중히 선택한다.
 4. 최소한 소수의 실제 레퍼런스를 모은다.
 5. 관련 디자인/프론트엔드 스킬(`make-interfaces-feel-better`, `frontend-patterns`)을 활용한다.
+6. **`taste-skill` 이 설치돼 있으면** 위 안티-템플릿 정책의 실행 도구로 우선 적용한다 —
+   브리프를 읽고 디자인 방향을 추론해 제네릭/슬롭 패턴을 차단하는 anti-slop 감각을 주입한다.
+   기존 UI 개선은 `redesign-skill`, 새 랜딩/포트폴리오는 `taste-skill` 본체를 쓴다.
+   미설치면 이 파일의 원칙을 직접 적용한다(설치: `arachne --extras --taste`).
 
 ## 검토할 만한 스타일 방향
 

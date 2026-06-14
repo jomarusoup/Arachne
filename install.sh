@@ -88,7 +88,7 @@ usage() {
     echo "  -u, --update           git pull 후 최신 상태로 재설치"
     echo "      --target T          설치 대상 CLI: claude|gemini|codex|copilot|all (기본 all)"
     echo "                          (-i/-u 와 함께 사용. 미감지 CLI는 자동 스킵)"
-    echo "      --with-extras       -i 와 함께: 확장 도구(UA·taste-skill·codegraph) 설정"
+    echo "      --with-extras       -i/-u 와 함께: 확장 도구(UA·taste-skill·codegraph) 멱등 설정"
     echo "      --extras            확장 도구 통합 설치만 단독 실행 (대화형 선택 메뉴)"
     echo "  -c, --check            CLI 연결 상태 점검 (심볼릭 댕글링·병합본 stale 탐지)"
     echo "  -n, --new P [DIR]      신규 프로젝트 스캐폴딩 (README + AGENTS/CLAUDE 지침 스텁"
@@ -153,6 +153,9 @@ update_arachne() {
     git pull
     echo "[Arachne] 최신 소스 기반 재설치 진행"
     install
+    # -u 도 -i 와 동일하게 확장 도구 분기. --with-extras 면 멱등 동기화,
+    # 미지정 대화형이면 질의(자동 강제 X — noarg-safe 원칙 유지).
+    maybe_run_extras
 }
 
 ################################################################################
@@ -434,7 +437,7 @@ run_extras() {
 
 ################################################################################
 # FUNCTION    : maybe_run_extras
-# DESCRIPTION : -i 설치 후 확장 도구 설정 분기. Claude 타깃(all|claude)에서만 동작.
+# DESCRIPTION : -i/-u 설치 후 확장 도구 설정 분기. Claude 타깃(all|claude)에서만 동작.
 #               --with-extras 지정 시 실행(비TTY는 --all), 미지정 시 대화형일 때만
 #               설치 여부를 질의한다(무인자=help 원칙 유지 — 비대화형은 조용히 스킵).
 ################################################################################

@@ -69,5 +69,9 @@ arachne --extras --ua          # 또는: bash ~/Arachne/setup-extras.sh --ua
 구조·도메인을 빠르게 파악할 때 사용한다. 변경 영향 분석은 `/understand-diff`가,
 심볼 단위 정밀 추적은 [codegraph](codegraph.md)가 보완한다.
 
+**행동 배선** — `agents/planner.md`의 Architecture Review(Codebase Analysis) 단계에서, 가용하면
+`/understand` 지식 그래프·`/understand-explain`을 먼저 참고해 아키텍처 레이어와 의존 방향을
+잡도록 지정한다. 미설치면 planner 는 Grep/Glob 으로 구조를 직접 훑는다.
+
 > 산출물 `.understand-anything/`(graph·meta·config)는 프로젝트별로 생성된다.
 > 프로젝트 저장소에 커밋할지는 팀 정책에 따른다.

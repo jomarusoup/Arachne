@@ -56,8 +56,9 @@ arachne --extras
 # 전부 비대화형
 arachne --extras --all          # 또는: bash ~/Arachne/setup-extras.sh --all
 
-# 설치(재설치)와 함께
+# 설치(재설치)·업데이트와 함께 (멱등)
 arachne -i --with-extras
+arachne -u --with-extras
 ```
 
 > 클론 위치 기본값은 `$HOME/Understand-Anything`, `$HOME/taste-skill`, `$HOME/codegraph`.

@@ -39,6 +39,9 @@ model: opus
 기존 코드 구조와 영향 범위를 파악해 중복 구현과 패턴 불일치를 방지
 
 - Codebase Analysis: 기존 구조를 분석하고 영향받는 구성요소(모듈, 컴포넌트, DB)를 식별
+  - 복잡한 모듈 구조·계층 관계를 파악할 때 **Understand-Anything 이 가용하면**(`/understand`로
+    생성된 knowledge graph 또는 `/understand-explain`) 그래프 정보를 먼저 참고해 아키텍처
+    레이어와 의존 방향을 빠르게 잡는다. 미설치면 Grep/Glob 으로 직접 구조를 훑는다.
 - Technical Changes: 수정할 함수/클래스, 추가할 로직, 데이터 구조 변경점을 찾음
 - Reuse Patterns: 프로젝트 내 기존 패턴과 재사용 가능한 공통 로직을 검토
 

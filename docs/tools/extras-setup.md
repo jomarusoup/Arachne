@@ -32,6 +32,7 @@ Arachne installer 연동을 설명한다.
 ```bash
 arachne --extras                # 단독 실행 (대화형 선택 메뉴)
 arachne -i --with-extras        # 설치(재설치)와 함께
+arachne -u --with-extras        # 업데이트(git pull→재설치)와 함께 (멱등)
 bash ~/Arachne/setup-extras.sh  # 스크립트 직접 호출
 ```
 

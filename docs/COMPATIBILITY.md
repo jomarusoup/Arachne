@@ -24,6 +24,7 @@ FROM:: [[Arachne]]
 | `gtask`/`ctask`/`atask` | 지원 | 지원 | Git Bash 필요 | 지원 |
 | `tws` | 지원 | 지원 | 미지원 | WSL에서 지원 |
 | `new`, `init-ci`, `project-check` | 지원 | 지원 | Git Bash/WSL | 지원 |
+| 확장 도구 `--extras`(UA·taste·codegraph) | 지원 | 지원 | 지원(`setup-extras.ps1`) | 지원 |
 | 전체 저장소 테스트 | CI 검증 | CI 검증 | PowerShell+스모크 | 환경별 |
 
 ## macOS 도구 범위

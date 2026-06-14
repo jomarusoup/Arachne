@@ -91,5 +91,10 @@ MCP는 양립하며, 팀 선호에 따라 선택한다.
 대규모 입력 요약은 `gemini-task`가 보완한다. 대용량 출력은 컨텍스트에 통째로 끌어오지 말고
 필요한 범위만 요약해 토큰을 아낀다(`rules/common/performance.md`).
 
+**행동 배선** — 설치돼 있으면 AI가 알아서 우선 사용하도록 전역 규칙에 박혀 있다:
+`rules/common/performance.md`의 "조사 라우팅" 표(심볼·영향분석=codegraph, 텍스트=sgrep)와
+`rules/common/workflow.md`·`AGENTS.md`의 탐색 규칙(`command -v codegraph` 가드). 미설치 환경은
+자동으로 `sgrep` 폴백하므로 옵트인 성격은 유지된다.
+
 > 산출물 `.codegraph/`는 프로젝트별로 생성되며 background daemon으로 동작할 수 있다
 > (`codegraph daemon` 으로 관리, `codegraph unlock` 으로 stale lock 해제).

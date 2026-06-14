@@ -393,7 +393,10 @@ powershell -ExecutionPolicy Bypass -File .\install.ps1 -Install
 | ---- | ---- |
 | `arachne`, `arachne -h`, `--help` | 도움말 출력 |
 | `arachne -i`, `--install` | `~/.claude/` 심볼릭 링크 + `settings.json` 생성 + dotfiles 병합 + bin 등록 (재설치) |
+| `arachne -i --with-extras` | 위 설치 + 확장 도구(UA·taste-skill·codegraph) 멱등 설정 |
 | `arachne -u`, `--update` | `git pull` 후 위 설치를 재실행 (동기화 허브) |
+| `arachne -u --with-extras` | 업데이트 + 확장 도구 멱등 동기화 |
+| `arachne --extras [--all\|--ua\|--taste\|--codegraph]` | 확장 도구만 단독 설치(무인자=대화형 항목별 선택) |
 | `arachne -c`, `--check` | Claude·Gemini·Codex·Copilot 연결 상태 점검 — 심볼릭 댕글링·병합본 stale 탐지 |
 | `arachne -n <P> [DIR] --profile <PROFILE>`, `--new` | 신규 프로젝트 스캐폴딩. `--no-git`, `minimal|python|web|python-web` 지원 |
 | `arachne init-ci [DIR] --profile <PROFILE>`, `--init-ci` | 기존 프로젝트에 profile 기반 검증 runner와 workflow 생성/갱신 |
@@ -407,6 +410,25 @@ Windows PowerShell 설치기는 현재 설치·업데이트·점검·버전 기�
 프로젝트 스캐폴딩, settings/dotfiles 내보내기, tmux 세션 관리는 macOS/Linux 또는 WSL에서 실행합니다.
 
 > 하위호환: 옛 단어형(`install` / `update` / `session` / `export-settings` / `export-dotfiles`)도 별칭으로 여전히 동작한다.
+
+### 확장 도구 (codegraph · taste-skill · Understand-Anything)
+
+기본 설치는 **arachne 하네스만** 깐다. 확장 도구는 옵트인이며 전역(`~/.claude` 사용자 스코프 +
+PATH)에 1회 설치하면 모든 프로젝트에서 쓸 수 있다. 설치되면 전역 규칙·planner가 자동으로
+이들을 우선 사용하도록 유도하고(조사=codegraph, 디자인=taste-skill, 구조 파악=UA), 미설치면
+`sgrep`·기본 감각·Grep 으로 자동 폴백한다.
+
+```bash
+arachne --extras                 # 대화형: UA / taste / codegraph 항목별 [Y/n]
+arachne --extras --all           # 셋 다 (비대화형)
+arachne --extras --codegraph     # 개별 (--taste / --ua 동일)
+arachne -i --with-extras         # 설치와 함께
+arachne -u --with-extras         # 업데이트(git pull→재설치)와 함께
+```
+
+각 도구의 GitHub·설치·커맨드·워크플로 접점은 [docs/tools/](tools/README.md) 참고:
+[codegraph](tools/codegraph.md) · [taste-skill](tools/taste-skill.md) ·
+[Understand-Anything](tools/understand-anything.md) · [extras-setup](tools/extras-setup.md).
 
 ### 사용 프로젝트 검증
 

@@ -306,6 +306,23 @@ arachne -Install -Target gemini
 Get-Command gtask, ctask, atask
 ```
 
+### 6.1 확장 도구 설치 (선택 — codegraph · taste-skill · Understand-Anything)
+
+옵트인 확장 도구는 PowerShell에서도 동일하게 동작한다(`setup-extras.ps1`). 전역 1회 설치로
+모든 프로젝트에서 쓸 수 있다.
+
+```powershell
+arachne -Extras                  # 대화형: UA / taste / codegraph 항목별 선택
+arachne -Extras -All             # 셋 다 (비대화형)
+arachne -Extras -Codegraph       # 개별 (-Taste / -Ua 동일)
+arachne -Install -WithExtras     # 설치와 함께
+arachne -Update  -WithExtras     # 업데이트와 함께 (멱등)
+```
+
+> `claude plugin` CLI(UA·taste-skill 플러그인 등록)와 `git`이 PATH에 있어야 한다. codegraph는
+> `~/codegraph` 클론의 installer를 우선 쓰고 없으면 npm 으로 폴백한다. 상세·GitHub 링크는
+> [docs/tools/extras-setup.md](tools/extras-setup.md).
+
 ## 7. WSL2로 설치하는 대안
 
 Codex는 WSL2를 공식 지원하고, Claude Code도 WSL 1/2를 지원한다. Linux 도구 체인과 `tws`

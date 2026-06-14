@@ -102,7 +102,7 @@ function ShowUsage {
     Write-Output "  -i, -Install          install or reinstall"
     Write-Output "  -u, -Update           git pull, then reinstall"
     Write-Output "  -Target T             claude|gemini|codex|all (default: all)"
-    Write-Output "  -WithExtras           with -Install: set up extras (UA / taste-skill / codegraph)"
+    Write-Output "  -WithExtras           with -Install/-Update: set up extras (UA / taste-skill / codegraph)"
     Write-Output "  -Extras               run extras setup only (interactive menu)"
     Write-Output "  -c, -Check            verify Claude, Gemini, and Codex wiring"
     Write-Output "  -h, -Help             show help"
@@ -484,6 +484,8 @@ if ($Version) {
         exit $LASTEXITCODE
     }
     InstallHarness
+    # -u 도 -i 와 동일하게 확장 도구 분기 (-WithExtras 면 멱등 설정)
+    MaybeRunExtras
 } elseif ($Extras) {
     RunExtras
 } elseif ($Install -or $MyInvocation.InvocationName -ne "&") {

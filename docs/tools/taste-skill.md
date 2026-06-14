@@ -73,3 +73,7 @@ arachne --extras --taste       # 또는: bash ~/Arachne/setup-extras.sh --taste
 `rules/web/design-quality.md`(안티-템플릿 정책)와 `skills/frontend-patterns.md`·
 `make-interfaces-feel-better.md`를 보완한다. 웹/프론트엔드 작업 시 디자인 품질 게이트로
 함께 사용한다.
+
+**행동 배선** — `rules/web/design-quality.md`의 "프론트엔드 코드 작성 전" 6번에서, 설치돼 있으면
+taste-skill 을 안티-슬롭 정책의 **실행 도구로 우선 적용**하도록 지정한다(기존 UI 개선은
+`redesign-skill`, 새 랜딩/포트폴리오는 `taste-skill` 본체). 미설치면 그 파일의 원칙을 직접 적용한다.
