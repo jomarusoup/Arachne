@@ -1,7 +1,7 @@
 {
   "statusLine": {
     "type": "command",
-    "command": "bash \"__HOME__/.claude/statusline-command.sh\""
+    "command": "bash __HOME__/.claude/statusline-command.sh"
   },
   "theme": "dark-daltonized",
   "model": "sonnet",
@@ -22,11 +22,11 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash \"__HOME__/.claude/hooks/gemini-check.sh\""
+            "command": "__HOME__/.claude/hooks/gemini-check.sh"
           },
           {
             "type": "command",
-            "command": "bash \"__HOME__/.claude/hooks/atask-quota-warn.sh\""
+            "command": "__HOME__/.claude/hooks/atask-quota-warn.sh"
           }
         ]
       }
@@ -37,7 +37,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash \"__HOME__/.claude/hooks/doc-drift-check.sh\""
+            "command": "__HOME__/.claude/hooks/doc-drift-check.sh"
           }
         ]
       }
@@ -48,7 +48,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash \"__HOME__/.claude/hooks/session-start.sh\""
+            "command": "__HOME__/.claude/hooks/session-start.sh"
           }
         ]
       }
@@ -59,7 +59,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash \"__HOME__/.claude/hooks/pre-compact.sh\""
+            "command": "__HOME__/.claude/hooks/pre-compact.sh"
           }
         ]
       }
@@ -70,7 +70,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash \"__HOME__/.claude/hooks/session-end.sh\""
+            "command": "__HOME__/.claude/hooks/session-end.sh"
           }
         ]
       }
