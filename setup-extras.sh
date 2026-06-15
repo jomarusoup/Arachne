@@ -309,16 +309,23 @@ RegisterMarketplace() {
 InstallPlugin() {
     local plugin="$1"
 
+    # plugin list 는 마켓플레이스 가용 목록·enabledPlugins 동기화분까지 보여줘
+    # 실제 미설치 상태도 매칭될 수 있다 → update 실패 시 install 로 폴백(자가 치유).
     if claude plugin list 2>/dev/null | grep -qiw "${plugin%@*}"; then
         if [ "$DO_UPDATE" -eq 1 ]; then
             LogInfo "플러그인 갱신: $plugin"
-            claude plugin update "${plugin%@*}" || LogWarn "플러그인 갱신 실패: $plugin"
+            if ! claude plugin update "${plugin%@*}"; then
+                LogWarn "플러그인 갱신 실패 — 설치로 폴백: $plugin"
+                claude plugin install "$plugin" --scope user \
+                    || LogWarn "플러그인 설치 실패: $plugin"
+            fi
         else
             LogInfo "플러그인 이미 설치됨: $plugin"
         fi
     else
         LogInfo "플러그인 설치: $plugin (scope: user)"
-        claude plugin install "$plugin" --scope user
+        claude plugin install "$plugin" --scope user \
+            || LogWarn "플러그인 설치 실패: $plugin"
     fi
     SyncEnabledPlugin "$plugin"
 }
