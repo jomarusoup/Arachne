@@ -331,6 +331,86 @@ InstallPlugin() {
 }
 
 #===============================================================================
+# FUNCTION    : SnapshotClaudeAuth
+# DESCRIPTION : ~/.claude.json 전체를 임시 스냅샷으로 보존. 이 파일은 인증
+#               섹션(oauthAccount·userID)과 플러그인/마켓플레이스 상태를 한곳에
+#               담는다 — claude plugin 명령이 파일을 통째로 재작성하므로, 라이브
+#               세션과의 동시 쓰기 경합으로 인증 키가 떨어지면 로그아웃된다.
+#               작업 전 스냅샷으로 복구 기준점을 만든다.
+# RETURNED    : 스냅샷 경로 stdout (대상 없으면 빈 문자열)
+#===============================================================================
+SnapshotClaudeAuth() {
+    local cfg="$HOME/.claude.json"
+    [ -f "$cfg" ] || return 0
+    local snap
+    snap=$(mktemp 2>/dev/null) || return 0
+    if cp "$cfg" "$snap" 2>/dev/null; then
+        printf '%s' "$snap"
+    else
+        rm -f "$snap"
+    fi
+}
+
+#===============================================================================
+# FUNCTION    : RestoreClaudeAuth
+# DESCRIPTION : 플러그인 작업 후 ~/.claude.json 에서 oauthAccount 가 사라졌으면
+#               스냅샷의 인증 키(oauthAccount·userID)만 되돌려 로그아웃을 복구.
+#               플러그인 명령이 추가한 다른 키는 보존(부분 병합). jq → node 폴백.
+# PARAMETERS  : string snap - SnapshotClaudeAuth 가 만든 스냅샷 경로
+#===============================================================================
+RestoreClaudeAuth() {
+    local snap="$1"
+    local cfg="$HOME/.claude.json"
+    [ -n "$snap" ] && [ -f "$snap" ] || return 0
+
+    # 파일 자체가 사라졌으면 스냅샷으로 통째 복원
+    if [ ! -f "$cfg" ]; then
+        cp "$snap" "$cfg" && LogWarn "${cfg} 소실 — 스냅샷에서 복원(로그아웃 방지)"
+        rm -f "$snap"
+        return 0
+    fi
+
+    if command -v jq >/dev/null 2>&1; then
+        if [ "$(jq -r 'has("oauthAccount") and (.oauthAccount != null)' "$cfg" 2>/dev/null)" = "true" ]; then
+            rm -f "$snap"        # 인증 유지됨 — 할 일 없음
+            return 0
+        fi
+        local tmp
+        tmp=$(mktemp)
+        if jq -s '.[0] + ({oauthAccount: .[1].oauthAccount, userID: .[1].userID}
+                          | with_entries(select(.value != null)))' \
+               "$cfg" "$snap" > "$tmp" 2>/dev/null && [ -s "$tmp" ]; then
+            mv "$tmp" "$cfg"
+            LogWarn "claude plugin 작업이 인증 섹션을 떨어뜨림 — 복원함(재로그인 불필요)"
+        else
+            rm -f "$tmp"
+        fi
+        rm -f "$snap"
+        return 0
+    fi
+
+    if command -v node >/dev/null 2>&1; then
+        local out
+        out=$(node -e '
+            const fs = require("fs");
+            const [c, s] = process.argv.slice(1);
+            const live = JSON.parse(fs.readFileSync(c, "utf8"));
+            if (live.oauthAccount) { process.stdout.write("kept"); process.exit(0); }
+            const snap = JSON.parse(fs.readFileSync(s, "utf8"));
+            if (snap.oauthAccount) live.oauthAccount = snap.oauthAccount;
+            if (snap.userID) live.userID = snap.userID;
+            fs.writeFileSync(c, JSON.stringify(live, null, 2) + "\n");
+            process.stdout.write("restored");
+        ' "$cfg" "$snap" 2>/dev/null)
+        [ "$out" = "restored" ] && LogWarn "claude plugin 작업이 인증 섹션을 떨어뜨림 — 복원함(재로그인 불필요)"
+        rm -f "$snap"
+        return 0
+    fi
+
+    rm -f "$snap"
+}
+
+#===============================================================================
 # FUNCTION    : SetupPluginRepo
 # DESCRIPTION : 클론(없으면 git clone) → 마켓플레이스 등록 → 플러그인 설치 일괄 처리
 # PARAMETERS  : string label  - 표시 이름
@@ -454,8 +534,18 @@ main() {
         fi
     fi
 
+    # claude plugin 명령은 ~/.claude.json(인증+플러그인 상태 공용)을 재작성한다.
+    # 플러그인 작업 동안 인증 섹션이 떨어지면 복구하도록 전후로 스냅샷·복원한다.
+    local auth_snap=""
+    if [ "$WANT_UA" -eq 1 ] || [ "$WANT_TASTE" -eq 1 ]; then
+        auth_snap=$(SnapshotClaudeAuth)
+    fi
+
     [ "$WANT_UA" -eq 1 ]    && SetupPluginRepo "Understand-Anything" "$UA_URL" "$UA_CLONE" "$UA_MARKET" "$UA_PLUGIN" || true
     [ "$WANT_TASTE" -eq 1 ] && SetupPluginRepo "taste-skill" "$TASTE_URL" "$TASTE_CLONE" "$TASTE_MARKET" "$TASTE_PLUGIN" || true
+
+    [ -n "$auth_snap" ] && RestoreClaudeAuth "$auth_snap"
+
     [ "$WANT_CG" -eq 1 ]    && InstallCodegraph || true
 
     LogInfo "확장 도구 설정 완료. (플러그인은 Claude Code 재시작 후 활성화)"
