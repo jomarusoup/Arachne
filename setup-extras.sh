@@ -314,7 +314,7 @@ InstallPlugin() {
     if claude plugin list 2>/dev/null | grep -qiw "${plugin%@*}"; then
         if [ "$DO_UPDATE" -eq 1 ]; then
             LogInfo "플러그인 갱신: $plugin"
-            if ! claude plugin update "${plugin%@*}"; then
+            if ! claude plugin update "$plugin"; then
                 LogWarn "플러그인 갱신 실패 — 설치로 폴백: $plugin"
                 claude plugin install "$plugin" --scope user \
                     || LogWarn "플러그인 설치 실패: $plugin"
