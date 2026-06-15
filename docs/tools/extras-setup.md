@@ -1,7 +1,7 @@
 ---
 Title: "확장 도구 설치 메커니즘 (setup-extras)"
 creation: 2026-06-14
-modification: 2026-06-14
+modification: 2026-06-15
 tags:
  - "arachne"
  - "tools"
@@ -52,25 +52,46 @@ pwsh ~/Arachne/setup-extras.ps1
 | `--ua` | `-Ua` | Understand-Anything 만 |
 | `--taste` | `-Taste` | taste-skill 만 |
 | `--codegraph` | `-Codegraph` | codegraph 만 |
+| `--no-clone` | `-NoClone` | 클론이 없어도 git clone 안 함 (기존 클론만) |
+| `--update` | `-Update` | 기존 클론·플러그인·CLI 를 최신으로 갱신 |
 | `-y`, `--yes` | `-y`, `-Yes` | 모든 프롬프트에 yes (감지된 전부) |
 | `-h`, `--help` | `-h`, `-Help` | 도움말 |
 
 선택 플래그를 하나도 주지 않으면 **터미널이면 대화형 항목별 선택**, 비터미널이면 도움말을
-출력한다 (무인자=안전 원칙). 클론이 없는 항목은 자동으로 건너뛴다.
+출력한다 (무인자=안전 원칙).
 
-### 클론 위치 override
+UA·taste-skill 은 Claude Code **로컬 마켓플레이스**라 로컬 클론이 필요하다. 클론이 없으면
+아래 URL 에서 **자동으로 `git clone`** 한다(`--no-clone` 으로 비활성, git 미설치면 스킵).
+codegraph 는 npm 전역 설치가 기본이라 클론이 필요 없다.
 
-| 환경변수 | 기본값 |
+### 클론 위치 / 출처 override
+
+| 클론 경로 env | 기본값 | 출처 URL env | 기본값 |
+| --- | --- | --- | --- |
+| `UA_CLONE` | `$HOME/Understand-Anything` | `UA_URL` | `github.com/Egonex-AI/Understand-Anything` |
+| `TASTE_CLONE` | `$HOME/taste-skill` | `TASTE_URL` | `github.com/Leonxlnx/taste-skill` |
+| `CODEGRAPH_CLONE` | `$HOME/codegraph` | `CODEGRAPH_URL` | `github.com/colbymchenry/codegraph` |
+
+### 업데이트 (`--update`)
+
+`arachne -u` 는 확장 도구도 **선택적으로 갱신**한다(대화형 선택 유지, 무인자=안전 원칙).
+선택된 항목에 대해:
+
+| 계층 | 갱신 동작 |
 | --- | --- |
-| `UA_CLONE` | `$HOME/Understand-Anything` |
-| `TASTE_CLONE` | `$HOME/taste-skill` |
-| `CODEGRAPH_CLONE` | `$HOME/codegraph` |
+| UA · taste-skill 클론 | `git -C <clone> pull --ff-only` |
+| 마켓플레이스 | `claude plugin marketplace update <market>` |
+| 플러그인 | `claude plugin update <plugin>` |
+| codegraph | `npm install -g --prefix $HOME/.local @colbymchenry/codegraph@latest` |
+
+각 단계는 best-effort — 실패해도 경고만 남기고 다음으로 진행한다.
 
 ## 동작 상세
 
 ### A계층 — Claude 플러그인 (UA · taste-skill)
 
 ```
+0. 클론 없으면 git clone <URL> <클론>        # 로컬 마켓플레이스 확보 (--no-clone 면 스킵)
 1. 클론의 .claude-plugin/marketplace.json 존재 확인
 2. claude plugin marketplace add <클론>     # 로컬 디렉터리를 마켓플레이스로 (멱등)
 3. claude plugin install <plugin>@<market> --scope user
@@ -88,11 +109,14 @@ pwsh ~/Arachne/setup-extras.ps1
 ### B계층 — codegraph CLI
 
 ```
-1. 이미 PATH 에 codegraph 있으면 스킵 (멱등)
+1. 이미 PATH 에 codegraph 있으면 스킵 (멱등) — --update 면 @latest 로 갱신
 2. 클론의 install.sh(unix)/install.ps1(win) 실행 → ~/.local/bin
-   (클론 없으면 npm install -g @colbymchenry/codegraph 폴백)
+   (클론 없으면 npm install -g --prefix $HOME/.local @colbymchenry/codegraph 폴백)
 3. codegraph --version 으로 확인
 ```
+
+> `--prefix $HOME/.local` 은 시스템 디렉터리(`/usr/lib`) 쓰기 권한 부족(EACCES)을 피한다.
+> `~/.local/bin` 은 Arachne dotfiles 가 PATH 에 넣어 둔다.
 
 `/codegraph` 래퍼(`commands/codegraph.md`)는 레포에 항상 존재하므로 별도 생성하지 않는다.
 

@@ -155,7 +155,8 @@ update_arachne() {
     install
     # -u 도 -i 와 동일하게 확장 도구 분기. --with-extras 면 멱등 동기화,
     # 미지정 대화형이면 질의(자동 강제 X — noarg-safe 원칙 유지).
-    maybe_run_extras
+    # update 모드 — 선택된 확장 도구의 클론·플러그인·CLI 를 git pull/plugin update 로 갱신.
+    maybe_run_extras --update
 }
 
 ################################################################################
@@ -440,24 +441,29 @@ run_extras() {
 # DESCRIPTION : -i/-u 설치 후 확장 도구 설정 분기. Claude 타깃(all|claude)에서만 동작.
 #               --with-extras 지정 시 실행(비TTY는 --all), 미지정 시 대화형일 때만
 #               설치 여부를 질의한다(무인자=help 원칙 유지 — 비대화형은 조용히 스킵).
+# PARAMETERS  : 나머지 인자 - setup-extras.sh 로 전달 (예: --update)
 ################################################################################
 maybe_run_extras() {
+    local pass_args=("$@")
+
     case "${ARACHNE_TARGET:-all}" in
         all|claude) ;;
         *) return 0 ;;
     esac
 
     if [ "${ARACHNE_WITH_EXTRAS:-0}" -eq 1 ]; then
-        if [ -t 0 ]; then run_extras; else run_extras --all; fi
+        if [ -t 0 ]; then run_extras ${pass_args[@]+"${pass_args[@]}"}; else run_extras --all ${pass_args[@]+"${pass_args[@]}"}; fi
         return 0
     fi
 
     if [ -t 0 ]; then
         local reply
-        read -r -p "[Arachne] 확장 도구(Understand-Anything·taste-skill·codegraph)도 설정할까요? [y/N] " reply || true
+        local action="설정"
+        case " ${pass_args[*]-} " in *" --update "*) action="갱신" ;; esac
+        read -r -p "[Arachne] 확장 도구(Understand-Anything·taste-skill·codegraph)도 ${action}할까요? [y/N] " reply || true
         case "$reply" in
-            [yY]|[yY][eE][sS]) run_extras ;;
-            *) echo "[Arachne] 확장 도구 설정 건너뜀 (나중에 'arachne --extras' 로 가능)" ;;
+            [yY]|[yY][eE][sS]) run_extras ${pass_args[@]+"${pass_args[@]}"} ;;
+            *) echo "[Arachne] 확장 도구 ${action} 건너뜀 (나중에 'arachne --extras' 로 가능)" ;;
         esac
     fi
 }

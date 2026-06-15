@@ -384,23 +384,28 @@ function RunExtras {
 
 ################################################################################
 # FUNCTION    : MaybeRunExtras
-# DESCRIPTION : -Install 후 확장 도구 설정 분기. Claude 타깃(all|claude)에서만 동작.
-#               -WithExtras 지정 시 실행, 미지정 시 대화형일 때만 설치 여부 질의.
+# DESCRIPTION : -Install/-Update 후 확장 도구 설정 분기. Claude 타깃에서만 동작.
+#               -WithExtras 지정 시 실행, 미지정 시 대화형일 때만 설치/갱신 질의.
+# PARAMETERS  : string[] PassArgs - setup-extras.ps1 로 전달 (예: -Update)
 ################################################################################
 function MaybeRunExtras {
+    param([string[]]$PassArgs = @())
+
     if ($Target -ne "all" -and $Target -ne "claude") {
         return
     }
 
     if ($WithExtras) {
-        if ([Environment]::UserInteractive) { RunExtras } else { RunExtras @("--all") }
+        if ([Environment]::UserInteractive) { RunExtras $PassArgs }
+        else { RunExtras (@("-All") + $PassArgs) }
         return
     }
 
     if ([Environment]::UserInteractive) {
-        $reply = Read-Host "[Arachne] Set up extras (Understand-Anything / taste-skill / codegraph)? [y/N]"
+        $action = if ($PassArgs -contains "-Update") { "Update" } else { "Set up" }
+        $reply = Read-Host "[Arachne] $action extras (Understand-Anything / taste-skill / codegraph)? [y/N]"
         if ($reply -match '^(y|yes)$') {
-            RunExtras
+            RunExtras $PassArgs
         } else {
             Write-Output "[Arachne] Skipped extras (run later: arachne -Extras)"
         }
@@ -484,8 +489,9 @@ if ($Version) {
         exit $LASTEXITCODE
     }
     InstallHarness
-    # -u 도 -i 와 동일하게 확장 도구 분기 (-WithExtras 면 멱등 설정)
-    MaybeRunExtras
+    # -u 도 -i 와 동일하게 확장 도구 분기 (-WithExtras 면 멱등 설정).
+    # update 모드 — 선택된 확장 도구 클론·플러그인·CLI 를 최신으로 갱신.
+    MaybeRunExtras @("-Update")
 } elseif ($Extras) {
     RunExtras
 } elseif ($Install -or $MyInvocation.InvocationName -ne "&") {
