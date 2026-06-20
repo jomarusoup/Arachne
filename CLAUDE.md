@@ -72,9 +72,11 @@ Claude Code가 이를 네이티브로 자동 로드한다:
 │   ├── c/          # C 시스템 프로그래밍 (coding-style·hooks·patterns·security·testing)
 │   ├── cpp/        # C++ (coding-style·hooks·patterns·security·testing)
 │   ├── golang/     # Go (coding-style·hooks·patterns·security·testing)
+│   ├── java/       # Java/Spring Boot (coding-style·hooks·patterns·security·testing)
 │   ├── rust/       # Rust (coding-style·hooks·patterns·security·testing)
 │   ├── python/     # Python (coding-style·hooks·patterns·security·testing·fastapi·data-handling)
 │   ├── web/        # 웹 디자인 품질 (design-quality)
+│   ├── docker/     # Docker/Compose (coding-style·hooks·patterns·security·testing)
 │   ├── javascript/ # JS/TS (coding-style·hooks·patterns·security·testing)
 │   └── bash/       # Bash/Shell (coding-style·hooks·patterns·security·testing)
 │
@@ -82,7 +84,7 @@ Claude Code가 이를 네이티브로 자동 로드한다:
 │   ├── bash_profile                 # → ~/.bash_profile (sgrep 등 유틸 포함)
 │   └── vimrc                        # → ~/.vimrc
 │
-├── skills/                          # 워크플로·도메인 스킬 (31개, README.md 참고)
+├── skills/                          # 워크플로·도메인 스킬 (51개, README.md 참고)
 │   ├── build-debug.md / memory-check.md                             # Harness 전용
 │   ├── cpp-testing.md / latency-critical-systems.md / error-handling.md
 │   ├── trading-systems.md / performance-profiling.md

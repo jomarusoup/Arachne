@@ -12,14 +12,14 @@ aliases:
  - "data-handling-hardening"
 ---
 MOC:: [[Arachne]]
-FROM:: [[2026-06-09-ecc-data-handling-gap]]
+FROM:: [[2026-06-09-extension-data-handling-gap]]
 
 # [task] DB·JSON 데이터 처리 하드닝
 
 - **상태**: in-progress (P0·P1 완료 — Phase 3 선택 운영 pack은 실제 사용 프로젝트 발생 시)
 - **우선순위**: high
 - **담당**: unassigned
-- **관련 문서**: [[2026-06-09-ecc-data-handling-gap]], [[0001-python-web-profile]]
+- **관련 문서**: [[2026-06-09-extension-data-handling-gap]], [[0001-python-web-profile]]
 
 ## 목표
 
@@ -75,7 +75,7 @@ gantt
   - 사용자 프로젝트의 실제 schema 작성
   - 모든 프로젝트에 PostgreSQL/Redis service 자동 추가
   - 운영 backup 인프라 자체 구축
-  - ECC 자산의 무검토 복사
+  - 보강 후보 자산의 무검토 복사
 
 ## Phase 0: 데이터 계약
 
@@ -129,7 +129,7 @@ gantt
 - [x] `EXPLAIN (ANALYZE, BUFFERS)` 사용 조건과 증거 기록 형식을 정한다.
 - [x] pool, statement/lock/idle transaction timeout과 worker 합산 기준을 작성한다.
 - [x] multi-tenant RLS와 least privilege를 선택 보안 규칙으로 둔다.
-- [ ] ECC의 절대 규칙은 데이터 규모와 쿼리 증거를 요구하는 trigger로 완화한다.
+- [ ] 보강 후보의 절대 규칙은 데이터 규모와 쿼리 증거를 요구하는 trigger로 완화한다.
 
 ## Phase 2: 실행 경로
 
@@ -139,7 +139,7 @@ gantt
 - [x] migration, SQL, ORM model, repository 변경 시 활성화 조건을 정의한다.
 - [x] `/database-review` command로 schema→query→migration→security→test 순서를 고정한다.
 - [x] CRITICAL/HIGH/MEDIUM severity와 파일·line 근거 형식을 기존 reviewer와 맞춘다.
-- [ ] ECC provenance와 가져온 원칙의 출처를 기록한다.
+- [ ] 정리한 원칙의 적용 근거를 기록한다.
 
 ### 2-2. Quality Gate
 
@@ -246,7 +246,7 @@ PII field response/log/cache 포함 -> gate 실패
 
 ### 2026-06-09
 
-- ECC revision `e3a25791f8a2`와 Arachne의 DB·JSON 자산을 비교했다.
-- ECC의 장점은 전문 reviewer와 migration/PostgreSQL/Redis 책임 분리로 확인했다.
-- JSON 계약은 ECC도 독립 정본이 약하므로 Arachne가 별도 skill로 보강하기로 계획했다.
+- DB·JSON 자산을 비교해 누락된 책임 영역을 확인했다.
+- 전문 reviewer와 migration/PostgreSQL/Redis 책임 분리가 필요하다고 판단했다.
+- JSON 계약은 Arachne가 별도 skill로 보강하기로 계획했다.
 - 전체 복사 대신 P0 데이터 계약·migration부터 구현하고 Redis는 실제 사용 시 선택 도입하기로 했다.

@@ -31,6 +31,9 @@ Python·Web과 C/C++·Go·Rust 시스템 개발에 공통 규약, 역할 분담,
 > 🔁 사용 프로젝트 CI 운영 계약은 [docs/PROJECT-CI.md](docs/PROJECT-CI.md) 참고
 > 📑 약어(SSOT·TDD·DI·a11y 등) 풀이는 [docs/GLOSSARY.md](docs/GLOSSARY.md) 참고
 > 🧠 AI 엔지니어링 학습 노트(Agent/Workflow·MCP·Prompt Injection 등)는 [docs/AI-ENGINEERING-NOTES.md](docs/AI-ENGINEERING-NOTES.md) 참고
+> 🧭 Arachne를 익히는 순서는 [docs/HARNESS-LEARNING-GUIDE.md](docs/HARNESS-LEARNING-GUIDE.md) 참고
+> 🗺️ 제품·아키텍처·Java·Docker·시스템/네트워크 역량 지도는 [docs/CAPABILITY-MAP.md](docs/CAPABILITY-MAP.md) 참고
+> 🎛️ UI/UX 예시와 간격·정렬 기준은 [docs/ui-ux/README.md](docs/ui-ux/README.md) 참고
 
 ---
 
@@ -140,7 +143,7 @@ Arachne/
 │   ├── ...                      # 언어별 규칙 (c, cpp, golang, rust, python, js, bash)
 │   └── web/                     # 웹 디자인 품질 (design-quality)
 │
-├── skills/                      # 워크플로·도메인 스킬 (31개)
+├── skills/                      # 워크플로·도메인 스킬 (51개)
 ├── commands/                    # 슬래시 커맨드 (16개)
 ├── agents/                      # 서브에이전트 8개 (planner · code-reviewer · tdd · debugger
 │                                #   · python-reviewer · fastapi-reviewer · react-reviewer
@@ -150,6 +153,9 @@ Arachne/
 ├── mcp-configs/                 # MCP (Model Context Protocol) 서버 설정 템플릿
 ├── docs/CI.md                   # GitHub Actions CI 운영·로컬 재현 가이드
 ├── docs/PROJECT-CI.md           # Arachne 사용 프로젝트의 CI 계약
+├── docs/HARNESS-LEARNING-GUIDE.md # 하네스 학습 순서
+├── docs/CAPABILITY-MAP.md       # 역량 지도
+├── docs/ui-ux/                  # UI/UX 예시와 기준
 ├── docs/PYTHON-WEB-PROFILE.md   # Python·Web profile 기술 기준
 ├── docs/COMPATIBILITY.md        # 기능별 플랫폼 지원표
 ├── docs/decisions/              # Architecture Decision Record

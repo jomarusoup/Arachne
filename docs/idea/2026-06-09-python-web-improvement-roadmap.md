@@ -26,7 +26,7 @@ FROM:: [[2026-06-09-python-web-harness-assessment]]
 
 ## 원칙
 
-- 전체 ECC 복사보다 선별 도입
+- 전체 보강 후보 복사보다 선별 도입
 - 항상 로드되는 rule은 짧게
 - 긴 예시는 skill로 이동
 - 프로젝트별 결정은 프로젝트 docs에 저장
@@ -43,7 +43,7 @@ gantt
 
     section Foundation
     문서·플랫폼 드리프트 정리       :p0a, 2026-06-10, 2d
-    profile·provenance 설계          :p0b, after p0a, 3d
+    profile·추적성 설계          :p0b, after p0a, 3d
 
     section Python
     패키징·typing·dependency 규칙    :p1a, after p0b, 3d
@@ -68,7 +68,7 @@ gantt
 - [ ] 완료 task와 미래형 문구 정리
 - [ ] `docs/README.md` 생성
 - [ ] Python/Web profile의 표준 스택 결정
-- [ ] 외부 skill provenance 규약 결정
+- [ ] 외부 skill 추적성 규약 결정
 
 ### 종료 기준
 
@@ -189,7 +189,7 @@ profile은 설치 파일 목록만이 아니라 다음을 기록해야 한다.
 
 ## 하지 않을 것
 
-- Python/Web와 무관한 ECC 스킬 대량 도입
+- Python/Web와 무관한 보강 후보 스킬 대량 도입
 - 모든 작업에 Gemini와 Codex를 강제 호출
 - 프로젝트마다 동일한 framework를 강제
 - Markdown에 디자인 token 실제 값을 이중 관리

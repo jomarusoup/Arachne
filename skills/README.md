@@ -1,6 +1,6 @@
 # Skills
 
-Claude Code 세션에서 호출 가능한 워크플로·도메인 스킬 모음 (31개).
+Claude Code 세션에서 호출 가능한 워크플로·도메인 스킬 모음 (51개).
 
 ---
 
@@ -15,6 +15,7 @@ Claude Code 세션에서 호출 가능한 워크플로·도메인 스킬 모음 
 | `error-handling` | C/C++·TypeScript·Go 에러 처리 |
 | `trading-systems` | FIX 프로토콜, 오더북, 마켓 데이터, rdtsc 측정 |
 | `performance-profiling` | pprof·perf·flamegraph 병목 분석 워크플로 |
+| `linux-system-network-programming` | POSIX·socket·epoll·signal·thread·fd 수명 체크리스트 |
 
 ## 언어별 패턴·테스팅
 
@@ -27,6 +28,17 @@ Claude Code 세션에서 호출 가능한 워크플로·도메인 스킬 모음 
 | `go-http-patterns` | Go HTTP 서버, gRPC, graceful shutdown |
 | `python-patterns` | EAFP·타입힌트·컨텍스트매니저·`__slots__` (자원/메모리 사고 선행 학습) |
 | `python-testing` | pytest·TDD·픽스처·autospec 모킹·async 테스트 |
+| `java-coding-standards` | Java record·Optional·예외·불변 컬렉션·패키지 기준 |
+
+## Java 백엔드
+
+| 스킬 | 설명 |
+|---|---|
+| `springboot-patterns` | Spring Boot REST·service·validation·exception·profile 패턴 |
+| `springboot-security` | Spring Security·CORS/CSRF·actuator·secret·safe error 기준 |
+| `springboot-tdd` | JUnit 5·AssertJ·MockMvc·DataJpaTest·Testcontainers TDD |
+| `springboot-verification` | Spring Boot 빌드·테스트·정적 분석·보안·컨테이너 검증 루프 |
+| `jpa-patterns` | JPA/Hibernate entity·relationship·N+1·projection·transaction |
 
 ## 백엔드·웹
 
@@ -34,6 +46,9 @@ Claude Code 세션에서 호출 가능한 워크플로·도메인 스킬 모음 
 |---|---|
 | `backend-patterns` | 레포지토리·서비스 레이어·N+1·캐싱·큐 (Python/FastAPI + 시스템 전환 이식 맵) |
 | `frontend-patterns` | React·Next 합성·상태·가상화·a11y·React 19(서버 컴포넌트·액션·낙관적 UI) |
+| `frontend-design-direction` | UI 구현 전 목적·사용자·톤·밀도·시각 방향 결정 |
+| `frontend-a11y` | 키보드·focus·semantic HTML·label·contrast·motion 접근성 |
+| `design-system` | spacing·radius·color·typography·component state 토큰 관리 |
 | `api-design` | REST 설계 — 리소스 네이밍·상태 코드·봉투·커서/오프셋 페이지네이션·버전·레이트리밋 |
 | `fastapi-patterns` | FastAPI 프로덕션 — 앱 팩토리·DI·스키마 분리·async·중앙 에러 핸들러·테스트 |
 | `make-interfaces-feel-better` | 동심 radius·광학 정렬·모션·히트 영역 등 UI 폴리시 디테일 |
@@ -53,6 +68,17 @@ Claude Code 세션에서 호출 가능한 워크플로·도메인 스킬 모음 
 | `tdd-workflow` | Red-Green-Refactor 범용 워크플로 |
 | `verification-loop` | Claude Code 세션 검증 시스템 |
 
+## 제품·기획·아키텍처
+
+| 스킬 | 설명 |
+|---|---|
+| `product-lens` | 구현 전 사용자·고통·MVP·anti-goal·성공 지표 검증 |
+| `product-capability` | 제품 목표를 capability map·acceptance criteria·release slice로 변환 |
+| `plan-orchestrate` | 큰 작업을 조사·설계·TDD·구현·검증·문서화 단계로 분해 |
+| `architecture-decision-records` | 장기 설계 결정을 `docs/decisions/` ADR로 기록 |
+| `hexagonal-architecture` | port/adapter·domain boundary·testable backend 구조 |
+| `agent-architecture-audit` | 하네스·자동화 구조의 역할 경계·상태·위임·검증 감사 |
+
 ## 보안
 
 | 스킬 | 설명 |
@@ -65,6 +91,7 @@ Claude Code 세션에서 호출 가능한 워크플로·도메인 스킬 모음 
 | 스킬 | 설명 |
 |---|---|
 | `docker-patterns` | Docker/Compose 패턴 |
+| `deployment-patterns` | 배포·rollback·healthcheck·migration·observability 기준 |
 
 ## 네트워크
 
@@ -72,7 +99,9 @@ Claude Code 세션에서 호출 가능한 워크플로·도메인 스킬 모음 
 |---|---|
 | `network-config-validation` | 라우터·스위치 설정 사전 검증 |
 | `network-interface-health` | 인터페이스 오류·CRC·플래핑 진단 |
+| `network-bgp-diagnostics` | BGP neighbor·prefix·route-map·next-hop·flap 진단 |
 | `netmiko-ssh-automation` | Python Netmiko SSH 자동화 |
+| `data-throughput-accelerator` | queue·batch·DB write·network I/O 처리량 병목 개선 |
 
 ## 메타·하네스
 

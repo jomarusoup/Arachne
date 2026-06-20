@@ -123,12 +123,14 @@ model: opus               # opus / sonnet / haiku
 ### 분류
 | 카테고리 | 스킬 |
 |---|---|
-| 시스템 프로그래밍 | `latency-critical-systems` `trading-systems` `performance-profiling` `build-debug` `memory-check` `cpp-testing` `error-handling` |
-| 언어별 패턴·테스팅 | `rust-patterns` `rust-testing` `golang-patterns` `golang-testing` `go-http-patterns` `python-patterns` `python-testing` |
-| 백엔드·웹 | `backend-patterns` `frontend-patterns` `api-design` `fastapi-patterns` `make-interfaces-feel-better` |
+| 시스템 프로그래밍 | `latency-critical-systems` `linux-system-network-programming` `trading-systems` `performance-profiling` `build-debug` `memory-check` `cpp-testing` `error-handling` |
+| 언어별 패턴·테스팅 | `rust-patterns` `rust-testing` `golang-patterns` `golang-testing` `go-http-patterns` `python-patterns` `python-testing` `java-coding-standards` |
+| Java 백엔드 | `springboot-patterns` `springboot-security` `springboot-tdd` `springboot-verification` `jpa-patterns` |
+| 백엔드·웹 | `backend-patterns` `frontend-patterns` `frontend-design-direction` `frontend-a11y` `design-system` `api-design` `fastapi-patterns` `make-interfaces-feel-better` |
 | 데이터·DB | `json-contracts` `database-migrations` `postgres-patterns` |
-| 워크플로·보안·기타 | `tdd-workflow` `verification-loop` `security-review` `security-scan` `docker-patterns` `agentic-engineering` |
-| 네트워크 | `network-config-validation` `network-interface-health` `netmiko-ssh-automation` |
+| 제품·기획·아키텍처 | `product-lens` `product-capability` `plan-orchestrate` `architecture-decision-records` `hexagonal-architecture` `agent-architecture-audit` |
+| 워크플로·보안·기타 | `tdd-workflow` `verification-loop` `security-review` `security-scan` `docker-patterns` `deployment-patterns` `agentic-engineering` |
+| 네트워크 | `network-config-validation` `network-interface-health` `network-bgp-diagnostics` `netmiko-ssh-automation` `data-throughput-accelerator` |
 
 ### 새 스킬 추가
 `skills/새스킬.md` 생성 → `name`·`description` frontmatter를 달고 "언제 / 어떻게 / 예시" 3요소로 작성.
@@ -240,9 +242,12 @@ Claude Code 상태표시줄은 `settings.template.json`의 `statusLine.command`�
 | `*.c` `*.h` | `rules/c/*` |
 | `*.cpp` `*.hpp` | `rules/cpp/*` |
 | `*.go` | `rules/golang/*` |
+| `*.java` `pom.xml` `build.gradle*` | `rules/java/*` |
 | `*.rs` `Cargo.toml` | `rules/rust/*` |
 | `*.py` | `rules/python/*` |
 | `*.js` `*.ts` | `rules/javascript/*` |
+| `Dockerfile` `*.Dockerfile` `docker-compose*.yml` `compose*.yml` | `rules/docker/*` |
+| `*.css` `*.scss` `*.html` `*.jsx` `*.tsx` `*.vue` | `rules/web/design-quality.md` |
 | `*.sh` | `rules/bash/*` |
 
 각 언어 폴더는 `coding-style · hooks · patterns · security · testing` 5개 파일을 기본으로 한다

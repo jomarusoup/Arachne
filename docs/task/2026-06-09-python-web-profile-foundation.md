@@ -17,7 +17,7 @@ FROM:: [[2026-06-09-python-web-improvement-roadmap]]
 - **상태**: done
 - **우선순위**: high
 - **담당**: Codex
-- **관련 문서**: [[2026-06-09-python-web-harness-assessment]], [[2026-06-09-ecc-python-web-gap-analysis]], [[2026-06-09-documentation-freshness-audit]]
+- **관련 문서**: [[2026-06-09-python-web-harness-assessment]], [[2026-06-09-extension-python-web-gap-analysis]], [[2026-06-09-documentation-freshness-audit]]
 
 ## 목표
 
@@ -45,7 +45,7 @@ GitHub Actions에서 동일한 검증 계약을 생성하도록 한다. 동시�
 - [x] profile CLI 계약에 대한 실패 테스트를 추가한다.
 - [x] profile별 프로젝트 CI 템플릿과 설치 로직을 구현한다.
 - [x] profile 재실행 시 사용자 commands 보존 정책을 검증한다.
-- [x] Python/Web 기본 스택과 확장 기준을 ADR로 기록한다.
+- [x] Python/Web 기본 스택과 보강 후보을 ADR로 기록한다.
 - [x] README와 docs 정본·인덱스·호환성 설명을 갱신한다.
 - [x] Bash 문법, Bats, ShellCheck, 문서 인덱스 검사를 실행한다.
 - [x] GitHub 다중 플랫폼 CI를 통과한다.
@@ -78,7 +78,7 @@ profile별 생성 파일, 사용자 명령 보존, 잘못된 profile 거부, 기
 
 - idea 감사 결과를 실행 작업으로 승격했다.
 - PR #42 프로젝트 CI와 PR #43 감사 문서를 `main`에 병합했다.
-- 대규모 ECC 복사 대신 project profile과 CI 계약을 우선 구현하기로 결정했다.
+- 대규모 보강 후보 복사 대신 project profile과 CI 계약을 우선 구현하기로 결정했다.
 - `minimal`, `python`, `web`, `python-web` profile과 조건부 Python/Node workflow를 구현했다.
 - 신규 profile 및 문서 계약 테스트를 포함한 Bats 117개가 통과했다.
 - ShellCheck, Bash 문법, settings, 문서 인덱스, 공통 규약 동기화 검사가 통과했다.

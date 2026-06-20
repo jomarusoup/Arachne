@@ -22,6 +22,8 @@ FROM:: [[README]]
 ```mermaid
 flowchart TD
     R["처음 사용하는 사람"] --> U["USAGE.md"]
+    R --> L["HARNESS-LEARNING-GUIDE.md"]
+    R --> CM["CAPABILITY-MAP.md"]
     R --> T["tools/ (확장 도구)"]
     P["Python·Web 프로젝트"] --> PW["PYTHON-WEB-PROFILE.md"]
     P --> PC["PROJECT-CI.md"]
@@ -31,6 +33,7 @@ flowchart TD
     M --> C["COMPATIBILITY.md"]
     S["멀티 CLI 운영자"] --> MC["MULTI-CLI.md"]
     D["설계 결정 확인"] --> ADR["decisions/"]
+    UX["UI/UX 작업"] --> UXD["ui-ux/"]
 ```
 
 ---
@@ -42,6 +45,8 @@ flowchart TD
 | [README](../README.md) | 5분 온보딩, 핵심 명령, 전체 소개 |
 | [USAGE](USAGE.md) | 일상 사용법 — commands·agents·skills, 설치·동기화 |
 | [GLOSSARY](GLOSSARY.md) | 약어와 기술 용어 사전 |
+| [HARNESS-LEARNING-GUIDE](HARNESS-LEARNING-GUIDE.md) | 하네스 학습 순서 — 공통 규율→TDD→제품→아키텍처→도메인 트랙 |
+| [CAPABILITY-MAP](CAPABILITY-MAP.md) | Arachne 역량 지도 — 제품·아키텍처·Java·Docker·시스템/네트워크 자산 연결 |
 
 ## 2. 확장 도구 (Tools) — `tools/`
 
@@ -72,6 +77,13 @@ Arachne 핵심에 더해 선택형 외부 도구를 함께 설치·사용하기 
 | [PROJECT-CI](PROJECT-CI.md) | 사용 프로젝트 CI — profile·commands·workflow·branch protection |
 | [PYTHON-WEB-PROFILE](PYTHON-WEB-PROFILE.md) | Python·Web 기본 도구와 확장 원칙 |
 | [DATA-HANDLING](DATA-HANDLING.md) | PII 분류표, 노출 표면, 암호화 경계, DB quality gate |
+
+## 4.5 UI/UX 기준
+
+| 문서 | 정본 범위 |
+| --- | --- |
+| [ui-ux/README](ui-ux/README.md) | UI/UX 예시 위치, 작업 순서, 간격·정렬 참고 기준 |
+| [ui-ux/examples/](ui-ux/examples/) | 화면·컴포넌트 before/after 예시 |
 
 ## 5. 설치 · 플랫폼 · 동기화 (Setup & Platform)
 

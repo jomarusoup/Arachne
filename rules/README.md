@@ -41,6 +41,13 @@ rules/
 │   ├── security.md              — context 타임아웃, gosec, SQL 인젝션
 │   └── testing.md               — 테이블 드리븐, -race, 커버리지
 │
+├── java/                         # Java / Spring Boot
+│   ├── coding-style.md          — record, Optional, modern Java, 예외 처리
+│   ├── hooks.md                 — Maven/Gradle, Checkstyle, SpotBugs, dependency check
+│   ├── patterns.md              — 계층 경계, DTO/domain 분리, transaction
+│   ├── security.md              — secret, SQL injection, validation, authn/authz
+│   └── testing.md               — JUnit 5, AssertJ, Mockito, Testcontainers, JaCoCo
+│
 ├── rust/                        # Rust
 │   ├── coding-style.md          — rustfmt, Clippy, K&R, 네이밍
 │   ├── hooks.md                 — cargo fmt, cargo clippy, cargo audit
@@ -59,6 +66,13 @@ rules/
 │
 ├── web/                         # 웹 디자인 품질 (프론트엔드 공통)
 │   └── design-quality.md        — 안티-템플릿 정책, 필수 품질, 스타일 방향
+│
+├── docker/                       # Docker / Compose
+│   ├── coding-style.md          — multi-stage, stage naming, compose 작성
+│   ├── hooks.md                 — compose config, hadolint, trivy 후보
+│   ├── patterns.md              — dev/prod 분리, 네트워크, 볼륨, healthcheck
+│   ├── security.md              — non-root, no privileged, secret, image 고정
+│   └── testing.md               — build, compose config, 기동, 컨테이너 테스트
 │
 ├── javascript/                  # JavaScript / TypeScript
 │   ├── coding-style.md          — K&R, 불변성, ASI 주의, any 금지
@@ -101,8 +115,10 @@ Codex는 `~/.codex/AGENTS.md` 마커 병합, Copilot은 저장소 `AGENTS.md`와
 | `*.c`, `*.h` | `c/*.md` 전체 |
 | `*.cpp`, `*.hpp` | `cpp/*.md` 전체 |
 | `*.go` | `golang/*.md` 전체 |
+| `*.java`, `pom.xml`, `build.gradle*` | `java/*.md` 전체 |
 | `*.rs`, `Cargo.toml` | `rust/*.md` 전체 |
 | `*.py` | `python/*.md` 전체 |
 | `*.js`, `*.ts` | `javascript/*.md` 전체 |
+| `Dockerfile`, `*.Dockerfile`, `docker-compose*.yml`, `docker-compose*.yaml`, `compose*.yml`, `compose*.yaml` | `docker/*.md` 전체 |
 | `*.css`, `*.scss`, `*.html`, `*.jsx`, `*.tsx`, `*.vue` | `web/design-quality.md` |
 | `*.sh` | `bash/*.md` 전체 |

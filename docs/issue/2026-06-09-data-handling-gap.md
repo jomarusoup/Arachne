@@ -1,5 +1,5 @@
 ---
-Title: "[audit] ECC 대비 DB·JSON 데이터 처리 격차"
+Title: "[audit] 보강 후보 대비 DB·JSON 데이터 처리 격차"
 creation: 2026-06-09
 modification: 2026-06-09
 tags:
@@ -9,18 +9,18 @@ tags:
  - "audit"
  - "severity/high"
 aliases:
- - "ecc-data-handling-gap"
+ - "extension-data-handling-gap"
 ---
 MOC:: [[Arachne]]
 FROM:: [[2026-06-09-python-web-harness-assessment]]
 
-# [audit] ECC 대비 DB·JSON 데이터 처리 격차
+# [audit] 보강 후보 대비 DB·JSON 데이터 처리 격차
 
 - **작성일**: 2026-06-09
 - **심각도**: HIGH
 - **영역**: Python/FastAPI, PostgreSQL, migration, Redis, JSON/API 계약, 데이터 보안
 - **상태**: 비교 완료, 구현 필요
-- **비교 기준**: everything-claude-code revision `e3a25791f8a2`
+- **검토 기준**: Arachne 보강 후보
 
 ## 조사 범위
 
@@ -31,14 +31,14 @@ Arachne의 다음 자산을 대조했다.
 - `agents/fastapi-reviewer.md`, `agents/python-reviewer.md`
 - Python/Web profile의 `.arachne/commands`
 
-ECC에서는 다음 자산을 비교했다.
+보강 후보로 다음 책임 영역을 검토했다.
 
-- `agents/database-reviewer.md`
-- `skills/database-migrations/SKILL.md`
-- `skills/postgres-patterns/SKILL.md`
-- `skills/redis-patterns/SKILL.md`
-- `skills/api-design/SKILL.md`
-- `.claude/commands/database-migration.md`
+- database reviewer
+- migration safety
+- PostgreSQL 운영 기준
+- Redis cache pattern
+- API contract
+- database migration command
 
 ## 결론
 
@@ -46,8 +46,8 @@ Arachne는 간단한 CRUD에 필요한 입력 검증, SQL 파라미터화, 요�
 N+1 방지, Redis cache-aside 예시를 이미 갖고 있다. 그러나 이 내용이 FastAPI와 backend skill에
 흩어져 있어 DB 변경을 독립적으로 검토하거나 migration·직렬화 계약을 검증하는 실행 경로가 없다.
 
-ECC는 PostgreSQL, migration, Redis, database reviewer를 책임별로 분리해 발견성과 실행성이 더 높다.
-반면 ECC도 JSON을 독립 데이터 계약으로 다루는 깊이는 부족하다. Arachne는 ECC를 복사하는 대신
+PostgreSQL, migration, Redis, database reviewer를 책임별로 분리하면 발견성과 실행성이 높아진다.
+반면 JSON을 독립 데이터 계약으로 다루는 깊이는 별도 보강이 필요하다. Arachne는 문서를 대량 추가하는 대신
 DB 운영 기준을 선별하고 JSON 계약은 별도 정본으로 보강해야 한다.
 
 ## 현재 강점
@@ -64,11 +64,11 @@ DB 운영 기준을 선별하고 JSON 계약은 별도 정본으로 보강해야
 
 ## 격차 요약
 
-| 우선순위 | 격차 | ECC 상태 | 영향 |
+| 우선순위 | 격차 | 보강 후보 상태 | 영향 |
 | --- | --- | --- | --- |
 | P0 | migration 안전성·expand-contract·대용량 backfill | 전용 skill 보유 | 배포 중 lock, 데이터 손실 |
 | P0 | SQLAlchemy 2.x session·transaction·동시성 계약 | reviewer 일부 보유 | 부분 commit, 장수명 lock |
-| P0 | JSON 직렬화·스키마 진화 정본 부재 | ECC도 부분적 | 클라이언트 호환 깨짐 |
+| P0 | JSON 직렬화·스키마 진화 정본 부재 | 보강 후보도 부분적 | 클라이언트 호환 깨짐 |
 | P0 | PostgreSQL schema·index·constraint 검토 경로 부재 | reviewer+skill 보유 | 무결성·성능 결함 |
 | P0 | PII·민감 필드·보존·삭제 정책 부재 | reviewer 보안 일부 | 개인정보 노출·과잉 보존 |
 | P1 | migration/DB 전용 reviewer와 command 부재 | 둘 다 보유 | 일반 리뷰에서 결함 누락 |
@@ -77,8 +77,8 @@ DB 운영 기준을 선별하고 JSON 계약은 별도 정본으로 보강해야
 | P1 | connection pool·timeout·deadlock 기준 부족 | PostgreSQL skill 보유 | 부하 시 고갈·교착 |
 | P1 | JSONB 사용 기준과 GIN/정규화 선택 기준 부재 | 기본 인덱스 예시 보유 | 쿼리 악화·스키마 난립 |
 | P2 | Redis 원자성·lock·streams·eviction 기준 부족 | 전용 skill 보유 | 중복 처리·stale cache |
-| P2 | backup·restore·PITR 검증 기준 부재 | ECC도 제한적 | 복구 불가능 상태 미발견 |
-| P2 | 데이터 품질·관측 지표 부재 | ECC도 제한적 | silent corruption 탐지 지연 |
+| P2 | backup·restore·PITR 검증 기준 부재 | 보강 후보도 제한적 | 복구 불가능 상태 미발견 |
+| P2 | 데이터 품질·관측 지표 부재 | 보강 후보도 제한적 | silent corruption 탐지 지연 |
 
 ## 상세 발견
 
@@ -132,7 +132,7 @@ FastAPI skill이 session rollback을 설명하지만 다음 계약은 없다.
 
 ### 4. PostgreSQL 운영 기준이 부족하다
 
-ECC는 schema type, FK index, composite index order, partial/covering index, cursor pagination,
+보강 후보는 schema type, FK index, composite index order, partial/covering index, cursor pagination,
 RLS, connection timeout, `pg_stat_statements`, lock ordering을 전문 reviewer에서 검사한다.
 
 Arachne는 N+1과 필요한 컬럼 선택은 설명하지만 다음은 약하다.
@@ -146,7 +146,7 @@ Arachne는 N+1과 필요한 컬럼 선택은 설명하지만 다음은 약하다
 - pool 크기와 worker 수의 합산
 - deadlock 방지를 위한 lock ordering
 
-ECC의 “모든 FK index”, “random UUID 금지” 같은 절대 규칙은 프로젝트 맥락에 따라 과도할 수 있으므로
+보강 후보의 “모든 FK index”, “random UUID 금지” 같은 절대 규칙은 프로젝트 맥락에 따라 과도할 수 있으므로
 그대로 가져오지 않고 검토 트리거로 재작성해야 한다.
 
 ### 5. Redis는 예제 수준이다
@@ -205,7 +205,7 @@ flowchart TB
 
 ## 비목표
 
-- ECC 문서의 일괄 복사
+- 보강 후보 문서의 일괄 복사
 - PostgreSQL, SQLAlchemy, Redis를 모든 프로젝트에 강제
 - ORM이 있으면 SQL 검토가 불필요하다고 가정
 - JSON envelope 형식을 모든 내부 API에 강제
