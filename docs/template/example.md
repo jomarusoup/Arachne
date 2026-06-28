@@ -2,6 +2,7 @@
 Title: 
 creation: YYYY-MM-DD
 modification: YYYY-MM-DD
+status: "to do"
 tags:
  - "tags"
 aliases:

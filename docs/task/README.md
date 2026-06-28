@@ -41,7 +41,7 @@ YYYY-MM-DD-<짧은-kebab-case-작업명>.md
 
 | 항목 | 규칙 |
 | --- | --- |
-| 상태 | `planned`, `in-progress`, `blocked`, `done`, `cancelled` 중 하나 |
+| 상태 | `to do`, `in progress`, `done` 중 하나 |
 | 우선순위 | `critical`, `high`, `medium`, `low` 중 하나 |
 | 담당 | 실행 주체 또는 `unassigned` |
 | 관련 문서 | issue, audit, 설계 문서 링크 |
@@ -55,15 +55,13 @@ YYYY-MM-DD-<짧은-kebab-case-작업명>.md
 ## 상태 전이
 
 ```text
-planned -> in-progress -> done
-                       -> blocked -> in-progress
-planned/in-progress -> cancelled
+to do -> in progress -> done
 ```
 
-- 착수 시 `in-progress`로 바꾸고 담당을 기록한다.
-- 외부 입력이나 선행 작업 없이는 진행할 수 없을 때만 `blocked`로 바꾸고 해제 조건을 적는다.
+- 착수 시 `in progress`로 바꾸고 담당을 기록한다.
+- 외부 입력이나 선행 작업 없이는 진행할 수 없을 때도 상태는 `to do`로 유지하고 진행 기록에 차단 조건을 적는다.
 - 코드·문서 변경과 검증이 모두 끝난 뒤에만 `done`으로 바꾼다.
-- 범위가 불필요해졌다면 이유를 진행 기록에 남기고 `cancelled`로 바꾼다.
+- 범위가 불필요해졌다면 이유를 진행 기록에 남기고 별도 취소 상태 대신 해당 결정을 명시한다.
 
 ## 작업 목록 작성법
 
@@ -79,4 +77,3 @@ planned/in-progress -> cancelled
 - 명령을 실행했다면 명령과 실제 결과를 요약한다.
 - task 완료 시 최종 검증 결과와 관련 커밋 또는 PR을 기록한다.
 - task 문서는 현재 상태를 나타내야 하며, 과거 기록을 지워 상태를 미화하지 않는다.
-

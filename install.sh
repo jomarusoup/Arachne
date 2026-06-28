@@ -943,7 +943,7 @@ check_project() {
 ################################################################################
 # FUNCTION    : new_project
 # DESCRIPTION : 신규 프로젝트를 기록 가능한 문서 구조로 스캐폴딩.
-#               모든 문서 frontmatter 는 docs/template/example.md(SSOT)에서 파생.
+#               문서 종류별 frontmatter 는 docs/template/*.md 에서 파생.
 # PARAMETERS  : 위치인자 project_name [parent_dir] + 플래그 --no-git
 #               --profile minimal|python|web|python-web
 #               parent_dir 생략 시 현재 디렉터리. 대상 존재 시 거부.
@@ -986,11 +986,15 @@ new_project() {
     validate_project_profile "$profile" || exit 1
 
     local tmpl="$REPO_DIR/docs/template/example.md"
+    local idea_tmpl="$REPO_DIR/docs/template/idea.md"
+    local issue_tmpl="$REPO_DIR/docs/template/issue.md"
+    local audit_tmpl="$REPO_DIR/docs/template/audit.md"
     local task_tmpl="$REPO_DIR/docs/template/task.md"
     local task_rules="$REPO_DIR/docs/task/README.md"
     local agents_tmpl="$REPO_DIR/templates/project/AGENTS.md"
     local claude_tmpl="$REPO_DIR/templates/project/CLAUDE.md"
-    if [ ! -f "$tmpl" ] || [ ! -f "$task_tmpl" ] || [ ! -f "$task_rules" ] \
+    if [ ! -f "$tmpl" ] || [ ! -f "$idea_tmpl" ] || [ ! -f "$issue_tmpl" ] \
+        || [ ! -f "$audit_tmpl" ] || [ ! -f "$task_tmpl" ] || [ ! -f "$task_rules" ] \
         || [ ! -f "$agents_tmpl" ] || [ ! -f "$claude_tmpl" ]; then
         echo "[ERROR] 문서 템플릿 또는 task 규약이 없습니다" >&2
         exit 1
@@ -1008,6 +1012,9 @@ new_project() {
     mkdir -p "$dest/docs/issue" "$dest/docs/idea" "$dest/docs/task" "$dest/docs/template"
     touch "$dest/docs/issue/.gitkeep" "$dest/docs/idea/.gitkeep"
     cp "$tmpl" "$dest/docs/template/example.md"
+    cp "$idea_tmpl" "$dest/docs/template/idea.md"
+    cp "$issue_tmpl" "$dest/docs/template/issue.md"
+    cp "$audit_tmpl" "$dest/docs/template/audit.md"
     cp "$task_tmpl" "$dest/docs/template/task.md"
     cp "$task_rules" "$dest/docs/task/README.md"
 

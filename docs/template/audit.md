@@ -2,6 +2,7 @@
 Title: "[audit] Audit title"
 creation: YYYY-MM-DD
 modification: YYYY-MM-DD
+status: "to do"
 tags:
  - "arachne"
  - "workflow"
@@ -30,4 +31,3 @@ FROM:: [[empty]]
 ## 권장 처리 순서
 
 심각도와 의존성에 따른 처리 순서를 정리한다.
-

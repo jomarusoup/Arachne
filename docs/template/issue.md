@@ -2,6 +2,7 @@
 Title: "[bug] Issue title"
 creation: YYYY-MM-DD
 modification: YYYY-MM-DD
+status: "to do"
 tags:
  - "arachne"
  - "workflow"
@@ -18,7 +19,7 @@ FROM:: [[parent-audit]]
 - **작성일**: YYYY-MM-DD
 - **심각도**: LEVEL
 - **영역**: affected files or workflow
-- **상태**: 조사 필요
+- **상태**: to do
 
 ## 문제
 
@@ -47,4 +48,3 @@ FROM:: [[parent-audit]]
 ## 완료 조건
 
 검증 가능한 종료 조건을 기술한다.
-

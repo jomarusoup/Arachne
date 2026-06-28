@@ -2,6 +2,7 @@
 Title: "[task] Task title"
 creation: YYYY-MM-DD
 modification: YYYY-MM-DD
+status: "to do"
 tags:
  - "project"
  - "task"
@@ -14,7 +15,7 @@ FROM:: [[related-issue-or-empty]]
 
 # [task] Task title
 
-- **상태**: planned
+- **상태**: to do
 - **우선순위**: LEVEL
 - **담당**: unassigned
 - **관련 문서**: 없음
@@ -52,4 +53,3 @@ FROM:: [[related-issue-or-empty]]
 ### YYYY-MM-DD
 
 - task 생성: 배경과 최초 결정을 기록한다.
-

@@ -91,5 +91,5 @@ Arachne 핵심에 더해 선택형 외부 도구를 함께 설치·사용하기 
 | `docs/issue/` | 문제 재현, 원인 분석, 영향 |
 | `docs/idea/` | 아직 실행 확정 전인 개선 후보 |
 | `docs/task/` | 실행하기로 결정한 작업과 실제 상태 |
-| `docs/template/` | 프로젝트 기록 템플릿 |
+| `docs/template/` | `status: "to do"` frontmatter를 포함한 프로젝트 기록 템플릿 |
 | `docs/decisions/` | 장기 설계 결정과 트레이드오프 |

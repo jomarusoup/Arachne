@@ -154,7 +154,7 @@ Arachne/
 ├── docs/COMPATIBILITY.md        # 기능별 플랫폼 지원표
 ├── docs/decisions/              # Architecture Decision Record
 ├── docs/task/                   # 승인된 실행 작업과 진행 상태 기록
-├── docs/template/task.md        # 작업 기록 표준 템플릿
+├── docs/template/               # idea · issue · task · audit 기록 템플릿
 ├── tests/                       # 검증 스크립트 (bats + shell)
 ├── templates/project/           # profile별 프로젝트 CI 템플릿
 └── dotfiles/                    # bash_profile, vimrc (병합 원본)

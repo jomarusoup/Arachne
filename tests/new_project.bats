@@ -36,6 +36,9 @@ run_new() {
     [ -d "${TMP_DIR}/myproj/docs/task" ]
     [ -f "${TMP_DIR}/myproj/docs/task/README.md" ]
     [ -f "${TMP_DIR}/myproj/docs/template/example.md" ]
+    [ -f "${TMP_DIR}/myproj/docs/template/idea.md" ]
+    [ -f "${TMP_DIR}/myproj/docs/template/issue.md" ]
+    [ -f "${TMP_DIR}/myproj/docs/template/audit.md" ]
     [ -f "${TMP_DIR}/myproj/docs/template/task.md" ]
 }
 
@@ -90,9 +93,27 @@ run_new() {
     [ "$status" -eq 0 ]
 }
 
+@test "new: 기록 템플릿 frontmatter status 기본값은 to do" {
+    run_new myproj "${TMP_DIR}"
+    grep -qF 'status: "to do"' "${TMP_DIR}/myproj/docs/template/example.md"
+    grep -qF 'status: "to do"' "${TMP_DIR}/myproj/docs/template/idea.md"
+    grep -qF 'status: "to do"' "${TMP_DIR}/myproj/docs/template/issue.md"
+    grep -qF 'status: "to do"' "${TMP_DIR}/myproj/docs/template/audit.md"
+    grep -qF 'status: "to do"' "${TMP_DIR}/myproj/docs/template/task.md"
+    grep -qF -- "- **상태**: to do" "${TMP_DIR}/myproj/docs/template/idea.md"
+    grep -qF -- "- **상태**: to do" "${TMP_DIR}/myproj/docs/template/issue.md"
+    grep -qF -- "- **상태**: to do" "${TMP_DIR}/myproj/docs/template/task.md"
+}
+
 @test "new: task 규약과 템플릿은 원본과 동일" {
     run_new myproj "${TMP_DIR}"
     run diff "${REPO_DIR}/docs/task/README.md" "${TMP_DIR}/myproj/docs/task/README.md"
+    [ "$status" -eq 0 ]
+    run diff "${REPO_DIR}/docs/template/idea.md" "${TMP_DIR}/myproj/docs/template/idea.md"
+    [ "$status" -eq 0 ]
+    run diff "${REPO_DIR}/docs/template/issue.md" "${TMP_DIR}/myproj/docs/template/issue.md"
+    [ "$status" -eq 0 ]
+    run diff "${REPO_DIR}/docs/template/audit.md" "${TMP_DIR}/myproj/docs/template/audit.md"
     [ "$status" -eq 0 ]
     run diff "${REPO_DIR}/docs/template/task.md" "${TMP_DIR}/myproj/docs/template/task.md"
     [ "$status" -eq 0 ]
