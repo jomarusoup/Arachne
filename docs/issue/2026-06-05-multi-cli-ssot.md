@@ -1,3 +1,6 @@
+---
+status: "done"
+---
 # [feat] 멀티-CLI 단일 SSOT 연결 (Claude Code · Gemini CLI · Codex CLI)
 
 - **작성일**: 2026-06-05

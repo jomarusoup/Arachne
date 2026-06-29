@@ -2,6 +2,7 @@
 Title: "[task] Windows 런타임 검증 — 신규 훅·atask Git Bash 동작"
 creation: 2026-06-07
 modification: 2026-06-07
+status: "done"
 tags:
  - "project"
  - "task"

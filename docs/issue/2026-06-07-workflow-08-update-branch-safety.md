@@ -2,6 +2,7 @@
 Title: "[bug] arachne update가 현재 브랜치와 작업트리를 검증하지 않음"
 creation: 2026-06-07
 modification: 2026-06-07
+status: "done"
 tags:
  - "arachne"
  - "workflow"

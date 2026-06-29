@@ -2,6 +2,7 @@
 Title: "[task] .claude 상태 파일 안정화 — 세션 인계·git-bus 기준점"
 creation: 2026-06-07
 modification: 2026-06-07
+status: "done"
 tags:
  - "project"
  - "task"

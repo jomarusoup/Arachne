@@ -2,6 +2,7 @@
 Title: "[audit] Arachne main 워크플로우 허점 검수"
 creation: 2026-06-07
 modification: 2026-06-07
+status: "done"
 tags:
  - "arachne"
  - "workflow"

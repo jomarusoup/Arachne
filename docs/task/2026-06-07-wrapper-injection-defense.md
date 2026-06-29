@@ -2,6 +2,7 @@
 Title: "[task] 위임 래퍼 입력 경계·최소권한 가드 도입 (프롬프트 인젝션 방어)"
 creation: 2026-06-07
 modification: 2026-06-07
+status: "done"
 tags:
  - "project"
  - "task"

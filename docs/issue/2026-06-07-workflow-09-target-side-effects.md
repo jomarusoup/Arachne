@@ -2,6 +2,7 @@
 Title: "[bug] 특정 CLI 타깃 설치가 공통 dotfiles와 전체 bin까지 변경함"
 creation: 2026-06-07
 modification: 2026-06-07
+status: "done"
 tags:
  - "arachne"
  - "workflow"

@@ -2,6 +2,7 @@
 Title: "[audit] 하네스 아키텍처 감사 — AI 멀티 플랫폼 하네스 관점"
 creation: 2026-06-11
 modification: 2026-06-11
+status: "in progress"
 tags:
  - "arachne"
  - "audit"

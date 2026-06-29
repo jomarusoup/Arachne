@@ -2,6 +2,7 @@
 Title: "[task] 아키텍처 감사 후속 — 잔존 항목 추적"
 creation: 2026-06-11
 modification: 2026-06-11
+status: "to do"
 tags:
  - "arachne"
  - "task"

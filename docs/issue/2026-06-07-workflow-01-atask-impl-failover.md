@@ -2,6 +2,7 @@
 Title: "[bug] atask impl 페일오버가 구현 역할을 보존하지 않음"
 creation: 2026-06-07
 modification: 2026-06-07
+status: "done"
 tags:
  - "arachne"
  - "workflow"

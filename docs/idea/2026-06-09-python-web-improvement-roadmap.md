@@ -2,6 +2,7 @@
 Title: "[idea] Python·Web 우선 개선 로드맵"
 creation: 2026-06-09
 modification: 2026-06-09
+status: "in progress"
 tags:
  - "arachne"
  - "idea"

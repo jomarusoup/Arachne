@@ -2,6 +2,7 @@
 Title: "[bug] 인덱스 검사가 일반 단어 일치로 누락 파일을 통과시킴"
 creation: 2026-06-07
 modification: 2026-06-07
+status: "done"
 tags:
  - "arachne"
  - "workflow"

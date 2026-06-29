@@ -2,6 +2,7 @@
 Title: "[task] Arachne 역량 보강과 학습 가이드 작성"
 creation: 2026-06-20
 modification: 2026-06-20
+status: "done"
 tags:
  - "project"
  - "task"

@@ -2,6 +2,7 @@
 Title: "[idea] Arachne README·docs 최신성 감사"
 creation: 2026-06-09
 modification: 2026-06-09
+status: "to do"
 tags:
  - "arachne"
  - "idea"

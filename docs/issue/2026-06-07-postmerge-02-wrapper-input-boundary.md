@@ -2,6 +2,7 @@
 Title: "[security] 위임 래퍼에 입력 경계·최소권한 가드 부재 — 간접 프롬프트 인젝션·-w 쓰기 노출"
 creation: 2026-06-07
 modification: 2026-06-07
+status: "done"
 tags:
  - "arachne"
  - "postmerge-audit"

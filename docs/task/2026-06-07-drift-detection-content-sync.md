@@ -2,6 +2,7 @@
 Title: "[task] 드리프트 검출 강화 — 인덱스 오탐·AGENTS↔rules 내용 동기화"
 creation: 2026-06-07
 modification: 2026-06-07
+status: "done"
 tags:
  - "project"
  - "task"

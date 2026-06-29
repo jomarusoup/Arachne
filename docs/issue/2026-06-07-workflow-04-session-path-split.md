@@ -2,6 +2,7 @@
 Title: "[bug] 세션 저장·복원 경로가 분리되어 인계가 끊김"
 creation: 2026-06-07
 modification: 2026-06-07
+status: "done"
 tags:
  - "arachne"
  - "workflow"

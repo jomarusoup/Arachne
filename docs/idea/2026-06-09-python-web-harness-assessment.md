@@ -2,6 +2,7 @@
 Title: "[idea] Python·Web 중심 Arachne 하네스 냉정 평가"
 creation: 2026-06-09
 modification: 2026-06-09
+status: "done"
 tags:
  - "arachne"
  - "idea"

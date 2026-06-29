@@ -2,6 +2,7 @@
 Title: "[enhancement] AGENTS.md(다이제스트) ↔ rules/(풀버전) 내용 동기화 자동 검사 부재"
 creation: 2026-06-07
 modification: 2026-06-07
+status: "done"
 tags:
  - "arachne"
  - "postmerge-audit"

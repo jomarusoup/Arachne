@@ -2,6 +2,7 @@
 Title: "[task] Windows Copilot 통합 설치와 검증 보완"
 creation: 2026-06-07
 modification: 2026-06-07
+status: "to do"
 tags:
  - "arachne"
  - "task"

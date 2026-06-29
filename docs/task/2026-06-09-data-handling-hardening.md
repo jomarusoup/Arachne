@@ -2,6 +2,7 @@
 Title: "[task] DB·JSON 데이터 처리 하드닝"
 creation: 2026-06-09
 modification: 2026-06-11
+status: "in progress"
 tags:
  - "arachne"
  - "task"

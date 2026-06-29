@@ -2,6 +2,7 @@
 Title: "[audit] 병합 후 허점 검수 (copilot·windows·atask 통합 이후)"
 creation: 2026-06-07
 modification: 2026-06-07
+status: "done"
 tags:
  - "arachne"
  - "postmerge-audit"

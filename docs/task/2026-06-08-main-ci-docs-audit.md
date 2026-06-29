@@ -2,6 +2,7 @@
 Title: "[task] main CI와 문서 드리프트 검수"
 creation: 2026-06-08
 modification: 2026-06-08
+status: "done"
 tags:
  - "arachne"
  - "task"

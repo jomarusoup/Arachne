@@ -2,6 +2,7 @@
 Title: "[bug] atask 단일 모델 옵션이 서로 다른 CLI 모델 공간을 혼합함"
 creation: 2026-06-07
 modification: 2026-06-07
+status: "done"
 tags:
  - "arachne"
  - "workflow"

@@ -2,6 +2,7 @@
 Title: "Task 작성 규약"
 creation: 2026-06-07
 modification: 2026-06-07
+status: "done"
 tags:
  - "arachne"
  - "workflow"

@@ -2,6 +2,7 @@
 Title: "[task] atask 정확성 하드닝 — 페일오버 역할·쿼터 오판·모델 라우팅·날짜 이식성"
 creation: 2026-06-07
 modification: 2026-06-07
+status: "done"
 tags:
  - "project"
  - "task"

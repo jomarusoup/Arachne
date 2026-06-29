@@ -2,6 +2,7 @@
 Title: "[idea] Web 디자인·UI·UX 문서 배치 정책"
 creation: 2026-06-09
 modification: 2026-06-09
+status: "to do"
 tags:
  - "arachne"
  - "idea"

@@ -2,6 +2,7 @@
 Title: "[bug] atask 쿼터 휴리스틱이 일반 오류를 소진으로 오판함"
 creation: 2026-06-07
 modification: 2026-06-07
+status: "done"
 tags:
  - "arachne"
  - "workflow"

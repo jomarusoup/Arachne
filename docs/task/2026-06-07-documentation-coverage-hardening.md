@@ -2,6 +2,7 @@
 Title: "[task] Arachne 기능 문서화 커버리지 보강"
 creation: 2026-06-07
 modification: 2026-06-09
+status: "in progress"
 tags:
  - "arachne"
  - "task"

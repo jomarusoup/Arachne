@@ -2,6 +2,7 @@
 Title: "[bug] git-bus 기준점 파일이 .claude 부재 시 저장되지 않음"
 creation: 2026-06-07
 modification: 2026-06-07
+status: "done"
 tags:
  - "arachne"
  - "workflow"

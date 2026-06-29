@@ -2,6 +2,7 @@
 Title: "[task] 하네스 역할·플랫폼 설명 정확화 반영 검증 및 #36 종료"
 creation: 2026-06-07
 modification: 2026-06-07
+status: "done"
 tags:
  - "project"
  - "task"

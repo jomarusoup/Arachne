@@ -2,6 +2,7 @@
 Title: "[bug] macOS CI의 GNU sed -i 의존"
 creation: 2026-06-09
 modification: 2026-06-09
+status: "done"
 tags:
  - "arachne"
  - "issue"

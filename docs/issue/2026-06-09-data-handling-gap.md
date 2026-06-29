@@ -2,6 +2,7 @@
 Title: "[audit] 보강 후보 대비 DB·JSON 데이터 처리 격차"
 creation: 2026-06-09
 modification: 2026-06-09
+status: "in progress"
 tags:
  - "arachne"
  - "database"

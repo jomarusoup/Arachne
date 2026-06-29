@@ -2,6 +2,7 @@
 Title: "[task] CI 플랫폼 분기와 Windows 실패 수정"
 creation: 2026-06-08
 modification: 2026-06-08
+status: "done"
 tags:
  - "arachne"
  - "task"

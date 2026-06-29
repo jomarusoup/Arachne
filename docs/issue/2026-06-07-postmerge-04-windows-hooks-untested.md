@@ -2,6 +2,7 @@
 Title: "[bug] 신규 훅·atask가 Windows/Git Bash 환경에서 미검증"
 creation: 2026-06-07
 modification: 2026-06-07
+status: "done"
 tags:
  - "arachne"
  - "postmerge-audit"

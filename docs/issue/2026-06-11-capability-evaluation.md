@@ -2,6 +2,7 @@
 Title: "[audit] 언어 × 도구 역량 평가 — 하네스가 어디까지 지원하는가"
 creation: 2026-06-11
 modification: 2026-06-11
+status: "done"
 tags:
  - "arachne"
  - "audit"

@@ -2,6 +2,7 @@
 Title: "[idea] 보강 후보 Python·Web 선별 도입 검토"
 creation: 2026-06-09
 modification: 2026-06-09
+status: "done"
 tags:
  - "arachne"
  - "idea"

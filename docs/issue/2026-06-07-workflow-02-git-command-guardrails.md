@@ -2,6 +2,7 @@
 Title: "[bug] /git 명령에 브랜치·검증·변경 소유권 가드가 없음"
 creation: 2026-06-07
 modification: 2026-06-07
+status: "done"
 tags:
  - "arachne"
  - "workflow"

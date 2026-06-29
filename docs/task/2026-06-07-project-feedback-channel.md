@@ -2,6 +2,7 @@
 Title: "[task] 사용 프로젝트에서 Arachne로 피드백 전달 경로 구축"
 creation: 2026-06-07
 modification: 2026-06-07
+status: "to do"
 tags:
  - "arachne"
  - "task"

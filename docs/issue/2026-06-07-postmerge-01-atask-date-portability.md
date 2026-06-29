@@ -2,6 +2,7 @@
 Title: "[bug] atask·atask-quota-warn 의 GNU date -d 의존으로 macOS/Windows 시각 표시 깨짐"
 creation: 2026-06-07
 modification: 2026-06-07
+status: "done"
 tags:
  - "arachne"
  - "postmerge-audit"

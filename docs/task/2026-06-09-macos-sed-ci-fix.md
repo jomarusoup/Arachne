@@ -2,6 +2,7 @@
 Title: "[task] macOS sed CI 호환성 수정"
 creation: 2026-06-09
 modification: 2026-06-09
+status: "done"
 tags:
  - "arachne"
  - "task"

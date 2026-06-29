@@ -2,6 +2,7 @@
 Title: "[task] Python·Web profile 기반 구축"
 creation: 2026-06-09
 modification: 2026-06-09
+status: "done"
 tags:
  - "arachne"
  - "task"

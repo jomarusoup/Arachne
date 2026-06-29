@@ -2,6 +2,7 @@
 Title: "[task] 설치·업데이트 안전성 — 파괴적 재생성·브랜치 검증·타깃 부작용"
 creation: 2026-06-07
 modification: 2026-06-07
+status: "done"
 tags:
  - "project"
  - "task"

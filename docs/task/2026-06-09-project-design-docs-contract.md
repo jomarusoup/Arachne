@@ -2,6 +2,7 @@
 Title: "[task] 사용 프로젝트 디자인 문서 계약 정식화"
 creation: 2026-06-09
 modification: 2026-06-09
+status: "to do"
 tags:
  - "arachne"
  - "task"

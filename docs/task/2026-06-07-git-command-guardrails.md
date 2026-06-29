@@ -2,6 +2,7 @@
 Title: "[task] /git 커맨드 가드레일 — 브랜치·검증·변경 소유권"
 creation: 2026-06-07
 modification: 2026-06-07
+status: "done"
 tags:
  - "project"
  - "task"

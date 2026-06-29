@@ -2,6 +2,7 @@
 Title: "[bug] Claude settings 재설치가 사용자 설정을 파괴적으로 교체함"
 creation: 2026-06-07
 modification: 2026-06-07
+status: "done"
 tags:
  - "arachne"
  - "workflow"

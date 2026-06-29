@@ -2,6 +2,7 @@
 Title: "[task] Arachne 사용 프로젝트 CI 스캐폴딩"
 creation: 2026-06-09
 modification: 2026-06-09
+status: "done"
 tags:
  - "arachne"
  - "task"

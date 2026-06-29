@@ -2,6 +2,7 @@
 Title: "[audit] Arachne 기능 문서화 커버리지 감사"
 creation: 2026-06-07
 modification: 2026-06-07
+status: "done"
 tags:
  - "arachne"
  - "documentation"

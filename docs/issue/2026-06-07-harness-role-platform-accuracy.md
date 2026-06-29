@@ -2,6 +2,7 @@
 Title: "[docs] 하네스 핵심 역할·플랫폼 호환성 설명 정확화"
 creation: 2026-06-07
 modification: 2026-06-07
+status: "done"
 tags:
  - "arachne"
  - "documentation"
