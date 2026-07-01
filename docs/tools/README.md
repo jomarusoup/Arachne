@@ -1,7 +1,7 @@
 ---
 Title: "Arachne 확장 도구"
 creation: 2026-06-14
-modification: 2026-06-15
+modification: 2026-07-01
 tags:
  - "arachne"
  - "tools"
@@ -32,7 +32,7 @@ Arachne 핵심(agents·commands·rules·hooks·skills)에 더해, **외부 저�
 
 ```mermaid
 flowchart TD
-    A["arachne -i --with-extras / --extras"] --> S["setup-extras.sh / .ps1"]
+    A["arachne -i --with-ua<br/>arachne -i --with-extras / --extras"] --> S["setup-extras.sh / .ps1"]
     S --> P["A계층: Claude 플러그인<br/>UA · taste-skill"]
     S --> C["B계층: 독립 CLI<br/>codegraph"]
     P --> M["claude plugin marketplace add ~/클론<br/>claude plugin install"]
@@ -57,6 +57,8 @@ arachne --extras
 arachne --extras --all          # 또는: bash ~/Arachne/setup-extras.sh --all
 
 # 설치(재설치)·업데이트와 함께 (멱등)
+arachne -i --with-ua            # Understand-Anything 만
+arachne -u --with-ua
 arachne -i --with-extras
 arachne -u --with-extras
 ```

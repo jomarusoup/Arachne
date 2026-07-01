@@ -38,5 +38,8 @@ session-env/
 # settings.json 은 install.sh 가 생성하므로 추적 불필요
 # (settings.template.json 만 추적)
 
+# Understand-Anything 생성 산출물 (knowledge-graph·fingerprints·tmp)
+.understand-anything/
+
 # macOS 아티팩트
 .DS_Store

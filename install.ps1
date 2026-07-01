@@ -25,6 +25,8 @@ param(
     [ValidateSet("claude", "gemini", "codex", "all")]
     [string]$Target = "all",
 
+    [switch]$WithUa,
+
     [switch]$WithExtras,
 
     [switch]$Extras
@@ -75,6 +77,26 @@ $SCRIPT:BASH_COMMANDS = [ordered]@{
 }
 
 ################################################################################
+# FUNCTION    : WriteArachneLog
+# DESCRIPTION : Arachne PowerShell 스크립트의 사용자 출력 형식을 통일
+# PARAMETERS  : string Level   - STEP|RUN|SKIP|DONE|WARN|ERROR
+#               string Message - 출력할 메시지
+################################################################################
+function WriteArachneLog {
+    param(
+        [string]$Level,
+        [string]$Message
+    )
+
+    $line = "[Arachne][$Level] $Message"
+    switch ($Level) {
+        "WARN" { Write-Warning $line }
+        "ERROR" { Write-Error $line }
+        default { Write-Output $line }
+    }
+}
+
+################################################################################
 # FUNCTION    : WriteUtf8
 # DESCRIPTION : UTF-8 BOM 없이 텍스트 파일 저장
 # PARAMETERS  : string path    - 출력 파일 경로
@@ -102,6 +124,7 @@ function ShowUsage {
     Write-Output "  -i, -Install          install or reinstall"
     Write-Output "  -u, -Update           git pull, then reinstall"
     Write-Output "  -Target T             claude|gemini|codex|all (default: all)"
+    Write-Output "  -WithUa               with -Install/-Update: set up Understand-Anything only"
     Write-Output "  -WithExtras           with -Install/-Update: set up extras (UA / taste-skill / codegraph)"
     Write-Output "  -Extras               run extras setup only (interactive menu)"
     Write-Output "  -c, -Check            verify Claude, Gemini, and Codex wiring"
@@ -340,6 +363,7 @@ function RegisterCommands {
 # DESCRIPTION : 선택 타깃 설치 후 Windows 공통 명령 등록
 ################################################################################
 function InstallHarness {
+    WriteArachneLog "STEP" "install: target=$Target repo=$SCRIPT:REPO_DIR"
     switch ($Target) {
         "claude" { InstallClaude }
         "gemini" { InstallGemini }
@@ -349,21 +373,21 @@ function InstallHarness {
             if (DetectCli "gemini") {
                 InstallGemini
             } else {
-                Write-Output "[Arachne] Gemini CLI not detected; skip"
+                WriteArachneLog "SKIP" "install: Gemini CLI not detected; target=gemini"
             }
             if (DetectCli "codex") {
                 InstallCodex
             } else {
-                Write-Output "[Arachne] Codex CLI not detected; skip"
+                WriteArachneLog "SKIP" "install: Codex CLI not detected; target=codex"
             }
         }
     }
 
     RegisterCommands
     if ($null -eq (Get-Command bash -ErrorAction SilentlyContinue)) {
-        Write-Warning "[Arachne] bash.exe not found. Install Git for Windows for hooks and delegated commands."
+        WriteArachneLog "WARN" "install: bash.exe not found. Install Git for Windows for hooks and delegated commands."
     }
-    Write-Output "[Arachne] Windows install complete"
+    WriteArachneLog "DONE" "install: target=$Target"
 }
 
 ################################################################################
@@ -374,17 +398,23 @@ function InstallHarness {
 function RunExtras {
     param([string[]]$ExtraArgs = @())
 
-    $extras = Join-Path $SCRIPT:REPO_DIR "setup-extras.ps1"
+    $extras = if ($env:ARACHNE_EXTRAS_SCRIPT) {
+        $env:ARACHNE_EXTRAS_SCRIPT
+    } else {
+        Join-Path $SCRIPT:REPO_DIR "setup-extras.ps1"
+    }
     if (-not (Test-Path $extras)) {
-        Write-Warning "[Arachne] setup-extras.ps1 not found; skip extras"
+        WriteArachneLog "SKIP" "extras: setup script not found; path=$extras"
         return
     }
+    WriteArachneLog "RUN" "extras: powershell $extras $($ExtraArgs -join ' ')"
     & $extras @ExtraArgs
 }
 
 ################################################################################
 # FUNCTION    : MaybeRunExtras
 # DESCRIPTION : -Install/-Update 후 확장 도구 설정 분기. Claude 타깃에서만 동작.
+#               -WithUa 지정 시 Understand-Anything 만 실행한다.
 #               -WithExtras 지정 시 실행, 미지정 시 대화형일 때만 설치/갱신 질의.
 # PARAMETERS  : string[] PassArgs - setup-extras.ps1 로 전달 (예: -Update)
 ################################################################################
@@ -392,12 +422,22 @@ function MaybeRunExtras {
     param([string[]]$PassArgs = @())
 
     if ($Target -ne "all" -and $Target -ne "claude") {
+        WriteArachneLog "SKIP" "extras: target=$Target; not a Claude plugin target"
+        return
+    }
+
+    if ($WithUa) {
+        WriteArachneLog "STEP" "extras: Understand-Anything only setup start"
+        RunExtras (@("-Ua") + $PassArgs)
+        WriteArachneLog "DONE" "extras: Understand-Anything only setup complete"
         return
     }
 
     if ($WithExtras) {
+        WriteArachneLog "STEP" "extras: all extras setup start"
         if ([Environment]::UserInteractive) { RunExtras $PassArgs }
         else { RunExtras (@("-All") + $PassArgs) }
+        WriteArachneLog "DONE" "extras: all extras setup complete"
         return
     }
 
@@ -407,7 +447,7 @@ function MaybeRunExtras {
         if ($reply -match '^(y|yes)$') {
             RunExtras $PassArgs
         } else {
-            Write-Output "[Arachne] Skipped extras (run later: arachne -Extras)"
+            WriteArachneLog "SKIP" "extras: skipped by user (run later: arachne -Extras)"
         }
     }
 }

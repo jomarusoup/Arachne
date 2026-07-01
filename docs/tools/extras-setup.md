@@ -1,7 +1,7 @@
 ---
 Title: "확장 도구 설치 메커니즘 (setup-extras)"
 creation: 2026-06-14
-modification: 2026-06-15
+modification: 2026-07-01
 tags:
  - "arachne"
  - "tools"
@@ -24,13 +24,15 @@ Arachne installer 연동을 설명한다.
 | --- | --- | --- |
 | `setup-extras.sh` | Linux · macOS | 도구 설치 본체 (bash) |
 | `setup-extras.ps1` | Windows | 동일 동작 (PowerShell, 네이티브 JSON 처리) |
-| `install.sh` / `install.ps1` | 공통 | `--with-extras` 플래그 · `--extras` 단독 커맨드로 위 스크립트 호출 |
+| `install.sh` / `install.ps1` | 공통 | `--with-ua`·`--with-extras` 플래그 · `--extras` 단독 커맨드로 위 스크립트 호출 |
 | `commands/codegraph.md` | 공통 | `/codegraph` 슬래시 커맨드 래퍼 (commands/ 는 `~/.claude/commands` 로 심볼릭) |
 
 ## 진입점 3가지
 
 ```bash
 arachne --extras                # 단독 실행 (대화형 선택 메뉴)
+arachne -i --with-ua            # 설치(재설치)와 함께 Understand-Anything 만
+arachne -u --with-ua            # 업데이트와 함께 Understand-Anything 만
 arachne -i --with-extras        # 설치(재설치)와 함께
 arachne -u --with-extras        # 업데이트(git pull→재설치)와 함께 (멱등)
 bash ~/Arachne/setup-extras.sh  # 스크립트 직접 호출
@@ -40,6 +42,8 @@ Windows:
 
 ```powershell
 arachne -Extras
+arachne -i -WithUa
+arachne -u -WithUa
 arachne -i -WithExtras
 pwsh ~/Arachne/setup-extras.ps1
 ```

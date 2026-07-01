@@ -303,6 +303,39 @@ EOF
     [ -L "${TMP_DIR}/.local/bin/arachne" ]
 }
 
+@test "install: --with-ua 는 Understand-Anything 설정만 호출" {
+    local fake_extras="${TMP_DIR}/setup-extras.sh"
+    cat > "${fake_extras}" <<EOF
+#!/bin/bash
+printf '%s\n' "\$*" > "${TMP_DIR}/extras.args"
+EOF
+
+    ARACHNE_EXTRAS_SCRIPT="${fake_extras}" run bash "${REPO_DIR}/install.sh" -i --with-ua
+
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"[Arachne][STEP] extras: Understand-Anything 단독 설정 시작"* ]]
+    [[ "$output" == *"[Arachne][RUN] extras: bash ${fake_extras} --ua"* ]]
+    [[ "$output" == *"[Arachne][DONE] extras: Understand-Anything 단독 설정 완료"* ]]
+    [ "$(cat "${TMP_DIR}/extras.args")" = "--ua" ]
+}
+
+@test "update: --with-ua 는 Understand-Anything 갱신 인자를 전달" {
+    make_mock_git
+    local fake_extras="${TMP_DIR}/setup-extras.sh"
+    cat > "${fake_extras}" <<EOF
+#!/bin/bash
+printf '%s\n' "\$*" > "${TMP_DIR}/extras.args"
+EOF
+
+    PATH="${TMP_DIR}/mockbin:${PATH}" \
+        ARACHNE_FORCE=1 \
+        ARACHNE_EXTRAS_SCRIPT="${fake_extras}" \
+        run bash "${REPO_DIR}/install.sh" -u --with-ua
+
+    [ "$status" -eq 0 ]
+    [ "$(cat "${TMP_DIR}/extras.args")" = "--ua --update" ]
+}
+
 #-------------------------------------------------------------------------------
 # #28: 사용자 수정된 settings.json 을 조용히 덮어쓰지 않고 경고 + .bak 보존
 #-------------------------------------------------------------------------------

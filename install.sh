@@ -46,6 +46,22 @@ ARACHNE_VERSION="$(cat "$REPO_DIR/VERSION" 2>/dev/null | tr -d '[:space:]')"
 ARACHNE_VERSION="${ARACHNE_VERSION:-unknown}"
 ENTRY_NAME="$(basename "$0")"
 
+################################################################################
+# FUNCTION    : arachne_log
+# DESCRIPTION : Arachne 스크립트의 사용자 출력 형식을 통일
+# PARAMETERS  : string level   - STEP|RUN|SKIP|DONE|WARN|ERROR
+#               string message - 출력할 메시지
+################################################################################
+arachne_log() {
+    local level="$1"
+    local message="$2"
+
+    case "$level" in
+        WARN|ERROR) printf '[Arachne][%s] %s\n' "$level" "$message" >&2 ;;
+        *)          printf '[Arachne][%s] %s\n' "$level" "$message" ;;
+    esac
+}
+
 # "스크립트명:커맨드명" 형식 — git pull 시 심볼릭 링크라 자동 업데이트됨
 # 위임 래퍼는 짧은 별칭(gtask/ctask)과 명시적 이름(gemini-task/codex-task) 둘 다 등록
 BIN_TARGETS=(
@@ -88,6 +104,7 @@ usage() {
     echo "  -u, --update           git pull 후 최신 상태로 재설치"
     echo "      --target T          설치 대상 CLI: claude|gemini|codex|copilot|all (기본 all)"
     echo "                          (-i/-u 와 함께 사용. 미감지 CLI는 자동 스킵)"
+    echo "      --with-ua           -i/-u 와 함께: Understand-Anything 만 멱등 설정"
     echo "      --with-extras       -i/-u 와 함께: 확장 도구(UA·taste-skill·codegraph) 멱등 설정"
     echo "      --extras            확장 도구 통합 설치만 단독 실행 (대화형 선택 메뉴)"
     echo "  -c, --check            CLI 연결 상태 점검 (심볼릭 댕글링·병합본 stale 탐지)"
@@ -128,8 +145,8 @@ show_version() {
 # DESCRIPTION : git pull 후 최신 상태로 재설치 (동기화 허브)
 ################################################################################
 update_arachne() {
-    echo "[Arachne] 업데이트 시작 (git pull)"
-    cd "$REPO_DIR" || { echo "[ERROR] 레포 디렉터리 진입 실패: $REPO_DIR" >&2; exit 1; }
+    arachne_log "STEP" "update: git pull 후 재설치 시작 (repo=$REPO_DIR)"
+    cd "$REPO_DIR" || { arachne_log "ERROR" "update: 레포 디렉터리 진입 실패 (repo=$REPO_DIR)"; exit 1; }
 
     #---------------------------------------------------------------------------
     # #33: pull·재설치 전에 레포 상태를 검증한다. 비-main 브랜치는 경고하고,
@@ -139,19 +156,20 @@ update_arachne() {
     local branch
     branch=$(git rev-parse --abbrev-ref HEAD 2>/dev/null || echo "?")
     if [ "$branch" != "main" ]; then
-        echo "  [주의] 현재 브랜치가 main 이 아닙니다: $branch — 의도한 브랜치인지 확인하세요." >&2
+        arachne_log "WARN" "update: 현재 브랜치가 main 이 아님 (branch=$branch)"
     fi
     if ! git diff --quiet 2>/dev/null || ! git diff --cached --quiet 2>/dev/null; then
-        echo "  [중단] 작업트리에 커밋되지 않은 변경이 있습니다 — git pull 충돌·재설치 손실 위험." >&2
-        echo "         커밋/스태시 후 다시 실행하거나, 무시하려면 ARACHNE_FORCE=1 arachne -u" >&2
+        arachne_log "ERROR" "update: 작업트리에 커밋되지 않은 변경이 있음 — git pull 충돌·재설치 손실 위험"
+        arachne_log "ERROR" "update: 커밋/스태시 후 재실행 또는 ARACHNE_FORCE=1 arachne -u 로 강제"
         if [ "${ARACHNE_FORCE:-0}" != "1" ]; then
             exit 1
         fi
-        echo "  [강제] ARACHNE_FORCE=1 — 검증 무시하고 진행" >&2
+        arachne_log "WARN" "update: ARACHNE_FORCE=1 — dirty 검증 무시"
     fi
 
+    arachne_log "RUN" "git pull"
     git pull
-    echo "[Arachne] 최신 소스 기반 재설치 진행"
+    arachne_log "STEP" "install: 최신 소스 기반 재설치 진행"
     install
     # -u 도 -i 와 동일하게 확장 도구 분기. --with-extras 면 멱등 동기화,
     # 미지정 대화형이면 질의(자동 강제 X — noarg-safe 원칙 유지).
@@ -385,6 +403,7 @@ install_shared() {
 ################################################################################
 install() {
     local target="${ARACHNE_TARGET:-all}"
+    arachne_log "STEP" "install: target=$target repo=$REPO_DIR"
     case "$target" in
         claude) install_claude ;;
         gemini) install_gemini ;;
@@ -395,17 +414,17 @@ install() {
             if detect_cli gemini; then
                 install_gemini
             else
-                echo "[Arachne] Gemini CLI 미감지 — 스킵"
+                arachne_log "SKIP" "install: Gemini CLI 미감지 — target=gemini"
             fi
             if detect_cli codex; then
                 install_codex
             else
-                echo "[Arachne] Codex CLI 미감지 — 스킵"
+                arachne_log "SKIP" "install: Codex CLI 미감지 — target=codex"
             fi
             if detect_cli copilot; then
                 install_copilot
             else
-                echo "[Arachne] GitHub Copilot 미감지 — 스킵"
+                arachne_log "SKIP" "install: GitHub Copilot 미감지 — target=copilot"
             fi
             ;;
     esac
@@ -417,8 +436,9 @@ install() {
     if [ "$target" = "all" ]; then
         install_shared
     else
-        echo "[Arachne] 타깃 '$target' — 공통 설치(dotfiles·bin) 생략 (전체 설치는 'arachne -i')"
+        arachne_log "SKIP" "install: 타깃 '$target' — 공통 설치(dotfiles·bin) 생략 (전체 설치는 'arachne -i')"
     fi
+    arachne_log "DONE" "install: target=$target"
 }
 
 ################################################################################
@@ -428,17 +448,19 @@ install() {
 # PARAMETERS  : 나머지 인자 - setup-extras.sh 로 그대로 전달
 ################################################################################
 run_extras() {
-    local extras="$REPO_DIR/setup-extras.sh"
+    local extras="${ARACHNE_EXTRAS_SCRIPT:-$REPO_DIR/setup-extras.sh}"
     if [ ! -f "$extras" ]; then
-        echo "[Arachne] setup-extras.sh 없음 — 확장 도구 설정 스킵" >&2
+        arachne_log "SKIP" "extras: setup 스크립트 없음 — path=$extras"
         return 0
     fi
+    arachne_log "RUN" "extras: bash $extras $*"
     bash "$extras" "$@"
 }
 
 ################################################################################
 # FUNCTION    : maybe_run_extras
 # DESCRIPTION : -i/-u 설치 후 확장 도구 설정 분기. Claude 타깃(all|claude)에서만 동작.
+#               --with-ua 지정 시 Understand-Anything 만 실행한다.
 #               --with-extras 지정 시 실행(비TTY는 --all), 미지정 시 대화형일 때만
 #               설치 여부를 질의한다(무인자=help 원칙 유지 — 비대화형은 조용히 스킵).
 # PARAMETERS  : 나머지 인자 - setup-extras.sh 로 전달 (예: --update)
@@ -448,11 +470,23 @@ maybe_run_extras() {
 
     case "${ARACHNE_TARGET:-all}" in
         all|claude) ;;
-        *) return 0 ;;
+        *)
+            arachne_log "SKIP" "extras: target=${ARACHNE_TARGET:-all} — Claude 플러그인 대상이 아님"
+            return 0
+            ;;
     esac
 
+    if [ "${ARACHNE_WITH_UA:-0}" -eq 1 ]; then
+        arachne_log "STEP" "extras: Understand-Anything 단독 설정 시작"
+        run_extras --ua ${pass_args[@]+"${pass_args[@]}"}
+        arachne_log "DONE" "extras: Understand-Anything 단독 설정 완료"
+        return 0
+    fi
+
     if [ "${ARACHNE_WITH_EXTRAS:-0}" -eq 1 ]; then
+        arachne_log "STEP" "extras: 전체 확장 도구 설정 시작"
         if [ -t 0 ]; then run_extras ${pass_args[@]+"${pass_args[@]}"}; else run_extras --all ${pass_args[@]+"${pass_args[@]}"}; fi
+        arachne_log "DONE" "extras: 전체 확장 도구 설정 완료"
         return 0
     fi
 
@@ -463,7 +497,7 @@ maybe_run_extras() {
         read -r -p "[Arachne] 확장 도구(Understand-Anything·taste-skill·codegraph)도 ${action}할까요? [y/N] " reply || true
         case "$reply" in
             [yY]|[yY][eE][sS]) run_extras ${pass_args[@]+"${pass_args[@]}"} ;;
-            *) echo "[Arachne] 확장 도구 ${action} 건너뜀 (나중에 'arachne --extras' 로 가능)" ;;
+            *) arachne_log "SKIP" "extras: ${action} 건너뜀 (나중에 'arachne --extras' 로 가능)" ;;
         esac
     fi
 }
@@ -683,14 +717,17 @@ export_settings() {
 # PARAMETERS  : 커맨드 뒤 나머지 인자들 ("$@")
 ################################################################################
 ARACHNE_TARGET="all"
+ARACHNE_WITH_UA=0
 ARACHNE_WITH_EXTRAS=0
 parse_target() {
     ARACHNE_TARGET="all"
+    ARACHNE_WITH_UA=0
     ARACHNE_WITH_EXTRAS=0
     while [ $# -gt 0 ]; do
         case "$1" in
             --target=*)    ARACHNE_TARGET="${1#--target=}" ;;
             --target)      shift || true; ARACHNE_TARGET="${1:-}" ;;
+            --with-ua)     ARACHNE_WITH_UA=1 ;;
             --with-extras) ARACHNE_WITH_EXTRAS=1 ;;
         esac
         shift || true

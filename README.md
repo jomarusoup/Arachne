@@ -77,6 +77,8 @@ Windows 설치기는 관리자 권한 없이 디렉터리 junction과 파일 har
 4. **dotfiles 병합**: `~/.bash_profile`, `~/.vimrc`에 Arachne 설정을 안전하게 병합 (기존 내용 보존)
 5. **Copilot 지침**: `arachne -i --target copilot`으로 Copilot CLI와 VS Code 사용자 프로필에 전역 규약 설치
 6. **CLI 등록**: `~/.local/bin/`에 `arachne`, `tws`, `gemini-task`(=`gtask`), `codex-task`(=`ctask`), `arachne-task`(=`atask`), `docs-sync` 커맨드 등록
+7. **선택 확장 도구**: `arachne -i --with-ua`로 Understand-Anything을 설치 흐름에 붙이거나,
+   `arachne -i --with-extras`로 UA·taste-skill·codegraph를 함께 설정
 
 Windows 네이티브 PowerShell에서는 `.\install-copilot.ps1`을 실행합니다. macOS/Linux/WSL/Git
 Bash에서는 `./install.sh -i --target copilot`을 사용합니다. 두 방식 모두 심볼릭 링크 권한 없이
@@ -87,7 +89,9 @@ Bash에서는 `./install.sh -i --target copilot`을 사용합니다. 두 방식 
 |---|---|
 | `arachne`, `arachne -h` | 도움말 출력 |
 | `arachne -i` (`--install`) | 재설치 및 설정 동기화 |
+| `arachne -i --with-ua` | 설치와 함께 Understand-Anything 플러그인 세팅 |
 | `arachne -u` (`--update`) | 최신 상태로 업데이트 (git pull + 재설치) |
+| `arachne -u --with-ua` | 업데이트와 함께 Understand-Anything 갱신 |
 | `arachne -c` (`--check`) | Claude·Gemini·Codex·Copilot 연결 상태 점검 |
 | `arachne -n <P> [DIR] --profile <P>` | 신규 프로젝트 스캐폴딩. profile 기본값은 `minimal` |
 | `arachne init-ci [DIR] --profile <P>` | 기존 프로젝트에 profile 기반 검증과 GitHub Actions 생성/갱신 |
