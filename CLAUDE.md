@@ -34,6 +34,7 @@ Claude Code가 이를 네이티브로 자동 로드한다:
 │   ├── verify.md                    # /verify     — 수정 후 검증
 │   ├── status.md                    # /status     — 프로젝트 현황
 │   ├── git.md                       # /git        — 커밋·푸시
+│   ├── worktree.md                  # /worktree   — 병렬 세션 worktree 생성·점검·정리
 │   ├── handoff.md                   # /handoff    — AI 전환 전 상태 저장
 │   ├── issue.md                     # /issue      — GitHub 이슈 처리
 │   ├── learn.md                     # /learn      — 패턴 학습

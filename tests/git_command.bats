@@ -5,7 +5,7 @@
 #               /git 은 Haiku 위임 마크다운 커맨드라, 가드가 절차에서 빠지지 않도록
 #               문서 계약(doc-contract)을 검사한다.
 # DATA        : 2026-06-08
-# Modification: 2026-06-09
+# Modification: 2026-07-01
 ################################################################################
 
 setup() {
@@ -20,6 +20,12 @@ setup() {
 @test "git command(#27): 변경 소유권 점검 가드 명시" {
     grep -q "소유권" "${GIT_CMD}"
     grep -q "혼입 금지" "${GIT_CMD}"
+}
+
+@test "git command: worktree 상태 확인 가드 명시" {
+    grep -q "git worktree list" "${GIT_CMD}"
+    grep -q "rev-parse --show-toplevel" "${GIT_CMD}"
+    grep -q "/worktree status" "${GIT_CMD}"
 }
 
 @test "git command(#27): 브랜치 가드 명시" {

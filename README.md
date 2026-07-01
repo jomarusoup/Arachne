@@ -144,7 +144,7 @@ Arachne/
 │   └── web/                     # 웹 디자인 품질 (design-quality)
 │
 ├── skills/                      # 워크플로·도메인 스킬 (51개)
-├── commands/                    # 슬래시 커맨드 (16개)
+├── commands/                    # 슬래시 커맨드 (17개)
 ├── agents/                      # 서브에이전트 8개 (planner · code-reviewer · tdd · debugger
 │                                #   · python-reviewer · fastapi-reviewer · react-reviewer
 │                                #   · database-reviewer)
@@ -184,6 +184,7 @@ Arachne/
 | `/react-review` | React/Next 리뷰 — 렌더·Hooks·a11y(accessibility, 접근성)·XSS·성능 |
 | `/issue` | GitHub 오픈 이슈 확인 후 순차 처리 |
 | `/git` | 커밋·푸시 |
+| `/worktree` | 병렬 세션용 worktree 생성·상태확인·정리 |
 | `/status` | 프로젝트 현황 빠르게 파악 |
 | `/handoff` | AI 전환 전 작업 상태 저장 |
 | `/save-session` | 세션 요약 저장 (컨텍스트 70% 시 실행) |

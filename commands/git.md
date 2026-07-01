@@ -22,9 +22,15 @@ description: git 커밋·푸시. GitHub MCP 연결 시 Claude Code 안에서 바
 git status --short
 git diff --stat
 git branch --show-current
+git worktree list
+git rev-parse --show-toplevel
 ```
 - status에 **이번 작업과 무관한 변경**(다른 세션·도구가 남긴 파일)이 섞여 있으면, `git add -A` 대신
   이번 작업 파일만 선택 스테이징한다. 무관한 파일은 결과 보고에 적는다(남의 작업 혼입 금지).
+- 현재 폴더가 의도한 worktree인지 확인한다. 병렬 작업 중인데 같은 폴더에서 작업 중이면 커밋하지 말고
+  `/worktree status` 결과와 함께 중단·보고한다.
+- 다른 worktree에 같은 파일 변경이 진행 중이면 머지 충돌 가능성을 보고하고, 이번 커밋에는 현재 작업 파일만
+  선택 스테이징한다.
 
 ### 2. 브랜치 가드
 - 현재 브랜치가 의도한 브랜치인지 확인. **의도치 않은 브랜치면 중단·보고**한다.

@@ -55,7 +55,8 @@ description: /명령어 설명
 | `/fastapi-review` `/react-review` | FastAPI API 리뷰 · React/Next 웹 리뷰 |
 | `/database-review` | DB schema·쿼리·migration·데이터 보안 리뷰 |
 | `/issue` `/status` | GitHub 이슈 순차 처리 · 프로젝트 현황 |
-| `/git` `/handoff` `/save-session` `/learn` | 커밋·푸시 · 전환 저장 · 세션 요약 · 패턴 학습 |
+| `/git` `/worktree` | 커밋·푸시 · 병렬 세션 worktree 생성/점검/정리 |
+| `/handoff` `/save-session` `/learn` | 전환 저장 · 세션 요약 · 패턴 학습 |
 | `/codegraph` | 코드 그래프·심볼·영향 분석 (확장 도구 — [docs/tools/](tools/README.md)) |
 
 ### 새 커맨드 추가

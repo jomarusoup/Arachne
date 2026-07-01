@@ -71,6 +71,10 @@ cd ../Arachne-<task-b>   # 세션 B
 git worktree remove ../Arachne-<task-a>
 ```
 
+Claude Code에서는 `/worktree create <task>`, `/worktree status`, `/worktree cleanup <path>`를
+표준 진입점으로 사용한다. 직접 git 명령을 실행해도 되지만, 커맨드 문서의 dirty 작업트리·기존 경로·
+push/PR 반영 가드를 같은 기준으로 확인한다.
+
 규칙:
 - **같은 작업 디렉터리에서 두 세션이 `git checkout`으로 브랜치를 바꾸지 않는다.** 병렬이면 worktree.
 - 겹치는 파일을 두 worktree가 동시에 고치면 머지 충돌은 여전하다 → 작업 경계를 파일 단위로 나눈다.
