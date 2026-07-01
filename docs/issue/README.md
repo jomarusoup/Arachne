@@ -44,3 +44,21 @@ FROM:: [[arachne-docs]]
 | `*-audit`, `*-evaluation` | 문서, 아키텍처, 역량 평가 결과 |
 | `data-handling-*` | 데이터 취급과 보안 경계 관련 gap |
 | `macos-*`, `windows-*` | 플랫폼별 동작 차이와 검증 이슈 |
+
+## 현재 인벤토리 (2026-07-01)
+
+현재 `docs/issue/`에는 README를 제외하고 24개 issue/audit 기록이 있다.
+
+| 상태 | 개수 | 의미 |
+| --- | ---: | --- |
+| `done` | 23 | 해결됐거나 감사 스냅샷으로 종료된 기록 |
+| `in progress` | 1 | 연결 task의 열린 체크박스가 남아 있는 기록 |
+| `to do` | 0 | 조사 또는 재현을 아직 시작하지 않은 기록 없음 |
+
+### 열린 issue
+
+| 심각도 | 상태 | 문서 | 연결 task |
+| --- | --- | --- | --- |
+| high | `in progress` | [보강 후보 대비 DB·JSON 데이터 처리 격차](2026-06-09-data-handling-gap.md) | [DB·JSON 데이터 처리 하드닝](../task/2026-06-09-data-handling-hardening.md) |
+
+닫힌 issue라도 삭제하지 않는다. 해결 근거, 관련 task, 검증 결과가 이후 회귀 분석의 기준점이다.

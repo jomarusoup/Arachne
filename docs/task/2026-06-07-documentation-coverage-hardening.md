@@ -1,7 +1,7 @@
 ---
 Title: "[task] Arachne 기능 문서화 커버리지 보강"
 creation: 2026-06-07
-modification: 2026-06-09
+modification: 2026-07-01
 status: "in progress"
 tags:
  - "arachne"
@@ -16,7 +16,7 @@ FROM:: [[2026-06-07-documentation-coverage-audit]]
 
 # [task] Arachne 기능 문서화 커버리지 보강
 
-- **상태**: in-progress
+- **상태**: in progress
 - **우선순위**: medium
 - **담당**: Codex
 - **관련 문서**: [기능 문서화 감사](../issue/2026-06-07-documentation-coverage-audit.md)
@@ -84,4 +84,9 @@ shellcheck -S warning ./*.sh hooks/*.sh tests/*.sh
 ### 2026-06-09
 
 - CI의 Ubuntu, Rocky, macOS job이 jq를 명시 설치하는 현재 계약을 재확인해 관련 항목을 완료했다.
-- CLI 도움말과 문서 자동 대조는 별도 자동화가 필요하므로 task를 계속 in-progress로 유지한다.
+- CLI 도움말과 문서 자동 대조는 별도 자동화가 필요하므로 task를 계속 `in progress`로 유지한다.
+
+### 2026-07-01
+
+- task 인벤토리 정리: 상태 표기를 규약 값인 `in progress`로 표준화했다.
+- 남은 범위는 "문서 기능 목록과 실제 CLI 도움말 간 드리프트 검사 방안" 1건이다.

@@ -1,8 +1,8 @@
 ---
 Title: "[audit] 하네스 아키텍처 감사 — AI 멀티 플랫폼 하네스 관점"
 creation: 2026-06-11
-modification: 2026-06-11
-status: "in progress"
+modification: 2026-07-01
+status: "done"
 tags:
  - "arachne"
  - "audit"
@@ -19,6 +19,7 @@ FROM:: [[empty]]
 - **유형**: audit (플랫폼 설계·DevEx·운영·보안 관점)
 - **검수 기준**: df68f39 + 미커밋 데이터 자산 5종
 - **범위**: 디렉터리 구조·설치기·hooks·commands·skills·agents·profiles·CI·verify·docs·MCP·AI 설정·Obsidian 연동
+- **상태**: done — 감사와 자동 수정은 완료, 잔존 항목은 [followup task](../task/2026-06-11-audit-followup.md)에서 추적
 
 ## 요약 (Executive Summary)
 
@@ -103,3 +104,9 @@ bash tests/validate_settings.sh
 bash tests/check_index.sh
 bash tests/check_convention_sync.sh
 ```
+
+## 정리 결과
+
+### 2026-07-01
+
+- issue 인벤토리 정리: 감사 본문은 완료된 스냅샷으로 닫고, 남은 F-01/F-03/릴리스 정책/운영 로그/구조 단순화는 followup task의 트리거 항목으로 유지한다.

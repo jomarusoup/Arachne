@@ -1,7 +1,7 @@
 ---
 Title: "Task 작성 규약"
 creation: 2026-06-07
-modification: 2026-06-07
+modification: 2026-07-01
 status: "done"
 tags:
  - "arachne"
@@ -71,6 +71,30 @@ to do -> in progress -> done
 - 구현 항목과 검증 항목을 분리한다.
 - 발견된 추가 작업이 현재 목표에 필수면 같은 task에 추가하고, 독립적이면 새 task로 분리한다.
 - 완료한 항목만 `[x]`로 바꾸며 미실행 항목을 완료 처리하지 않는다.
+
+## 현재 인벤토리 (2026-07-01)
+
+현재 `docs/task/`에는 README를 제외하고 23개 task가 있다.
+
+| 상태 | 개수 | 의미 |
+| --- | ---: | --- |
+| `done` | 17 | 구현·문서화·검증 기록이 완료된 항목 |
+| `in progress` | 2 | 일부 체크박스 또는 후속 검증 설계가 남은 항목 |
+| `to do` | 4 | 아직 구현에 착수하지 않았거나 트리거를 기다리는 항목 |
+
+### 열린 task
+
+| 우선순위 | 상태 | 문서 | 남은 범위 |
+| --- | --- | --- | --- |
+| high | `in progress` | [DB·JSON 데이터 처리 하드닝](2026-06-09-data-handling-hardening.md) | SQLAlchemy savepoint/retry, PostgreSQL index·trigger, 적용 근거 기록, Redis·backup 운영 pack |
+| high | `to do` | [Windows Copilot 통합 설치와 검증 보완](2026-06-07-windows-copilot-integration.md) | Windows `install.ps1` Copilot target, CI 검증, 문서 정합 |
+| high | `to do` | [사용 프로젝트 디자인 문서 계약 정식화](2026-06-09-project-design-docs-contract.md) | `docs/design/DESIGN.md` 계약, `/design` 탐색, Web profile 스캐폴딩 |
+| medium | `in progress` | [Arachne 기능 문서화 커버리지 보강](2026-06-07-documentation-coverage-hardening.md) | CLI 도움말과 사용자 문서 간 드리프트 검사 설계 |
+| medium | `to do` | [사용 프로젝트에서 Arachne로 피드백 전달 경로 구축](2026-06-07-project-feedback-channel.md) | 로컬 feedback 초안, 제출 전 확인, GitHub Issue 제출 기록 |
+| medium | `to do` | [아키텍처 감사 후속](2026-06-11-audit-followup.md) | uninstall/recovery, statusline macOS, 릴리스 정책, 훅 로그, 구조 단순화 트리거 |
+
+완료 task는 각 문서의 진행 기록과 검증 결과가 정본이다. 새 작업을 시작할 때는 위 열린 task 중
+동일 범위가 있는지 먼저 확인하고, 있으면 새 파일을 만들지 않고 기존 task를 갱신한다.
 
 ## 진행 기록 원칙
 

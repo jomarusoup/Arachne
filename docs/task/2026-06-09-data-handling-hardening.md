@@ -1,7 +1,7 @@
 ---
 Title: "[task] DB·JSON 데이터 처리 하드닝"
 creation: 2026-06-09
-modification: 2026-06-11
+modification: 2026-07-01
 status: "in progress"
 tags:
  - "arachne"
@@ -17,7 +17,7 @@ FROM:: [[2026-06-09-extension-data-handling-gap]]
 
 # [task] DB·JSON 데이터 처리 하드닝
 
-- **상태**: in-progress (P0·P1 완료 — Phase 3 선택 운영 pack은 실제 사용 프로젝트 발생 시)
+- **상태**: in progress (P0·P1 대부분 완료 — Phase 3 선택 운영 pack은 실제 사용 프로젝트 발생 시)
 - **우선순위**: high
 - **담당**: unassigned
 - **관련 문서**: [[2026-06-09-extension-data-handling-gap]], [[0001-python-web-profile]]
@@ -224,6 +224,13 @@ PII field response/log/cache 포함 -> gate 실패
 - 신규 자산이 skills/agents/commands/USAGE 인덱스와 GitHub CI에 연결된다.
 
 ## 진행 기록
+
+### 2026-07-01
+
+- task 인벤토리 정리: 상태 표기를 규약 값인 `in progress`로 표준화했다.
+- 아직 열린 항목은 SQLAlchemy savepoint/retry 기준, PostgreSQL index·trigger 문구, 적용 근거 기록,
+  Redis와 backup/restore·관측 운영 pack이다.
+- Phase 3은 실제 Redis 또는 운영 DB 프로젝트가 생길 때 착수하는 선택 항목으로 유지한다.
 
 ### 2026-06-11 (P1)
 

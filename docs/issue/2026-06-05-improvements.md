@@ -1,11 +1,25 @@
 ---
-status: "to do"
+Title: "[refactor] Arachne 자기일관성·유지보수성 개선"
+creation: 2026-06-05
+modification: 2026-07-01
+status: "done"
+tags:
+ - "arachne"
+ - "refactor"
+ - "maintenance"
+ - "severity/high"
+aliases:
+ - "self-consistency-maintenance"
 ---
+MOC:: [[Arachne]]
+FROM:: [[empty]]
+
 # [refactor] Arachne 자기일관성·유지보수성 개선
 
 - **작성일**: 2026-06-05
 - **유형**: refactor (동작 변화 없는 구조·일관성 개선)
 - **근거**: 전체 프로젝트 객관 진단(실측 기반)
+- **상태**: done — 후속 task와 감사 패치로 처리 완료, 남은 장기 항목은 별도 task에서 추적
 
 > 핵심 문제: 하네스가 **스스로 강제하는 규칙을 스스로 지키지 않고**, 인덱스가
 > 4중 수동 동기화 구조라 이미 드리프트가 발생 중. 콘텐츠 품질은 양호하나
@@ -84,3 +98,12 @@ status: "to do"
 ## 정상 확인(개선 불필요)
 - 비밀값 하드코딩 없음, `settings` 권한 최소(`Bash(gask:*)`), `.gitignore` 적정
 - shellcheck 전체 클린, LICENSE 존재, 문서 역할 분리(README/CLAUDE/USAGE) 명확
+
+## 정리 결과
+
+### 2026-07-01
+
+- CI, Bats, ShellCheck, 인덱스 검사, 규약 동기화 검사는 이후 task와 감사 패치에서 구현됐다.
+- 구형 `@rules` import 제거와 다중 CLI SSOT 연결은 [[2026-06-05-multi-cli-ssot]]에서 닫혔다.
+- 프로젝트 CI 스캐폴딩은 [[2026-06-09-project-ci-scaffold]]에서 닫혔다.
+- 장기 구조 단순화와 운영성 후속은 [[2026-06-11-audit-followup]]에서 트리거 기반으로 추적한다.

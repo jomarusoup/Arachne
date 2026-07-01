@@ -1,7 +1,7 @@
 ---
 Title: "[task] 사용 프로젝트에서 Arachne로 피드백 전달 경로 구축"
 creation: 2026-06-07
-modification: 2026-06-07
+modification: 2026-07-01
 status: "to do"
 tags:
  - "arachne"
@@ -17,7 +17,7 @@ FROM:: [[empty]]
 
 # [task] 사용 프로젝트에서 Arachne로 피드백 전달 경로 구축
 
-- **상태**: planned
+- **상태**: to do
 - **우선순위**: medium
 - **담당**: unassigned
 - **관련 문서**: [Task 작성 규약](README.md)
@@ -93,3 +93,7 @@ GitHub API 호출은 mock 또는 격리된 테스트 저장소를 사용하며, 
 - 공식 접수 후 Arachne의 `docs/issue/`에서 조사하고, 구현이 결정된 항목은 관련
   `docs/task/`에서 그룹화하는 흐름으로 정리했다.
 
+### 2026-07-01
+
+- task 인벤토리 정리: 규약상 상태 값은 `planned`가 아니라 `to do`로 표준화했다.
+- 구현은 아직 착수하지 않았고, 모든 체크박스가 열린 상태로 남아 있다.

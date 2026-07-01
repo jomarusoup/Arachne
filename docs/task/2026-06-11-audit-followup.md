@@ -1,7 +1,7 @@
 ---
 Title: "[task] 아키텍처 감사 후속 — 잔존 항목 추적"
 creation: 2026-06-11
-modification: 2026-06-11
+modification: 2026-07-01
 status: "to do"
 tags:
  - "arachne"
@@ -16,7 +16,7 @@ FROM:: [[2026-06-11-architecture-audit]]
 
 # [task] 아키텍처 감사 후속 — 잔존 항목 추적
 
-- **상태**: planned (트리거 대기 항목 포함)
+- **상태**: to do (트리거 대기 항목 포함)
 - **우선순위**: medium
 - **담당**: unassigned
 - **관련 문서**: [[2026-06-11-architecture-audit]], CHANGELOG-AUDIT.md
@@ -97,3 +97,8 @@ bash tests/validate_settings.sh && bash tests/check_index.sh && bash tests/check
 
 - 감사 1차(A-01~A-11)·2차(A-12~A-19) 패치 완료 후 잔존 항목을 이 task로 이관.
 - F-06은 작업이 아니라 설계 결정으로 종결(PROJECT-CI.md 명시).
+
+### 2026-07-01
+
+- task 인벤토리 정리: 규약상 상태 값은 `planned`가 아니라 `to do`로 표준화했다.
+- 잔존 항목은 모두 트리거 대기 또는 별도 승인 대기 상태이며, 이번 정리에서 구현 착수하지 않았다.

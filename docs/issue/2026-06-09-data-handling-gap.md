@@ -1,7 +1,7 @@
 ---
 Title: "[audit] 보강 후보 대비 DB·JSON 데이터 처리 격차"
 creation: 2026-06-09
-modification: 2026-06-09
+modification: 2026-07-01
 status: "in progress"
 tags:
  - "arachne"
@@ -20,7 +20,7 @@ FROM:: [[2026-06-09-python-web-harness-assessment]]
 - **작성일**: 2026-06-09
 - **심각도**: HIGH
 - **영역**: Python/FastAPI, PostgreSQL, migration, Redis, JSON/API 계약, 데이터 보안
-- **상태**: 비교 완료, 구현 필요
+- **상태**: in progress — 연결 task [[2026-06-09-data-handling-hardening]]의 열린 체크박스가 남아 있음
 - **검토 기준**: Arachne 보강 후보
 
 ## 조사 범위
@@ -223,3 +223,10 @@ flowchart TB
 - Alembic upgrade 및 빈 DB/기존 DB migration
 - PostgreSQL schema/index 검토
 - 민감 필드의 응답·로그·캐시 제외
+
+## 정리 결과
+
+### 2026-07-01
+
+- issue 인벤토리 정리: P0/P1 산출물은 상당 부분 구현됐지만, 연결 task에 SQLAlchemy savepoint/retry,
+  PostgreSQL index·trigger 정리, 적용 근거 기록, 선택 운영 pack 항목이 남아 있어 닫지 않는다.

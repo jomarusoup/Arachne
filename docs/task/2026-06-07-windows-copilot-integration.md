@@ -1,7 +1,7 @@
 ---
 Title: "[task] Windows Copilot 통합 설치와 검증 보완"
 creation: 2026-06-07
-modification: 2026-06-07
+modification: 2026-07-01
 status: "to do"
 tags:
  - "arachne"
@@ -17,7 +17,7 @@ FROM:: [[2026-06-07-postmerge-audit]]
 
 # [task] Windows Copilot 통합 설치와 검증 보완
 
-- **상태**: planned
+- **상태**: to do
 - **우선순위**: high
 - **담당**: unassigned
 - **관련 문서**: [postmerge audit](../issue/2026-06-07-postmerge-audit.md),
@@ -88,3 +88,7 @@ Windows 테스트 홈에 두 Copilot 지침 파일이 생성되고, 사용자 �
 - `docs/USAGE.md`에 Windows PowerShell 설치기 존재와 충돌하는 “Windows 네이티브 미지원”
   설명이 남아 있음을 확인했다.
 
+### 2026-07-01
+
+- task 인벤토리 정리: 규약상 상태 값은 `planned`가 아니라 `to do`로 표준화했다.
+- 구현은 아직 착수하지 않았고, Windows Copilot 통합 설치·검증 항목은 전부 열린 상태다.

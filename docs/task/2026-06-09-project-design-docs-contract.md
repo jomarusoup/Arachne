@@ -1,7 +1,7 @@
 ---
 Title: "[task] 사용 프로젝트 디자인 문서 계약 정식화"
 creation: 2026-06-09
-modification: 2026-06-09
+modification: 2026-07-01
 status: "to do"
 tags:
  - "arachne"
@@ -17,7 +17,7 @@ FROM:: [[2026-06-09-web-design-document-placement]]
 
 # [task] 사용 프로젝트 디자인 문서 계약 정식화
 
-- **상태**: planned
+- **상태**: to do
 - **우선순위**: high
 - **담당**: unassigned
 - **관련 문서**: [[2026-06-09-web-design-document-placement]],
@@ -192,3 +192,8 @@ minimal/python 신규 프로젝트 -> 디자인 문서 미생성
 - 제품 디자인 정본은 `docs/design/DESIGN.md`, 분리 문서 인덱스는 선택적 `README.md`로 구분했다.
 - Web·Python-Web profile에만 최소 구조를 생성하고 기존 파일은 프로젝트 소유로 보존하기로 계획했다.
 - 구현은 수행하지 않고 정식 반영을 위한 범위·안전성·검증 계약만 작성했다.
+
+### 2026-07-01
+
+- task 인벤토리 정리: 규약상 상태 값은 `planned`가 아니라 `to do`로 표준화했다.
+- 구현은 아직 착수하지 않았고, 정본 문서·`/design` command·스캐폴딩·테스트 항목이 전부 열린 상태다.
