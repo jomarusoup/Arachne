@@ -1,0 +1,46 @@
+---
+Title: "Issue 기록 규약"
+creation: 2026-07-01
+modification: 2026-07-01
+status: "done"
+tags:
+ - "arachne"
+ - "workflow"
+ - "issue"
+aliases:
+ - "issue-log"
+---
+MOC:: [[Arachne]]
+FROM:: [[arachne-docs]]
+
+# Issue 기록
+
+`docs/issue/`는 **문제의 증상, 재현 조건, 원인 분석, 영향 범위**를 남기는 곳이다.
+실행하기로 결정한 수정 계획은 `docs/task/`로 옮기고, 아직 실행 여부가 정해지지 않은 개선 후보는
+`docs/idea/`에 둔다.
+
+## 언제 issue에 쓰나
+
+| 상황 | 기록 위치 |
+| --- | --- |
+| 실제 버그, 문서 드리프트, 보안 위험, 플랫폼 불일치를 발견했다 | `issue/` |
+| 해결할 작업 범위와 담당이 정해졌다 | `task/` |
+| 아직 실행 여부를 판단 중인 제안이다 | `idea/` |
+| 장기 설계 결정으로 보존해야 한다 | `decisions/` |
+
+## 작성 기준
+
+- 파일명은 `YYYY-MM-DD-<짧은-kebab-case-문제명>.md`로 쓴다.
+- 증상과 재현 조건을 먼저 적고, 추정과 확인된 사실을 구분한다.
+- 해결 작업이 생기면 관련 task를 링크한다.
+- 닫힌 문제라도 삭제하지 않고 결과와 검증 근거를 남긴다.
+
+## 현재 묶음
+
+| 묶음 | 포함 내용 |
+| --- | --- |
+| `workflow-*` | 위임, 설치, 라우팅, git guardrail 등 워크플로 세부 결함 |
+| `postmerge-*` | 병합 후 발견된 후속 점검 항목 |
+| `*-audit`, `*-evaluation` | 문서, 아키텍처, 역량 평가 결과 |
+| `data-handling-*` | 데이터 취급과 보안 경계 관련 gap |
+| `macos-*`, `windows-*` | 플랫폼별 동작 차이와 검증 이슈 |
