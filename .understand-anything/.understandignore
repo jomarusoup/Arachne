@@ -35,25 +35,27 @@
 # .DS_Store
 
 # --- Detected directories (uncomment to exclude) ---
+# 2026-07-02: docs/·tests/ 포함으로 전환 — "범용 소스/문서/구조 분석" 목적상
+# 문서↔구조·테스트↔대상 관계도 그래프에 담는다 (사용자 결정).
 
-docs/
-tests/
+# docs/
+# tests/
 
 # --- Test file patterns (uncomment to exclude) ---
 
 # JS / TS
-*.test.*
-*.spec.*
-*.snap
+# *.test.*
+# *.spec.*
+# *.snap
 # C# / .NET
-**/*Tests.cs
-**/*Test.cs
-**/*Fixture.cs
-**/*.Tests.csproj
+# **/*Tests.cs
+# **/*Test.cs
+# **/*Fixture.cs
+# **/*.Tests.csproj
 # Java / Kotlin
-**/src/test/**
-**/*Test.java
-**/*IT.java
-**/*Spec.kt
+# **/src/test/**
+# **/*Test.java
+# **/*IT.java
+# **/*Spec.kt
 # Go
-**/*_test.go
+# **/*_test.go
