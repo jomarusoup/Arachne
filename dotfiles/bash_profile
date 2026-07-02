@@ -87,6 +87,9 @@ _sgrep_files()
 # FUNCTION    : _sgrep_run
 # DESCRIPTION : sgrep/lgrep 공통 실행부 — rg 우선, 미설치 시 find+grep 폴백.
 #               SGREP_FORCE_FIND=1 로 폴백 경로 강제 (테스트용)
+#               주의: 패턴은 정규식으로 해석되며 rg(Rust regex)와 grep(BRE)의
+#               방언이 다르다 — \( \{ 등 BRE 전용 문법은 두 경로에서 결과가
+#               달라질 수 있으므로 단순 키워드 검색을 권장한다.
 # PARAMETERS  : string ctx     - 컨텍스트 옵션 ("" 또는 -C2)
 #               string keyword - 검색할 키워드 (정규식 허용)
 # RETURNED    : 파일명:행번호:내용 형식으로 출력

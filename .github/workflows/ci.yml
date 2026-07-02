@@ -19,7 +19,7 @@ jobs:
         uses: actions/checkout@v6
 
       - name: Install Ubuntu verification tools
-        run: sudo apt-get update -qq && sudo apt-get install -y shellcheck bats jq
+        run: sudo apt-get update -qq && sudo apt-get install -y shellcheck bats jq ripgrep
 
       - name: Shellcheck (모든 셸 스크립트 — glob 으로 드리프트 차단)
         run: shellcheck -S warning ./*.sh lib/*.sh hooks/*.sh tests/*.sh

@@ -137,6 +137,18 @@ HOOKS_DIR="${REPO_DIR}/hooks"
     rm -rf "${TMP_DIR}"
 }
 
+@test "git-bus-check.sh: 리모트 불가(오프라인 상당)에서도 종료 0" {
+    # fetch 실패 경로 — 존재하지 않는 origin URL + 스로틀 0으로 fetch 강제
+    TMP_DIR=$(mktemp -d)
+    git -C "${TMP_DIR}" init -q
+    ( cd "${TMP_DIR}" \
+      && git -c user.email=t@t -c user.name=t commit -q --allow-empty -m c1 \
+      && git remote add origin /nonexistent/offline.git )
+    run bash -c "cd '${TMP_DIR}' && GIT_BUS_FETCH_INTERVAL=0 bash '${HOOKS_DIR}/git-bus-check.sh'"
+    [ "$status" -eq 0 ]
+    rm -rf "${TMP_DIR}"
+}
+
 #-------------------------------------------------------------------------------
 # #30: .claude 부재 시에도 기준점(last-seen-commit)을 생성한다 (mkdir 보장)
 #-------------------------------------------------------------------------------
