@@ -32,6 +32,7 @@ Arachne installer 연동을 설명한다.
 ```bash
 arachne --extras                # 단독 실행 (대화형 선택 메뉴)
 arachne -i --with-ua            # 설치(재설치)와 함께 Understand-Anything 만
+arachne -u                      # Arachne / Understand-Anything / codegraph 선택 갱신
 arachne -u --with-ua            # 업데이트와 함께 Understand-Anything 만
 arachne -i --with-extras        # 설치(재설치)와 함께
 arachne -u --with-extras        # 업데이트(git pull→재설치)와 함께 (멱등)
@@ -78,7 +79,9 @@ codegraph 는 npm 전역 설치가 기본이라 클론이 필요 없다.
 
 ### 업데이트 (`--update`)
 
-`arachne -u` 는 확장 도구도 **선택적으로 갱신**한다(대화형 선택 유지, 무인자=안전 원칙).
+`arachne -u` 는 기본 대화형 메뉴에서 **Arachne 본체**, **Understand-Anything**, **codegraph** 중
+선택된 항목만 갱신한다. taste-skill 까지 포함한 전체 확장 도구 동기화는
+`arachne -u --with-extras` 또는 `arachne --extras` 를 사용한다.
 선택된 항목에 대해:
 
 | 계층 | 갱신 동작 |

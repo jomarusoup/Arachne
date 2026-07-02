@@ -115,7 +115,7 @@ usage() {
     echo ""
     echo "Options:"
     echo "  -i, --install          설치/재설치 수행"
-    echo "  -u, --update           git pull 후 최신 상태로 재설치"
+    echo "  -u, --update           대화형: Arachne/Understand/codegraph 중 선택 갱신"
     echo "      --target T          설치 대상 CLI: claude|gemini|codex|copilot|all (기본 all)"
     echo "                          (-i/-u 와 함께 사용. 미감지 CLI는 자동 스킵)"
     echo "      --with-ua           -i/-u 와 함께: Understand-Anything 만 멱등 설정"
@@ -157,10 +157,10 @@ show_version() {
 }
 
 ################################################################################
-# FUNCTION    : update_arachne
-# DESCRIPTION : git pull 후 최신 상태로 재설치 (동기화 허브)
+# FUNCTION    : update_arachne_core
+# DESCRIPTION : git pull 후 최신 상태로 재설치 (Arachne 본체)
 ################################################################################
-update_arachne() {
+update_arachne_core() {
     arachne_section "업데이트 시작 (git pull)"
     cd "$REPO_DIR" || { arachne_log "ERROR" "update: 레포 디렉터리 진입 실패 (repo=$REPO_DIR)"; exit 1; }
 
@@ -187,6 +187,120 @@ update_arachne() {
     git pull
     arachne_section "최신 소스 기반 재설치 진행"
     install
+}
+
+################################################################################
+# FUNCTION    : run_update_understand
+# DESCRIPTION : Understand-Anything 확장 도구만 갱신
+################################################################################
+run_update_understand() {
+    case "${ARACHNE_TARGET:-all}" in
+        all|claude) ;;
+        *)
+            arachne_log "SKIP" "extras: target=${ARACHNE_TARGET:-all} — Claude 플러그인 대상이 아님"
+            return 0
+            ;;
+    esac
+
+    arachne_section "Understand-Anything 확장 도구 갱신 시작"
+    run_extras --ua --update
+    arachne_section "Understand-Anything 확장 도구 갱신 완료"
+}
+
+################################################################################
+# FUNCTION    : run_update_codegraph
+# DESCRIPTION : codegraph CLI 만 갱신
+################################################################################
+run_update_codegraph() {
+    arachne_section "codegraph 확장 도구 갱신 시작"
+    run_extras --codegraph --update
+    arachne_section "codegraph 확장 도구 갱신 완료"
+}
+
+################################################################################
+# FUNCTION    : update_mark
+# DESCRIPTION : 업데이트 선택 메뉴의 체크박스 상태 문자열 반환
+# PARAMETERS  : integer enabled - 1이면 선택됨, 0이면 선택 안 됨
+################################################################################
+update_mark() {
+    if [ "$1" -eq 1 ]; then
+        printf 'x'
+    else
+        printf ' '
+    fi
+}
+
+################################################################################
+# FUNCTION    : update_interactive_menu
+# DESCRIPTION : -u 기본 대화형 체크박스 메뉴
+################################################################################
+update_interactive_menu() {
+    local want_core=1
+    local want_ua=0
+    local want_cg=0
+    local reply
+    local item
+
+    while true; do
+        arachne_section "업데이트 항목 선택"
+        printf '  [%s] 1) Arachne 최신 소스 업데이트 + 재설치\n' "$(update_mark "$want_core")"
+        printf '  [%s] 2) Understand-Anything 플러그인 갱신\n' "$(update_mark "$want_ua")"
+        printf '  [%s] 3) codegraph CLI 갱신\n' "$(update_mark "$want_cg")"
+        printf '\n'
+        read -r -p "[Arachne] 번호로 토글, Enter=선택 실행, a=전체 선택, n=전체 해제, q=취소: " reply || true
+
+        case "$reply" in
+            "")
+                break
+                ;;
+            a|A)
+                want_core=1
+                want_ua=1
+                want_cg=1
+                ;;
+            n|N)
+                want_core=0
+                want_ua=0
+                want_cg=0
+                ;;
+            q|Q)
+                arachne_log "SKIP" "update: 사용자가 취소함"
+                return 0
+                ;;
+            *)
+                for item in $reply; do
+                    case "$item" in
+                        1) [ "$want_core" -eq 1 ] && want_core=0 || want_core=1 ;;
+                        2) [ "$want_ua" -eq 1 ] && want_ua=0 || want_ua=1 ;;
+                        3) [ "$want_cg" -eq 1 ] && want_cg=0 || want_cg=1 ;;
+                        *) arachne_log "WARN" "update: 알 수 없는 선택 '$item' 무시" ;;
+                    esac
+                done
+                ;;
+        esac
+    done
+
+    if [ "$want_core" -eq 0 ] && [ "$want_ua" -eq 0 ] && [ "$want_cg" -eq 0 ]; then
+        arachne_log "SKIP" "update: 선택된 항목 없음"
+        return 0
+    fi
+
+    [ "$want_core" -eq 1 ] && update_arachne_core
+    [ "$want_ua" -eq 1 ] && run_update_understand
+    [ "$want_cg" -eq 1 ] && run_update_codegraph
+}
+
+################################################################################
+# FUNCTION    : update_arachne
+# DESCRIPTION : -u 진입점. 대화형이면 체크박스 선택, 비대화형·플래그 지정은 기존 흐름 유지
+################################################################################
+update_arachne() {
+    if [ -t 0 ] && [ "${ARACHNE_WITH_UA:-0}" -eq 0 ] && [ "${ARACHNE_WITH_EXTRAS:-0}" -eq 0 ]; then
+        update_interactive_menu
+        return 0
+    fi
+
+    update_arachne_core
     # -u 도 -i 와 동일하게 확장 도구 분기. --with-extras 면 멱등 동기화,
     # 미지정 대화형이면 질의(자동 강제 X — noarg-safe 원칙 유지).
     # update 모드 — 선택된 확장 도구의 클론·플러그인·CLI 를 git pull/plugin update 로 갱신.

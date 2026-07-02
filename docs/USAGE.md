@@ -401,7 +401,7 @@ powershell -ExecutionPolicy Bypass -File .\install.ps1 -Install
 | `arachne -i`, `--install` | `~/.claude/` 심볼릭 링크 + `settings.json` 생성 + dotfiles 병합 + bin 등록 (재설치) |
 | `arachne -i --with-ua` | 위 설치 + Understand-Anything 플러그인만 멱등 설정 |
 | `arachne -i --with-extras` | 위 설치 + 확장 도구(UA·taste-skill·codegraph) 멱등 설정 |
-| `arachne -u`, `--update` | `git pull` 후 위 설치를 재실행 (동기화 허브) |
+| `arachne -u`, `--update` | 대화형 선택: Arachne 업데이트/재설치, Understand-Anything 갱신, codegraph 갱신 |
 | `arachne -u --with-ua` | 업데이트 + Understand-Anything 플러그인 갱신 |
 | `arachne -u --with-extras` | 업데이트 + 확장 도구 멱등 동기화 |
 | `arachne --extras [--all\|--ua\|--taste\|--codegraph]` | 확장 도구만 단독 설치(무인자=대화형 항목별 선택) |
@@ -450,6 +450,7 @@ arachne --extras                 # 대화형: UA / taste / codegraph 항목별 [
 arachne --extras --all           # 셋 다 (비대화형)
 arachne --extras --codegraph     # 개별 (--taste / --ua 동일)
 arachne -i --with-ua             # 설치와 함께 Understand-Anything 만
+arachne -u                       # 대화형: Arachne / Understand-Anything / codegraph 선택 갱신
 arachne -u --with-ua             # 업데이트와 함께 Understand-Anything 만
 arachne -i --with-extras         # 설치와 함께
 arachne -u --with-extras         # 업데이트(git pull→재설치)와 함께

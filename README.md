@@ -91,7 +91,7 @@ Bash에서는 `./install.sh -i --target copilot`을 사용합니다. 모든 경�
 | `arachne`, `arachne -h` | 도움말 출력 |
 | `arachne -i` (`--install`) | 재설치 및 설정 동기화 |
 | `arachne -i --with-ua` | 설치와 함께 Understand-Anything 플러그인 세팅 |
-| `arachne -u` (`--update`) | 최신 상태로 업데이트 (git pull + 재설치) |
+| `arachne -u` (`--update`) | 대화형 선택: Arachne 업데이트/재설치, Understand-Anything 갱신, codegraph 갱신 |
 | `arachne -u --with-ua` | 업데이트와 함께 Understand-Anything 갱신 |
 | `arachne -c` (`--check`) | Claude·Gemini·Codex·Copilot 연결 상태 점검 |
 | `arachne -n <P> [DIR] --profile <P>` | 신규 프로젝트 스캐폴딩. profile 기본값은 `minimal` |
