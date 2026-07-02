@@ -51,7 +51,8 @@ pwsh -File tests/install_windows.ps1
 | `smoke.bats` | 훅·`atask` 런타임 스모크 | bats |
 | `wrapper_security.bats` | `gtask`/`ctask` wrapper 프리앰블·raw·쓰기 경고 | bats |
 | `data_contract.bats` | `fixtures/python-db` — 데이터 계약 정적 검사 + alembic·pytest 실행 게이트 (uv 필요) | bats |
-| `check_index.sh` | 인덱스 ↔ 실제 파일 일치 (skills·commands·agents·rules) | bash |
+| `sgrep.bats` | `dotfiles/bash_profile` — sgrep/lgrep 확장자 커버리지·제외 디렉터리·rg/find 폴백 | bats |
+| `check_index.sh` | 인덱스 ↔ 실제 파일 일치 + 문서 "(N개)" 개수 표기 검증 (skills·commands·agents·rules) | bash |
 | `check_convention_sync.sh` | `AGENTS.md` ↔ `rules/common/*` 핵심 토큰 동기화 | bash |
 | `validate_settings.sh` | `settings.template.json` — JSON 유효성·필수 키 | bash + jq |
 | `smoke_hooks.sh` | Windows Git Bash와 Ubuntu smoke job 공용 런타임 스모크 | bash |

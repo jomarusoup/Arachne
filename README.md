@@ -151,7 +151,7 @@ Arachne/
 │   └── web/                     # 웹 디자인 품질 (design-quality)
 │
 ├── skills/                      # 워크플로·도메인 스킬 (51개)
-├── commands/                    # 슬래시 커맨드 (17개)
+├── commands/                    # 슬래시 커맨드 (19개)
 ├── agents/                      # 서브에이전트 8개 (planner · code-reviewer · tdd · debugger
 │                                #   · python-reviewer · fastapi-reviewer · react-reviewer
 │                                #   · database-reviewer)
@@ -190,6 +190,7 @@ Arachne/
 | `/python-review` | Python 코드 리뷰 — PEP 8·타입 힌트·보안·이디엄 (python-reviewer 에이전트) |
 | `/fastapi-review` | FastAPI 리뷰 — async 정확성·DI(Dependency Injection, 의존성 주입)·스키마·OpenAPI |
 | `/react-review` | React/Next 리뷰 — 렌더·Hooks·a11y(accessibility, 접근성)·XSS·성능 |
+| `/database-review` | DB schema·쿼리·migration·ORM 리뷰 (database-reviewer 에이전트) |
 | `/issue` | GitHub 오픈 이슈 확인 후 순차 처리 |
 | `/git` | 커밋·푸시 |
 | `/worktree` | 병렬 세션용 worktree 생성·상태확인·정리 |
@@ -197,6 +198,7 @@ Arachne/
 | `/handoff` | AI 전환 전 작업 상태 저장 |
 | `/save-session` | 세션 요약 저장 (컨텍스트 70% 시 실행) |
 | `/learn` | 세션 발견 패턴을 rules에 저장 |
+| `/codegraph` | 코드 그래프·심볼·영향 범위 분석 (확장 도구 codegraph) |
 
 ---
 

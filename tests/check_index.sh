@@ -90,6 +90,53 @@ for stale_dir in tests mcp-configs; do
     fi
 done
 
+#===============================================================================
+# FUNCTION    : CheckCount
+# DESCRIPTION : 문서 속 "라벨 (N개)" 개수 표기가 실제 파일 개수와 일치하는지 검사.
+#               표기가 없는 문서는 통과 (숫자를 쓰면 반드시 실제와 일치해야 함).
+# PARAMETERS  : string label  - 표기 라벨 (스킬·커맨드·서브에이전트)
+#               int    actual - 실제 파일 개수
+#               string doc    - 검사할 문서 (REPO_DIR 상대 경로)
+#               string regex  - 개수 표기를 찾는 grep -oE 패턴
+# RETURNED    : 0(일치 또는 표기 없음) / 1(불일치 있음)
+#===============================================================================
+CheckCount() {
+    local label="$1"
+    local actual="$2"
+    local doc="$3"
+    local regex="$4"
+    local bad=0
+
+    [ -f "$REPO_DIR/$doc" ] || return 0
+
+    local num
+    while read -r num; do
+        [ -z "$num" ] && continue
+        if [ "$num" -ne "$actual" ]; then
+            echo "  [DRIFT] $doc 의 ${label} 개수 표기 ${num} ≠ 실제 ${actual} — 문서 숫자를 ${actual}(으)로 갱신하세요"
+            bad=1
+        fi
+    done < <(grep -oE "$regex" "$REPO_DIR/$doc" | grep -oE '[0-9]+')
+    return "$bad"
+}
+
+#-------------------------------------------------------------------------------
+# 검사 6: 문서 개수 표기 ↔ 실제 파일 개수 (skills·commands·agents)
+#         파일을 추가/삭제하고 문서의 "(N개)" 표기 갱신을 누락하는 드리프트 차단.
+#         개수 기준: 각 디렉터리 최상위 *.md (README.md 제외)
+#-------------------------------------------------------------------------------
+echo "[index] 문서 개수 표기 ↔ 실제 파일 개수"
+SKILL_COUNT=$(find "$REPO_DIR/skills"   -maxdepth 1 -name '*.md' ! -name 'README.md' | wc -l | tr -d ' ')
+CMD_COUNT=$(find "$REPO_DIR/commands"   -maxdepth 1 -name '*.md' ! -name 'README.md' | wc -l | tr -d ' ')
+AGENT_COUNT=$(find "$REPO_DIR/agents"   -maxdepth 1 -name '*.md' ! -name 'README.md' | wc -l | tr -d ' ')
+
+# 라벨 뒤 12바이트 이내의 "(숫자" 표기만 개수 선언으로 간주 — "다음 3요소" 류 오탐 방지
+for doc in README.md CLAUDE.md AGENTS.md docs/ARCHITECTURE.md docs/USAGE.md docs/README.md skills/README.md; do
+    CheckCount "스킬"         "$SKILL_COUNT" "$doc" '스킬[^()]{0,12}\([0-9]+개?'          || FAIL=1
+    CheckCount "커맨드"       "$CMD_COUNT"   "$doc" '커맨드[^()]{0,12}\([0-9]+개?'        || FAIL=1
+    CheckCount "서브에이전트" "$AGENT_COUNT" "$doc" '서브에이전트[^0-9()]{0,6}\(?[0-9]+개' || FAIL=1
+done
+
 #-------------------------------------------------------------------------------
 # 결과
 #-------------------------------------------------------------------------------

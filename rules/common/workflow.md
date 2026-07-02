@@ -133,7 +133,9 @@ codex-task -r "이 함수 리뷰만 해줘"                                     
 ## 전역 행동 규칙
 
 - **파일 전체 읽기 금지** — `sgrep <키워드>`로 위치 먼저, 해당 범위만 Read
-  - `sgrep`은 `~/.bash_profile`의 전용 검색 함수로 전 확장자를 커버
+  - `sgrep`은 `~/.bash_profile`의 전용 검색 함수 — rules/ 언어 프로필의 주요 소스·설정·문서
+    확장자(C/C++·Go·Rust·Python·Java/Kotlin·JS/TS/Vue·Shell·SQL·YAML/JSON/TOML·Markdown 등)를
+    검색하고 `.git`·`node_modules`·빌드 산출물 디렉터리는 제외 (rg 우선, 미설치 시 find+grep 폴백)
   - 심볼 정의·호출 관계·변경 영향 범위는 `codegraph`가 설치된 경우(`command -v codegraph`)
     `sgrep` 본문 훑기 전에 먼저 쓴다 — 다중 grep 왕복을 인덱스 한 번으로 대체한다(미설치 시
     `sgrep` 폴백). 조사 라우팅 상세는 `rules/common/performance.md`
