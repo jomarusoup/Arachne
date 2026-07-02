@@ -22,7 +22,7 @@ jobs:
         run: sudo apt-get update -qq && sudo apt-get install -y shellcheck bats jq
 
       - name: Shellcheck (모든 셸 스크립트 — glob 으로 드리프트 차단)
-        run: shellcheck -S warning ./*.sh hooks/*.sh tests/*.sh
+        run: shellcheck -S warning ./*.sh lib/*.sh hooks/*.sh tests/*.sh
 
       - name: Bats (전체 *.bats — 새 테스트 자동 포함)
         run: bats tests/*.bats
@@ -72,7 +72,7 @@ jobs:
           dnf install -y ShellCheck bats diffutils git jq
 
       - name: Shellcheck (RHEL/Rocky 패키지 기준)
-        run: shellcheck -S warning ./*.sh hooks/*.sh tests/*.sh
+        run: shellcheck -S warning ./*.sh lib/*.sh hooks/*.sh tests/*.sh
 
       - name: Bats (RHEL/Rocky 런타임)
         run: bats tests/*.bats
@@ -116,7 +116,7 @@ jobs:
           echo "$(brew --prefix bash)/bin" >> "$GITHUB_PATH"
 
       - name: Shellcheck (macOS)
-        run: shellcheck -S warning ./*.sh hooks/*.sh tests/*.sh
+        run: shellcheck -S warning ./*.sh lib/*.sh hooks/*.sh tests/*.sh
 
       - name: Bats (macOS)
         run: bats tests/*.bats

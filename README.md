@@ -137,6 +137,7 @@ Arachne/
 ├── .github/copilot-instructions.md # Copilot 저장소 어댑터
 ├── settings.template.json       # ~/.claude/settings.json 템플릿
 ├── install.sh / install.ps1     # Unix / Windows 통합 관리 도구 (CLI: arachne)
+├── lib/                         # install.sh 도메인 라이브러리 (project-ci · feedback)
 ├── install-copilot.ps1          # Windows PowerShell용 Copilot 설치기
 ├── tmux.sh                      # tmux 워크스페이스 매니저 (CLI: tws)
 ├── gemini-task.sh               # Gemini 위임 래퍼 — reader/advisor (CLI: gemini-task, gtask)

@@ -217,6 +217,7 @@ Arachne/
 ├── README.md
 ├── settings.template.json       # ~/.claude/settings.json 템플릿
 ├── install.sh                   # 통합 관리 도구 (CLI: arachne)
+├── lib/                         # install.sh 도메인 라이브러리 (project-ci · feedback)
 ├── tmux.sh                      # 워크스페이스 매니저 (CLI: tws)
 ├── gemini-task.sh               # Gemini 위임 래퍼 — reader/advisor (CLI: gemini-task, gtask)
 ├── codex-task.sh                # Codex 위임 래퍼 — tester/fixer (CLI: codex-task, ctask)
