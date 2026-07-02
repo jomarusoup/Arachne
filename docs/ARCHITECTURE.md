@@ -235,7 +235,7 @@ Arachne/
 │                                #   ·python-reviewer·fastapi-reviewer·react-reviewer
 │                                #   ·database-reviewer)
 ├── hooks/                       # 이벤트 훅 (session-start/end · pre-compact · git-bus-check
-│                                #   · atask-quota-warn · doc-drift-check)
+│                                #   · atask-quota-warn · doc-drift-check · ua-stale-check)
 ├── mcp-configs/                 # MCP 서버 설정 템플릿
 ├── dotfiles/                    # bash_profile · vimrc (병합 원본)
 ├── tests/                       # 검증 (bats + shell)
@@ -259,6 +259,8 @@ sequenceDiagram
     Note over CC: SessionStart
     CC->>H: session-start.sh
     H->>FS: 최근 세션 파일 안내
+    CC->>H: ua-stale-check.sh
+    H-->>CC: UA 지식그래프 stale 경고 (meta.json 기준 커밋 vs HEAD)
 
     U->>CC: 프롬프트 입력
     Note over CC: UserPromptSubmit
@@ -289,6 +291,10 @@ sequenceDiagram
 
 - **`session-start.sh` (SessionStart)** — 세션이 열릴 때 1회. `.claude/sessions/`에서 가장 최근 스냅샷
   파일을 찾아 "이어받기" 안내(경로)를 출력한다. 직전 세션 맥락을 빠르게 복구하기 위함.
+- **`ua-stale-check.sh` (SessionStart)** — 세션이 열릴 때 1회. `.understand-anything/meta.json`의
+  분석 기준 커밋(`gitCommitHash`)과 HEAD를 비교해 N커밋 이상 뒤처지면 `/understand` 재실행을
+  안내한다(임계값 `UA_STALE_THRESHOLD`, 기본 1). UA 산출물이 없는 프로젝트에서는 침묵하며,
+  분석을 자동 재실행하지는 않는다 — 재분석 비용은 사람이 판단한다.
 - **`git-bus-check.sh` (UserPromptSubmit)** — 프롬프트를 넣을 때마다. **git-bus의 핵심**:
   1. `git fetch -q origin` 으로 리모트 최신을 받는다(로컬 `pull` 없이 감지만).
      매 프롬프트 네트워크 왕복을 막기 위해 기본 300초 간격으로 스로틀된다

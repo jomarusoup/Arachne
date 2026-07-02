@@ -150,6 +150,7 @@ model: opus               # opus / sonnet / haiku
 | `atask-quota-warn.sh` | `UserPromptSubmit` | `atask` 상태 파일을 읽어 쿼터 소진 CLI·impl 첫 가용 후보 경고 |
 | `doc-drift-check.sh` | `PostToolUse` (`Edit\|Write`) | 기능 파일(스크립트·rules·agents 등) 변경 시 README/docs 갱신 알림 (세션당 1회) |
 | `session-start.sh` | `SessionStart` | 최근 세션 파일 경로 안내 |
+| `ua-stale-check.sh` | `SessionStart` | Understand-Anything 지식그래프(`.understand-anything/meta.json`)가 HEAD보다 N커밋 뒤처지면 `/understand` 재실행 안내 — 임계값 `UA_STALE_THRESHOLD`(기본 1) |
 | `pre-compact.sh` | `PreCompact` | 컨텍스트 압축 전 상태 스냅샷 저장 |
 | `session-end.sh` | `Stop` | 종료 시 스냅샷 + `last-seen-commit` 갱신 |
 

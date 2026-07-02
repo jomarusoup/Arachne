@@ -49,6 +49,10 @@
           {
             "type": "command",
             "command": "bash \"__HOME__/.claude/hooks/session-start.sh\""
+          },
+          {
+            "type": "command",
+            "command": "bash \"__HOME__/.claude/hooks/ua-stale-check.sh\""
           }
         ]
       }

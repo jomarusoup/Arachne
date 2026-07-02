@@ -54,7 +54,8 @@ Claude Code가 이를 네이티브로 자동 로드한다:
 │   ├── pre-compact.sh               # PreCompact    — 압축 전 상태 저장
 │   ├── git-bus-check.sh             # UserPromptSubmit — 외부 새 커밋 감지 (git-bus, 작성 CLI 판별 없음)
 │   ├── atask-quota-warn.sh          # UserPromptSubmit — atask 쿼터 소진·impl 첫 가용 후보 경고
-│   └── doc-drift-check.sh           # PostToolUse — 기능 파일 변경 시 문서 갱신 알림
+│   ├── doc-drift-check.sh           # PostToolUse — 기능 파일 변경 시 문서 갱신 알림
+│   └── ua-stale-check.sh            # SessionStart — UA 지식그래프 stale(HEAD 대비 뒤처짐) 경고
 │
 ├── rules/                           # 항상 적용되는 전역 규칙
 │   ├── common/                      # 언어 무관 공통 규칙 (12개)

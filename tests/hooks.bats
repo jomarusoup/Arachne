@@ -53,6 +53,11 @@ HOOKS_DIR="${REPO_DIR}/hooks"
     [ -x "${HOOKS_DIR}/doc-drift-check.sh" ]
 }
 
+@test "hooks: ua-stale-check.sh 존재·실행권한" {
+    [ -f "${HOOKS_DIR}/ua-stale-check.sh" ]
+    [ -x "${HOOKS_DIR}/ua-stale-check.sh" ]
+}
+
 #-------------------------------------------------------------------------------
 # 문법 검사
 #-------------------------------------------------------------------------------
@@ -83,6 +88,11 @@ HOOKS_DIR="${REPO_DIR}/hooks"
 
 @test "hooks: doc-drift-check.sh 문법 오류 없음" {
     run bash -n "${HOOKS_DIR}/doc-drift-check.sh"
+    [ "$status" -eq 0 ]
+}
+
+@test "hooks: ua-stale-check.sh 문법 오류 없음" {
+    run bash -n "${HOOKS_DIR}/ua-stale-check.sh"
     [ "$status" -eq 0 ]
 }
 
