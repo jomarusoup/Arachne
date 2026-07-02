@@ -1,6 +1,9 @@
 ---
 name: jpa-patterns
 description: JPA/Hibernate entity, relationship, transaction, query optimization, N+1 방지, projection, pagination, auditing 패턴.
+triggers:
+  paths: ["**/*.java"]
+  keywords: ["JPA", "Hibernate", "entity", "N+1", "transaction", "projection"]
 ---
 
 # JPA/Hibernate 패턴

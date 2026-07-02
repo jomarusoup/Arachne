@@ -1,6 +1,9 @@
 ---
 name: springboot-tdd
 description: Spring Boot TDD 워크플로. JUnit 5, AssertJ, Mockito, MockMvc, DataJpaTest, Testcontainers를 사용한다.
+triggers:
+  paths: ["**/src/test/**"]
+  keywords: ["JUnit", "MockMvc", "Testcontainers", "DataJpaTest"]
 ---
 
 # Spring Boot TDD

@@ -1,6 +1,9 @@
 ---
 name: golang-patterns
 description: 강력하고 효율적이며 유지 보수하기 쉬운 Go 애플리케이션을 구축하기 위한 이디엄틱 Go 패턴·모범 사례·컨벤션.
+triggers:
+  paths: ["**/*.go"]
+  keywords: ["Go", "이디엄", "goroutine", "채널", "인터페이스"]
 ---
 
 # Go 개발 패턴

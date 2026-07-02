@@ -1,6 +1,9 @@
 ---
 name: springboot-security
 description: Spring Boot 보안 기준. Spring Security, 인증·인가, CSRF/CORS, validation, actuator, secret, 에러 응답을 다룬다.
+triggers:
+  paths: ["**/*.java"]
+  keywords: ["Spring Security", "CORS", "CSRF", "actuator", "secret"]
 ---
 
 # Spring Boot 보안

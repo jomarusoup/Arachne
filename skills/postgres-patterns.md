@@ -1,6 +1,9 @@
 ---
 name: postgres-patterns
 description: PostgreSQL 설계·운영 기준 — 타입·제약·ON DELETE, composite/partial/covering/GIN/BRIN 인덱스 선택, JSONB vs 정규화, EXPLAIN(ANALYZE, BUFFERS) 증거 기록, pool·timeout 산정, RLS·least privilege.
+triggers:
+  paths: ["**/*.sql"]
+  keywords: ["PostgreSQL", "인덱스 선택", "EXPLAIN", "RLS", "제약"]
 ---
 
 # PostgreSQL Patterns — 증거 기반 설계 기준

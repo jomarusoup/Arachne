@@ -1,6 +1,9 @@
 ---
 name: deployment-patterns
 description: 배포 설계와 운영 검증 패턴. 환경 분리, release slice, rollback, healthcheck, migration, observability를 다룬다.
+triggers:
+  paths: [".github/workflows/**", "**/Dockerfile"]
+  keywords: ["배포", "rollback", "healthcheck", "observability", "릴리스"]
 ---
 
 # Deployment Patterns

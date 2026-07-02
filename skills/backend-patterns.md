@@ -1,6 +1,9 @@
 ---
 name: backend-patterns
 description: 확장 가능한 서버 아키텍처 패턴 — API 설계, 레이어 분리(레포지토리·서비스), DB 최적화(N+1·인덱싱·풀링), 캐싱, 백그라운드 작업, 구조적 로깅. Python/FastAPI 기준이며 각 패턴의 시스템(C/Rust) 전환 이식 맵을 함께 제공.
+triggers:
+  paths: []
+  keywords: ["백엔드", "서비스 레이어", "레포지토리 패턴", "캐싱", "큐", "N+1"]
 ---
 
 # 백엔드 개발 패턴

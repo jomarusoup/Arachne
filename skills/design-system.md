@@ -1,6 +1,9 @@
 ---
 name: design-system
 description: 디자인 토큰, 컴포넌트 상태, spacing, radius, typography, color, accessibility 기준을 일관되게 관리하는 스킬.
+triggers:
+  paths: ["**/*.css", "**/*.scss"]
+  keywords: ["디자인 토큰", "spacing", "radius", "typography", "컴포넌트 상태"]
 ---
 
 # Design System

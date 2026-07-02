@@ -1,6 +1,9 @@
 ---
 name: security-scan
 description: AgentShield를 사용해 Claude Code 설정(.claude/ 디렉토리)의 보안 취약점·잘못된 설정·인젝션 위험 검사. CLAUDE.md, settings.json, MCP 서버, 훅, 에이전트 정의 확인.
+triggers:
+  paths: [".claude/**", "**/settings.json"]
+  keywords: ["설정 보안", "AgentShield", "MCP 보안", "훅 감사"]
 ---
 
 # 보안 스캔 스킬

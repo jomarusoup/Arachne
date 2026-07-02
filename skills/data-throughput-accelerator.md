@@ -1,6 +1,9 @@
 ---
 name: data-throughput-accelerator
 description: 대량 데이터 처리, queue, batch, streaming, DB write, network I/O 경로의 처리량 병목을 측정하고 개선하는 스킬.
+triggers:
+  paths: []
+  keywords: ["처리량", "배치 처리", "DB write 병목", "queue 병목", "throughput"]
 ---
 
 # Data Throughput Accelerator

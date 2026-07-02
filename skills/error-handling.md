@@ -1,6 +1,9 @@
 ---
 name: error-handling
 description: C/C++·TypeScript·Python·Go 전반의 견고한 에러 처리 패턴. 타입화된 에러, 반환 코드, 재시도, 서킷 브레이커, 사용자 대면 에러 메시지 다룸.
+triggers:
+  paths: []
+  keywords: ["에러 처리", "예외", "error handling", "실패 전파", "재시도"]
 ---
 
 # 에러 처리 패턴

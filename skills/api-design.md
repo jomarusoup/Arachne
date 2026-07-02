@@ -1,6 +1,9 @@
 ---
 name: api-design
 description: REST API 설계 패턴 — 리소스 네이밍, HTTP 상태 코드 의미, 응답 봉투(envelope), 오프셋/커서 페이지네이션, 필터·정렬·검색, 에러 응답, 버전 전략, 레이트 리밋. 프로덕션 API 설계·리뷰 시 참조.
+triggers:
+  paths: []
+  keywords: ["REST", "API 설계", "페이지네이션", "상태 코드", "rate limit", "versioning"]
 ---
 
 # REST API 설계 패턴

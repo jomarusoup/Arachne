@@ -1,6 +1,9 @@
 ---
 name: agentic-engineering
 description: eval-우선 실행·작업 분해·비용 인식 모델 라우팅으로 동작하는 에이전트 엔지니어링 방법론. AI가 구현 대부분을 수행하고 사람이 품질·리스크를 통제하는 워크플로에 활용. 하네스를 직접 설계·운영하며 배우는 메타 스킬.
+triggers:
+  paths: []
+  keywords: ["에이전트 설계", "eval", "모델 라우팅", "작업 분해", "harness"]
 ---
 
 # 에이전트 엔지니어링

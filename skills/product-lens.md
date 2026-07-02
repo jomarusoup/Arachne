@@ -1,6 +1,9 @@
 ---
 name: product-lens
 description: 구현 전 "왜 만드는가"를 검증하고 사용자 문제, MVP, anti-goal, 성공 지표, 우선순위를 정리하는 제품 진단 스킬.
+triggers:
+  paths: []
+  keywords: ["MVP", "사용자 고통", "anti-goal", "성공 지표", "제품 검증"]
 ---
 
 # Product Lens

@@ -1,6 +1,9 @@
 ---
 name: go-http-patterns
 description: Go HTTP 서버 특화 패턴. net/http 미들웨어 체인, context 전파, gRPC 서비스 간 통신, graceful shutdown, 저지연 응답 최적화.
+triggers:
+  paths: ["**/*.go"]
+  keywords: ["Go HTTP", "gRPC", "graceful shutdown", "미들웨어"]
 ---
 
 # Go HTTP 서버 패턴

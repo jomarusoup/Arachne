@@ -2,6 +2,9 @@
 name: latency-critical-systems
 description: IPC·epoll 이벤트 루프·데몬·소켓 서버·큐·캐시 등 p95 지연이 중요한 시스템에 적용. 시스템 프로그래밍·HFT·실시간 인프라 전용.
 tools: Read, Write, Edit, Bash, Grep, Glob
+triggers:
+  paths: ["**/*.c", "**/*.cpp", "**/*.rs"]
+  keywords: ["저지연", "IPC", "epoll", "소켓", "latency"]
 ---
 
 # 저지연 시스템

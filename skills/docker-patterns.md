@@ -1,6 +1,9 @@
 ---
 name: docker-patterns
 description: 로컬 개발·컨테이너 보안·네트워킹·볼륨 전략·멀티서비스 오케스트레이션을 위한 Docker 및 Docker Compose 패턴.
+triggers:
+  paths: ["**/Dockerfile", "**/docker-compose*.yml", "**/compose*.yaml"]
+  keywords: ["Docker", "Compose", "컨테이너", "이미지 빌드", "multi-stage"]
 ---
 
 # Docker 패턴

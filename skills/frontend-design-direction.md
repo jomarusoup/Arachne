@@ -1,6 +1,9 @@
 ---
 name: frontend-design-direction
 description: 웹·앱·대시보드 UI를 만들기 전 제품 목적, 사용자, 톤, 밀도, 시각 방향을 정하는 프론트엔드 디자인 방향 스킬.
+triggers:
+  paths: []
+  keywords: ["디자인 방향", "톤", "밀도", "시각 방향", "UI 기획"]
 ---
 
 # Frontend Design Direction

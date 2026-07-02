@@ -1,6 +1,9 @@
 ---
 name: golang-testing
 description: 테이블 드리븐 테스트·서브테스트·벤치마크·퍼징·테스트 커버리지를 포함한 Go 테스팅 패턴. TDD 방법론과 이디엄틱 Go 관행 준수.
+triggers:
+  paths: ["**/*_test.go"]
+  keywords: ["Go 테스트", "테이블 드리븐", "벤치마크", "퍼징", "-race"]
 ---
 
 # Go 테스팅 패턴

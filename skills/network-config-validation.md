@@ -1,6 +1,9 @@
 ---
 name: network-config-validation
 description: 라우터·스위치 설정의 배포 전 검사. 위험한 명령·중복 주소·서브넷 겹침·오래된 참조·관리 평면 위험·IOS 스타일 보안 위생 확인.
+triggers:
+  paths: []
+  keywords: ["라우터 설정", "스위치 설정", "설정 검증", "network config"]
 ---
 
 # 네트워크 설정 검증

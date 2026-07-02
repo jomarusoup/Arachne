@@ -1,6 +1,9 @@
 ---
 name: database-migrations
 description: Alembic migration 안전 운영 — schema/data revision 분리, expand-contract, CONCURRENTLY 인덱스, batch backfill, 배포 revision 불변·forward-fix, lock timeout, 빈 DB·기존 DB 이중 검증.
+triggers:
+  paths: ["**/alembic/**", "**/migrations/**"]
+  keywords: ["migration", "Alembic", "스키마 변경", "backfill", "expand-contract"]
 ---
 
 # Database Migrations — Alembic 안전 운영

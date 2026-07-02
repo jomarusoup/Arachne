@@ -1,6 +1,9 @@
 ---
 name: hexagonal-architecture
 description: 도메인 중심 설계, port/adapter, inbound/outbound boundary, 테스트 가능한 백엔드 구조를 설계하는 스킬.
+triggers:
+  paths: []
+  keywords: ["헥사고날", "port adapter", "도메인 경계", "클린 아키텍처"]
 ---
 
 # Hexagonal Architecture

@@ -1,6 +1,9 @@
 ---
 name: trading-systems
 description: 실시간 트레이딩 시스템 도메인 패턴. FIX 프로토콜, 오더북, 마켓 데이터 피드, rdtsc 레이턴시 측정, CPU 어피니티. C/C++·Rust·Go 공통 적용.
+triggers:
+  paths: []
+  keywords: ["FIX 프로토콜", "오더북", "마켓 데이터", "rdtsc", "트레이딩"]
 ---
 
 # 실시간 트레이딩 시스템 패턴

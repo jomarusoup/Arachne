@@ -126,8 +126,10 @@ description: /명령어 설명  # /help 에서 표시되는 설명
 ---
 ```
 
-**skills/** — 워크플로 스킬 (`name`·`description` YAML frontmatter + 마크다운 본문)
+**skills/** — 워크플로 스킬 (`name`·`description`·`triggers` YAML frontmatter + 마크다운 본문)
 - 구성: 언제 사용하는지 / 어떻게 동작하는지 / 예시
+- `triggers.paths`(파일 패턴)·`triggers.keywords`(활성화 키워드)가 스킬 선택의 결정론 힌트 —
+  편집 경로·작업 설명이 매칭되는 스킬을 우선 참조 (형식 강제: `tests/skill_meta.bats`)
 
 **rules/** — 지시서. `@import` 하지 않는다 — `~/.claude/rules/` 심볼릭으로 네이티브 자동 로드
 (공통=매 세션, 언어=`paths` frontmatter 매칭 시). 상단 주석 참고.

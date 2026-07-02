@@ -1,6 +1,9 @@
 ---
 name: product-capability
 description: 제품 목표를 구현 가능한 capability map, 사용자 여정, acceptance criteria, release slice로 변환한다.
+triggers:
+  paths: []
+  keywords: ["capability map", "acceptance criteria", "release slice", "제품 목표"]
 ---
 
 # Product Capability

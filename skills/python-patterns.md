@@ -1,6 +1,9 @@
 ---
 name: python-patterns
 description: 강력하고 효율적이며 유지 보수하기 쉬운 Python 애플리케이션을 위한 이디엄틱 패턴·PEP 8·타입 힌트·모범 사례. 서버를 시스템 프로그래밍으로 전환하기 전 메모리·자원 관리 사고를 Python에서 미리 익히는 데 활용.
+triggers:
+  paths: ["**/*.py"]
+  keywords: ["Python", "이디엄", "타입 힌트", "컨텍스트 매니저", "EAFP"]
 ---
 
 # Python 개발 패턴

@@ -1,6 +1,9 @@
 ---
 name: redis-patterns
 description: Redis 운영 패턴 — key namespace/version, TTL jitter, stampede·negative cache, Lua/MULTI 원자성, distributed lock token, Streams delivery, eviction·persistence·fallback, 큰 JSON blob 제한.
+triggers:
+  paths: []
+  keywords: ["Redis", "TTL", "stampede", "negative cache", "Streams", "분산 lock"]
 ---
 
 # Redis Patterns — 캐시·락·스트림 운영 기준

@@ -1,6 +1,9 @@
 ---
 name: architecture-decision-records
 description: 중요한 설계 결정을 ADR로 기록한다. 선택 배경, 대안, 결정, 결과, 리스크를 docs/decisions에 남기는 기준.
+triggers:
+  paths: ["docs/decisions/**"]
+  keywords: ["ADR", "설계 결정", "decision record", "supersede"]
 ---
 
 # Architecture Decision Records

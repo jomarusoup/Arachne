@@ -1,6 +1,9 @@
 ---
 name: frontend-a11y
 description: 웹 UI 접근성 점검 스킬. 키보드 조작, focus, semantic HTML, label, contrast, motion preference, screen reader 흐름을 다룬다.
+triggers:
+  paths: ["**/*.tsx", "**/*.jsx", "**/*.html"]
+  keywords: ["접근성", "a11y", "키보드 내비게이션", "focus", "contrast"]
 ---
 
 # Frontend Accessibility

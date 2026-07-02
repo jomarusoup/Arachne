@@ -1,6 +1,9 @@
 ---
 name: springboot-verification
 description: Spring Boot 변경 후 빌드, 테스트, 정적 분석, 보안, 컨테이너 검증을 묶어 실행하는 체크리스트.
+triggers:
+  paths: ["**/build.gradle*", "**/pom.xml"]
+  keywords: ["Spring 빌드", "정적 분석", "컨테이너 검증"]
 ---
 
 # Spring Boot 검증 루프

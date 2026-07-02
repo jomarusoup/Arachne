@@ -46,6 +46,7 @@ pwsh -File tests/install_windows.ps1
 | `drift.bats` | 인덱스·규약 드리프트 검사 fixture | bats |
 | `git_command.bats` | `/git` 커맨드 문서 계약 | bats |
 | `verify_command.bats` | `/verify` 리포트 영속화 문서 계약 (`.arachne/reports/` 형식·정책) | bats |
+| `skill_meta.bats` | `skills/*.md` frontmatter 계약 — name 일치·description·triggers(paths·keywords) | bats |
 | `new_project.bats` | `arachne new` — 문서 구조·템플릿·git init·입력 안전성 | bats |
 | `project_ci.bats` | 사용 프로젝트 profile·`init-ci`·`project-check`·실패 상태 전파 | bats |
 | `docs_cli_contract.bats` | 핵심 CLI 도움말과 README·USAGE 발견성 계약 | bats |

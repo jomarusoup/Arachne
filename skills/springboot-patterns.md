@@ -1,6 +1,9 @@
 ---
 name: springboot-patterns
 description: Spring Boot REST API, layered service, validation, exception handler, profile, caching, async, event-driven backend 패턴.
+triggers:
+  paths: ["**/*.java"]
+  keywords: ["Spring Boot", "REST", "validation", "exception handler", "profile"]
 ---
 
 # Spring Boot 패턴

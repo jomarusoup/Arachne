@@ -1,6 +1,9 @@
 ---
 name: network-bgp-diagnostics
 description: BGP 세션, route advertisement, prefix filter, next-hop, AS path, flap, convergence 문제를 진단하는 네트워크 스킬.
+triggers:
+  paths: []
+  keywords: ["BGP", "neighbor", "prefix 누락", "route-map", "flap"]
 ---
 
 # Network BGP Diagnostics

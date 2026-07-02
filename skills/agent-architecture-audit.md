@@ -1,6 +1,9 @@
 ---
 name: agent-architecture-audit
 description: 에이전트·하네스·자동화 구조를 감사해 역할 경계, 상태 저장, 위임, 검증, 실패 복구 위험을 점검한다.
+triggers:
+  paths: []
+  keywords: ["하네스 감사", "에이전트 구조", "역할 경계", "위임 검증", "harness audit"]
 ---
 
 # Agent Architecture Audit

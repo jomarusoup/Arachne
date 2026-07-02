@@ -1,6 +1,9 @@
 ---
 name: frontend-patterns
 description: React·Next.js 프론트엔드 패턴 — 컴포넌트 합성, 상태 관리, 데이터 페칭, 성능 최적화(메모이제이션·가상화·코드 분할), 폼, 에러 바운더리, 접근성. 컴포넌트·상태·성능 원칙은 독립 데스크톱 UI로도 이식된다.
+triggers:
+  paths: ["**/*.tsx", "**/*.jsx"]
+  keywords: ["React", "Next", "상태 관리", "서버 컴포넌트", "가상화"]
 ---
 
 # 프론트엔드 개발 패턴

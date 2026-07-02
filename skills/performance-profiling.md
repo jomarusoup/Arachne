@@ -1,6 +1,9 @@
 ---
 name: performance-profiling
 description: 저지연 시스템 성능 프로파일링 워크플로. Go pprof, C/C++ perf/VTune, Rust flamegraph. 병목 식별 → 최적화 → 벤치 검증 사이클.
+triggers:
+  paths: []
+  keywords: ["프로파일링", "perf", "pprof", "flamegraph", "병목"]
 ---
 
 # 성능 프로파일링 워크플로

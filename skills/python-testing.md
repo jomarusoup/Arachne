@@ -1,6 +1,9 @@
 ---
 name: python-testing
 description: pytest 기반 Python 테스트 전략 — TDD, 픽스처, 모킹, 파라미터화, async 테스트, 커버리지 80%+ 기준. 신규 코드·버그 수정·리팩터링 시 활용.
+triggers:
+  paths: ["**/test_*.py", "**/tests/**/*.py"]
+  keywords: ["pytest", "fixture", "autospec 모킹", "async 테스트"]
 ---
 
 # Python 테스트 패턴

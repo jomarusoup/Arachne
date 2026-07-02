@@ -1,6 +1,9 @@
 ---
 name: json-contracts
 description: Python(Pydantic v2)·TypeScript 간 JSON wire contract — datetime RFC 3339, Decimal 문자열, UUID·enum·bytes·big int 매핑, missing vs null·PATCH 의미, unknown field·payload 한계, schema versioning과 OpenAPI breaking-change 검출.
+triggers:
+  paths: []
+  keywords: ["JSON 계약", "wire contract", "직렬화", "datetime", "schema versioning"]
 ---
 
 # JSON Wire Contract — Python ↔ TypeScript

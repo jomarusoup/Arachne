@@ -1,6 +1,9 @@
 ---
 name: rust-patterns
 description: 저지연 시스템용 이디엄틱 Rust 패턴. tokio 비동기, lock-free 자료구조, zero-copy, 트레이딩·실시간 데이터 컨텍스트에 최적화.
+triggers:
+  paths: ["**/*.rs"]
+  keywords: ["Rust", "tokio", "lock-free", "zero-copy", "소유권"]
 ---
 
 # Rust 개발 패턴

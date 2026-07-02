@@ -1,6 +1,9 @@
 ---
 name: plan-orchestrate
 description: 큰 작업을 조사, 설계, 구현, 검증, 문서화 단계로 나누고 역할별 위임과 완료 조건을 정하는 오케스트레이션 스킬.
+triggers:
+  paths: []
+  keywords: ["작업 분해", "단계 계획", "오케스트레이션", "대규모 작업"]
 ---
 
 # Plan Orchestrate

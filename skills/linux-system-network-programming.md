@@ -1,6 +1,9 @@
 ---
 name: linux-system-network-programming
 description: Linux 시스템/네트워크 프로그래밍 학습·리뷰 스킬. POSIX, socket, nonblocking I/O, epoll, signal, thread, memory, syscall 경계를 다룬다.
+triggers:
+  paths: ["**/*.c", "**/*.h"]
+  keywords: ["POSIX", "socket", "signal", "fd 수명", "시스템 프로그래밍"]
 ---
 
 # Linux System / Network Programming

@@ -1,6 +1,9 @@
 ---
 name: fastapi-patterns
 description: FastAPI 프로덕션 패턴 — 앱 팩토리(create_app·lifespan), 라우터/스키마/의존성/DB 레이어 분리, 요청 단위 DB 세션(Depends(get_db)), Pydantic 입력/출력 스키마 분리, async 엔드포인트, 중앙 에러 핸들러, dependency_overrides 테스트, 보안·성능 체크리스트.
+triggers:
+  paths: ["**/*.py"]
+  keywords: ["FastAPI", "DI", "Pydantic", "엔드포인트", "async API"]
 ---
 
 # FastAPI 프로덕션 패턴

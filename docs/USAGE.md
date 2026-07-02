@@ -121,6 +121,17 @@ model: opus               # opus / sonnet / haiku
 2. **어떻게 동작하는지** — 핵심 절차·도구
 3. **예시** — 구체 코드/명령
 
+frontmatter는 `name`(파일명과 일치)·`description`에 더해 **`triggers`** 를 계약 필드로 가진다:
+
+```yaml
+triggers:
+  paths: ["**/*.py"]                  # 관련 파일 패턴 (경로 무관 스킬은 빈 배열)
+  keywords: ["Python", "타입 힌트"]   # 작업 설명에 등장하는 활성화 키워드 (필수, 1개 이상)
+```
+
+`triggers`는 스킬 선택의 결정론 힌트다 — 편집 대상 경로가 `paths`와 매칭되거나 작업 설명에
+`keywords`가 등장하면 해당 스킬을 우선 참조한다. 형식은 `tests/skill_meta.bats`가 CI에서 강제한다.
+
 ### 분류
 | 카테고리 | 스킬 |
 |---|---|

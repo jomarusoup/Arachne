@@ -1,6 +1,9 @@
 ---
 name: java-coding-standards
 description: Java 코드 작성·리뷰 기준. record, sealed type, Optional, 예외, 컬렉션 불변성, 패키지 구조, Maven/Gradle 검증을 다룬다.
+triggers:
+  paths: ["**/*.java"]
+  keywords: ["Java", "record", "Optional", "불변 컬렉션", "예외 설계"]
 ---
 
 # Java 코딩 표준

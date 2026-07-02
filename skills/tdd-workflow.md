@@ -1,6 +1,9 @@
 ---
 name: tdd-workflow
 description: 신규 기능 작성·버그 수정·리팩터링 시 사용. 단위·통합·E2E 테스트 포함 80%+ 커버리지로 테스트 주도 개발 강제.
+triggers:
+  paths: []
+  keywords: ["TDD", "RED GREEN REFACTOR", "테스트 먼저", "실패 테스트"]
 ---
 
 # 테스트 주도 개발 워크플로
