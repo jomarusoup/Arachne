@@ -22,7 +22,8 @@ Arachne 저장소 CI와 Arachne 사용 프로젝트 CI는 별개다. 각 프로�
 .arachne/
 ├── profile          # Arachne 관리: minimal|python|web|python-web
 ├── verify.sh        # Arachne 관리: 로컬·CI 공통 runner
-└── commands         # 프로젝트 소유: 실제 검증 명령
+├── commands         # 프로젝트 소유: 실제 검증 명령
+└── reports/         # 프로젝트 소유: /verify 리포트 (첫 /verify 시 생성, 커밋 대상)
 .github/workflows/
 └── arachne.yml      # Arachne 관리: main push/PR workflow
 ```
@@ -66,7 +67,22 @@ arachne project-check
 | `.arachne/profile` | Arachne | 요청 profile로 갱신 |
 | `.arachne/verify.sh` | Arachne | 최신 템플릿으로 교체 |
 | `.arachne/commands` | 프로젝트 | 기존 파일 보존 |
+| `.arachne/reports/` | 프로젝트 | 기존 파일 보존 (`init-ci`는 건드리지 않음) |
 | `.github/workflows/arachne.yml` | Arachne | 최신 템플릿으로 교체 |
+
+## 검증 리포트 (`.arachne/reports/`)
+
+`/verify`(Claude Code 커맨드)가 검증 결과를 `.arachne/reports/<YYYY-MM-DD-HHMM>-verify.md`로
+영속화한다. 형식 정본은 `commands/verify.md` STEP 3.
+
+- **작성 주체**: Claude 세션의 `/verify`만. CI(`verify.sh`)는 리포트를 생성하지 않는다 —
+  CI 실행 기록은 GitHub Actions 로그가 이미 보존하므로 중복 기록하지 않는다.
+- **커밋 정책**: 리포트는 커밋 대상이다. `/git`이 코드 변경과 같은 커밋에 포함시켜
+  검증 증거가 커밋 히스토리에 남고, 멀티 머신에서 `git pull`로 공유된다.
+- **통과·실패 무관 기록**: 실패 리포트가 회귀 비교에 가장 가치 있다. 실패 후 수정하면
+  새 리포트를 추가한다(기존 리포트 수정 금지 — 불변).
+- **정리 정책**: 리포트가 과도하게 쌓이면(예: 100개 초과 또는 90일 경과) 오래된 것부터
+  사람이 별도 커밋으로 정리한다. 자동 삭제는 하지 않는다.
 
 ## GitHub Actions 동작
 

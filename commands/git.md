@@ -44,6 +44,8 @@ git rev-parse --show-toplevel
 - 변경에 `*.sh` 포함 시: `shellcheck -S warning <파일>` 와 `bash -n <파일>`.
 - 테스트·스크립트 영향 시: `bats tests/*.bats`(또는 관련 파일만).
 - 공통: `git diff --check`(공백 오류·충돌 마커). **검증 실패면 커밋하지 말고 보고**한다.
+- `.arachne/reports/`에 이번 작업의 새 `/verify` 리포트가 있으면 **같은 커밋에 포함**한다
+  (검증 증거를 코드 변경과 함께 히스토리에 남김 — `docs/PROJECT-CI.md` 참고).
 
 ### 4. 커밋 메시지 결정
 인수가 있으면 그것을 사용.

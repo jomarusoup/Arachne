@@ -50,7 +50,7 @@ description: /명령어 설명
 | 커맨드 | 용도 |
 |---|---|
 | `/add` `/fix` `/refactor` | 기능 추가 · 버그 수정 · 리팩터링 |
-| `/tdd` `/verify` `/e2e` | TDD 사이클 · 2단계 검증 · E2E 테스트 |
+| `/tdd` `/verify` `/e2e` | TDD 사이클 · 2단계 검증(+`.arachne/reports/` 리포트 기록) · E2E 테스트 |
 | `/design` `/python-review` | 설계 문서 · Python 코드 리뷰 |
 | `/fastapi-review` `/react-review` | FastAPI API 리뷰 · React/Next 웹 리뷰 |
 | `/database-review` | DB schema·쿼리·migration·데이터 보안 리뷰 |
