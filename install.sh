@@ -3,7 +3,7 @@
 # FILE NAME   : install.sh
 # DESCRIPTION : Arachne 멀티 CLI 설정 설치 스크립트
 # DATA        : 2026-05-05
-# Modification: 2026-06-12
+# Modification: 2026-07-01
 ################################################################################
 
 set -euo pipefail
@@ -41,6 +41,7 @@ DOTFILES_DIR="$REPO_DIR/dotfiles"
 LOCAL_BIN="$HOME/.local/bin"
 ARACHNE_TAG="ARACHNE"
 PROG="arachne"
+ARACHNE_SEPARATOR="==============================================================================="
 # 버전 정본은 레포 루트 VERSION 파일 (F-07: 설치기별 하드코딩 드리프트 방지)
 ARACHNE_VERSION="$(cat "$REPO_DIR/VERSION" 2>/dev/null | tr -d '[:space:]')"
 ARACHNE_VERSION="${ARACHNE_VERSION:-unknown}"
@@ -60,6 +61,19 @@ arachne_log() {
         WARN|ERROR) printf '[Arachne][%s] %s\n' "$level" "$message" >&2 ;;
         *)          printf '[Arachne][%s] %s\n' "$level" "$message" ;;
     esac
+}
+
+################################################################################
+# FUNCTION    : arachne_section
+# DESCRIPTION : 긴 설치·업데이트 로그의 주요 단계 경계를 배너로 표시
+# PARAMETERS  : string message - 섹션 제목
+################################################################################
+arachne_section() {
+    local message="$1"
+
+    printf '%s\n' "$ARACHNE_SEPARATOR"
+    printf '[Arachne] %s\n' "$message"
+    printf '%s\n' "$ARACHNE_SEPARATOR"
 }
 
 # "스크립트명:커맨드명" 형식 — git pull 시 심볼릭 링크라 자동 업데이트됨
@@ -116,6 +130,8 @@ usage() {
     echo "                         --profile minimal|python|web|python-web (기본 minimal)"
     echo "      --project-check [DIR]"
     echo "                         프로젝트의 .arachne/verify.sh 실행 (기본 현재 디렉터리)"
+    echo "      feedback new|list|submit"
+    echo "                         Arachne 개선 피드백 초안 작성·목록·GitHub Issue 제출"
     echo "  -s, --session          tmux 워크스페이스 매니저(tws) 실행"
     echo "  -e, --export-settings  ~/.claude/settings.json -> settings.template.json 내보내기"
     echo "  -d, --export-dotfiles  ~/.bash_profile, ~/.vimrc, ~/.zshrc -> dotfiles/ 내보내기"
@@ -145,7 +161,7 @@ show_version() {
 # DESCRIPTION : git pull 후 최신 상태로 재설치 (동기화 허브)
 ################################################################################
 update_arachne() {
-    arachne_log "STEP" "update: git pull 후 재설치 시작 (repo=$REPO_DIR)"
+    arachne_section "업데이트 시작 (git pull)"
     cd "$REPO_DIR" || { arachne_log "ERROR" "update: 레포 디렉터리 진입 실패 (repo=$REPO_DIR)"; exit 1; }
 
     #---------------------------------------------------------------------------
@@ -169,7 +185,7 @@ update_arachne() {
 
     arachne_log "RUN" "git pull"
     git pull
-    arachne_log "STEP" "install: 최신 소스 기반 재설치 진행"
+    arachne_section "최신 소스 기반 재설치 진행"
     install
     # -u 도 -i 와 동일하게 확장 도구 분기. --with-extras 면 멱등 동기화,
     # 미지정 대화형이면 질의(자동 강제 X — noarg-safe 원칙 유지).
@@ -183,10 +199,12 @@ update_arachne() {
 ################################################################################
 run_session() {
     local tmux_script="$REPO_DIR/tmux.sh"
+    arachne_section "tmux 워크스페이스 실행"
+
     if [ -f "$tmux_script" ]; then
         exec "$tmux_script"
     else
-        echo "[ERROR] tmux.sh 파일을 찾을 수 없습니다: $tmux_script"
+        arachne_log "ERROR" "tmux.sh 파일을 찾을 수 없습니다: $tmux_script"
         exit 1
     fi
 }
@@ -219,7 +237,7 @@ backup_and_link() {
 #               새 스크립트 추가 시에만 재실행 필요
 ################################################################################
 register_bin() {
-    echo "[Arachne] bin 등록 시작: $LOCAL_BIN"
+    arachne_section "bin 등록 시작: $LOCAL_BIN"
     mkdir -p "$LOCAL_BIN"
 
     for entry in "${BIN_TARGETS[@]}"; do
@@ -246,7 +264,7 @@ register_bin() {
         echo "  등록: $cmd -> $src"
     done
 
-    echo "[Arachne] bin 등록 완료"
+    arachne_section "bin 등록 완료"
 
     # F-10: 부분 문자열 grep 은 유사 경로(~/.local/binx 등)에 오탐 — 정확한 항목 매칭
     case ":$PATH:" in
@@ -264,7 +282,7 @@ register_bin() {
 #               (rules/ 가 ~/.claude/rules/ 로 링크돼 네이티브 자동 로드됨)
 ################################################################################
 install_claude() {
-    echo "[Arachne] Claude 설치 시작: $REPO_DIR -> $CLAUDE_DIR"
+    arachne_section "Claude 설치 시작: $REPO_DIR -> $CLAUDE_DIR"
     mkdir -p "$CLAUDE_DIR"
 
     # local 선언 — 동적 스코프에서 호출자(install)의 변수를 덮어쓰지 않도록 한다
@@ -290,7 +308,7 @@ install_claude() {
     printf '%s\n' "$new_settings" > "$settings_dst"
     echo "  생성: $settings_dst (from settings.template.json)"
 
-    echo "[Arachne] Claude 설치 완료"
+    arachne_section "Claude 설치 완료"
 }
 
 ################################################################################
@@ -300,10 +318,10 @@ install_claude() {
 ################################################################################
 install_gemini() {
     local gemini_dir="$HOME/.gemini"
-    echo "[Arachne] Gemini 설치 시작: AGENTS.md -> $gemini_dir/GEMINI.md"
+    arachne_section "Gemini 설치 시작: AGENTS.md -> $gemini_dir/GEMINI.md"
     mkdir -p "$gemini_dir"
     backup_and_link "$REPO_DIR/AGENTS.md" "$gemini_dir/GEMINI.md"
-    echo "[Arachne] Gemini 설치 완료"
+    arachne_section "Gemini 설치 완료"
 }
 
 ################################################################################
@@ -316,10 +334,10 @@ install_gemini() {
 ################################################################################
 install_codex() {
     local codex_dir="$HOME/.codex"
-    echo "[Arachne] Codex 설치 시작: AGENTS.md -> $codex_dir/AGENTS.md"
+    arachne_section "Codex 설치 시작: AGENTS.md -> $codex_dir/AGENTS.md"
     mkdir -p "$codex_dir"
     merge_dotfile "$REPO_DIR/AGENTS.md" "$codex_dir/AGENTS.md" "<!--" " -->"
-    echo "[Arachne] Codex 설치 완료"
+    arachne_section "Codex 설치 완료"
 }
 
 ################################################################################
@@ -335,7 +353,7 @@ install_copilot() {
     local vscode_file="$instructions_dir/arachne.instructions.md"
     local tmp
 
-    echo "[Arachne] GitHub Copilot 설치 시작: AGENTS.md -> $copilot_dir"
+    arachne_section "GitHub Copilot 설치 시작: AGENTS.md -> $copilot_dir"
     mkdir -p "$instructions_dir"
 
     merge_dotfile \
@@ -358,7 +376,7 @@ install_copilot() {
     mv "$tmp" "$vscode_file"
 
     echo "  생성: $vscode_file"
-    echo "[Arachne] GitHub Copilot 설치 완료"
+    arachne_section "GitHub Copilot 설치 완료"
 }
 
 ################################################################################
@@ -403,7 +421,7 @@ install_shared() {
 ################################################################################
 install() {
     local target="${ARACHNE_TARGET:-all}"
-    arachne_log "STEP" "install: target=$target repo=$REPO_DIR"
+    arachne_section "설치/재설치 시작 (target=$target)"
     case "$target" in
         claude) install_claude ;;
         gemini) install_gemini ;;
@@ -467,6 +485,9 @@ run_extras() {
 ################################################################################
 maybe_run_extras() {
     local pass_args=("$@")
+    local action="설정"
+
+    case " ${pass_args[*]-} " in *" --update "*) action="갱신" ;; esac
 
     case "${ARACHNE_TARGET:-all}" in
         all|claude) ;;
@@ -477,26 +498,25 @@ maybe_run_extras() {
     esac
 
     if [ "${ARACHNE_WITH_UA:-0}" -eq 1 ]; then
-        arachne_log "STEP" "extras: Understand-Anything 단독 설정 시작"
+        arachne_section "Understand-Anything 확장 도구 ${action} 시작"
         run_extras --ua ${pass_args[@]+"${pass_args[@]}"}
-        arachne_log "DONE" "extras: Understand-Anything 단독 설정 완료"
+        arachne_section "Understand-Anything 확장 도구 ${action} 완료"
         return 0
     fi
 
     if [ "${ARACHNE_WITH_EXTRAS:-0}" -eq 1 ]; then
-        arachne_log "STEP" "extras: 전체 확장 도구 설정 시작"
+        arachne_section "전체 확장 도구 ${action} 시작"
         if [ -t 0 ]; then run_extras ${pass_args[@]+"${pass_args[@]}"}; else run_extras --all ${pass_args[@]+"${pass_args[@]}"}; fi
-        arachne_log "DONE" "extras: 전체 확장 도구 설정 완료"
+        arachne_section "전체 확장 도구 ${action} 완료"
         return 0
     fi
 
     if [ -t 0 ]; then
         local reply
-        local action="설정"
-        case " ${pass_args[*]-} " in *" --update "*) action="갱신" ;; esac
+        arachne_section "확장 도구 ${action} 선택"
         read -r -p "[Arachne] 확장 도구(Understand-Anything·taste-skill·codegraph)도 ${action}할까요? [y/N] " reply || true
         case "$reply" in
-            [yY]|[yY][eE][sS]) run_extras ${pass_args[@]+"${pass_args[@]}"} ;;
+            [yY]|[yY][eE][sS]) run_extras ${pass_args[@]+"${pass_args[@]}"}; arachne_section "확장 도구 ${action} 완료" ;;
             *) arachne_log "SKIP" "extras: ${action} 건너뜀 (나중에 'arachne --extras' 로 가능)" ;;
         esac
     fi
@@ -628,7 +648,7 @@ merge_dotfile() {
 #               중복 줄 자동 제외, zsh 감지 시 ~/.zshrc 에도 적용
 ################################################################################
 install_dotfiles() {
-    echo "[Arachne] dotfiles 설치 시작"
+    arachne_section "dotfiles 설치 시작"
     merge_dotfile "$DOTFILES_DIR/bash_profile" "$HOME/.bash_profile" "#"
     merge_dotfile "$DOTFILES_DIR/vimrc"        "$HOME/.vimrc"        '"'
     if _detect_zsh_target; then
@@ -636,7 +656,7 @@ install_dotfiles() {
         [ -f "$DOTFILES_DIR/zshrc" ] && zsh_src="$DOTFILES_DIR/zshrc"
         merge_dotfile "${zsh_src}" "$HOME/.zshrc" "#"
     fi
-    echo "[Arachne] dotfiles 설치 완료"
+    arachne_section "dotfiles 설치 완료"
     echo "  적용하려면: source ~/.bash_profile  (zsh: source ~/.zshrc)"
 }
 
@@ -683,13 +703,13 @@ _export_single() {
 # DESCRIPTION : ~/.bash_profile, ~/.vimrc, ~/.zshrc -> dotfiles/ 로 내보내기
 ################################################################################
 export_dotfiles() {
-    echo "[Arachne] dotfiles 내보내기 시작"
+    arachne_section "dotfiles 내보내기 시작"
     _export_single "$HOME/.bash_profile" "$DOTFILES_DIR/bash_profile" ".bash_profile" "#"
     _export_single "$HOME/.vimrc"        "$DOTFILES_DIR/vimrc"        ".vimrc"        '"'
     if [ -f "$HOME/.zshrc" ]; then
         _export_single "$HOME/.zshrc" "$DOTFILES_DIR/zshrc" ".zshrc" "#"
     fi
-    echo "[Arachne] dotfiles 내보내기 완료"
+    arachne_section "dotfiles 내보내기 완료"
     echo "  커밋하려면: cd $REPO_DIR && git add dotfiles/ && git commit -m 'chore: update dotfiles'"
 }
 
@@ -701,13 +721,14 @@ export_settings() {
     local settings_src="$CLAUDE_DIR/settings.json"
     local template_dst="$REPO_DIR/settings.template.json"
 
+    arachne_section "settings.template.json 내보내기 시작"
     if [ ! -f "$settings_src" ]; then
-        echo "[ERROR] $settings_src 파일이 없습니다."
+        arachne_log "ERROR" "$settings_src 파일이 없습니다."
         exit 1
     fi
 
     sed "s|$HOME|__HOME__|g" "$settings_src" > "$template_dst"
-    echo "[Arachne] settings.template.json 갱신 완료"
+    arachne_section "settings.template.json 갱신 완료"
     echo "  커밋하려면: cd $REPO_DIR && git add settings.template.json && git commit -m 'chore: update settings template'"
 }
 
@@ -734,7 +755,7 @@ parse_target() {
     done
     case "$ARACHNE_TARGET" in
         claude|gemini|codex|copilot|all) ;;
-        *) echo "[ERROR] 알 수 없는 타깃: '$ARACHNE_TARGET' (claude|gemini|codex|copilot|all)" >&2; exit 1 ;;
+        *) arachne_log "ERROR" "알 수 없는 타깃: '$ARACHNE_TARGET' (claude|gemini|codex|copilot|all)"; exit 1 ;;
     esac
 }
 
@@ -745,7 +766,7 @@ parse_target() {
 ################################################################################
 check_arachne() {
     local fail=0
-    echo "[Arachne] 연결 상태 점검"
+    arachne_section "연결 상태 점검 시작"
 
     #---------------------------------------------------------------------------
     # Claude — SYMLINK_TARGETS 전체가 레포로 해석되고 settings.json 이 존재하는가
@@ -845,9 +866,10 @@ check_arachne() {
     fi
 
     if [ "$fail" -eq 0 ]; then
-        echo "[Arachne] 모든 연결 정상"
+        arachne_section "연결 상태 점검 완료: 모든 연결 정상"
     else
-        echo "[Arachne] 연결 문제 발견 — 위 안내대로 재설치 필요" >&2
+        arachne_section "연결 상태 점검 완료: 문제 발견"
+        arachne_log "ERROR" "연결 문제 발견 — 위 안내대로 재설치 필요"
     fi
     return "$fail"
 }
@@ -864,7 +886,238 @@ validate_project_profile() {
     case "$profile" in
         minimal|python|web|python-web) return 0 ;;
         *)
-            echo "[ERROR] 알 수 없는 profile: '$profile' (minimal|python|web|python-web)" >&2
+            arachne_log "ERROR" "알 수 없는 profile: '$profile' (minimal|python|web|python-web)"
+            return 1
+            ;;
+    esac
+}
+
+################################################################################
+# FUNCTION    : profile_has_design_docs
+# DESCRIPTION : profile 이 프로젝트 디자인 문서 생성을 요구하는지 판정
+# PARAMETERS  : string profile - minimal|python|web|python-web
+# RETURNED    : web 계열이면 0, 아니면 1
+################################################################################
+profile_has_design_docs() {
+    local profile="$1"
+
+    case "$profile" in
+        web|python-web) return 0 ;;
+        *)              return 1 ;;
+    esac
+}
+
+################################################################################
+# FUNCTION    : install_project_design_docs
+# DESCRIPTION : Web profile 프로젝트에 docs/design/DESIGN.md 최소 템플릿 생성
+# PARAMETERS  : string project_abs - 프로젝트 절대 경로
+#               string profile     - minimal|python|web|python-web
+################################################################################
+install_project_design_docs() {
+    local project_abs="$1"
+    local profile="$2"
+    local project_name
+    local project_safe
+    local today
+    local design_tmpl="$REPO_DIR/templates/project/design/DESIGN.md"
+    local design_dir="$project_abs/docs/design"
+    local decisions_dir="$design_dir/decisions"
+    local design_file="$design_dir/DESIGN.md"
+    local legacy_file="$project_abs/DESIGN.md"
+    local managed_path
+
+    profile_has_design_docs "$profile" || return 0
+    if [ ! -f "$design_tmpl" ]; then
+        arachne_log "ERROR" "디자인 문서 템플릿이 없습니다: $design_tmpl"
+        return 1
+    fi
+    for managed_path in "$design_dir" "$design_file" "$decisions_dir" "$legacy_file"; do
+        if [ -L "$managed_path" ]; then
+            arachne_log "ERROR" "디자인 문서 경로가 심볼릭 링크입니다: $managed_path"
+            return 1
+        fi
+    done
+
+    mkdir -p "$decisions_dir"
+    touch "$decisions_dir/.gitkeep"
+    if [ -f "$design_file" ]; then
+        echo "  보존: docs/design/DESIGN.md"
+        return 0
+    fi
+
+    project_name=$(basename "$project_abs")
+    project_safe=$(printf '%s' "$project_name" | sed 's/[&\\]/\\&/g')
+    today=$(date +%F)
+    sed -e "s/YYYY-MM-DD/${today}/g" \
+        -e "s/Project_name/${project_safe}/g" \
+        -e "s/Title: \"Project design\"/Title: \"${project_safe} design\"/" \
+        "$design_tmpl" > "$design_file"
+    echo "  생성: docs/design/DESIGN.md"
+}
+
+################################################################################
+# FUNCTION    : create_feedback_draft
+# DESCRIPTION : 프로젝트 docs/feedback 에 Arachne 피드백 초안 생성
+# PARAMETERS  : string title - 선택 제목
+################################################################################
+create_feedback_draft() {
+    local title="${1:-Arachne feedback}"
+    local project_abs
+    local project_name
+    local project_safe
+    local title_safe
+    local today
+    local stamp
+    local feedback_dir
+    local feedback_file
+    local feedback_tmpl="$REPO_DIR/docs/template/feedback.md"
+
+    if [ ! -f "$feedback_tmpl" ]; then
+        arachne_log "ERROR" "피드백 템플릿이 없습니다: $feedback_tmpl"
+        return 1
+    fi
+    arachne_section "feedback 초안 생성 시작"
+    project_abs=$(pwd)
+    project_name=$(basename "$project_abs")
+    project_safe=$(printf '%s' "$project_name" | sed 's/[&\\]/\\&/g')
+    title_safe=$(printf '%s' "$title" | sed 's/[&\\]/\\&/g')
+    today=$(date +%F)
+    stamp=$(date +%Y-%m-%d-%H%M%S)
+    feedback_dir="$project_abs/docs/feedback"
+    feedback_file="$feedback_dir/${stamp}-arachne-feedback.md"
+
+    mkdir -p "$feedback_dir"
+    sed -e "s/YYYY-MM-DD/${today}/g" \
+        -e "s/Title: \"Arachne feedback\"/Title: \"${title_safe}\"/" \
+        -e "s/\[\[Project_name\]\]/[[${project_safe}]]/" \
+        "$feedback_tmpl" > "$feedback_file"
+    arachne_section "feedback 초안 생성 완료"
+    echo "$feedback_file"
+}
+
+################################################################################
+# FUNCTION    : list_feedback_drafts
+# DESCRIPTION : 프로젝트 docs/feedback 문서의 제출 상태 목록 출력
+################################################################################
+list_feedback_drafts() {
+    local feedback_dir="$PWD/docs/feedback"
+    local feedback_file
+    local status
+    local title
+
+    arachne_section "feedback 목록 조회"
+    if [ ! -d "$feedback_dir" ]; then
+        arachne_log "SKIP" "feedback 문서 없음: $feedback_dir"
+        return 0
+    fi
+    find "$feedback_dir" -maxdepth 1 -type f -name '*.md' | sort | while read -r feedback_file; do
+        status=$(sed -n 's/^status: "\(.*\)"/\1/p' "$feedback_file" | head -n 1)
+        title=$(sed -n 's/^Title: "\(.*\)"/\1/p' "$feedback_file" | head -n 1)
+        printf '%s\t%s\t%s\n' "${status:-unknown}" "${title:-untitled}" "$feedback_file"
+    done
+}
+
+################################################################################
+# FUNCTION    : assert_feedback_safe
+# DESCRIPTION : 제출 전 명백한 민감정보 후보를 차단
+# PARAMETERS  : string feedback_file - 검사 대상
+################################################################################
+assert_feedback_safe() {
+    local feedback_file="$1"
+    local secret_pattern='(sk-[A-Za-z0-9_-]{12,}|ghp_[A-Za-z0-9_]{20,}|github_pat_[A-Za-z0-9_]{20,}|xox[baprs]-[A-Za-z0-9-]{10,}|AKIA[0-9A-Z]{16})'
+    local path_pattern='(/home/[^[:space:]]+|/Users/[^[:space:]]+|[A-Za-z]:\\Users\\[^[:space:]]+)'
+
+    if grep -Eq "$secret_pattern|$path_pattern" "$feedback_file"; then
+        arachne_log "ERROR" "피드백에 토큰 또는 절대 경로로 보이는 문자열이 있습니다."
+        echo "        마스킹 후 다시 제출하거나 --allow-sensitive 를 명시하세요." >&2
+        return 1
+    fi
+}
+
+################################################################################
+# FUNCTION    : submit_feedback
+# DESCRIPTION : 피드백 문서를 미리보기·확인 후 GitHub Issue 로 제출
+# PARAMETERS  : string feedback_file + 선택 --allow-sensitive
+################################################################################
+submit_feedback() {
+    local allow_sensitive=0
+    local feedback_file=""
+    local title
+    local issue_url
+    local submitted_at
+    local tmp_file
+    local answer
+
+    while [ $# -gt 0 ]; do
+        case "$1" in
+            --allow-sensitive) allow_sensitive=1 ;;
+            -*) arachne_log "ERROR" "알 수 없는 feedback submit 옵션: $1"; return 1 ;;
+            *)  feedback_file="$1" ;;
+        esac
+        shift
+    done
+    arachne_section "feedback 제출 시작"
+    if [ -z "$feedback_file" ] || [ ! -f "$feedback_file" ]; then
+        arachne_log "ERROR" "제출할 feedback 파일이 필요합니다"
+        return 1
+    fi
+    if grep -Eq '^status: "submitted"|^- \*\*상태\*\*: submitted' "$feedback_file"; then
+        arachne_log "ERROR" "이미 제출된 feedback 입니다: $feedback_file"
+        return 1
+    fi
+    [ "$allow_sensitive" -eq 1 ] || assert_feedback_safe "$feedback_file" || return 1
+
+    command -v gh >/dev/null 2>&1 || {
+        arachne_log "ERROR" "gh CLI가 필요합니다"
+        return 1
+    }
+    gh auth status >/dev/null 2>&1 || {
+        arachne_log "ERROR" "gh 인증 상태를 확인할 수 없습니다"
+        return 1
+    }
+    gh repo view >/dev/null 2>&1 || {
+        arachne_log "ERROR" "현재 디렉터리에서 GitHub 저장소를 확인할 수 없습니다"
+        return 1
+    }
+
+    arachne_section "feedback 제출 미리보기: $feedback_file"
+    sed -n '1,220p' "$feedback_file"
+    if [ "${ARACHNE_FEEDBACK_YES:-0}" != "1" ]; then
+        printf 'Submit to GitHub Issue? Type YES: '
+        read -r answer
+        if [ "$answer" != "YES" ]; then
+            arachne_log "SKIP" "feedback 제출 취소"
+            return 1
+        fi
+    fi
+
+    title=$(sed -n 's/^Title: "\(.*\)"/\1/p' "$feedback_file" | head -n 1)
+    issue_url=$(gh issue create --title "${title:-Arachne feedback}" --body-file "$feedback_file")
+    submitted_at=$(date -u +%Y-%m-%dT%H:%M:%SZ)
+    tmp_file="${feedback_file}.tmp"
+    sed -e 's/^status: ".*"/status: "submitted"/' \
+        -e 's/^- \*\*상태\*\*: .*/- **상태**: submitted/' \
+        -e "s|^- \*\*제출 URL\*\*:.*|- **제출 URL**: ${issue_url}|" \
+        -e "s|^- \*\*제출 시각\*\*:.*|- **제출 시각**: ${submitted_at}|" \
+        "$feedback_file" > "$tmp_file"
+    mv "$tmp_file" "$feedback_file"
+    arachne_section "feedback 제출 완료: $issue_url"
+}
+
+################################################################################
+# FUNCTION    : feedback_command
+# DESCRIPTION : Arachne 개선 피드백 초안·목록·제출 서브커맨드 처리
+# PARAMETERS  : new|list|submit ...
+################################################################################
+feedback_command() {
+    local subcommand="${1:-}"
+
+    case "$subcommand" in
+        new)    shift; create_feedback_draft "$*" ;;
+        list)   list_feedback_drafts ;;
+        submit) shift; submit_feedback "$@" ;;
+        *)
+            echo "Usage: arachne feedback new [title] | list | submit <file> [--allow-sensitive]" >&2
             return 1
             ;;
     esac
@@ -884,19 +1137,19 @@ init_project_ci() {
             --profile)
                 shift
                 [ $# -gt 0 ] || {
-                    echo "[ERROR] --profile 값이 필요합니다" >&2
+                    arachne_log "ERROR" "--profile 값이 필요합니다"
                     return 1
                 }
                 profile="$1"
                 ;;
-            -*) echo "[ERROR] 알 수 없는 옵션: $1" >&2; return 1 ;;
+            -*) arachne_log "ERROR" "알 수 없는 옵션: $1"; return 1 ;;
             *) positional+=("$1") ;;
         esac
         shift
     done
 
     if [ "${#positional[@]}" -gt 1 ]; then
-        echo "[ERROR] 프로젝트 디렉터리는 하나만 지정할 수 있습니다" >&2
+        arachne_log "ERROR" "프로젝트 디렉터리는 하나만 지정할 수 있습니다"
         return 1
     fi
     validate_project_profile "$profile" || return 1
@@ -908,13 +1161,14 @@ init_project_ci() {
     local managed_path
     local project_abs
 
+    arachne_section "프로젝트 CI 초기화 시작 (profile=$profile)"
     if [ ! -d "$project_dir" ]; then
-        echo "[ERROR] 프로젝트 디렉터리가 없습니다: $project_dir" >&2
+        arachne_log "ERROR" "프로젝트 디렉터리가 없습니다: $project_dir"
         return 1
     fi
     if [ ! -f "$verify_tmpl" ] || [ ! -f "$commands_tmpl" ] \
         || [ ! -f "$workflow_tmpl" ]; then
-        echo "[ERROR] 프로젝트 CI 템플릿이 없습니다: $REPO_DIR/templates/project" >&2
+        arachne_log "ERROR" "프로젝트 CI 템플릿이 없습니다: $REPO_DIR/templates/project"
         return 1
     fi
 
@@ -927,7 +1181,7 @@ init_project_ci() {
         "$project_abs/.arachne/profile" \
         "$project_abs/.github/workflows/arachne.yml"; do
         if [ -L "$managed_path" ]; then
-            echo "[ERROR] 프로젝트 CI 관리 경로가 심볼릭 링크입니다: $managed_path" >&2
+            arachne_log "ERROR" "프로젝트 CI 관리 경로가 심볼릭 링크입니다: $managed_path"
             return 1
         fi
     done
@@ -937,6 +1191,7 @@ init_project_ci() {
     chmod +x "$project_abs/.arachne/verify.sh"
     cp "$workflow_tmpl" "$project_abs/.github/workflows/arachne.yml"
     printf '%s\n' "$profile" > "$project_abs/.arachne/profile"
+    install_project_design_docs "$project_abs" "$profile" || return 1
 
     if [ ! -f "$project_abs/.arachne/commands" ]; then
         cp "$commands_tmpl" "$project_abs/.arachne/commands"
@@ -945,7 +1200,7 @@ init_project_ci() {
         echo "  보존: .arachne/commands"
     fi
 
-    echo "[Arachne] 프로젝트 CI 초기화 완료: $project_abs"
+    arachne_section "프로젝트 CI 초기화 완료: $project_abs"
     echo "  profile: $profile"
     echo "  관리: .arachne/profile, .arachne/verify.sh, .github/workflows/arachne.yml"
     return 0
@@ -962,19 +1217,26 @@ check_project() {
     local project_abs
     local verify_script
 
+    arachne_section "프로젝트 검증 시작"
     if [ ! -d "$project_dir" ]; then
-        echo "[ERROR] 프로젝트 디렉터리가 없습니다: $project_dir" >&2
+        arachne_log "ERROR" "프로젝트 디렉터리가 없습니다: $project_dir"
         return 1
     fi
 
     project_abs=$(cd "$project_dir" && pwd)
     verify_script="$project_abs/.arachne/verify.sh"
     if [ ! -f "$verify_script" ]; then
-        echo "[ERROR] 프로젝트 CI가 초기화되지 않았습니다: arachne init-ci \"$project_abs\"" >&2
+        arachne_log "ERROR" "프로젝트 CI가 초기화되지 않았습니다: arachne init-ci \"$project_abs\""
         return 1
     fi
 
-    bash "$verify_script"
+    if bash "$verify_script"; then
+        arachne_section "프로젝트 검증 완료"
+        return 0
+    else
+        arachne_section "프로젝트 검증 실패"
+        return 1
+    fi
 }
 
 ################################################################################
@@ -996,12 +1258,12 @@ new_project() {
             --profile)
                 shift
                 [ $# -gt 0 ] || {
-                    echo "[ERROR] --profile 값이 필요합니다" >&2
+                    arachne_log "ERROR" "--profile 값이 필요합니다"
                     exit 1
                 }
                 profile="$1"
                 ;;
-            -*)       echo "[ERROR] 알 수 없는 옵션: $1" >&2; exit 1 ;;
+            -*)       arachne_log "ERROR" "알 수 없는 옵션: $1"; exit 1 ;;
             *)        positional+=("$1") ;;
         esac
         shift
@@ -1013,12 +1275,13 @@ new_project() {
     #---------------------------------------------------------------------------
     # 입력 검증
     #---------------------------------------------------------------------------
+    arachne_section "신규 프로젝트 생성 시작"
     if [ -z "$proj" ]; then
-        echo "[ERROR] 프로젝트명이 필요합니다: arachne new <project> [parent-dir] [--no-git]" >&2
+        arachne_log "ERROR" "프로젝트명이 필요합니다: arachne new <project> [parent-dir] [--no-git]"
         exit 1
     fi
     case "$proj" in
-        */*|.*) echo "[ERROR] 프로젝트명에 '/'·선행 '.' 사용 불가: $proj" >&2; exit 1 ;;
+        */*|.*) arachne_log "ERROR" "프로젝트명에 '/'·선행 '.' 사용 불가: $proj"; exit 1 ;;
     esac
     validate_project_profile "$profile" || exit 1
 
@@ -1027,32 +1290,34 @@ new_project() {
     local issue_tmpl="$REPO_DIR/docs/template/issue.md"
     local audit_tmpl="$REPO_DIR/docs/template/audit.md"
     local task_tmpl="$REPO_DIR/docs/template/task.md"
+    local feedback_tmpl="$REPO_DIR/docs/template/feedback.md"
     local task_rules="$REPO_DIR/docs/task/README.md"
     local agents_tmpl="$REPO_DIR/templates/project/AGENTS.md"
     local claude_tmpl="$REPO_DIR/templates/project/CLAUDE.md"
     if [ ! -f "$tmpl" ] || [ ! -f "$idea_tmpl" ] || [ ! -f "$issue_tmpl" ] \
-        || [ ! -f "$audit_tmpl" ] || [ ! -f "$task_tmpl" ] || [ ! -f "$task_rules" ] \
+        || [ ! -f "$audit_tmpl" ] || [ ! -f "$task_tmpl" ] || [ ! -f "$feedback_tmpl" ] || [ ! -f "$task_rules" ] \
         || [ ! -f "$agents_tmpl" ] || [ ! -f "$claude_tmpl" ]; then
-        echo "[ERROR] 문서 템플릿 또는 task 규약이 없습니다" >&2
+        arachne_log "ERROR" "문서 템플릿 또는 task 규약이 없습니다"
         exit 1
     fi
 
     local dest="$parent/$proj"
     if [ -e "$dest" ]; then
-        echo "[ERROR] 이미 존재합니다: $dest" >&2
+        arachne_log "ERROR" "이미 존재합니다: $dest"
         exit 1
     fi
 
     #---------------------------------------------------------------------------
     # 기록 구조 생성
     #---------------------------------------------------------------------------
-    mkdir -p "$dest/docs/issue" "$dest/docs/idea" "$dest/docs/task" "$dest/docs/template"
-    touch "$dest/docs/issue/.gitkeep" "$dest/docs/idea/.gitkeep"
+    mkdir -p "$dest/docs/issue" "$dest/docs/idea" "$dest/docs/task" "$dest/docs/feedback" "$dest/docs/template"
+    touch "$dest/docs/issue/.gitkeep" "$dest/docs/idea/.gitkeep" "$dest/docs/feedback/.gitkeep"
     cp "$tmpl" "$dest/docs/template/example.md"
     cp "$idea_tmpl" "$dest/docs/template/idea.md"
     cp "$issue_tmpl" "$dest/docs/template/issue.md"
     cp "$audit_tmpl" "$dest/docs/template/audit.md"
     cp "$task_tmpl" "$dest/docs/template/task.md"
+    cp "$feedback_tmpl" "$dest/docs/template/feedback.md"
     cp "$task_rules" "$dest/docs/task/README.md"
 
     #---------------------------------------------------------------------------
@@ -1089,9 +1354,9 @@ new_project() {
     #---------------------------------------------------------------------------
     init_project_ci "$dest" --profile "$profile"
 
-    echo "[Arachne] 신규 프로젝트 생성: $dest"
+    arachne_section "신규 프로젝트 생성 완료: $dest"
     echo "  profile: $profile"
-    echo "  구조: README.md, AGENTS.md, CLAUDE.md, docs/{issue,idea,task,template}, .arachne, .github/workflows"
+    echo "  구조: README.md, AGENTS.md, CLAUDE.md, docs/{issue,idea,task,feedback,template}, .arachne, .github/workflows"
     [ "$do_git" -eq 1 ] && echo "  git 저장소 초기화됨"
     return 0
 }
@@ -1112,9 +1377,10 @@ case "${1:-}" in
     -n|--new|new)                             shift; new_project "$@" ;;
     --init-ci|init-ci)                        shift; init_project_ci "$@" ;;
     --project-check|project-check)            shift; check_project "${1:-$PWD}" ;;
+    feedback)                                 shift; feedback_command "$@" ;;
     -s|--session|session)                     run_session ;;
     -e|--export-settings|export-settings)     export_settings ;;
     -d|--export-dotfiles|export-dotfiles)     export_dotfiles ;;
     -v|--version)                             show_version ;;
-    *)                                        echo "[ERROR] 알 수 없는 옵션: $1" >&2; usage >&2; exit 1 ;;
+    *)                                        arachne_log "ERROR" "알 수 없는 옵션: $1"; usage >&2; exit 1 ;;
 esac

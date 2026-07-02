@@ -17,8 +17,16 @@ description: UI·컴포넌트 설계 문서 작성 및 디자인 개선 계획 �
 
 ### 1. 디자인 스펙 읽기 (항상 먼저)
 
-프로젝트 루트의 `DESIGN.md` 또는 디자인 규칙 파일 확인.
-없으면 `rules/common/ui-layout.md` 기준 적용.
+다음 순서로 디자인 문서를 읽는다.
+
+1. `docs/design/DESIGN.md` — 프로젝트 제품 디자인 정본
+2. `docs/design/README.md` — 분리 문서 인덱스가 있으면 관련 문서까지 추적
+3. 루트 `DESIGN.md` — legacy fallback. 자동 이동·삭제 금지
+4. 문서가 없으면 `rules/common/ui-layout.md`와 `rules/web/design-quality.md` 기준을 적용하고,
+   새 디자인 문서 생성은 [PLAN]에서 범위와 소유권을 먼저 제안
+
+수정 후 디자인 결정이나 QA 결과가 바뀌면 `docs/design/decisions/` 또는 관련 design 문서를 갱신할지
+확인한다.
 
 ### 2. 현재 상태 파악
 

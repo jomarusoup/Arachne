@@ -313,9 +313,10 @@ EOF
     ARACHNE_EXTRAS_SCRIPT="${fake_extras}" run bash "${REPO_DIR}/install.sh" -i --with-ua
 
     [ "$status" -eq 0 ]
-    [[ "$output" == *"[Arachne][STEP] extras: Understand-Anything 단독 설정 시작"* ]]
+    [[ "$output" == *"==============================================================================="* ]]
+    [[ "$output" == *"[Arachne] Understand-Anything 확장 도구 설정 시작"* ]]
     [[ "$output" == *"[Arachne][RUN] extras: bash ${fake_extras} --ua"* ]]
-    [[ "$output" == *"[Arachne][DONE] extras: Understand-Anything 단독 설정 완료"* ]]
+    [[ "$output" == *"[Arachne] Understand-Anything 확장 도구 설정 완료"* ]]
     [ "$(cat "${TMP_DIR}/extras.args")" = "--ua" ]
 }
 
@@ -333,6 +334,10 @@ EOF
         run bash "${REPO_DIR}/install.sh" -u --with-ua
 
     [ "$status" -eq 0 ]
+    [[ "$output" == *"[Arachne] 업데이트 시작 (git pull)"* ]]
+    [[ "$output" == *"[Arachne] 최신 소스 기반 재설치 진행"* ]]
+    [[ "$output" == *"[Arachne] Understand-Anything 확장 도구 갱신 시작"* ]]
+    [[ "$output" == *"[Arachne] Understand-Anything 확장 도구 갱신 완료"* ]]
     [ "$(cat "${TMP_DIR}/extras.args")" = "--ua --update" ]
 }
 

@@ -1,6 +1,6 @@
-# Windows Setup — Claude Code · Codex CLI · Gemini CLI
+# Windows Setup — Claude Code · Codex CLI · Gemini CLI · GitHub Copilot
 
-Windows에서 세 CLI와 Arachne를 처음 설치하는 절차를 정리한다. 이 문서는 **Windows 11 +
+Windows에서 CLI 도구와 Arachne를 처음 설치하는 절차를 정리한다. 이 문서는 **Windows 11 +
 PowerShell 7 또는 Windows PowerShell 5.1**을 기준으로 하며, Windows 10에서는 지원되는 최신
 빌드가 필요하다.
 
@@ -264,9 +264,9 @@ Remove-Item Env:GEMINI_API_KEY
 npm update -g @google/gemini-cli
 ```
 
-## 6. Arachne 설치 및 세 CLI 연결
+## 6. Arachne 설치 및 CLI 연결
 
-세 CLI 설치와 인증을 마친 뒤 Arachne를 설치한다.
+CLI 설치와 인증을 마친 뒤 Arachne를 설치한다.
 
 ```powershell
 git clone https://github.com/jomarusoup/Arachne.git "$HOME\Arachne"
@@ -281,6 +281,7 @@ powershell -ExecutionPolicy Bypass -File .\install.ps1 -Install
 | Claude Code | `~\.claude\CLAUDE.md`, `rules`, `hooks`, `skills`, `settings.json` |
 | Gemini CLI | `~\.gemini\GEMINI.md` → Arachne `AGENTS.md` |
 | Codex CLI | `~\.codex\AGENTS.md`에 Arachne 마커 구간 병합 |
+| GitHub Copilot | `~\.copilot\copilot-instructions.md`, `~\.copilot\instructions\arachne.instructions.md` |
 
 새 터미널을 열고 전체 상태를 확인한다.
 
@@ -298,6 +299,7 @@ Get-Command arachne, claude, codex, gemini, bash
 arachne -Install -Target claude
 arachne -Install -Target codex
 arachne -Install -Target gemini
+arachne -Install -Target copilot
 ```
 
 위임 래퍼의 등록 여부:

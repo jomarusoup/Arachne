@@ -16,7 +16,7 @@ REPO_DIR="$(cd "$(dirname "$BATS_TEST_FILENAME")/.." && pwd)"
     local token
 
     help_output=$(bash "${REPO_DIR}/install.sh" --help)
-    for token in "init-ci" "project-check" "python-web"; do
+    for token in "init-ci" "project-check" "python-web" "feedback"; do
         [[ "$help_output" == *"$token"* ]]
         grep -qF "$token" "${REPO_DIR}/README.md"
         grep -qF "$token" "${REPO_DIR}/docs/USAGE.md"
@@ -27,4 +27,10 @@ REPO_DIR="$(cd "$(dirname "$BATS_TEST_FILENAME")/.." && pwd)"
     grep -qF "docs/PROJECT-CI.md" "${REPO_DIR}/README.md"
     grep -qF "PROJECT-CI.md" "${REPO_DIR}/docs/USAGE.md"
     grep -qF "PYTHON-WEB-PROFILE.md" "${REPO_DIR}/docs/USAGE.md"
+}
+
+@test "docs cli: 디자인 문서 계약과 /design 탐색 순서가 문서화됨" {
+    grep -qF "DESIGN-DOCS.md" "${REPO_DIR}/README.md"
+    grep -qF "DESIGN-DOCS.md" "${REPO_DIR}/docs/USAGE.md"
+    grep -qF "docs/design/DESIGN.md" "${REPO_DIR}/commands/design.md"
 }

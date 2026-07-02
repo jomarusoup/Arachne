@@ -60,6 +60,7 @@ Claude Code 세션에서 호출 가능한 워크플로·도메인 스킬 모음 
 | `json-contracts` | Python(Pydantic v2)·TypeScript 간 JSON wire contract — datetime·Decimal·missing/null·schema versioning |
 | `database-migrations` | Alembic migration 안전 운영 — expand-contract·CONCURRENTLY·backfill·forward-fix |
 | `postgres-patterns` | PostgreSQL 설계·운영 — 타입·제약·인덱스 선택·EXPLAIN 증거·pool/timeout·RLS |
+| `redis-patterns` | Redis 운영 — namespace·TTL jitter·stampede·negative cache·Lua/MULTI·lock token·Streams·fallback |
 
 ## TDD·검증
 

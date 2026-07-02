@@ -80,8 +80,9 @@ Windows 설치기는 관리자 권한 없이 디렉터리 junction과 파일 har
 7. **선택 확장 도구**: `arachne -i --with-ua`로 Understand-Anything을 설치 흐름에 붙이거나,
    `arachne -i --with-extras`로 UA·taste-skill·codegraph를 함께 설정
 
-Windows 네이티브 PowerShell에서는 `.\install-copilot.ps1`을 실행합니다. macOS/Linux/WSL/Git
-Bash에서는 `./install.sh -i --target copilot`을 사용합니다. 두 방식 모두 심볼릭 링크 권한 없이
+Windows 네이티브 PowerShell에서는 `.\install.ps1 -Install -Target copilot`을 실행합니다.
+독립 설치 경로가 필요하면 `.\install-copilot.ps1`도 사용할 수 있습니다. macOS/Linux/WSL/Git
+Bash에서는 `./install.sh -i --target copilot`을 사용합니다. 모든 경로는 심볼릭 링크 권한 없이
 일반 파일로 `~/.copilot/`에 설치합니다.
 
 ### Core CLI Commands
@@ -96,6 +97,7 @@ Bash에서는 `./install.sh -i --target copilot`을 사용합니다. 두 방식 
 | `arachne -n <P> [DIR] --profile <P>` | 신규 프로젝트 스캐폴딩. profile 기본값은 `minimal` |
 | `arachne init-ci [DIR] --profile <P>` | 기존 프로젝트에 profile 기반 검증과 GitHub Actions 생성/갱신 |
 | `arachne project-check [DIR]` | `.arachne/commands`에 정의한 프로젝트 검증을 로컬에서 실행 |
+| `arachne feedback new/list/submit` | 사용 프로젝트에서 Arachne 개선 의견을 로컬 기록 후 GitHub Issue로 명시 제출 |
 | `arachne -s` (`--session`) | **TWS (Tmux Workspace Manager)**: 대화형 세션 매니저 (`tws`와 동일) |
 | `arachne -e` (`--export-settings`) | settings.json → 템플릿 내보내기 |
 | `arachne -d` (`--export-dotfiles`) | dotfiles → 레포 내보내기 |
@@ -121,7 +123,8 @@ arachne project-check
 생성되는 `.github/workflows/arachne.yml`은 `main` push와 `main` 대상 PR에서
 `bash .arachne/verify.sh`를 실행한다. Claude Code의 `/git`도 같은 runner를 커밋 전에 실행하므로
 로컬과 GitHub의 검증 기준이 일치한다. `minimal`, `python`, `web`, `python-web`의 도구·소유권·
-갱신 정책은 [PROJECT-CI.md](docs/PROJECT-CI.md)가 정본이다.
+갱신 정책은 [PROJECT-CI.md](docs/PROJECT-CI.md)가 정본이다. Web 계열 profile의 제품 디자인 문서
+위치와 `/design` 탐색 계약은 [DESIGN-DOCS.md](docs/DESIGN-DOCS.md)가 정본이다.
 
 ---
 
@@ -157,6 +160,7 @@ Arachne/
 ├── mcp-configs/                 # MCP (Model Context Protocol) 서버 설정 템플릿
 ├── docs/CI.md                   # GitHub Actions CI 운영·로컬 재현 가이드
 ├── docs/PROJECT-CI.md           # Arachne 사용 프로젝트의 CI 계약
+├── docs/DESIGN-DOCS.md          # 사용 프로젝트 디자인 문서 위치와 /design 탐색 계약
 ├── docs/HARNESS-LEARNING-GUIDE.md # 하네스 학습 순서
 ├── docs/CAPABILITY-MAP.md       # 역량 지도
 ├── docs/ui-ux/                  # UI/UX 예시와 기준
@@ -164,7 +168,7 @@ Arachne/
 ├── docs/COMPATIBILITY.md        # 기능별 플랫폼 지원표
 ├── docs/decisions/              # Architecture Decision Record
 ├── docs/task/                   # 승인된 실행 작업과 진행 상태 기록
-├── docs/template/               # idea · issue · task · audit 기록 템플릿
+├── docs/template/               # idea · issue · task · audit · feedback 기록 템플릿
 ├── tests/                       # 검증 스크립트 (bats + shell)
 ├── templates/project/           # profile별 프로젝트 CI 템플릿
 └── dotfiles/                    # bash_profile, vimrc (병합 원본)

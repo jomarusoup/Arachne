@@ -25,12 +25,12 @@ FROM:: [[README]]
 | --- | --- |
 | 처음 설치하고 5분 안에 감을 잡고 싶다 | [루트 README](../README.md), [USAGE](USAGE.md) |
 | Arachne를 매일 어떻게 쓰는지 알고 싶다 | [USAGE](USAGE.md), [GLOSSARY](GLOSSARY.md) |
-| Python·Web 프로젝트에 붙이고 싶다 | [PYTHON-WEB-PROFILE](PYTHON-WEB-PROFILE.md), [PROJECT-CI](PROJECT-CI.md), [DATA-HANDLING](DATA-HANDLING.md) |
+| Python·Web 프로젝트에 붙이고 싶다 | [PYTHON-WEB-PROFILE](PYTHON-WEB-PROFILE.md), [PROJECT-CI](PROJECT-CI.md), [DATA-HANDLING](DATA-HANDLING.md), [DESIGN-DOCS](DESIGN-DOCS.md) |
 | Claude·Codex·Gemini·Copilot 역할을 구분하고 싶다 | [MULTI-CLI](MULTI-CLI.md), [ARCHITECTURE](ARCHITECTURE.md) |
 | 설치 플랫폼과 동기화 범위를 확인하고 싶다 | [COMPATIBILITY](COMPATIBILITY.md), [WINDOWS-SETUP](WINDOWS-SETUP.md), [SYNCTHING-SETUP](SYNCTHING-SETUP.md) |
 | 확장 도구를 설치하거나 비교하고 싶다 | [tools/README](tools/README.md) |
 | UI/UX 기준과 예시가 필요하다 | [ui-ux/README](ui-ux/README.md) |
-| 문제·아이디어·작업 기록을 남기고 싶다 | [issue/README](issue/README.md), [idea/README](idea/README.md), [task/README](task/README.md) |
+| 문제·아이디어·작업·피드백 기록을 남기고 싶다 | [issue/README](issue/README.md), [idea/README](idea/README.md), [task/README](task/README.md), [template/feedback](template/feedback.md) |
 
 ## 문서 유형
 
@@ -91,6 +91,7 @@ Arachne를 특정 프로젝트 유형에 적용할 때의 기준 문서다.
 | --- | --- |
 | [PYTHON-WEB-PROFILE](PYTHON-WEB-PROFILE.md) | Python·Web 기본 도구와 확장 원칙 |
 | [DATA-HANDLING](DATA-HANDLING.md) | PII 분류표, 노출 표면, 암호화 경계, DB quality gate |
+| [DESIGN-DOCS](DESIGN-DOCS.md) | 사용 프로젝트 디자인 문서 위치와 `/design` 탐색 계약 |
 
 ## 4. Design — 구조와 장기 결정
 
@@ -126,5 +127,5 @@ Arachne를 특정 프로젝트 유형에 적용할 때의 기준 문서다.
 | [issue/](issue/) | 문제 재현, 원인 분석, 영향 범위를 기록할 때 | [issue/README](issue/README.md) |
 | [idea/](idea/) | 실행 확정 전인 개선 후보나 감사 결과를 둘 때 | [idea/README](idea/README.md) |
 | [task/](task/) | 실행하기로 결정한 작업과 실제 상태를 추적할 때 | [task/README](task/README.md) |
-| [template/](template/) | issue·idea·task·audit 문서 초안을 만들 때 | [template/](template/) |
+| [template/](template/) | issue·idea·task·audit·feedback 문서 초안을 만들 때 | [template/](template/) |
 | [decisions/](decisions/) | 장기 설계 결정과 트레이드오프를 보존할 때 | [decisions/README](decisions/README.md) |

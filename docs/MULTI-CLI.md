@@ -188,10 +188,11 @@ Windows PowerShell:
 
 ```powershell
 Set-ExecutionPolicy -Scope Process Bypass
-.\install-copilot.ps1
+.\install.ps1 -Install -Target copilot
 ```
 
-둘 다 일반 파일을 생성하므로 Windows Developer Mode나 관리자 심볼릭 링크 권한이 필요 없다.
+독립 설치 경로가 필요하면 `.\install-copilot.ps1`도 사용할 수 있다. 둘 다 일반 파일을 생성하므로
+Windows Developer Mode나 관리자 심볼릭 링크 권한이 필요 없다.
 VS Code Settings Sync에서 `Prompts and Instructions`를 켜면 사용자 지침을 Windows/macOS 간에도
 동기화할 수 있다.
 

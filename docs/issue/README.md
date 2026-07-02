@@ -51,14 +51,14 @@ FROM:: [[arachne-docs]]
 
 | 상태 | 개수 | 의미 |
 | --- | ---: | --- |
-| `done` | 23 | 해결됐거나 감사 스냅샷으로 종료된 기록 |
-| `in progress` | 1 | 연결 task의 열린 체크박스가 남아 있는 기록 |
+| `done` | 24 | 해결됐거나 감사 스냅샷으로 종료된 기록 |
+| `in progress` | 0 | 연결 task의 열린 체크박스가 남아 있는 기록 |
 | `to do` | 0 | 조사 또는 재현을 아직 시작하지 않은 기록 없음 |
 
 ### 열린 issue
 
 | 심각도 | 상태 | 문서 | 연결 task |
 | --- | --- | --- | --- |
-| high | `in progress` | [보강 후보 대비 DB·JSON 데이터 처리 격차](2026-06-09-data-handling-gap.md) | [DB·JSON 데이터 처리 하드닝](../task/2026-06-09-data-handling-hardening.md) |
+| 없음 | - | - | - |
 
 닫힌 issue라도 삭제하지 않는다. 해결 근거, 관련 task, 검증 결과가 이후 회귀 분석의 기준점이다.

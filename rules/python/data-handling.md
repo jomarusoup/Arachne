@@ -22,6 +22,10 @@ paths:
 - 세션 수명은 **요청·작업 단위 하나** — 전역 세션·핸들러 인라인 생성 금지.
 - **commit/rollback 책임은 서비스(use-case) 경계 한 곳** — repository·라우터에서 commit 금지.
 - **트랜잭션 안에서 외부 네트워크 I/O 금지** (HTTP 호출, 메시지 발행) — 락 보유 시간이 외부 지연에 묶인다.
+- 중첩 작업은 임의 commit 대신 **savepoint(`begin_nested`)** 로 격리한다. savepoint는 부분 실패를
+  복구해야 하는 좁은 구간에만 쓰고, 일반 흐름 제어로 남용하지 않는다.
+- serialization failure·deadlock 같은 retry 가능 DB 오류는 **idempotency key 또는 고유 제약**이
+  있는 작업만 재시도한다. 재시도 전 rollback, 지수 backoff, 최대 횟수를 명시한다.
 - 중복 방지는 애플리케이션 검사가 아니라 **unique constraint + idempotency key**로 보장한다.
 - 컬렉션 순회 전 N+1 여부 확인 — 의도적 eager loading(`selectinload`)을 명시한다.
 

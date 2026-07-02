@@ -1,0 +1,59 @@
+# .understandignore — patterns for files/dirs to exclude from analysis
+# Syntax: same as .gitignore (globs, # comments, ! negation, trailing / for dirs)
+# Lines below are suggestions — uncomment to activate.
+# Use ! prefix to force-include something excluded by defaults.
+#
+# Built-in defaults (always excluded unless negated):
+#   node_modules/, .git/, dist/, build/, obj/, *.lock, *.min.js, etc.
+#
+.understand-anything/
+
+# --- From .gitignore (uncomment to exclude) ---
+
+# last-seen-commit
+# last-fetch-epoch
+# *.bak
+# *.jsonl
+# .credentials.json
+# .stfolder/
+# .stignore
+# *.sync-conflict-*
+# usage_*.json
+# mcp-needs-auth-cache.json
+# usage_last.json
+# plugins/
+# projects/
+# cache/
+# sessions/
+# backups/
+# downloads/
+# file-history/
+# shell-snapshots/
+# plans/
+# history.jsonl
+# session-env/
+# .DS_Store
+
+# --- Detected directories (uncomment to exclude) ---
+
+docs/
+tests/
+
+# --- Test file patterns (uncomment to exclude) ---
+
+# JS / TS
+*.test.*
+*.spec.*
+*.snap
+# C# / .NET
+**/*Tests.cs
+**/*Test.cs
+**/*Fixture.cs
+**/*.Tests.csproj
+# Java / Kotlin
+**/src/test/**
+**/*Test.java
+**/*IT.java
+**/*Spec.kt
+# Go
+**/*_test.go

@@ -2,7 +2,7 @@
 Title: "[task] Arachne 기능 문서화 커버리지 보강"
 creation: 2026-06-07
 modification: 2026-07-01
-status: "in progress"
+status: "done"
 tags:
  - "arachne"
  - "task"
@@ -16,7 +16,7 @@ FROM:: [[2026-06-07-documentation-coverage-audit]]
 
 # [task] Arachne 기능 문서화 커버리지 보강
 
-- **상태**: in progress
+- **상태**: done
 - **우선순위**: medium
 - **담당**: Codex
 - **관련 문서**: [기능 문서화 감사](../issue/2026-06-07-documentation-coverage-audit.md)
@@ -52,7 +52,7 @@ FROM:: [[2026-06-07-documentation-coverage-audit]]
 - [x] Windows 지원 표를 “설치 지원”과 “런타임 검증 범위”로 나눠 교정한다.
 - [x] AI 엔지니어링 노트의 고정 테스트 개수를 제거하거나 자동 계산 근거로 교체한다.
 - [x] CI에서 `jq`를 플랫폼별 필수 의존성으로 설치하고 코드·문서를 일치시킨다.
-- [ ] 문서 기능 목록과 실제 CLI 도움말 간 드리프트 검사 방안을 설계한다.
+- [x] 문서 기능 목록과 실제 CLI 도움말 간 드리프트 검사 방안을 설계한다.
 
 ## 검증
 
@@ -90,3 +90,7 @@ shellcheck -S warning ./*.sh hooks/*.sh tests/*.sh
 
 - task 인벤토리 정리: 상태 표기를 규약 값인 `in progress`로 표준화했다.
 - 남은 범위는 "문서 기능 목록과 실제 CLI 도움말 간 드리프트 검사 방안" 1건이다.
+- 완료: `tests/docs_cli_contract.bats`가 `install.sh --help`와 README·USAGE의 핵심 명령 노출을
+  대조한다. 이번 변경에서 `feedback`, `DESIGN-DOCS.md`, `/design` 탐색 순서까지 계약에 포함했다.
+- 검증: `bats ../tests/docs_cli_contract.bats`, `bash ../tests/check_index.sh`, `git diff --check` 통과.
+- 상태 → **done**.

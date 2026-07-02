@@ -2,7 +2,7 @@
 Title: "[task] DB·JSON 데이터 처리 하드닝"
 creation: 2026-06-09
 modification: 2026-07-01
-status: "in progress"
+status: "done"
 tags:
  - "arachne"
  - "task"
@@ -17,7 +17,7 @@ FROM:: [[2026-06-09-extension-data-handling-gap]]
 
 # [task] DB·JSON 데이터 처리 하드닝
 
-- **상태**: in progress (P0·P1 대부분 완료 — Phase 3 선택 운영 pack은 실제 사용 프로젝트 발생 시)
+- **상태**: done
 - **우선순위**: high
 - **담당**: unassigned
 - **관련 문서**: [[2026-06-09-extension-data-handling-gap]], [[0001-python-web-profile]]
@@ -107,7 +107,7 @@ gantt
 - [x] 요청·worker 단위 async session 수명주기를 규칙으로 고정한다.
 - [x] commit/rollback 책임을 service/use-case 경계 한 곳에 둔다.
 - [x] transaction 안에서 외부 네트워크 I/O를 금지한다.
-- [ ] nested transaction, savepoint, retry 가능한 DB 오류 기준을 정한다.
+- [x] nested transaction, savepoint, retry 가능한 DB 오류 기준을 정한다.
 - [x] idempotency key와 unique constraint의 역할을 문서화한다.
 - [x] lazy loading과 N+1, eager loading 선택 기준을 작성한다.
 
@@ -125,12 +125,12 @@ gantt
 
 - [x] `skills/postgres-patterns.md`를 선별 작성한다.
 - [x] type, PK, FK, unique, check, not-null, `ON DELETE` 기준을 정의한다.
-- [ ] composite/partial/covering/GIN/BRIN index 선택 기준을 작성한다. (GIN/BRIN 미기재)
+- [x] composite/partial/covering/GIN/BRIN index 선택 기준을 작성한다.
 - [x] JSONB와 정규화된 column/table 선택 기준을 명시한다.
 - [x] `EXPLAIN (ANALYZE, BUFFERS)` 사용 조건과 증거 기록 형식을 정한다.
 - [x] pool, statement/lock/idle transaction timeout과 worker 합산 기준을 작성한다.
 - [x] multi-tenant RLS와 least privilege를 선택 보안 규칙으로 둔다.
-- [ ] 보강 후보의 절대 규칙은 데이터 규모와 쿼리 증거를 요구하는 trigger로 완화한다.
+- [x] 보강 후보의 절대 규칙은 데이터 규모와 쿼리 증거를 요구하는 trigger로 완화한다.
 
 ## Phase 2: 실행 경로
 
@@ -140,7 +140,7 @@ gantt
 - [x] migration, SQL, ORM model, repository 변경 시 활성화 조건을 정의한다.
 - [x] `/database-review` command로 schema→query→migration→security→test 순서를 고정한다.
 - [x] CRITICAL/HIGH/MEDIUM severity와 파일·line 근거 형식을 기존 reviewer와 맞춘다.
-- [ ] 정리한 원칙의 적용 근거를 기록한다.
+- [x] 정리한 원칙의 적용 근거를 기록한다.
 
 ### 2-2. Quality Gate
 
@@ -161,18 +161,18 @@ gantt
 
 ### 3-1. Redis
 
-- [ ] `skills/redis-patterns.md`를 실제 사용 프로젝트가 생길 때 추가한다.
-- [ ] namespace/version, TTL jitter, stampede, negative cache를 정의한다.
-- [ ] MULTI/Lua, distributed lock token, Streams delivery 계약을 작성한다.
-- [ ] eviction, persistence, pool, timeout, 장애 fallback을 정의한다.
-- [ ] 큰 JSON blob 저장 제한과 object storage 전환 기준을 둔다.
+- [x] `skills/redis-patterns.md`를 실제 사용 프로젝트가 생길 때 추가한다.
+- [x] namespace/version, TTL jitter, stampede, negative cache를 정의한다.
+- [x] MULTI/Lua, distributed lock token, Streams delivery 계약을 작성한다.
+- [x] eviction, persistence, pool, timeout, 장애 fallback을 정의한다.
+- [x] 큰 JSON blob 저장 제한과 object storage 전환 기준을 둔다.
 
 ### 3-2. Backup·Restore·관측
 
-- [ ] backup 성공이 아니라 restore 성공을 검증하는 절차를 작성한다.
-- [ ] RPO/RTO, PITR, migration 전 snapshot 기준을 프로젝트 결정으로 둔다.
-- [ ] slow query, pool exhaustion, deadlock, replication lag 지표를 정의한다.
-- [ ] 데이터 품질 지표와 silent corruption 탐지 방법을 정한다.
+- [x] backup 성공이 아니라 restore 성공을 검증하는 절차를 작성한다.
+- [x] RPO/RTO, PITR, migration 전 snapshot 기준을 프로젝트 결정으로 둔다.
+- [x] slow query, pool exhaustion, deadlock, replication lag 지표를 정의한다.
+- [x] 데이터 품질 지표와 silent corruption 탐지 방법을 정한다.
 
 ## 예상 산출물
 
@@ -188,7 +188,7 @@ tests/fixtures/python-db/
 docs/DATA-HANDLING.md
 ```
 
-Redis는 실제 사용이 결정되기 전까지 예상 산출물에서 제외하고 Phase 3 선택 항목으로 유지한다.
+Redis는 `skills/redis-patterns.md`와 `docs/DATA-HANDLING.md`의 선택 운영 기준으로 연결한다.
 
 ## 검증
 
@@ -231,6 +231,16 @@ PII field response/log/cache 포함 -> gate 실패
 - 아직 열린 항목은 SQLAlchemy savepoint/retry 기준, PostgreSQL index·trigger 문구, 적용 근거 기록,
   Redis와 backup/restore·관측 운영 pack이다.
 - Phase 3은 실제 Redis 또는 운영 DB 프로젝트가 생길 때 착수하는 선택 항목으로 유지한다.
+- 완료: `rules/python/data-handling.md`의 savepoint·retry 기준, `skills/postgres-patterns.md`의
+  composite/partial/covering/GIN/BRIN index와 증거 trigger 기준이 현재 문서에 존재함을 확인했다.
+- 완료: `skills/redis-patterns.md`를 인덱스에 연결하고, namespace/version, TTL jitter, stampede,
+  negative cache, Lua/MULTI, lock token, Streams, eviction/persistence/pool/timeout/fallback,
+  큰 JSON blob 제한을 정리했다.
+- 완료: `docs/DATA-HANDLING.md`에 restore drill, RPO/RTO, PITR, migration 전 snapshot,
+  slow query, pool exhaustion, deadlock, replication lag, 데이터 품질, silent corruption 지표를 추가했다.
+- 검증: `bash ../tests/check_index.sh`, `bash ../tests/check_convention_sync.sh`, `shellcheck -S warning`,
+  `git diff --check` 통과. `uv`가 없어 DB fixture 실행 검증은 기존처럼 skip 대상이다.
+- 상태 → **done**.
 
 ### 2026-06-11 (P1)
 

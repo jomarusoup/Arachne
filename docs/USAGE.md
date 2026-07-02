@@ -128,7 +128,7 @@ model: opus               # opus / sonnet / haiku
 | 언어별 패턴·테스팅 | `rust-patterns` `rust-testing` `golang-patterns` `golang-testing` `go-http-patterns` `python-patterns` `python-testing` `java-coding-standards` |
 | Java 백엔드 | `springboot-patterns` `springboot-security` `springboot-tdd` `springboot-verification` `jpa-patterns` |
 | 백엔드·웹 | `backend-patterns` `frontend-patterns` `frontend-design-direction` `frontend-a11y` `design-system` `api-design` `fastapi-patterns` `make-interfaces-feel-better` |
-| 데이터·DB | `json-contracts` `database-migrations` `postgres-patterns` |
+| 데이터·DB | `json-contracts` `database-migrations` `postgres-patterns` `redis-patterns` |
 | 제품·기획·아키텍처 | `product-lens` `product-capability` `plan-orchestrate` `architecture-decision-records` `hexagonal-architecture` `agent-architecture-audit` |
 | 워크플로·보안·기타 | `tdd-workflow` `verification-loop` `security-review` `security-scan` `docker-patterns` `deployment-patterns` `agentic-engineering` |
 | 네트워크 | `network-config-validation` `network-interface-health` `network-bgp-diagnostics` `netmiko-ssh-automation` `data-throughput-accelerator` |
@@ -374,7 +374,7 @@ powershell -ExecutionPolicy Bypass -File .\install.ps1 -Install
 | Linux | 지원 | Bash, Git, 표준 Unix 도구 |
 | Windows + WSL2 | 조건부 | Linux 호환 경로지만 이 저장소 CI에서 별도 검증하지 않음 |
 | macOS | 지원 | 기본 설치 지원. 전체 기여자 테스트는 Homebrew coreutils 필요 |
-| Windows 네이티브 | 부분 지원 | `install.ps1` 설치 + **Git Bash 훅·`atask` 런타임 스모크**(`tests/smoke_hooks.sh`)를 CI 검증(#40). 통합 Copilot 타깃은 분리 |
+| Windows 네이티브 | 부분 지원 | `install.ps1` 설치 + Copilot 통합 타깃 + **Git Bash 훅·`atask` 런타임 스모크**(`tests/smoke_hooks.sh`)를 CI 검증(#40) |
 
 설치기와 기여자 테스트의 도구 요구사항은 다르다. 기능별 정확한 범위는
 [COMPATIBILITY.md](COMPATIBILITY.md)를 따른다. Windows 네이티브에서는 PowerShell 설치기를
@@ -409,6 +409,7 @@ powershell -ExecutionPolicy Bypass -File .\install.ps1 -Install
 | `arachne -n <P> [DIR] --profile <PROFILE>`, `--new` | 신규 프로젝트 스캐폴딩. `--no-git`, `minimal|python|web|python-web` 지원 |
 | `arachne init-ci [DIR] --profile <PROFILE>`, `--init-ci` | 기존 프로젝트에 profile 기반 검증 runner와 workflow 생성/갱신 |
 | `arachne project-check [DIR]`, `--project-check` | 프로젝트의 `.arachne/verify.sh`를 실행하고 실패 상태를 그대로 반환 |
+| `arachne feedback new/list/submit` | Arachne 개선 피드백을 프로젝트 로컬에 기록하고 명시 확인 후 GitHub Issue로 제출 |
 | `arachne -s`, `--session` | tmux 워크스페이스 매니저 실행 (= `tws`, 8장 참고) |
 | `arachne -e`, `--export-settings` | 현재 `~/.claude/settings.json` → 레포 `settings.template.json`으로 역추출 |
 | `arachne -d`, `--export-dotfiles` | 로컬 `~/.bash_profile`·`~/.vimrc`의 변경 → 레포 `dotfiles/`로 역추출 |
@@ -416,6 +417,24 @@ powershell -ExecutionPolicy Bypass -File .\install.ps1 -Install
 
 Windows PowerShell 설치기는 현재 설치·업데이트·점검·버전 기능을 지원합니다.
 프로젝트 스캐폴딩, settings/dotfiles 내보내기, tmux 세션 관리는 macOS/Linux 또는 WSL에서 실행합니다.
+
+Web 계열 profile은 `docs/design/DESIGN.md`를 제품 디자인 정본으로 생성한다. `/design`은
+`docs/design/DESIGN.md` → `docs/design/README.md` → 루트 `DESIGN.md` 순서로 읽으며, 상세 계약은
+[DESIGN-DOCS.md](DESIGN-DOCS.md)가 정본이다.
+
+### Project Feedback
+
+Arachne 자체의 불편, 결함, 개선 의견은 사용 프로젝트 안에서 먼저 초안으로 기록한다.
+
+```bash
+arachne feedback new "설치 문서 개선"
+arachne feedback list
+arachne feedback submit docs/feedback/YYYY-MM-DD-HHMMSS-arachne-feedback.md
+```
+
+`submit`은 본문을 먼저 출력하고 `YES` 확인 전에는 전송하지 않는다. 토큰, API key, 사용자 절대 경로
+같은 민감정보 후보가 있으면 기본 제출을 중단한다. 제출 성공 시 GitHub Issue URL과 제출 시각을
+피드백 문서에 기록한다.
 
 > 하위호환: 옛 단어형(`install` / `update` / `session` / `export-settings` / `export-dotfiles`)도 별칭으로 여전히 동작한다.
 

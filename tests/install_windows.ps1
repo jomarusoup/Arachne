@@ -76,6 +76,35 @@ try {
     AssertTrue ($marker_count -eq 1) "Codex marker is idempotent"
 
     #---------------------------------------------------------------------------
+    # Copilot 통합 설치와 마커 병합 멱등성
+    #---------------------------------------------------------------------------
+    $copilot_dir = Join-Path $SCRIPT:TEST_HOME ".copilot"
+    $copilot_cli_path = Join-Path $copilot_dir "copilot-instructions.md"
+    $copilot_vscode_path = Join-Path $copilot_dir "instructions\arachne.instructions.md"
+    New-Item -ItemType Directory -Path $copilot_dir -Force | Out-Null
+    [System.IO.File]::WriteAllText($copilot_cli_path, "USER-COPILOT`n")
+    RunInstaller -Target "copilot"
+    RunInstaller -Target "copilot"
+    AssertTrue (Test-Path $copilot_cli_path) "Copilot CLI file"
+    AssertTrue (Test-Path $copilot_vscode_path) "Copilot VS Code file"
+    $copilot_cli_text = [System.IO.File]::ReadAllText($copilot_cli_path)
+    $copilot_vscode_text = [System.IO.File]::ReadAllText($copilot_vscode_path)
+    AssertTrue ($copilot_cli_text.Contains("USER-COPILOT")) "Copilot user content preserved"
+    $copilot_marker_count = ([regex]::Matches($copilot_cli_text, "<!-- === ARACHNE BEGIN === -->")).Count
+    AssertTrue ($copilot_marker_count -eq 1) "Copilot marker is idempotent"
+    AssertTrue ($copilot_vscode_text.Contains('applyTo: "**"')) "Copilot VS Code applyTo"
+
+    RunInstaller -Target "all"
+    AssertTrue (Test-Path $copilot_vscode_path) "all target installs detected Copilot"
+    & $SCRIPT:INSTALLER -Check
+
+    Remove-Item -LiteralPath $copilot_dir -Recurse -Force
+    $env:ARACHNE_HOME = $SCRIPT:TEST_HOME
+    & (Join-Path $SCRIPT:REPO_DIR "install-copilot.ps1") -RepoDir $SCRIPT:REPO_DIR
+    AssertTrue (Test-Path $copilot_cli_path) "standalone Copilot installer CLI file"
+    AssertTrue (Test-Path $copilot_vscode_path) "standalone Copilot installer VS Code file"
+
+    #---------------------------------------------------------------------------
     # Windows 명령 래퍼 등록
     #---------------------------------------------------------------------------
     AssertTrue (Test-Path (Join-Path $SCRIPT:TEST_HOME ".local\bin\arachne.cmd")) "arachne wrapper"

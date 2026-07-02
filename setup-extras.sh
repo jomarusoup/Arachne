@@ -6,7 +6,7 @@
 #               - codegraph                         : 독립 CLI(PATH) + Arachne 래퍼
 #               대화형 선택 메뉴 + 비대화형 플래그. 멱등 — 재실행 안전.
 # DATA        : 2026-06-14
-# Modification: 2026-06-15
+# Modification: 2026-07-01
 ################################################################################
 
 set -euo pipefail
@@ -68,6 +68,7 @@ readonly TASTE_PLUGIN="taste-skill@taste-skill"
 readonly TASTE_MARKET="taste-skill"
 
 readonly LOG_PREFIX="[Arachne-extras]"
+readonly EXTRAS_SEPARATOR="==============================================================================="
 
 # 선택 상태: -1 미지정 / 0 제외 / 1 포함
 WANT_UA=-1
@@ -84,6 +85,19 @@ DO_UPDATE=0
 LogInfo()  { echo "${LOG_PREFIX} $*"; }
 LogWarn()  { echo "${LOG_PREFIX} [주의] $*" >&2; }
 LogError() { echo "${LOG_PREFIX} [ERROR] $*" >&2; }
+
+#===============================================================================
+# FUNCTION    : LogSection
+# DESCRIPTION : 확장 도구 설치·갱신의 주요 단계 경계를 배너로 표시
+# PARAMETERS  : string message - 섹션 제목
+#===============================================================================
+LogSection() {
+    local message="$1"
+
+    printf '%s\n' "$EXTRAS_SEPARATOR"
+    printf '%s %s\n' "$LOG_PREFIX" "$message"
+    printf '%s\n' "$EXTRAS_SEPARATOR"
+}
 
 #===============================================================================
 # FUNCTION    : Usage
@@ -426,7 +440,11 @@ SetupPluginRepo() {
     local clone="$3"
     local market="$4"
     local plugin="$5"
+    local action="설치"
 
+    [ "$DO_UPDATE" -eq 1 ] && action="설치/갱신"
+
+    LogSection "${label} ${action} 시작"
     if ! command -v claude >/dev/null 2>&1; then
         LogWarn "${label}: claude CLI 미감지 — 플러그인 설치 스킵"
         return 1
@@ -437,9 +455,9 @@ SetupPluginRepo() {
         return 1
     fi
 
-    LogInfo "=== ${label} 설치 ==="
     RegisterMarketplace "$clone" "$market"
     InstallPlugin "$plugin"
+    LogSection "${label} ${action} 완료"
     return 0
 }
 
@@ -450,7 +468,10 @@ SetupPluginRepo() {
 # RETURNED    : 0(성공) / 1(실패)
 #===============================================================================
 InstallCodegraph() {
-    LogInfo "=== codegraph 설치 ==="
+    local action="설치"
+
+    [ "$DO_UPDATE" -eq 1 ] && action="설치/갱신"
+    LogSection "codegraph ${action} 시작"
     if command -v codegraph >/dev/null 2>&1; then
         if [ "$DO_UPDATE" -eq 1 ] && command -v npm >/dev/null 2>&1; then
             LogInfo "codegraph 갱신 (npm install -g @latest → \$HOME/.local)"
@@ -459,6 +480,7 @@ InstallCodegraph() {
         else
             LogInfo "codegraph 이미 설치됨: $(command -v codegraph)"
         fi
+        LogSection "codegraph ${action} 완료"
         return 0
     fi
 
@@ -482,6 +504,7 @@ InstallCodegraph() {
     else
         LogWarn "codegraph 가 PATH 에 없습니다 — ~/.local/bin 을 PATH 에 추가하세요"
     fi
+    LogSection "codegraph ${action} 완료"
 }
 
 #===============================================================================
@@ -489,7 +512,7 @@ InstallCodegraph() {
 # DESCRIPTION : 클론이 존재하는 항목만 대화형으로 포함 여부 질의
 #===============================================================================
 InteractiveSelect() {
-    echo "${LOG_PREFIX} 확장 도구 설치 — 항목별로 선택하세요."
+    LogSection "확장 도구 설치 — 항목별 선택"
 
     if [ -d "$UA_CLONE" ] || command -v git >/dev/null 2>&1; then
         Confirm "Understand-Anything 플러그인 설치? (없으면 자동 clone → $UA_CLONE)" && WANT_UA=1 || WANT_UA=0
@@ -521,6 +544,9 @@ InteractiveSelect() {
 #===============================================================================
 main() {
     ParseArgs "$@"
+    local action="설치"
+
+    [ "$DO_UPDATE" -eq 1 ] && action="설치/갱신"
 
     # 선택 미지정(전부 -1) 이면: TTY → 대화형 / 비TTY → 도움말
     if [ "$WANT_UA" -eq -1 ] && [ "$WANT_TASTE" -eq -1 ] && [ "$WANT_CG" -eq -1 ]; then
@@ -548,7 +574,7 @@ main() {
 
     [ "$WANT_CG" -eq 1 ]    && InstallCodegraph || true
 
-    LogInfo "확장 도구 설정 완료. (플러그인은 Claude Code 재시작 후 활성화)"
+    LogSection "확장 도구 ${action} 완료. (플러그인은 Claude Code 재시작 후 활성화)"
 }
 
 main "$@"

@@ -2,7 +2,7 @@
 Title: "[audit] 보강 후보 대비 DB·JSON 데이터 처리 격차"
 creation: 2026-06-09
 modification: 2026-07-01
-status: "in progress"
+status: "done"
 tags:
  - "arachne"
  - "database"
@@ -20,7 +20,7 @@ FROM:: [[2026-06-09-python-web-harness-assessment]]
 - **작성일**: 2026-06-09
 - **심각도**: HIGH
 - **영역**: Python/FastAPI, PostgreSQL, migration, Redis, JSON/API 계약, 데이터 보안
-- **상태**: in progress — 연결 task [[2026-06-09-data-handling-hardening]]의 열린 체크박스가 남아 있음
+- **상태**: done — 연결 task [[2026-06-09-data-handling-hardening]] 완료
 - **검토 기준**: Arachne 보강 후보
 
 ## 조사 범위
@@ -228,5 +228,11 @@ flowchart TB
 
 ### 2026-07-01
 
-- issue 인벤토리 정리: P0/P1 산출물은 상당 부분 구현됐지만, 연결 task에 SQLAlchemy savepoint/retry,
-  PostgreSQL index·trigger 정리, 적용 근거 기록, 선택 운영 pack 항목이 남아 있어 닫지 않는다.
+- issue 인벤토리 정리 당시에는 P0/P1 산출물 일부와 선택 운영 pack 항목이 남아 있어 보류했다.
+- 연결 task 완료: P0/P1/P2 문서·검증 계약을 닫았다.
+- `rules/python/data-handling.md`, `skills/{json-contracts,database-migrations,postgres-patterns,redis-patterns}.md`,
+  `docs/DATA-HANDLING.md`, `agents/database-reviewer.md`, `/database-review`, `tests/data_contract.bats`가
+  데이터 처리 기준과 실행 경로를 제공한다.
+- 로컬 검증: `bash ../tests/check_index.sh`, `bash ../tests/check_convention_sync.sh`, 핵심 Bats,
+  `shellcheck`, `git diff --check` 통과. `uv` 부재로 DB fixture 실행 검증은 CI job에 위임한다.
+- 상태 → **done**.

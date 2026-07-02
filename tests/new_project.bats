@@ -27,19 +27,21 @@ run_new() {
 #-------------------------------------------------------------------------------
 # 구조 생성 검증
 #-------------------------------------------------------------------------------
-@test "new: 기록 구조 생성 (README + docs/{issue,idea,task,template})" {
+@test "new: 기록 구조 생성 (README + docs/{issue,idea,task,feedback,template})" {
     run_new myproj "${TMP_DIR}"
     [ "$status" -eq 0 ]
     [ -f "${TMP_DIR}/myproj/README.md" ]
     [ -d "${TMP_DIR}/myproj/docs/issue" ]
     [ -d "${TMP_DIR}/myproj/docs/idea" ]
     [ -d "${TMP_DIR}/myproj/docs/task" ]
+    [ -d "${TMP_DIR}/myproj/docs/feedback" ]
     [ -f "${TMP_DIR}/myproj/docs/task/README.md" ]
     [ -f "${TMP_DIR}/myproj/docs/template/example.md" ]
     [ -f "${TMP_DIR}/myproj/docs/template/idea.md" ]
     [ -f "${TMP_DIR}/myproj/docs/template/issue.md" ]
     [ -f "${TMP_DIR}/myproj/docs/template/audit.md" ]
     [ -f "${TMP_DIR}/myproj/docs/template/task.md" ]
+    [ -f "${TMP_DIR}/myproj/docs/template/feedback.md" ]
 }
 
 @test "new: 프로젝트 검증 스크립트와 GitHub Actions workflow 생성" {
@@ -60,6 +62,31 @@ run_new() {
         "${TMP_DIR}/myproj/.arachne/commands"
 }
 
+@test "new: web profile 은 디자인 문서 구조 생성" {
+    run_new myproj "${TMP_DIR}" --profile web
+    [ "$status" -eq 0 ]
+    [ -f "${TMP_DIR}/myproj/docs/design/DESIGN.md" ]
+    [ -f "${TMP_DIR}/myproj/docs/design/decisions/.gitkeep" ]
+    grep -qF "디자인 token 코드 정본" \
+        "${TMP_DIR}/myproj/docs/design/DESIGN.md"
+}
+
+@test "new: python-web profile 은 디자인 문서 구조 생성" {
+    run_new myproj "${TMP_DIR}" --profile python-web
+    [ "$status" -eq 0 ]
+    [ -f "${TMP_DIR}/myproj/docs/design/DESIGN.md" ]
+}
+
+@test "new: minimal 과 python profile 은 디자인 문서 미생성" {
+    run_new minimalproj "${TMP_DIR}" --profile minimal
+    [ "$status" -eq 0 ]
+    [ ! -e "${TMP_DIR}/minimalproj/docs/design" ]
+
+    run_new pythonproj "${TMP_DIR}" --profile python
+    [ "$status" -eq 0 ]
+    [ ! -e "${TMP_DIR}/pythonproj/docs/design" ]
+}
+
 @test "new: 알 수 없는 profile 거부" {
     run_new myproj "${TMP_DIR}" --profile unknown
     [ "$status" -ne 0 ]
@@ -71,6 +98,7 @@ run_new() {
     run_new myproj "${TMP_DIR}"
     [ -f "${TMP_DIR}/myproj/docs/issue/.gitkeep" ]
     [ -f "${TMP_DIR}/myproj/docs/idea/.gitkeep" ]
+    [ -f "${TMP_DIR}/myproj/docs/feedback/.gitkeep" ]
 }
 
 #-------------------------------------------------------------------------------
@@ -100,6 +128,7 @@ run_new() {
     grep -qF 'status: "to do"' "${TMP_DIR}/myproj/docs/template/issue.md"
     grep -qF 'status: "to do"' "${TMP_DIR}/myproj/docs/template/audit.md"
     grep -qF 'status: "to do"' "${TMP_DIR}/myproj/docs/template/task.md"
+    grep -qF 'status: "draft"' "${TMP_DIR}/myproj/docs/template/feedback.md"
     grep -qF -- "- **상태**: to do" "${TMP_DIR}/myproj/docs/template/idea.md"
     grep -qF -- "- **상태**: to do" "${TMP_DIR}/myproj/docs/template/issue.md"
     grep -qF -- "- **상태**: to do" "${TMP_DIR}/myproj/docs/template/task.md"
@@ -116,6 +145,8 @@ run_new() {
     run diff "${REPO_DIR}/docs/template/audit.md" "${TMP_DIR}/myproj/docs/template/audit.md"
     [ "$status" -eq 0 ]
     run diff "${REPO_DIR}/docs/template/task.md" "${TMP_DIR}/myproj/docs/template/task.md"
+    [ "$status" -eq 0 ]
+    run diff "${REPO_DIR}/docs/template/feedback.md" "${TMP_DIR}/myproj/docs/template/feedback.md"
     [ "$status" -eq 0 ]
 }
 

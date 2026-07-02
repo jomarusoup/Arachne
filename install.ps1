@@ -22,7 +22,7 @@ param(
     [Alias("v")]
     [switch]$Version,
 
-    [ValidateSet("claude", "gemini", "codex", "all")]
+    [ValidateSet("claude", "gemini", "codex", "copilot", "all")]
     [string]$Target = "all",
 
     [switch]$WithUa,
@@ -123,11 +123,11 @@ function ShowUsage {
     Write-Output "Options:"
     Write-Output "  -i, -Install          install or reinstall"
     Write-Output "  -u, -Update           git pull, then reinstall"
-    Write-Output "  -Target T             claude|gemini|codex|all (default: all)"
+    Write-Output "  -Target T             claude|gemini|codex|copilot|all (default: all)"
     Write-Output "  -WithUa               with -Install/-Update: set up Understand-Anything only"
     Write-Output "  -WithExtras           with -Install/-Update: set up extras (UA / taste-skill / codegraph)"
     Write-Output "  -Extras               run extras setup only (interactive menu)"
-    Write-Output "  -c, -Check            verify Claude, Gemini, and Codex wiring"
+    Write-Output "  -c, -Check            verify Claude, Gemini, Codex, and Copilot wiring"
     Write-Output "  -h, -Help             show help"
     Write-Output "  -v, -Version          show version"
     Write-Output ""
@@ -287,9 +287,40 @@ function InstallCodex {
 }
 
 ################################################################################
+# FUNCTION    : InstallCopilot
+# DESCRIPTION : Copilot CLI와 VS Code 사용자 프로필에 AGENTS.md 규약 설치
+################################################################################
+function InstallCopilot {
+    $copilot_dir = Join-Path $SCRIPT:ARACHNE_HOME ".copilot"
+    $instructions_dir = Join-Path $copilot_dir "instructions"
+    $cli_file = Join-Path $copilot_dir "copilot-instructions.md"
+    $vscode_file = Join-Path $instructions_dir "arachne.instructions.md"
+    $agents_file = Join-Path $SCRIPT:REPO_DIR "AGENTS.md"
+
+    New-Item -ItemType Directory -Path $instructions_dir -Force | Out-Null
+    MergeMarkedFile $agents_file $cli_file
+
+    $agents_text = [System.IO.File]::ReadAllText($agents_file).TrimEnd()
+    $vscode_text = @"
+---
+name: Arachne Shared Rules
+description: Arachne AGENTS.md shared coding rules
+applyTo: "**"
+---
+
+<!-- === $SCRIPT:ARACHNE_TAG BEGIN === -->
+$agents_text
+<!-- === $SCRIPT:ARACHNE_TAG END === -->
+"@
+    WriteUtf8 $vscode_file ($vscode_text + "`n")
+    Write-Output "  merge: $cli_file"
+    Write-Output "  create: $vscode_file"
+}
+
+################################################################################
 # FUNCTION    : DetectCli
 # DESCRIPTION : CLI 홈 디렉터리 또는 실행 파일 존재 여부 검사
-# PARAMETERS  : string name - gemini 또는 codex
+# PARAMETERS  : string name - gemini, codex 또는 copilot
 # RETURNED    : bool 감지 여부
 ################################################################################
 function DetectCli {
@@ -368,6 +399,7 @@ function InstallHarness {
         "claude" { InstallClaude }
         "gemini" { InstallGemini }
         "codex" { InstallCodex }
+        "copilot" { InstallCopilot }
         "all" {
             InstallClaude
             if (DetectCli "gemini") {
@@ -379,6 +411,11 @@ function InstallHarness {
                 InstallCodex
             } else {
                 WriteArachneLog "SKIP" "install: Codex CLI not detected; target=codex"
+            }
+            if (DetectCli "copilot") {
+                InstallCopilot
+            } else {
+                WriteArachneLog "SKIP" "install: Copilot not detected; target=copilot"
             }
         }
     }
@@ -502,6 +539,40 @@ function CheckHarness {
             Write-Output "  [FAIL] ${cli_name}: stale AGENTS.md"
             $failed = $true
         }
+    }
+
+    if (DetectCli "copilot") {
+        $copilot_cli_file = Join-Path $SCRIPT:ARACHNE_HOME ".copilot\copilot-instructions.md"
+        $copilot_vscode_file = Join-Path $SCRIPT:ARACHNE_HOME ".copilot\instructions\arachne.instructions.md"
+        $begin_marker = "<!-- === $SCRIPT:ARACHNE_TAG BEGIN === -->"
+        $end_marker = "<!-- === $SCRIPT:ARACHNE_TAG END === -->"
+        $source_text = [System.IO.File]::ReadAllText(
+            (Join-Path $SCRIPT:REPO_DIR "AGENTS.md")
+        ).TrimEnd()
+        $copilot_ok = $true
+
+        foreach ($copilot_file in @($copilot_cli_file, $copilot_vscode_file)) {
+            if (-not (Test-Path -LiteralPath $copilot_file)) {
+                $copilot_ok = $false
+                continue
+            }
+            $config_text = [System.IO.File]::ReadAllText($copilot_file)
+            $escaped_begin = [regex]::Escape($begin_marker)
+            $escaped_end = [regex]::Escape($end_marker)
+            $match = [regex]::Match($config_text, "(?s)$escaped_begin\r?\n(.*?)\r?\n$escaped_end")
+            if (-not $match.Success -or $match.Groups[1].Value.TrimEnd() -ne $source_text) {
+                $copilot_ok = $false
+            }
+        }
+
+        if ($copilot_ok) {
+            Write-Output "  [OK] Copilot"
+        } else {
+            Write-Output "  [FAIL] Copilot: run arachne -i -Target copilot"
+            $failed = $true
+        }
+    } else {
+        Write-Output "  [SKIP] copilot"
     }
 
     if ($failed) {

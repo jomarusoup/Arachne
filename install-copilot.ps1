@@ -12,8 +12,9 @@ param(
 
 $ErrorActionPreference = "Stop"
 $ArachneTag = "ARACHNE"
+$HomeDir = if ($env:ARACHNE_HOME) { $env:ARACHNE_HOME } else { $HOME }
 $AgentsFile = Join-Path $RepoDir "AGENTS.md"
-$CopilotDir = Join-Path $HOME ".copilot"
+$CopilotDir = Join-Path $HomeDir ".copilot"
 $InstructionsDir = Join-Path $CopilotDir "instructions"
 $CliFile = Join-Path $CopilotDir "copilot-instructions.md"
 $VsCodeFile = Join-Path $InstructionsDir "arachne.instructions.md"

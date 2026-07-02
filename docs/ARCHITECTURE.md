@@ -98,7 +98,8 @@ Git for Windows의 `bash.exe`를 통해 실행한다.
 4. **GitHub Copilot 설치** (`install_copilot`, 감지된 경우만)
    - Copilot CLI용 `~/.copilot/copilot-instructions.md`는 사용자 영역을 보존하며 마커 병합한다.
    - VS Code용 `~/.copilot/instructions/arachne.instructions.md`는 `applyTo: "**"` frontmatter와 함께 생성한다.
-   - Windows 네이티브는 `install-copilot.ps1`, macOS/Linux/WSL/Git Bash는 `install.sh`를 사용한다.
+   - Windows 네이티브는 `install.ps1 -Install -Target copilot`, macOS/Linux/WSL/Git Bash는
+     `install.sh -i --target copilot`을 사용한다. 독립 `install-copilot.ps1`은 보조 설치 경로로 유지한다.
 5. **공통 설치** (`install_shared`, 항상 1회)
    1. `install_dotfiles` — `~/.bash_profile`·`~/.vimrc`에 `# === ARACHNE BEGIN/END ===` 마커 섹션을
       병합(멱등: 있으면 교체, 없으면 추가, 사용자 영역 중복 줄은 제외).

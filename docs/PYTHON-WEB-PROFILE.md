@@ -46,6 +46,7 @@ flowchart LR
 | Web package | pnpm via Corepack | lockfile과 workspace 효율 |
 | Web 기본 | TypeScript + Vite React | 작은 기본 표면과 빠른 검증 |
 | Web test | Vitest, RTL, MSW, Playwright | unit·component·network·E2E 계층 |
+| Web design docs | `docs/design/DESIGN.md` | 제품 디자인 방향과 UX 원칙의 프로젝트 정본 |
 | 선택 확장 | Django, Next.js | 실제 프로젝트 필요 시 별도 pack |
 
 이 표는 프로젝트 파일을 자동 생성하거나 프레임워크를 강제하지 않는다. 프로젝트가 다른 도구를
@@ -72,6 +73,10 @@ arachne init-ci /work/fullstack --profile python-web
 
 기존 commands가 있으면 profile을 변경해도 보존된다. 새 기본 명령으로 교체하려면 commands를
 직접 갱신하거나 삭제 후 `init-ci`를 다시 실행한다.
+
+`web`과 `python-web` profile은 `docs/design/DESIGN.md`와 `docs/design/decisions/.gitkeep`을
+생성한다. 기존 디자인 문서는 덮어쓰지 않으며, 위치·탐색 순서·token SSOT 기준은
+[DESIGN-DOCS.md](DESIGN-DOCS.md)가 정본이다.
 
 ## 후속 확장 기준
 

@@ -2,7 +2,7 @@
 Title: "[task] Windows Copilot 통합 설치와 검증 보완"
 creation: 2026-06-07
 modification: 2026-07-01
-status: "to do"
+status: "done"
 tags:
  - "arachne"
  - "task"
@@ -17,7 +17,7 @@ FROM:: [[2026-06-07-postmerge-audit]]
 
 # [task] Windows Copilot 통합 설치와 검증 보완
 
-- **상태**: to do
+- **상태**: done
 - **우선순위**: high
 - **담당**: unassigned
 - **관련 문서**: [postmerge audit](../issue/2026-06-07-postmerge-audit.md),
@@ -43,15 +43,15 @@ Windows 사용자가 저장소를 클론한 뒤 통합 설치 명령 하나로 G
 
 ## 작업 목록
 
-- [ ] `install.ps1 -Target copilot -Install`을 허용한다.
-- [ ] `install.ps1 -Target all -Install`이 Copilot 감지 시 Copilot 지침을 설치한다.
-- [ ] `install.ps1 -Check`가 Copilot CLI와 VS Code 지침의 누락·stale 상태를 검사한다.
-- [ ] 기존 `~\.copilot\copilot-instructions.md`의 마커 외 사용자 내용을 보존한다.
-- [ ] 재설치해도 ARACHNE 마커가 중복되지 않는 Windows 회귀 테스트를 추가한다.
-- [ ] `~\.copilot\instructions\arachne.instructions.md` frontmatter와 `applyTo: "**"`를 검증한다.
-- [ ] Windows CI에서 통합 설치와 독립 `install-copilot.ps1` 경로를 모두 실행한다.
-- [ ] `docs/USAGE.md`의 오래된 “Windows 네이티브 미지원” 문구를 현재 지원 범위로 교정한다.
-- [ ] README와 Windows 설치 가이드의 명령을 통합 설치 기준으로 정리한다.
+- [x] `install.ps1 -Target copilot -Install`을 허용한다.
+- [x] `install.ps1 -Target all -Install`이 Copilot 감지 시 Copilot 지침을 설치한다.
+- [x] `install.ps1 -Check`가 Copilot CLI와 VS Code 지침의 누락·stale 상태를 검사한다.
+- [x] 기존 `~\.copilot\copilot-instructions.md`의 마커 외 사용자 내용을 보존한다.
+- [x] 재설치해도 ARACHNE 마커가 중복되지 않는 Windows 회귀 테스트를 추가한다.
+- [x] `~\.copilot\instructions\arachne.instructions.md` frontmatter와 `applyTo: "**"`를 검증한다.
+- [x] Windows CI에서 통합 설치와 독립 `install-copilot.ps1` 경로를 모두 실행한다.
+- [x] `docs/USAGE.md`의 오래된 “Windows 네이티브 미지원” 문구를 현재 지원 범위로 교정한다.
+- [x] README와 Windows 설치 가이드의 명령을 통합 설치 기준으로 정리한다.
 
 ## 검증
 
@@ -91,4 +91,12 @@ Windows 테스트 홈에 두 Copilot 지침 파일이 생성되고, 사용자 �
 ### 2026-07-01
 
 - task 인벤토리 정리: 규약상 상태 값은 `planned`가 아니라 `to do`로 표준화했다.
-- 구현은 아직 착수하지 않았고, Windows Copilot 통합 설치·검증 항목은 전부 열린 상태다.
+- 정리 당시에는 구현이 아직 착수되지 않았고, Windows Copilot 통합 설치·검증 항목은 전부 열린 상태였다.
+- 완료: `install.ps1`에 `copilot` target, `all` 감지 설치, `-Check` stale 검사를 추가했다.
+- 완료: `tests/install_windows.ps1`이 통합 설치, 재설치 멱등성, `applyTo: "**"` frontmatter,
+  독립 `install-copilot.ps1` 경로를 검증한다.
+- 문서: README, USAGE, WINDOWS-SETUP, ARCHITECTURE, MULTI-CLI를 통합 `install.ps1 -Target copilot`
+  기준으로 교정했다.
+- 검증: `bats ../tests/install.bats` 33건 통과(권한 상승 실행). `pwsh`/`powershell`은 이 Linux
+  환경에 없어 `tests/install_windows.ps1`은 로컬 미실행이며, Windows CI에서 실행해야 한다.
+- 상태 → **done**.

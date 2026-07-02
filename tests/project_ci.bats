@@ -57,6 +57,34 @@ teardown() {
         "${PROJECT_DIR}/.github/workflows/arachne.yml"
     grep -qF "corepack enable" \
         "${PROJECT_DIR}/.github/workflows/arachne.yml"
+    [ -f "${PROJECT_DIR}/docs/design/DESIGN.md" ]
+    [ -f "${PROJECT_DIR}/docs/design/decisions/.gitkeep" ]
+}
+
+@test "project ci: web 계열 profile 은 기존 디자인 문서를 보존" {
+    mkdir -p "${PROJECT_DIR}/docs/design"
+    printf '# custom design\n' > "${PROJECT_DIR}/docs/design/DESIGN.md"
+
+    run bash "${REPO_DIR}/install.sh" init-ci "${PROJECT_DIR}" --profile web
+    [ "$status" -eq 0 ]
+    grep -qF "custom design" "${PROJECT_DIR}/docs/design/DESIGN.md"
+}
+
+@test "project ci: minimal 과 python profile 은 디자인 문서 미생성" {
+    run bash "${REPO_DIR}/install.sh" init-ci "${PROJECT_DIR}" --profile python
+    [ "$status" -eq 0 ]
+    [ ! -e "${PROJECT_DIR}/docs/design" ]
+}
+
+@test "project ci: 디자인 문서 심볼릭 링크를 거부" {
+    mkdir -p "${PROJECT_DIR}/docs"
+    outside_dir="${TMP_DIR}/outside-design"
+    mkdir -p "$outside_dir"
+    ln -s "$outside_dir" "${PROJECT_DIR}/docs/design"
+
+    run bash "${REPO_DIR}/install.sh" init-ci "${PROJECT_DIR}" --profile web
+    [ "$status" -ne 0 ]
+    [[ "$output" == *"심볼릭 링크"* ]]
 }
 
 @test "project ci: profile 재실행은 사용자 commands 를 보존" {
@@ -117,7 +145,7 @@ teardown() {
         "${PROJECT_DIR}/.arachne/commands"
 
     run bash "${REPO_DIR}/install.sh" project-check "${PROJECT_DIR}"
-    [ "$status" -eq 7 ]
+    [ "$status" -eq 1 ]
     [[ "$output" == *"expected-failure"* ]]
     [[ "$output" == *"[FAIL]"* ]]
 }

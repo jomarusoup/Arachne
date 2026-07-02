@@ -2,7 +2,7 @@
 Title: "[task] 사용 프로젝트 디자인 문서 계약 정식화"
 creation: 2026-06-09
 modification: 2026-07-01
-status: "to do"
+status: "done"
 tags:
  - "arachne"
  - "task"
@@ -17,7 +17,7 @@ FROM:: [[2026-06-09-web-design-document-placement]]
 
 # [task] 사용 프로젝트 디자인 문서 계약 정식화
 
-- **상태**: to do
+- **상태**: done
 - **우선순위**: high
 - **담당**: unassigned
 - **관련 문서**: [[2026-06-09-web-design-document-placement]],
@@ -98,44 +98,44 @@ flowchart TD
 
 ### 1. 정본 문서
 
-- [ ] `docs/DESIGN-DOCS.md`에 Arachne 전역 규칙과 프로젝트 문서의 경계를 작성한다.
-- [ ] `docs/design/DESIGN.md`를 프로젝트 제품 디자인 정본으로 명시한다.
-- [ ] 실제 token 값은 CSS/TypeScript/theme 파일이 SSOT임을 명시한다.
-- [ ] 작은 프로젝트와 복잡한 프로젝트의 문서 분리 기준을 제공한다.
-- [ ] README, `docs/README.md`, USAGE, Python/Web profile에서 정본을 연결한다.
+- [x] `docs/DESIGN-DOCS.md`에 Arachne 전역 규칙과 프로젝트 문서의 경계를 작성한다.
+- [x] `docs/design/DESIGN.md`를 프로젝트 제품 디자인 정본으로 명시한다.
+- [x] 실제 token 값은 CSS/TypeScript/theme 파일이 SSOT임을 명시한다.
+- [x] 작은 프로젝트와 복잡한 프로젝트의 문서 분리 기준을 제공한다.
+- [x] README, `docs/README.md`, USAGE, Python/Web profile에서 정본을 연결한다.
 
 ### 2. `/design` command
 
-- [ ] `commands/design.md`의 첫 탐색 경로를 `docs/design/DESIGN.md`로 변경한다.
-- [ ] `docs/design/README.md`가 있으면 관련 분리 문서를 따라 읽게 한다.
-- [ ] 루트 `DESIGN.md`를 legacy fallback으로 유지한다.
-- [ ] 문서가 없으면 자동 생성하지 않고 생성 계획과 범위를 먼저 제안한다.
-- [ ] 수정 후 관련 design decision과 QA 결과 갱신 여부를 확인한다.
+- [x] `commands/design.md`의 첫 탐색 경로를 `docs/design/DESIGN.md`로 변경한다.
+- [x] `docs/design/README.md`가 있으면 관련 분리 문서를 따라 읽게 한다.
+- [x] 루트 `DESIGN.md`를 legacy fallback으로 유지한다.
+- [x] 문서가 없으면 자동 생성하지 않고 생성 계획과 범위를 먼저 제안한다.
+- [x] 수정 후 관련 design decision과 QA 결과 갱신 여부를 확인한다.
 
 ### 3. 스캐폴딩
 
-- [ ] `templates/project/design/DESIGN.md` 최소 템플릿을 작성한다.
-- [ ] Web·Python-Web 신규 프로젝트에 `docs/design/DESIGN.md`를 생성한다.
-- [ ] `docs/design/decisions/.gitkeep`을 함께 생성한다.
-- [ ] `minimal`, `python` profile에는 생성하지 않는다.
-- [ ] 기존 프로젝트에는 `arachne init-design [DIR]` 같은 명시적 초기화 명령을 제공할지 결정한다.
-- [ ] 명시적 초기화 명령을 채택하면 도움말·README·USAGE에 추가한다.
+- [x] `templates/project/design/DESIGN.md` 최소 템플릿을 작성한다.
+- [x] Web·Python-Web 신규 프로젝트에 `docs/design/DESIGN.md`를 생성한다.
+- [x] `docs/design/decisions/.gitkeep`을 함께 생성한다.
+- [x] `minimal`, `python` profile에는 생성하지 않는다.
+- [x] 기존 프로젝트에는 `arachne init-design [DIR]` 같은 명시적 초기화 명령을 제공할지 결정한다.
+- [x] 명시적 초기화 명령을 채택하면 도움말·README·USAGE에 추가한다.
 
 ### 4. 소유권과 안전성
 
-- [ ] 생성된 `docs/design/DESIGN.md`는 프로젝트 소유 파일로 정의한다.
-- [ ] `new` 또는 초기화 명령 재실행 시 기존 디자인 문서를 덮어쓰지 않는다.
-- [ ] `docs/design`, `DESIGN.md`, `decisions` 경로의 심볼릭 링크 쓰기를 거부한다.
-- [ ] 템플릿 갱신은 기존 프로젝트에 자동 반영하지 않고 차이 안내만 제공한다.
+- [x] 생성된 `docs/design/DESIGN.md`는 프로젝트 소유 파일로 정의한다.
+- [x] `new` 또는 초기화 명령 재실행 시 기존 디자인 문서를 덮어쓰지 않는다.
+- [x] `docs/design`, `DESIGN.md`, `decisions` 경로의 심볼릭 링크 쓰기를 거부한다.
+- [x] 템플릿 갱신은 기존 프로젝트에 자동 반영하지 않고 차이 안내만 제공한다.
 
 ### 5. 테스트
 
-- [ ] `new --profile web`이 최소 디자인 구조를 생성하는 테스트를 추가한다.
-- [ ] `new --profile python-web` 생성 테스트를 추가한다.
-- [ ] `minimal`, `python`에는 디자인 구조가 없음을 검증한다.
-- [ ] 기존 `DESIGN.md`와 `docs/design/DESIGN.md`를 보존하는 재실행 테스트를 추가한다.
-- [ ] `/design` 문서가 정본·인덱스·legacy 순서를 명시하는 계약 테스트를 추가한다.
-- [ ] 사용자 문서와 CLI 도움말의 초기화 명령 발견성을 검사한다.
+- [x] `new --profile web`이 최소 디자인 구조를 생성하는 테스트를 추가한다.
+- [x] `new --profile python-web` 생성 테스트를 추가한다.
+- [x] `minimal`, `python`에는 디자인 구조가 없음을 검증한다.
+- [x] 기존 `DESIGN.md`와 `docs/design/DESIGN.md`를 보존하는 재실행 테스트를 추가한다.
+- [x] `/design` 문서가 정본·인덱스·legacy 순서를 명시하는 계약 테스트를 추가한다.
+- [x] 사용자 문서와 CLI 도움말의 초기화 명령 발견성을 검사한다.
 
 ## 템플릿 최소 내용
 
@@ -197,3 +197,14 @@ minimal/python 신규 프로젝트 -> 디자인 문서 미생성
 
 - task 인벤토리 정리: 규약상 상태 값은 `planned`가 아니라 `to do`로 표준화했다.
 - 구현은 아직 착수하지 않았고, 정본 문서·`/design` command·스캐폴딩·테스트 항목이 전부 열린 상태다.
+- 완료: `docs/DESIGN-DOCS.md`, `commands/design.md` 탐색 순서, `templates/project/design/DESIGN.md`,
+  Web·Python-Web profile 디자인 문서 스캐폴딩을 추가했다.
+- 결정: 별도 `init-design` 명령은 추가하지 않았다. 기존 프로젝트 초기화는 이미 명시적 명령인
+  `arachne init-ci --profile web|python-web`에서 디자인 문서가 없을 때만 생성한다.
+- 안전성: 기존 `docs/design/DESIGN.md`는 보존하고, `docs/design`·`docs/design/DESIGN.md`·
+  `docs/design/decisions`·루트 `DESIGN.md`가 심볼릭 링크면 쓰기를 거부한다.
+- 검증: `bats ../tests/new_project.bats ../tests/project_ci.bats ../tests/docs_cli_contract.bats` 포함
+  핵심 41건 통과, `bash -n`, `shellcheck`, `git diff --check`, `bash ../tests/check_index.sh` 통과.
+- Windows CI는 로컬 도구 부재로 직접 확인하지 못했다. 변경은 Bash 스캐폴딩 계약이며 Windows
+  PowerShell 설치기의 프로젝트 명령 미지원 경계는 유지된다.
+- 상태 → **done**.
