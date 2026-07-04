@@ -20,20 +20,21 @@ Python·Web과 C/C++·Go·Rust 시스템 개발에 공통 규약, 역할 분담,
 사본을 읽는다. 따라서 Claude/Gemini 자산은 레포 수정 후 다음 로드부터 반영되지만, Codex 규약은
 `arachne -i --target codex` 재실행이 필요하다. `git push/pull`로 여러 머신의 원본 레포를 동기화한다.
 
-> 🗺️ 하네스 구조 다이어그램(Mermaid)은 [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) 참고
-> 📖 skills·agents·커맨드·hooks 사용법은 [docs/USAGE.md](docs/USAGE.md) 참고
-> 🔗 멀티 도구 통합 사용·상호작용은 [docs/MULTI-CLI.md](docs/MULTI-CLI.md) 참고
-> 🪟 Windows에서 Claude Code·Codex CLI·Gemini CLI 설치는 [docs/WINDOWS-SETUP.md](docs/WINDOWS-SETUP.md) 참고
-> 🗂️ 원격 프로젝트 문서 ↔ Obsidian 동기화는 [docs/OBSIDIAN-DOCS-SYNC.md](docs/OBSIDIAN-DOCS-SYNC.md)(arachne 설정)·[docs/SYNCTHING-SETUP.md](docs/SYNCTHING-SETUP.md)(자동) 참고
-> ✅ GitHub Actions CI 구조·로컬 재현·실패 대응은 [docs/CI.md](docs/CI.md) 참고
-> 🧭 전체 문서 인덱스와 독자별 진입점은 [docs/README.md](docs/README.md) 참고
-> 🐍 Python·Web 기본 스택과 profile은 [docs/PYTHON-WEB-PROFILE.md](docs/PYTHON-WEB-PROFILE.md) 참고
-> 🔁 사용 프로젝트 CI 운영 계약은 [docs/PROJECT-CI.md](docs/PROJECT-CI.md) 참고
-> 📑 약어(SSOT·TDD·DI·a11y 등) 풀이는 [docs/GLOSSARY.md](docs/GLOSSARY.md) 참고
-> 🧠 AI 엔지니어링 학습 노트(Agent/Workflow·MCP·Prompt Injection 등)는 [docs/AI-ENGINEERING-NOTES.md](docs/AI-ENGINEERING-NOTES.md) 참고
-> 🧭 Arachne를 익히는 순서는 [docs/HARNESS-LEARNING-GUIDE.md](docs/HARNESS-LEARNING-GUIDE.md) 참고
-> 🗺️ 제품·아키텍처·Java·Docker·시스템/네트워크 역량 지도는 [docs/CAPABILITY-MAP.md](docs/CAPABILITY-MAP.md) 참고
-> 🎛️ UI/UX 예시와 간격·정렬 기준은 [docs/ui-ux/README.md](docs/ui-ux/README.md) 참고
+## 📚 Documentation Map
+
+전체 문서 인덱스와 독자별 진입점은 **[docs/README.md](docs/README.md)** 가 정본이다.
+목적별 진입점:
+
+| 알고 싶은 것 | 문서 |
+|---|---|
+| 하네스 구조 다이어그램·설치 배선·3-레인 협업 | [ARCHITECTURE](docs/ARCHITECTURE.md) |
+| 일상 사용법(skills·agents·커맨드·hooks) · 약어 풀이 | [USAGE](docs/USAGE.md) · [GLOSSARY](docs/GLOSSARY.md) |
+| 멀티 CLI(Claude·Codex·Gemini·Copilot) 역할·위임 | [MULTI-CLI](docs/MULTI-CLI.md) |
+| 프로젝트 적용 — CI 계약·profile·데이터·디자인 문서 | [PROJECT-CI](docs/PROJECT-CI.md) · [PYTHON-WEB-PROFILE](docs/PYTHON-WEB-PROFILE.md) · [DATA-HANDLING](docs/DATA-HANDLING.md) · [DESIGN-DOCS.md](docs/DESIGN-DOCS.md) |
+| 확장 도구 — Understand-Anything·taste-skill·codegraph | [tools/README](docs/tools/README.md) |
+| 플랫폼·동기화 — Windows·호환성·다중 머신·Obsidian | [WINDOWS-SETUP](docs/WINDOWS-SETUP.md) · [COMPATIBILITY](docs/COMPATIBILITY.md) · [SYNCTHING-SETUP](docs/SYNCTHING-SETUP.md) · [OBSIDIAN-DOCS-SYNC](docs/OBSIDIAN-DOCS-SYNC.md) |
+| 학습 — 익히는 순서·역량 지도·AI 엔지니어링 노트 | [HARNESS-LEARNING-GUIDE](docs/HARNESS-LEARNING-GUIDE.md) · [CAPABILITY-MAP](docs/CAPABILITY-MAP.md) · [AI-ENGINEERING-NOTES](docs/AI-ENGINEERING-NOTES.md) |
+| 저장소 자체 CI·UI/UX 기준·장기 설계 결정(ADR) | [CI](docs/CI.md) · [ui-ux/README](docs/ui-ux/README.md) · [decisions/](docs/decisions/README.md) |
 
 ---
 
@@ -186,7 +187,7 @@ Arachne/
 | `/refactor` | SRP(Single Responsibility Principle, 단일 책임 원칙) 기반 리팩터링 — 역할 분석 → 단계적 이동 |
 | `/design` | UI·컴포넌트 설계 문서 작성 및 디자인 개선 계획 제안 |
 | `/tdd` | TDD(Test-Driven Development, 테스트 주도 개발) 사이클 — RED→GREEN→REFACTOR + 메모리 검사 |
-| `/verify` | 수정 후 2단계 검증 (정적 검사 + 동작) |
+| `/verify` | 수정 후 2단계 검증 (정적 검사 + 동작) + `.arachne/reports/` 리포트 기록 |
 | `/e2e` | E2E(End-to-End, 종단 간) 테스트 — 데몬·IPC(시스템) 및 Playwright(웹) 공통 |
 | `/python-review` | Python 코드 리뷰 — PEP 8·타입 힌트·보안·이디엄 (python-reviewer 에이전트) |
 | `/fastapi-review` | FastAPI 리뷰 — async 정확성·DI(Dependency Injection, 의존성 주입)·스키마·OpenAPI |
