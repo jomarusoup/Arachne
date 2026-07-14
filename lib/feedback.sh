@@ -64,9 +64,12 @@ ListFeedbackDrafts() {
         ArachneLog "SKIP" "feedback 문서 없음: $feedback_dir"
         return 0
     fi
+    # LC_ALL=C: ko_KR.UTF-8 등 멀티바이트 로케일에서 glibc regex 의 `.*` 가
+    # 일부 한글(예: '피')을 포함한 줄에 매칭 실패한다 — 패턴이 ASCII 이므로
+    # 바이트 단위(C 로케일)로 처리하면 UTF-8 제목이 그대로 보존·추출된다.
     find "$feedback_dir" -maxdepth 1 -type f -name '*.md' | sort | while read -r feedback_file; do
-        status=$(sed -n 's/^status: "\(.*\)"/\1/p' "$feedback_file" | head -n 1)
-        title=$(sed -n 's/^Title: "\(.*\)"/\1/p' "$feedback_file" | head -n 1)
+        status=$(LC_ALL=C sed -n 's/^status: "\(.*\)"/\1/p' "$feedback_file" | head -n 1)
+        title=$(LC_ALL=C sed -n 's/^Title: "\(.*\)"/\1/p' "$feedback_file" | head -n 1)
         printf '%s\t%s\t%s\n' "${status:-unknown}" "${title:-untitled}" "$feedback_file"
     done
 }
@@ -81,7 +84,9 @@ AssertFeedbackSafe() {
     local secret_pattern='(sk-[A-Za-z0-9_-]{12,}|ghp_[A-Za-z0-9_]{20,}|github_pat_[A-Za-z0-9_]{20,}|xox[baprs]-[A-Za-z0-9-]{10,}|AKIA[0-9A-Z]{16})'
     local path_pattern='(/home/[^[:space:]]+|/Users/[^[:space:]]+|[A-Za-z]:\\Users\\[^[:space:]]+)'
 
-    if grep -Eq "$secret_pattern|$path_pattern" "$feedback_file"; then
+    # LC_ALL=C: 멀티바이트 로케일의 glibc regex 매칭 실패(한글 혼재 줄에서 토큰을
+    # 놓치는 false negative) 방지 — 민감정보 검사는 바이트 단위가 안전하다.
+    if LC_ALL=C grep -Eq "$secret_pattern|$path_pattern" "$feedback_file"; then
         ArachneLog "ERROR" "피드백에 토큰 또는 절대 경로로 보이는 문자열이 있습니다."
         echo "        마스킹 후 다시 제출하거나 --allow-sensitive 를 명시하세요." >&2
         return 1
@@ -145,11 +150,12 @@ SubmitFeedback() {
         fi
     fi
 
-    title=$(sed -n 's/^Title: "\(.*\)"/\1/p' "$feedback_file" | head -n 1)
+    # LC_ALL=C: 한글 제목 추출·치환의 멀티바이트 로케일 매칭 실패 방지 (ListFeedbackDrafts 참고)
+    title=$(LC_ALL=C sed -n 's/^Title: "\(.*\)"/\1/p' "$feedback_file" | head -n 1)
     issue_url=$(gh issue create --title "${title:-Arachne feedback}" --body-file "$feedback_file")
     submitted_at=$(date -u +%Y-%m-%dT%H:%M:%SZ)
     tmp_file="${feedback_file}.tmp"
-    sed -e 's/^status: ".*"/status: "submitted"/' \
+    LC_ALL=C sed -e 's/^status: ".*"/status: "submitted"/' \
         -e 's/^- \*\*상태\*\*: .*/- **상태**: submitted/' \
         -e "s|^- \*\*제출 URL\*\*:.*|- **제출 URL**: ${issue_url}|" \
         -e "s|^- \*\*제출 시각\*\*:.*|- **제출 시각**: ${submitted_at}|" \

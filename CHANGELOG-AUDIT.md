@@ -76,6 +76,16 @@
 - **수정**: install.sh·lib/*.sh 함수 40개 PascalCase 전환 + FUNCTION 헤더 `#===` 통일.
   CLI 인터페이스·출력 계약 불변(전체 bats 통과), docs/ARCHITECTURE.md 함수명 동기화.
 
+### A-31 feedback 한글 제목 로케일 버그 (glibc regex) [MEDIUM / 버그]
+
+- **문제**: `ko_KR.UTF-8` 로케일에서 glibc regex 의 `.*` 가 일부 한글(예: '피' U+D53C)을
+  포함한 줄에 매칭 실패 — `arachne feedback list` 가 한글 제목을 `untitled` 로 표시하고,
+  submit 의 제목 추출·민감정보 검사도 같은 경로로 오동작 가능(한글 혼재 줄의 토큰을
+  놓치는 false negative). CLI 전수 실행 점검에서 실측 발견.
+- **수정**: `lib/feedback.sh` 의 제목/상태 추출 sed·상태 치환 sed·민감정보 grep 에
+  `LC_ALL=C`(바이트 단위) 적용 — 패턴이 ASCII 라 UTF-8 내용이 그대로 보존된다.
+  '피' 포함 제목 회귀 테스트 추가 (tests/feedback.bats).
+
 ### 이번 조사에서 "의도적 설계"로 확인·종결한 항목
 
 - `./install.sh` 무인자 = 즉시 설치: 부트스트랩 UX로 테스트에 명문화돼 있음

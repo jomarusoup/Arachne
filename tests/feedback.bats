@@ -61,6 +61,20 @@ GH
     [[ "$output" == *"draft"*"설치 개선"* ]]
 }
 
+@test "feedback: 멀티바이트 로케일에서도 한글 제목 추출 (glibc regex 회귀)" {
+    cd "${PROJECT_DIR}"
+    # '피'(U+D53C) 등 일부 한글은 ko_KR.UTF-8 의 glibc regex `.*` 매칭을 깨뜨린다
+    # — LC_ALL=C 바이트 처리 없이는 list 가 untitled 로 표시되는 회귀 검증.
+    run bash "${REPO_DIR}/install.sh" feedback new "피드백 픽스"
+    [ "$status" -eq 0 ]
+
+    # ko_KR.UTF-8 미설치 환경이면 setlocale 경고만 나고 동작은 동일 (수정은 로케일 무관)
+    LC_ALL=ko_KR.UTF-8 run bash "${REPO_DIR}/install.sh" feedback list
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"피드백 픽스"* ]]
+    [[ "$output" != *"untitled"* ]]
+}
+
 @test "feedback: submit 은 민감정보 후보를 기본 차단" {
     cd "${PROJECT_DIR}"
     bash "${REPO_DIR}/install.sh" feedback new "secret leak" >/dev/null
