@@ -40,11 +40,12 @@ FROM:: [[2026-06-11-architecture-audit]]
 - **트리거**: **다른 사람 또는 새 머신에 Arachne를 배포하는 시점.** 단일 사용자·기존 머신
   동안은 보류.
 
-### 2. F-03 — statusline macOS 호환 [MEDIUM]
+### 2. F-03 — statusline macOS 호환 [MEDIUM] — ✅ 완료 (2026-07-14, A-26)
 
 - **내용**: `statusline-command.sh`의 주간 리셋 계산이 GNU `date -d` 전용 — BSD date(macOS
   기본)에서 고장. epoch 산술로 이식하거나 macOS 분기.
-- **트리거**: **macOS 머신을 실제 사용하기 시작할 때.** 현 주력(Rocky/RHEL)에선 영향 없음.
+- **결과**: 2026-07-14 전수 조사에서 epoch 산술로 이식 완료 (CHANGELOG-AUDIT A-26).
+  트리거(macOS 실사용) 도래 전 조기 해소 — 수정 비용이 낮아 함께 처리.
 
 ### 3. F-07 후속 — 릴리스 태그·CHANGELOG 정책 [LOW]
 

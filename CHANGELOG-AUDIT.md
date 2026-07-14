@@ -5,6 +5,84 @@
 
 ---
 
+## 2026-07-14 — 전수 조사 후속 (3차 — 세션 상태·토큰·이식성, 사용자 승인분)
+
+### A-20 PreCompact 세션 경로 통일 (workflow-04 잔존) [HIGH / 버그]
+
+- **문제**: `pre-compact.sh`가 `$(pwd)/.claude/sessions`에 저장하는데 복원 측
+  `session-start.sh`는 `~/.claude/sessions`만 읽음 — 압축 전 스냅샷이 영구 고아.
+  workflow-04는 done이었지만 pre-compact 경로가 수정에서 누락돼 있었다.
+- **수정**: `$HOME/.claude/sessions`로 통일. hooks.bats #29 계약에 pre-compact 포함.
+
+### A-21 Stop 훅 매 턴 실행 대응 — fetch 스로틀·스냅샷 하루 1파일·보존 정리 [MEDIUM / 운영성]
+
+- **문제**: Stop 훅은 턴마다 실행 — ① 매 턴 `git fetch`(A-12 스로틀 우회) ② 분 단위
+  파일명으로 auto 스냅샷 무한 누적(실측 284개).
+- **수정**: `UpdateUpstreamRef`에 git-bus와 같은 `last-fetch-epoch` 스탬프 스로틀(기본
+  300초), 스냅샷을 `auto-YYYY-MM-DD.md` 하루 1개 덮어쓰기, 14일 지난 auto 파일 자동
+  정리(수동 세션은 보존). 테스트 3건 추가.
+
+### A-22 git-bus 자기 커밋 재공지 방지 [LOW / 노이즈]
+
+- **문제**: `/git` 푸시 직후 다음 프롬프트에서 방금 만든 커밋이 "업스트림 새 커밋"으로
+  재공지(실측) — 배너·토큰 낭비.
+- **수정**: `commands/git.md` 6단계에 푸시 성공 후 `last-seen-commit` 기준점 갱신 추가.
+  doc-contract 테스트 추가.
+
+### A-23 ua-stale 경고 스누즈 [LOW / 노이즈]
+
+- **문제**: 임계값 1 + 스누즈 없음 → 재분석을 미루는 동안 매 세션 영구 배너.
+- **수정**: 같은 기준 커밋 경고는 `UA_STALE_SNOOZE_DAYS`(기본 7일) 동안 1회만.
+  기준 커밋 변경(재분석) 시 무효화. 0이면 기존 동작. 테스트 3건 추가.
+
+### A-24 install.sh 백업 중첩 수정 [MEDIUM / 버그]
+
+- **문제**: `mv dst dst.bak`에서 `.bak`이 디렉터리로 이미 있으면 그 안으로 중첩 이동.
+- **수정**: 1세대 백업 정책대로 기존 `.bak` 제거 후 교체 (`backup_and_link`·`register_bin`).
+
+### A-25 settings.json 재생성 시 사용자 선호 키 보존 [MEDIUM / 운영성]
+
+- **문제**: `arachne -i`가 템플릿으로 통째 재생성 → `/model`·테마 선택이 초기화.
+- **수정**: jq 가용 시 기존 `model`·`theme` 값을 보존 병합(하네스 소유 영역은 템플릿 기준).
+
+### A-26 statusline BSD date 이식성 (F-03 조기 해소) [MEDIUM / 이식성]
+
+- **수정**: 주간 리셋 계산의 GNU `date -d`를 epoch 산술로 대체 (DST 주 ±1h 허용).
+
+### A-27 래퍼 모델 환경변수 오타 폴백 제거 [LOW / 정리]
+
+- **수정**: `GASK_MODEL`·`CASK_MODEL` 폴백 삭제 — 정본은 `GTASK_MODEL`/`CTASK_MODEL`.
+
+### A-28 ctask 쓰기 모드 권한 승격 [LOW / 보안]
+
+- **수정**: `permissions.ask`에 `ctask -w`·`codex-task -w`·`atask -w` 추가 — 트리 변경
+  모드는 자동 허용 대신 확인. (플래그가 뒤에 오는 호출은 못 잡는 prefix 매칭 한계 있음)
+
+### A-29 세션 상시 로드 토큰 다이어트 [HIGH / 비용]
+
+- **문제**: 매 세션 고정 로드 ~57KB(CLAUDE.md+rules/common+rules/README) + 전역
+  플러그인 스킬 설명 수천 토큰.
+- **수정**: ① `ui-layout.md` → `rules/web/`(paths 로드) ② `issue-workflow.md` →
+  `/issue` 커맨드로 이관 ③ `workflow.md` 다이제스트화(11.2KB→4.2KB, 상세는
+  docs/MULTI-CLI.md) ④ `rules/README.md` 트리 중복 제거(7.6KB→2.3KB) ⑤ patterns.md
+  Obsidian 잔재 제거 ⑥ `figma`·`chrome-devtools-mcp` 전역 해제(프로젝트 스코프 정책
+  — docs/tools/extras-setup.md). 상시 로드 57KB→36KB(-37%).
+- **불변**: 3-레인 계약 토큰은 유지(check_convention_sync 통과), 역할 분담·불변식 동일.
+
+### A-30 bash 자기규칙 스타일 통일 [LOW / 일관성]
+
+- **문제**: install.sh·lib는 snake_case+`####` 함수 헤더, hooks·래퍼는
+  PascalCase+`#===` — rules/bash와 절반만 일치.
+- **수정**: install.sh·lib/*.sh 함수 40개 PascalCase 전환 + FUNCTION 헤더 `#===` 통일.
+  CLI 인터페이스·출력 계약 불변(전체 bats 통과), docs/ARCHITECTURE.md 함수명 동기화.
+
+### 이번 조사에서 "의도적 설계"로 확인·종결한 항목
+
+- `./install.sh` 무인자 = 즉시 설치: 부트스트랩 UX로 테스트에 명문화돼 있음
+  (`no-arg: install.sh 직접 실행은 최초 설치 수행`) — noarg-safe 원칙의 의도적 예외.
+
+---
+
 ## 2026-06-11 — Audit Follow-up (2차, Phase 2 승인분)
 
 > 잔존 항목의 전체 목록·트리거 조건은 docs/task/2026-06-11-audit-followup.md 참고.
