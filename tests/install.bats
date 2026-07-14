@@ -117,6 +117,36 @@ run_install() {
     [ -f "${TMP_DIR}/.claude/CLAUDE.md.bak" ]
 }
 
+@test "install: .bak 디렉터리가 이미 있어도 백업이 중첩되지 않음" {
+    # 이전 백업(디렉터리)이 남아 있으면 mv 가 그 안으로 이동했던 회귀 방지
+    mkdir -p "${TMP_DIR}/.claude/commands.bak"
+    mkdir -p "${TMP_DIR}/.claude/commands"
+    echo "user file" > "${TMP_DIR}/.claude/commands/mine.md"
+
+    run_install
+    [ -L "${TMP_DIR}/.claude/commands" ]
+    [ -f "${TMP_DIR}/.claude/commands.bak/mine.md" ]
+    [ ! -e "${TMP_DIR}/.claude/commands.bak/commands" ]
+}
+
+#-------------------------------------------------------------------------------
+# 사용자 선호 키 보존 — 재설치가 /model·theme 선택을 템플릿 값으로 되돌리지 않음
+#-------------------------------------------------------------------------------
+@test "install: 재설치 시 기존 settings.json 의 model·theme 보존" {
+    command -v jq >/dev/null 2>&1 || skip "jq 미설치"
+    run_install
+    # 사용자가 /model 등으로 바꾼 상태를 재현
+    jq '.model = "user-picked-model" | .theme = "light"' \
+        "${TMP_DIR}/.claude/settings.json" > "${TMP_DIR}/.claude/settings.json.tmp"
+    mv "${TMP_DIR}/.claude/settings.json.tmp" "${TMP_DIR}/.claude/settings.json"
+
+    run_install
+    [ "$(jq -r '.model' "${TMP_DIR}/.claude/settings.json")" = "user-picked-model" ]
+    [ "$(jq -r '.theme' "${TMP_DIR}/.claude/settings.json")" = "light" ]
+    # 하네스 소유 영역(hooks 등)은 템플릿 기준으로 갱신 유지
+    [ "$(jq -r '.hooks.SessionStart | length' "${TMP_DIR}/.claude/settings.json")" != "null" ]
+}
+
 #-------------------------------------------------------------------------------
 # dotfiles 병합 회귀 (A-01): 사용자 함수의 '{'·'}' 줄과 중복 제거가 충돌해
 # 병합본 문법이 깨지지 않아야 한다

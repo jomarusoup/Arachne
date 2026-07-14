@@ -82,20 +82,20 @@ Windows에서는 `~\.local\bin\arachne.cmd → install.ps1` 래퍼가 같은 역
 우선 사용하고, 파일 시스템 제약이 있으면 복사로 폴백한다. Bash 기반 훅과 위임 명령은
 Git for Windows의 `bash.exe`를 통해 실행한다.
 
-1. **Claude 설치** (`install_claude`)
+1. **Claude 설치** (`InstallClaude`)
    1. `~/.claude/` 생성(`mkdir -p`).
    2. `SYMLINK_TARGETS`(CLAUDE.md · commands · agents · rules · hooks · skills · statusline)를 하나씩:
       - 대상이 **실파일/디렉터리면** `.bak`으로 백업(`mv`), **기존 심볼릭이면** 제거(`rm`).
       - `ln -s 레포/대상 ~/.claude/대상` 으로 **심볼릭 링크** 생성 → 이후 레포 수정이 즉시 반영.
    3. `settings.json`은 링크가 아니라 **생성**: 실파일이면 `.bak` 백업 후,
       `settings.template.json`의 `__HOME__`을 실제 홈 경로로 `sed` 치환해 써넣는다.
-2. **Gemini 설치** (`install_gemini`, 감지된 경우만)
+2. **Gemini 설치** (`InstallGemini`, 감지된 경우만)
    - `ln -s 레포/AGENTS.md ~/.gemini/GEMINI.md`. **심볼릭이므로 AGENTS.md 수정이 재설치 없이 즉시 반영.**
-3. **Codex 설치** (`install_codex`, 감지된 경우만)
-   - Codex는 import를 지원하지 않아 심볼릭 대신 **마커 병합**(`merge_dotfile`): `~/.codex/AGENTS.md`의
+3. **Codex 설치** (`InstallCodex`, 감지된 경우만)
+   - Codex는 import를 지원하지 않아 심볼릭 대신 **마커 병합**(`MergeDotfile`): `~/.codex/AGENTS.md`의
      `<!-- === ARACHNE … === -->` 마커 **안쪽만** AGENTS.md 본문으로 갱신하고, 마커 밖 사용자 내용은 보존.
    - 심볼릭이 아니라서 **AGENTS.md를 고친 뒤엔 `arachne -i --target codex`로 재병합**해야 반영된다.
-4. **GitHub Copilot 설치** (`install_copilot`, 감지된 경우만)
+4. **GitHub Copilot 설치** (`InstallCopilot`, 감지된 경우만)
    - Copilot CLI용 `~/.copilot/copilot-instructions.md`는 사용자 영역을 보존하며 마커 병합한다.
    - VS Code용 `~/.copilot/instructions/arachne.instructions.md`는 `applyTo: "**"` frontmatter와 함께 생성한다.
    - Windows 네이티브는 `install.ps1 -Install -Target copilot`, macOS/Linux/WSL/Git Bash는
@@ -103,7 +103,7 @@ Git for Windows의 `bash.exe`를 통해 실행한다.
 5. **공통 설치** (`install_shared`, 항상 1회)
    1. `install_dotfiles` — `~/.bash_profile`·`~/.vimrc`에 `# === ARACHNE BEGIN/END ===` 마커 섹션을
       병합(멱등: 있으면 교체, 없으면 추가, 사용자 영역 중복 줄은 제외).
-   2. `register_bin` — `BIN_TARGETS`(arachne · tws · gemini-task · gtask · codex-task · ctask ·
+   2. `RegisterBin` — `BIN_TARGETS`(arachne · tws · gemini-task · gtask · codex-task · ctask ·
       arachne-task · atask · docs-sync)를
       `~/.local/bin/`에 심볼릭으로 등록(+`chmod +x`). PATH에 `~/.local/bin`이 없으면 경고 출력.
 

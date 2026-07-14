@@ -8,12 +8,12 @@
 
 set -euo pipefail
 
-################################################################################
+#===============================================================================
 # FUNCTION    : ResolvePath
 # DESCRIPTION : GNU readlink -f 없이 파일·심볼릭 링크의 절대 경로 계산
 # PARAMETERS  : string path - 해석할 파일 경로
 # RETURNED    : 절대 경로
-################################################################################
+#===============================================================================
 ResolvePath() {
     local path="$1"
     local dir
@@ -47,13 +47,13 @@ ARACHNE_VERSION="$(cat "$REPO_DIR/VERSION" 2>/dev/null | tr -d '[:space:]')"
 ARACHNE_VERSION="${ARACHNE_VERSION:-unknown}"
 ENTRY_NAME="$(basename "$0")"
 
-################################################################################
-# FUNCTION    : arachne_log
+#===============================================================================
+# FUNCTION    : ArachneLog
 # DESCRIPTION : Arachne 스크립트의 사용자 출력 형식을 통일
 # PARAMETERS  : string level   - STEP|RUN|SKIP|DONE|WARN|ERROR
 #               string message - 출력할 메시지
-################################################################################
-arachne_log() {
+#===============================================================================
+ArachneLog() {
     local level="$1"
     local message="$2"
 
@@ -63,12 +63,12 @@ arachne_log() {
     esac
 }
 
-################################################################################
-# FUNCTION    : arachne_section
+#===============================================================================
+# FUNCTION    : ArachneSection
 # DESCRIPTION : 긴 설치·업데이트 로그의 주요 단계 경계를 배너로 표시
 # PARAMETERS  : string message - 섹션 제목
-################################################################################
-arachne_section() {
+#===============================================================================
+ArachneSection() {
     local message="$1"
 
     printf '%s\n' "$ARACHNE_SEPARATOR"
@@ -100,11 +100,11 @@ SYMLINK_TARGETS=(
     "skills"
 )
 
-################################################################################
-# FUNCTION    : usage
+#===============================================================================
+# FUNCTION    : Usage
 # DESCRIPTION : 사용법 출력
-################################################################################
-usage() {
+#===============================================================================
+Usage() {
     local entry
     local script
     local cmd
@@ -146,23 +146,23 @@ usage() {
     done
 }
 
-################################################################################
-# FUNCTION    : show_version
+#===============================================================================
+# FUNCTION    : ShowVersion
 # DESCRIPTION : 버전 정보 출력 (git 단축 해시 포함)
-################################################################################
-show_version() {
+#===============================================================================
+ShowVersion() {
     local rev
     rev=$(git -C "$REPO_DIR" rev-parse --short HEAD 2>/dev/null || echo "unknown")
     echo "${PROG} ${ARACHNE_VERSION} (${rev})"
 }
 
-################################################################################
-# FUNCTION    : update_arachne_core
+#===============================================================================
+# FUNCTION    : UpdateArachneCore
 # DESCRIPTION : git pull 후 최신 상태로 재설치 (Arachne 본체)
-################################################################################
-update_arachne_core() {
-    arachne_section "업데이트 시작 (git pull)"
-    cd "$REPO_DIR" || { arachne_log "ERROR" "update: 레포 디렉터리 진입 실패 (repo=$REPO_DIR)"; exit 1; }
+#===============================================================================
+UpdateArachneCore() {
+    ArachneSection "업데이트 시작 (git pull)"
+    cd "$REPO_DIR" || { ArachneLog "ERROR" "update: 레포 디렉터리 진입 실패 (repo=$REPO_DIR)"; exit 1; }
 
     #---------------------------------------------------------------------------
     # #33: pull·재설치 전에 레포 상태를 검증한다. 비-main 브랜치는 경고하고,
@@ -172,57 +172,57 @@ update_arachne_core() {
     local branch
     branch=$(git rev-parse --abbrev-ref HEAD 2>/dev/null || echo "?")
     if [ "$branch" != "main" ]; then
-        arachne_log "WARN" "update: 현재 브랜치가 main 이 아님 (branch=$branch)"
+        ArachneLog "WARN" "update: 현재 브랜치가 main 이 아님 (branch=$branch)"
     fi
     if ! git diff --quiet 2>/dev/null || ! git diff --cached --quiet 2>/dev/null; then
-        arachne_log "ERROR" "update: 작업트리에 커밋되지 않은 변경이 있음 — git pull 충돌·재설치 손실 위험"
-        arachne_log "ERROR" "update: 커밋/스태시 후 재실행 또는 ARACHNE_FORCE=1 arachne -u 로 강제"
+        ArachneLog "ERROR" "update: 작업트리에 커밋되지 않은 변경이 있음 — git pull 충돌·재설치 손실 위험"
+        ArachneLog "ERROR" "update: 커밋/스태시 후 재실행 또는 ARACHNE_FORCE=1 arachne -u 로 강제"
         if [ "${ARACHNE_FORCE:-0}" != "1" ]; then
             exit 1
         fi
-        arachne_log "WARN" "update: ARACHNE_FORCE=1 — dirty 검증 무시"
+        ArachneLog "WARN" "update: ARACHNE_FORCE=1 — dirty 검증 무시"
     fi
 
-    arachne_log "RUN" "git pull"
+    ArachneLog "RUN" "git pull"
     git pull
-    arachne_section "최신 소스 기반 재설치 진행"
-    install
+    ArachneSection "최신 소스 기반 재설치 진행"
+    Install
 }
 
-################################################################################
-# FUNCTION    : run_update_understand
+#===============================================================================
+# FUNCTION    : RunUpdateUnderstand
 # DESCRIPTION : Understand-Anything 확장 도구만 갱신
-################################################################################
-run_update_understand() {
+#===============================================================================
+RunUpdateUnderstand() {
     case "${ARACHNE_TARGET:-all}" in
         all|claude) ;;
         *)
-            arachne_log "SKIP" "extras: target=${ARACHNE_TARGET:-all} — Claude 플러그인 대상이 아님"
+            ArachneLog "SKIP" "extras: target=${ARACHNE_TARGET:-all} — Claude 플러그인 대상이 아님"
             return 0
             ;;
     esac
 
-    arachne_section "Understand-Anything 확장 도구 갱신 시작"
-    run_extras --ua --update
-    arachne_section "Understand-Anything 확장 도구 갱신 완료"
+    ArachneSection "Understand-Anything 확장 도구 갱신 시작"
+    RunExtras --ua --update
+    ArachneSection "Understand-Anything 확장 도구 갱신 완료"
 }
 
-################################################################################
-# FUNCTION    : run_update_codegraph
+#===============================================================================
+# FUNCTION    : RunUpdateCodegraph
 # DESCRIPTION : codegraph CLI 만 갱신
-################################################################################
-run_update_codegraph() {
-    arachne_section "codegraph 확장 도구 갱신 시작"
-    run_extras --codegraph --update
-    arachne_section "codegraph 확장 도구 갱신 완료"
+#===============================================================================
+RunUpdateCodegraph() {
+    ArachneSection "codegraph 확장 도구 갱신 시작"
+    RunExtras --codegraph --update
+    ArachneSection "codegraph 확장 도구 갱신 완료"
 }
 
-################################################################################
-# FUNCTION    : update_mark
+#===============================================================================
+# FUNCTION    : UpdateMark
 # DESCRIPTION : 업데이트 선택 메뉴의 체크박스 상태 문자열 반환
 # PARAMETERS  : integer enabled - 1이면 선택됨, 0이면 선택 안 됨
-################################################################################
-update_mark() {
+#===============================================================================
+UpdateMark() {
     if [ "$1" -eq 1 ]; then
         printf 'x'
     else
@@ -230,11 +230,11 @@ update_mark() {
     fi
 }
 
-################################################################################
-# FUNCTION    : update_interactive_menu
+#===============================================================================
+# FUNCTION    : UpdateInteractiveMenu
 # DESCRIPTION : -u 기본 대화형 체크박스 메뉴
-################################################################################
-update_interactive_menu() {
+#===============================================================================
+UpdateInteractiveMenu() {
     local want_core=1
     local want_ua=0
     local want_cg=0
@@ -242,10 +242,10 @@ update_interactive_menu() {
     local item
 
     while true; do
-        arachne_section "업데이트 항목 선택"
-        printf '  [%s] 1) Arachne 최신 소스 업데이트 + 재설치\n' "$(update_mark "$want_core")"
-        printf '  [%s] 2) Understand-Anything 플러그인 갱신\n' "$(update_mark "$want_ua")"
-        printf '  [%s] 3) codegraph CLI 갱신\n' "$(update_mark "$want_cg")"
+        ArachneSection "업데이트 항목 선택"
+        printf '  [%s] 1) Arachne 최신 소스 업데이트 + 재설치\n' "$(UpdateMark "$want_core")"
+        printf '  [%s] 2) Understand-Anything 플러그인 갱신\n' "$(UpdateMark "$want_ua")"
+        printf '  [%s] 3) codegraph CLI 갱신\n' "$(UpdateMark "$want_cg")"
         printf '\n'
         read -r -p "[Arachne] 번호로 토글, Enter=선택 실행, a=전체 선택, n=전체 해제, q=취소: " reply || true
 
@@ -264,7 +264,7 @@ update_interactive_menu() {
                 want_cg=0
                 ;;
             q|Q)
-                arachne_log "SKIP" "update: 사용자가 취소함"
+                ArachneLog "SKIP" "update: 사용자가 취소함"
                 return 0
                 ;;
             *)
@@ -273,7 +273,7 @@ update_interactive_menu() {
                         1) [ "$want_core" -eq 1 ] && want_core=0 || want_core=1 ;;
                         2) [ "$want_ua" -eq 1 ] && want_ua=0 || want_ua=1 ;;
                         3) [ "$want_cg" -eq 1 ] && want_cg=0 || want_cg=1 ;;
-                        *) arachne_log "WARN" "update: 알 수 없는 선택 '$item' 무시" ;;
+                        *) ArachneLog "WARN" "update: 알 수 없는 선택 '$item' 무시" ;;
                     esac
                 done
                 ;;
@@ -281,59 +281,62 @@ update_interactive_menu() {
     done
 
     if [ "$want_core" -eq 0 ] && [ "$want_ua" -eq 0 ] && [ "$want_cg" -eq 0 ]; then
-        arachne_log "SKIP" "update: 선택된 항목 없음"
+        ArachneLog "SKIP" "update: 선택된 항목 없음"
         return 0
     fi
 
-    [ "$want_core" -eq 1 ] && update_arachne_core
-    [ "$want_ua" -eq 1 ] && run_update_understand
-    [ "$want_cg" -eq 1 ] && run_update_codegraph
+    [ "$want_core" -eq 1 ] && UpdateArachneCore
+    [ "$want_ua" -eq 1 ] && RunUpdateUnderstand
+    [ "$want_cg" -eq 1 ] && RunUpdateCodegraph
 }
 
-################################################################################
-# FUNCTION    : update_arachne
+#===============================================================================
+# FUNCTION    : UpdateArachne
 # DESCRIPTION : -u 진입점. 대화형이면 체크박스 선택, 비대화형·플래그 지정은 기존 흐름 유지
-################################################################################
-update_arachne() {
+#===============================================================================
+UpdateArachne() {
     if [ -t 0 ] && [ "${ARACHNE_WITH_UA:-0}" -eq 0 ] && [ "${ARACHNE_WITH_EXTRAS:-0}" -eq 0 ]; then
-        update_interactive_menu
+        UpdateInteractiveMenu
         return 0
     fi
 
-    update_arachne_core
+    UpdateArachneCore
     # -u 도 -i 와 동일하게 확장 도구 분기. --with-extras 면 멱등 동기화,
     # 미지정 대화형이면 질의(자동 강제 X — noarg-safe 원칙 유지).
     # update 모드 — 선택된 확장 도구의 클론·플러그인·CLI 를 git pull/plugin update 로 갱신.
-    maybe_run_extras --update
+    MaybeRunExtras --update
 }
 
-################################################################################
-# FUNCTION    : run_session
+#===============================================================================
+# FUNCTION    : RunSession
 # DESCRIPTION : tmux 워크스페이스 매니저 실행 (tws 래퍼)
-################################################################################
-run_session() {
+#===============================================================================
+RunSession() {
     local tmux_script="$REPO_DIR/tmux.sh"
-    arachne_section "tmux 워크스페이스 실행"
+    ArachneSection "tmux 워크스페이스 실행"
 
     if [ -f "$tmux_script" ]; then
         exec "$tmux_script"
     else
-        arachne_log "ERROR" "tmux.sh 파일을 찾을 수 없습니다: $tmux_script"
+        ArachneLog "ERROR" "tmux.sh 파일을 찾을 수 없습니다: $tmux_script"
         exit 1
     fi
 }
 
-################################################################################
-# FUNCTION    : backup_and_link
+#===============================================================================
+# FUNCTION    : BackupAndLink
 # DESCRIPTION : 기존 파일/디렉터리 백업 후 심볼릭 링크 생성
 # PARAMETERS  : string src - 레포 내 원본 경로
 #               string dst - ~/.claude/ 내 대상 경로
-################################################################################
-backup_and_link() {
+#===============================================================================
+BackupAndLink() {
     local src="$1"
     local dst="$2"
 
     if [ -e "$dst" ] && [ ! -L "$dst" ]; then
+        # 기존 .bak 이 디렉터리면 mv 가 그 안으로 중첩 이동한다 — 1세대 백업
+        # 정책(직전 것만 보존)에 맞게 이전 백업을 지우고 교체한다.
+        rm -rf "$dst.bak"
         echo "  백업: $dst -> $dst.bak"
         mv "$dst" "$dst.bak"
     elif [ -L "$dst" ]; then
@@ -344,14 +347,14 @@ backup_and_link() {
     echo "  링크: $dst -> $src"
 }
 
-################################################################################
-# FUNCTION    : register_bin
+#===============================================================================
+# FUNCTION    : RegisterBin
 # DESCRIPTION : BIN_TARGETS 를 ~/.local/bin/ 에 심볼릭 링크로 등록
 #               git pull 시 자동 업데이트 (재실행 불필요)
 #               새 스크립트 추가 시에만 재실행 필요
-################################################################################
-register_bin() {
-    arachne_section "bin 등록 시작: $LOCAL_BIN"
+#===============================================================================
+RegisterBin() {
+    ArachneSection "bin 등록 시작: $LOCAL_BIN"
     mkdir -p "$LOCAL_BIN"
 
     for entry in "${BIN_TARGETS[@]}"; do
@@ -370,6 +373,7 @@ register_bin() {
         if [ -L "$dst" ]; then
             rm "$dst"
         elif [ -e "$dst" ]; then
+            rm -rf "$dst.bak"
             echo "  백업: $dst -> $dst.bak"
             mv "$dst" "$dst.bak"
         fi
@@ -378,7 +382,7 @@ register_bin() {
         echo "  등록: $cmd -> $src"
     done
 
-    arachne_section "bin 등록 완료"
+    ArachneSection "bin 등록 완료"
 
     # F-10: 부분 문자열 grep 은 유사 경로(~/.local/binx 등)에 오탐 — 정확한 항목 매칭
     case ":$PATH:" in
@@ -390,19 +394,19 @@ register_bin() {
     esac
 }
 
-################################################################################
-# FUNCTION    : install_claude
+#===============================================================================
+# FUNCTION    : InstallClaude
 # DESCRIPTION : Claude Code 타깃 설치 — 심볼릭 링크 + settings.json 생성
 #               (rules/ 가 ~/.claude/rules/ 로 링크돼 네이티브 자동 로드됨)
-################################################################################
-install_claude() {
-    arachne_section "Claude 설치 시작: $REPO_DIR -> $CLAUDE_DIR"
+#===============================================================================
+InstallClaude() {
+    ArachneSection "Claude 설치 시작: $REPO_DIR -> $CLAUDE_DIR"
     mkdir -p "$CLAUDE_DIR"
 
     # local 선언 — 동적 스코프에서 호출자(install)의 변수를 덮어쓰지 않도록 한다
     local link_target
     for link_target in "${SYMLINK_TARGETS[@]}"; do
-        backup_and_link "$REPO_DIR/$link_target" "$CLAUDE_DIR/$link_target"
+        BackupAndLink "$REPO_DIR/$link_target" "$CLAUDE_DIR/$link_target"
     done
 
     # settings.json: __HOME__ 치환 후 생성 (심볼릭 링크 아님)
@@ -411,6 +415,21 @@ install_claude() {
     local settings_dst="$CLAUDE_DIR/settings.json"
     local new_settings
     new_settings=$(sed "s|__HOME__|$HOME|g" "$REPO_DIR/settings.template.json")
+
+    #---------------------------------------------------------------------------
+    # 사용자 선호 키 보존 — /model·/config 로 저장한 model·theme 은 재설치가
+    # 템플릿 기본값으로 되돌리지 않는다 (jq 가용 + 기존 파일이 유효 JSON일 때).
+    #---------------------------------------------------------------------------
+    if command -v jq >/dev/null 2>&1 \
+        && [ -f "$settings_dst" ] && jq -e . "$settings_dst" >/dev/null 2>&1; then
+        local merged
+        merged=$(printf '%s\n' "$new_settings" | jq \
+            --slurpfile cur "$settings_dst" \
+            '. + {model: ($cur[0].model // .model), theme: ($cur[0].theme // .theme)}
+             | with_entries(select(.value != null))' 2>/dev/null) \
+            && [ -n "$merged" ] && new_settings="$merged"
+    fi
+
     if [ -e "$settings_dst" ] && [ ! -L "$settings_dst" ]; then
         cp "$settings_dst" "$settings_dst.bak"
         echo "  백업: $settings_dst -> $settings_dst.bak"
@@ -422,55 +441,55 @@ install_claude() {
     printf '%s\n' "$new_settings" > "$settings_dst"
     echo "  생성: $settings_dst (from settings.template.json)"
 
-    arachne_section "Claude 설치 완료"
+    ArachneSection "Claude 설치 완료"
 }
 
-################################################################################
-# FUNCTION    : install_gemini
+#===============================================================================
+# FUNCTION    : InstallGemini
 # DESCRIPTION : Gemini CLI 타깃 설치 — AGENTS.md(SSOT)를 ~/.gemini/GEMINI.md 로 심볼릭
 #               심볼릭이라 AGENTS.md 수정이 재설치 없이 즉시 반영됨
-################################################################################
-install_gemini() {
+#===============================================================================
+InstallGemini() {
     local gemini_dir="$HOME/.gemini"
-    arachne_section "Gemini 설치 시작: AGENTS.md -> $gemini_dir/GEMINI.md"
+    ArachneSection "Gemini 설치 시작: AGENTS.md -> $gemini_dir/GEMINI.md"
     mkdir -p "$gemini_dir"
-    backup_and_link "$REPO_DIR/AGENTS.md" "$gemini_dir/GEMINI.md"
-    arachne_section "Gemini 설치 완료"
+    BackupAndLink "$REPO_DIR/AGENTS.md" "$gemini_dir/GEMINI.md"
+    ArachneSection "Gemini 설치 완료"
 }
 
-################################################################################
-# FUNCTION    : install_codex
+#===============================================================================
+# FUNCTION    : InstallCodex
 # DESCRIPTION : Codex CLI 타깃 설치 — AGENTS.md(SSOT)를 ~/.codex/AGENTS.md 로 병합.
 #               import 미지원이라 심볼릭 대신 마커 병합(사용자 보충 보존).
 #               Markdown 친화 마커(<!-- === ARACHNE ... === -->) 사용.
 #               심볼릭이 아니므로 AGENTS.md 수정 후 재반영하려면
 #               arachne -i --target codex 재실행이 필요하다.
-################################################################################
-install_codex() {
+#===============================================================================
+InstallCodex() {
     local codex_dir="$HOME/.codex"
-    arachne_section "Codex 설치 시작: AGENTS.md -> $codex_dir/AGENTS.md"
+    ArachneSection "Codex 설치 시작: AGENTS.md -> $codex_dir/AGENTS.md"
     mkdir -p "$codex_dir"
-    merge_dotfile "$REPO_DIR/AGENTS.md" "$codex_dir/AGENTS.md" "<!--" " -->"
-    arachne_section "Codex 설치 완료"
+    MergeDotfile "$REPO_DIR/AGENTS.md" "$codex_dir/AGENTS.md" "<!--" " -->"
+    ArachneSection "Codex 설치 완료"
 }
 
-################################################################################
-# FUNCTION    : install_copilot
+#===============================================================================
+# FUNCTION    : InstallCopilot
 # DESCRIPTION : GitHub Copilot 타깃 설치.
 #               Copilot CLI 전역 지침은 사용자 내용을 보존하는 마커 병합으로,
 #               VS Code 사용자 지침은 Arachne 전용 .instructions.md 로 생성한다.
 #               일반 파일만 사용해 macOS·Linux·WSL·Git Bash에서 링크 권한 없이 동작한다.
-################################################################################
-install_copilot() {
+#===============================================================================
+InstallCopilot() {
     local copilot_dir="$HOME/.copilot"
     local instructions_dir="$copilot_dir/instructions"
     local vscode_file="$instructions_dir/arachne.instructions.md"
     local tmp
 
-    arachne_section "GitHub Copilot 설치 시작: AGENTS.md -> $copilot_dir"
+    ArachneSection "GitHub Copilot 설치 시작: AGENTS.md -> $copilot_dir"
     mkdir -p "$instructions_dir"
 
-    merge_dotfile \
+    MergeDotfile \
         "$REPO_DIR/AGENTS.md" \
         "$copilot_dir/copilot-instructions.md" \
         "<!--" \
@@ -490,16 +509,16 @@ install_copilot() {
     mv "$tmp" "$vscode_file"
 
     echo "  생성: $vscode_file"
-    arachne_section "GitHub Copilot 설치 완료"
+    ArachneSection "GitHub Copilot 설치 완료"
 }
 
-################################################################################
-# FUNCTION    : detect_cli
+#===============================================================================
+# FUNCTION    : DetectCli
 # DESCRIPTION : 대상 CLI 설치 여부 검사 (홈 디렉터리 또는 바이너리 존재)
 # PARAMETERS  : string cli - gemini | codex | copilot
 # RETURNED    : 0(감지) / 1(미감지)
-################################################################################
-detect_cli() {
+#===============================================================================
+DetectCli() {
     local cli="$1"
     case "$cli" in
         gemini) [ -d "$HOME/.gemini" ] || command -v gemini >/dev/null 2>&1 ;;
@@ -509,54 +528,54 @@ detect_cli() {
     esac
 }
 
-################################################################################
-# FUNCTION    : _detect_zsh_target
+#===============================================================================
+# FUNCTION    : _DetectZshTarget
 # DESCRIPTION : ~/.zshrc 적용 대상 여부 판단
 #               zshrc 파일이 이미 있거나 기본 셸이 zsh인 경우 적용
 # RETURNED    : 0(적용) / 1(스킵)
-################################################################################
-_detect_zsh_target() {
+#===============================================================================
+_DetectZshTarget() {
     [ -f "$HOME/.zshrc" ] || [[ "$SHELL" == */zsh ]]
 }
 
-################################################################################
-# FUNCTION    : install_shared
+#===============================================================================
+# FUNCTION    : InstallShared
 # DESCRIPTION : 타깃 무관 공통 설치 (dotfiles 병합 + bin 등록) — 항상 1회
-################################################################################
-install_shared() {
-    install_dotfiles
-    register_bin
+#===============================================================================
+InstallShared() {
+    InstallDotfiles
+    RegisterBin
 }
 
-################################################################################
-# FUNCTION    : install
+#===============================================================================
+# FUNCTION    : Install
 # DESCRIPTION : 타깃 디스패처 — ARACHNE_TARGET 에 따라 CLI별 설치 후 공통 설치
 #               all 은 감지된 CLI 에만 설치(미감지 시 graceful skip)
-################################################################################
-install() {
+#===============================================================================
+Install() {
     local target="${ARACHNE_TARGET:-all}"
-    arachne_section "설치/재설치 시작 (target=$target)"
+    ArachneSection "설치/재설치 시작 (target=$target)"
     case "$target" in
-        claude) install_claude ;;
-        gemini) install_gemini ;;
-        codex)  install_codex ;;
-        copilot) install_copilot ;;
+        claude) InstallClaude ;;
+        gemini) InstallGemini ;;
+        codex)  InstallCodex ;;
+        copilot) InstallCopilot ;;
         all)
-            install_claude
-            if detect_cli gemini; then
-                install_gemini
+            InstallClaude
+            if DetectCli gemini; then
+                InstallGemini
             else
-                arachne_log "SKIP" "install: Gemini CLI 미감지 — target=gemini"
+                ArachneLog "SKIP" "install: Gemini CLI 미감지 — target=gemini"
             fi
-            if detect_cli codex; then
-                install_codex
+            if DetectCli codex; then
+                InstallCodex
             else
-                arachne_log "SKIP" "install: Codex CLI 미감지 — target=codex"
+                ArachneLog "SKIP" "install: Codex CLI 미감지 — target=codex"
             fi
-            if detect_cli copilot; then
-                install_copilot
+            if DetectCli copilot; then
+                InstallCopilot
             else
-                arachne_log "SKIP" "install: GitHub Copilot 미감지 — target=copilot"
+                ArachneLog "SKIP" "install: GitHub Copilot 미감지 — target=copilot"
             fi
             ;;
     esac
@@ -566,38 +585,38 @@ install() {
     # 특정 CLI 타깃 지정 시 공통 인프라(~/.bash_profile·~/.local/bin)를 건드리지 않는다.
     #---------------------------------------------------------------------------
     if [ "$target" = "all" ]; then
-        install_shared
+        InstallShared
     else
-        arachne_log "SKIP" "install: 타깃 '$target' — 공통 설치(dotfiles·bin) 생략 (전체 설치는 'arachne -i')"
+        ArachneLog "SKIP" "install: 타깃 '$target' — 공통 설치(dotfiles·bin) 생략 (전체 설치는 'arachne -i')"
     fi
-    arachne_log "DONE" "install: target=$target"
+    ArachneLog "DONE" "install: target=$target"
 }
 
-################################################################################
-# FUNCTION    : run_extras
+#===============================================================================
+# FUNCTION    : RunExtras
 # DESCRIPTION : 확장 도구 통합 설치 스크립트(setup-extras.sh) 실행
 #               UA·taste-skill 로컬 마켓플레이스 + codegraph CLI(+래퍼)
 # PARAMETERS  : 나머지 인자 - setup-extras.sh 로 그대로 전달
-################################################################################
-run_extras() {
+#===============================================================================
+RunExtras() {
     local extras="${ARACHNE_EXTRAS_SCRIPT:-$REPO_DIR/setup-extras.sh}"
     if [ ! -f "$extras" ]; then
-        arachne_log "SKIP" "extras: setup 스크립트 없음 — path=$extras"
+        ArachneLog "SKIP" "extras: setup 스크립트 없음 — path=$extras"
         return 0
     fi
-    arachne_log "RUN" "extras: bash $extras $*"
+    ArachneLog "RUN" "extras: bash $extras $*"
     bash "$extras" "$@"
 }
 
-################################################################################
-# FUNCTION    : maybe_run_extras
+#===============================================================================
+# FUNCTION    : MaybeRunExtras
 # DESCRIPTION : -i/-u 설치 후 확장 도구 설정 분기. Claude 타깃(all|claude)에서만 동작.
 #               --with-ua 지정 시 Understand-Anything 만 실행한다.
 #               --with-extras 지정 시 실행(비TTY는 --all), 미지정 시 대화형일 때만
 #               설치 여부를 질의한다(무인자=help 원칙 유지 — 비대화형은 조용히 스킵).
 # PARAMETERS  : 나머지 인자 - setup-extras.sh 로 전달 (예: --update)
-################################################################################
-maybe_run_extras() {
+#===============================================================================
+MaybeRunExtras() {
     local pass_args=("$@")
     local action="설정"
 
@@ -606,38 +625,38 @@ maybe_run_extras() {
     case "${ARACHNE_TARGET:-all}" in
         all|claude) ;;
         *)
-            arachne_log "SKIP" "extras: target=${ARACHNE_TARGET:-all} — Claude 플러그인 대상이 아님"
+            ArachneLog "SKIP" "extras: target=${ARACHNE_TARGET:-all} — Claude 플러그인 대상이 아님"
             return 0
             ;;
     esac
 
     if [ "${ARACHNE_WITH_UA:-0}" -eq 1 ]; then
-        arachne_section "Understand-Anything 확장 도구 ${action} 시작"
-        run_extras --ua ${pass_args[@]+"${pass_args[@]}"}
-        arachne_section "Understand-Anything 확장 도구 ${action} 완료"
+        ArachneSection "Understand-Anything 확장 도구 ${action} 시작"
+        RunExtras --ua ${pass_args[@]+"${pass_args[@]}"}
+        ArachneSection "Understand-Anything 확장 도구 ${action} 완료"
         return 0
     fi
 
     if [ "${ARACHNE_WITH_EXTRAS:-0}" -eq 1 ]; then
-        arachne_section "전체 확장 도구 ${action} 시작"
-        if [ -t 0 ]; then run_extras ${pass_args[@]+"${pass_args[@]}"}; else run_extras --all ${pass_args[@]+"${pass_args[@]}"}; fi
-        arachne_section "전체 확장 도구 ${action} 완료"
+        ArachneSection "전체 확장 도구 ${action} 시작"
+        if [ -t 0 ]; then RunExtras ${pass_args[@]+"${pass_args[@]}"}; else RunExtras --all ${pass_args[@]+"${pass_args[@]}"}; fi
+        ArachneSection "전체 확장 도구 ${action} 완료"
         return 0
     fi
 
     if [ -t 0 ]; then
         local reply
-        arachne_section "확장 도구 ${action} 선택"
+        ArachneSection "확장 도구 ${action} 선택"
         read -r -p "[Arachne] 확장 도구(Understand-Anything·taste-skill·codegraph)도 ${action}할까요? [y/N] " reply || true
         case "$reply" in
-            [yY]|[yY][eE][sS]) run_extras ${pass_args[@]+"${pass_args[@]}"}; arachne_section "확장 도구 ${action} 완료" ;;
-            *) arachne_log "SKIP" "extras: ${action} 건너뜀 (나중에 'arachne --extras' 로 가능)" ;;
+            [yY]|[yY][eE][sS]) RunExtras ${pass_args[@]+"${pass_args[@]}"}; ArachneSection "확장 도구 ${action} 완료" ;;
+            *) ArachneLog "SKIP" "extras: ${action} 건너뜀 (나중에 'arachne --extras' 로 가능)" ;;
         esac
     fi
 }
 
-################################################################################
-# FUNCTION    : merge_dotfile
+#===============================================================================
+# FUNCTION    : MergeDotfile
 # DESCRIPTION : dotfiles/ 내용을 사용자 파일에 ARACHNE 섹션으로 병합
 #               기존 파일 내용 유지, 섹션이 있으면 갱신 / 없으면 끝에 추가
 #               중복 감지: 사용자 영역에 이미 있는 export/alias 줄만 섹션에서 제외
@@ -646,8 +665,8 @@ maybe_run_extras() {
 #               string dst            - 홈 디렉터리 내 대상 경로
 #               string comment_char   - 형식별 주석 시작 문자 (기본: #, vimrc: ", md: <!--)
 #               string comment_suffix - 형식별 주석 종료 문자 (기본: 없음, md: " -->")
-################################################################################
-merge_dotfile() {
+#===============================================================================
+MergeDotfile() {
     local src="$1"
     local dst="$2"
     local comment_char="${3:-#}"
@@ -756,33 +775,33 @@ merge_dotfile() {
     mv "${tmp}" "${dst}"
 }
 
-################################################################################
-# FUNCTION    : install_dotfiles
+#===============================================================================
+# FUNCTION    : InstallDotfiles
 # DESCRIPTION : dotfiles/ 내용을 홈 디렉터리 파일에 ARACHNE 섹션으로 병합 설치
 #               중복 줄 자동 제외, zsh 감지 시 ~/.zshrc 에도 적용
-################################################################################
-install_dotfiles() {
-    arachne_section "dotfiles 설치 시작"
-    merge_dotfile "$DOTFILES_DIR/bash_profile" "$HOME/.bash_profile" "#"
-    merge_dotfile "$DOTFILES_DIR/vimrc"        "$HOME/.vimrc"        '"'
-    if _detect_zsh_target; then
+#===============================================================================
+InstallDotfiles() {
+    ArachneSection "dotfiles 설치 시작"
+    MergeDotfile "$DOTFILES_DIR/bash_profile" "$HOME/.bash_profile" "#"
+    MergeDotfile "$DOTFILES_DIR/vimrc"        "$HOME/.vimrc"        '"'
+    if _DetectZshTarget; then
         local zsh_src="$DOTFILES_DIR/bash_profile"
         [ -f "$DOTFILES_DIR/zshrc" ] && zsh_src="$DOTFILES_DIR/zshrc"
-        merge_dotfile "${zsh_src}" "$HOME/.zshrc" "#"
+        MergeDotfile "${zsh_src}" "$HOME/.zshrc" "#"
     fi
-    arachne_section "dotfiles 설치 완료"
+    ArachneSection "dotfiles 설치 완료"
     echo "  적용하려면: source ~/.bash_profile  (zsh: source ~/.zshrc)"
 }
 
-################################################################################
-# FUNCTION    : _export_single
+#===============================================================================
+# FUNCTION    : _ExportSingle
 # DESCRIPTION : 사용자 파일의 ARACHNE 섹션을 dotfiles/ 로 추출
 # PARAMETERS  : string src          - 홈 디렉터리 내 원본 파일 경로
 #               string dst          - dotfiles/ 내 대상 경로
 #               string label        - 로그 표시용 파일명
 #               string comment_char - 파일 형식별 주석 문자 (기본: #, vimrc: ")
-################################################################################
-_export_single() {
+#===============================================================================
+_ExportSingle() {
     local src="$1"
     local dst="$2"
     local label="$3"
@@ -812,49 +831,49 @@ _export_single() {
     fi
 }
 
-################################################################################
-# FUNCTION    : export_dotfiles
+#===============================================================================
+# FUNCTION    : ExportDotfiles
 # DESCRIPTION : ~/.bash_profile, ~/.vimrc, ~/.zshrc -> dotfiles/ 로 내보내기
-################################################################################
-export_dotfiles() {
-    arachne_section "dotfiles 내보내기 시작"
-    _export_single "$HOME/.bash_profile" "$DOTFILES_DIR/bash_profile" ".bash_profile" "#"
-    _export_single "$HOME/.vimrc"        "$DOTFILES_DIR/vimrc"        ".vimrc"        '"'
+#===============================================================================
+ExportDotfiles() {
+    ArachneSection "dotfiles 내보내기 시작"
+    _ExportSingle "$HOME/.bash_profile" "$DOTFILES_DIR/bash_profile" ".bash_profile" "#"
+    _ExportSingle "$HOME/.vimrc"        "$DOTFILES_DIR/vimrc"        ".vimrc"        '"'
     if [ -f "$HOME/.zshrc" ]; then
-        _export_single "$HOME/.zshrc" "$DOTFILES_DIR/zshrc" ".zshrc" "#"
+        _ExportSingle "$HOME/.zshrc" "$DOTFILES_DIR/zshrc" ".zshrc" "#"
     fi
-    arachne_section "dotfiles 내보내기 완료"
+    ArachneSection "dotfiles 내보내기 완료"
     echo "  커밋하려면: cd $REPO_DIR && git add dotfiles/ && git commit -m 'chore: update dotfiles'"
 }
 
-################################################################################
-# FUNCTION    : export_settings
+#===============================================================================
+# FUNCTION    : ExportSettings
 # DESCRIPTION : ~/.claude/settings.json -> settings.template.json 내보내기
-################################################################################
-export_settings() {
+#===============================================================================
+ExportSettings() {
     local settings_src="$CLAUDE_DIR/settings.json"
     local template_dst="$REPO_DIR/settings.template.json"
 
-    arachne_section "settings.template.json 내보내기 시작"
+    ArachneSection "settings.template.json 내보내기 시작"
     if [ ! -f "$settings_src" ]; then
-        arachne_log "ERROR" "$settings_src 파일이 없습니다."
+        ArachneLog "ERROR" "$settings_src 파일이 없습니다."
         exit 1
     fi
 
     sed "s|$HOME|__HOME__|g" "$settings_src" > "$template_dst"
-    arachne_section "settings.template.json 갱신 완료"
+    ArachneSection "settings.template.json 갱신 완료"
     echo "  커밋하려면: cd $REPO_DIR && git add settings.template.json && git commit -m 'chore: update settings template'"
 }
 
-################################################################################
-# FUNCTION    : parse_target
+#===============================================================================
+# FUNCTION    : ParseTarget
 # DESCRIPTION : 인자에서 --target 값을 파싱해 전역 ARACHNE_TARGET 에 저장·검증
 # PARAMETERS  : 커맨드 뒤 나머지 인자들 ("$@")
-################################################################################
+#===============================================================================
 ARACHNE_TARGET="all"
 ARACHNE_WITH_UA=0
 ARACHNE_WITH_EXTRAS=0
-parse_target() {
+ParseTarget() {
     ARACHNE_TARGET="all"
     ARACHNE_WITH_UA=0
     ARACHNE_WITH_EXTRAS=0
@@ -869,18 +888,18 @@ parse_target() {
     done
     case "$ARACHNE_TARGET" in
         claude|gemini|codex|copilot|all) ;;
-        *) arachne_log "ERROR" "알 수 없는 타깃: '$ARACHNE_TARGET' (claude|gemini|codex|copilot|all)"; exit 1 ;;
+        *) ArachneLog "ERROR" "알 수 없는 타깃: '$ARACHNE_TARGET' (claude|gemini|codex|copilot|all)"; exit 1 ;;
     esac
 }
 
-################################################################################
-# FUNCTION    : check_arachne
+#===============================================================================
+# FUNCTION    : CheckArachne
 # DESCRIPTION : CLI 연결 상태 점검 — 심볼릭 댕글링·병합 파일 stale 탐지.
 #               OK/SKIP/FAIL 출력. 하나라도 FAIL 이면 종료코드 1.
-################################################################################
-check_arachne() {
+#===============================================================================
+CheckArachne() {
     local fail=0
-    arachne_section "연결 상태 점검 시작"
+    ArachneSection "연결 상태 점검 시작"
 
     #---------------------------------------------------------------------------
     # Claude — SYMLINK_TARGETS 전체가 레포로 해석되고 settings.json 이 존재하는가
@@ -908,7 +927,7 @@ check_arachne() {
     #---------------------------------------------------------------------------
     # Gemini — 감지된 경우에만. ~/.gemini/GEMINI.md -> 레포 AGENTS.md
     #---------------------------------------------------------------------------
-    if detect_cli gemini; then
+    if DetectCli gemini; then
         if [ -e "$HOME/.gemini/GEMINI.md" ] \
             && [ "$(ResolvePath "$HOME/.gemini/GEMINI.md")" = "$(ResolvePath "$REPO_DIR/AGENTS.md")" ]; then
             echo "  [OK]   Gemini : ~/.gemini/GEMINI.md -> AGENTS.md"
@@ -923,7 +942,7 @@ check_arachne() {
     #---------------------------------------------------------------------------
     # Codex — 감지된 경우에만. 마커 존재 + 섹션 본문이 현재 AGENTS.md 와 일치
     #---------------------------------------------------------------------------
-    if detect_cli codex; then
+    if DetectCli codex; then
         local codex_file="$HOME/.codex/AGENTS.md"
         local begin="<!-- === ${ARACHNE_TAG} BEGIN === -->"
         local end="<!-- === ${ARACHNE_TAG} END === -->"
@@ -951,7 +970,7 @@ check_arachne() {
     #---------------------------------------------------------------------------
     # GitHub Copilot — CLI 전역 지침과 VS Code 사용자 지침이 현재 AGENTS.md 인가
     #---------------------------------------------------------------------------
-    if detect_cli copilot; then
+    if DetectCli copilot; then
         local copilot_cli_file="$HOME/.copilot/copilot-instructions.md"
         local copilot_vscode_file="$HOME/.copilot/instructions/arachne.instructions.md"
         local begin="<!-- === ${ARACHNE_TAG} BEGIN === -->"
@@ -980,10 +999,10 @@ check_arachne() {
     fi
 
     if [ "$fail" -eq 0 ]; then
-        arachne_section "연결 상태 점검 완료: 모든 연결 정상"
+        ArachneSection "연결 상태 점검 완료: 모든 연결 정상"
     else
-        arachne_section "연결 상태 점검 완료: 문제 발견"
-        arachne_log "ERROR" "연결 문제 발견 — 위 안내대로 재설치 필요"
+        ArachneSection "연결 상태 점검 완료: 문제 발견"
+        ArachneLog "ERROR" "연결 문제 발견 — 위 안내대로 재설치 필요"
     fi
     return "$fail"
 }
@@ -1001,23 +1020,23 @@ source "$REPO_DIR/lib/feedback.sh"
 case "${1:-}" in
     "")
         if [ "$ENTRY_NAME" = "install.sh" ]; then
-            install
+            Install
         else
-            usage
+            Usage
         fi
         ;;
-    "-h"|--help|help)                         usage ;;
-    -i|--install|install)                     shift; parse_target "$@"; install; maybe_run_extras ;;
-    -u|--update|update)                       shift; parse_target "$@"; update_arachne ;;
-    --extras|extras)                          shift; run_extras "$@" ;;
-    -c|--check|check)                         check_arachne ;;
-    -n|--new|new)                             shift; new_project "$@" ;;
-    --init-ci|init-ci)                        shift; init_project_ci "$@" ;;
-    --project-check|project-check)            shift; check_project "${1:-$PWD}" ;;
-    feedback)                                 shift; feedback_command "$@" ;;
-    -s|--session|session)                     run_session ;;
-    -e|--export-settings|export-settings)     export_settings ;;
-    -d|--export-dotfiles|export-dotfiles)     export_dotfiles ;;
-    -v|--version)                             show_version ;;
-    *)                                        arachne_log "ERROR" "알 수 없는 옵션: $1"; usage >&2; exit 1 ;;
+    "-h"|--help|help)                         Usage ;;
+    -i|--install|install)                     shift; ParseTarget "$@"; Install; MaybeRunExtras ;;
+    -u|--update|update)                       shift; ParseTarget "$@"; UpdateArachne ;;
+    --extras|extras)                          shift; RunExtras "$@" ;;
+    -c|--check|check)                         CheckArachne ;;
+    -n|--new|new)                             shift; NewProject "$@" ;;
+    --init-ci|init-ci)                        shift; InitProjectCi "$@" ;;
+    --project-check|project-check)            shift; CheckProject "${1:-$PWD}" ;;
+    feedback)                                 shift; FeedbackCommand "$@" ;;
+    -s|--session|session)                     RunSession ;;
+    -e|--export-settings|export-settings)     ExportSettings ;;
+    -d|--export-dotfiles|export-dotfiles)     ExportDotfiles ;;
+    -v|--version)                             ShowVersion ;;
+    *)                                        ArachneLog "ERROR" "알 수 없는 옵션: $1"; Usage >&2; exit 1 ;;
 esac
