@@ -6,7 +6,11 @@
 #               뒤처졌는지 감지해 경고한다. 분석을 자동 재실행하지는 않는다 —
 #               재분석은 비용이 커서 "/understand 재실행" 안내만 한다.
 #               임계값은 UA_STALE_THRESHOLD(기본 1커밋)로 조정.
+#               같은 기준 커밋에 대한 경고는 UA_STALE_SNOOZE_DAYS(기본 7일) 동안
+#               1회만 출력한다 — 재분석을 미루는 동안 매 세션 배너가 반복되는
+#               피로(및 컨텍스트 토큰 낭비)를 막는다.
 # DATA        : 2026-07-02
+# Modification: 2026-07-14
 ################################################################################
 
 # 훅은 자동 실행 경로라 -e 제외 (실패해도 세션을 막지 않음)
@@ -51,9 +55,28 @@ if [ "$behind_count" -lt "$THRESHOLD" ] 2>/dev/null; then
     exit 0
 fi
 
+#-------------------------------------------------------------------------------
+# 스누즈 — 같은 기준 커밋에 대한 경고는 UA_STALE_SNOOZE_DAYS(기본 7일) 동안 1회만.
+# /understand 재실행으로 기준 커밋이 바뀌면 스탬프가 무효화돼 다시 알린다.
+# 0이면 스누즈 없이 매 세션 알림 (기존 동작).
+#-------------------------------------------------------------------------------
+SNOOZE_DAYS="${UA_STALE_SNOOZE_DAYS:-7}"
+SNOOZE_STAMP="$REPO_DIR/.claude/ua-stale-warned"
+if [ "$SNOOZE_DAYS" -gt 0 ] 2>/dev/null \
+    && [ -f "$SNOOZE_STAMP" ] \
+    && [ "$(cat "$SNOOZE_STAMP" 2>/dev/null)" = "$base_hash" ] \
+    && [ -z "$(find "$SNOOZE_STAMP" -mtime +"$SNOOZE_DAYS" 2>/dev/null)" ]; then
+    exit 0
+fi
+mkdir -p "$REPO_DIR/.claude" 2>/dev/null || true
+printf '%s\n' "$base_hash" > "$SNOOZE_STAMP" 2>/dev/null || true
+
 echo "┌───────────────────────────────────────────────────────────────────────────────"
 echo "│  [UA-stale] Understand-Anything 지식그래프가 HEAD보다 ${behind_count}커밋 뒤처짐"
 echo "│  기준 커밋: ${base_hash:0:7}${analyzed_at:+  (분석 시각: ${analyzed_at})}"
 echo "│  → /understand 재실행으로 그래프를 갱신할 수 있습니다"
+if [ "$SNOOZE_DAYS" -gt 0 ] 2>/dev/null; then
+    echo "│  → 이 알림은 같은 기준 커밋에 대해 ${SNOOZE_DAYS}일간 다시 표시되지 않습니다"
+fi
 echo "└───────────────────────────────────────────────────────────────────────────────"
 exit 0

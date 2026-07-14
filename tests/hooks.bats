@@ -239,7 +239,73 @@ HOOKS_DIR="${REPO_DIR}/hooks"
 @test "session(#29): save-session 저장 경로가 훅의 읽기 경로와 일치" {
     grep -q 'HOME/.claude/sessions' "${HOOKS_DIR}/session-start.sh"
     grep -q 'HOME/.claude/sessions' "${HOOKS_DIR}/session-end.sh"
+    # PreCompact 스냅샷도 같은 경로여야 다음 세션이 발견한다 (workflow-04 잔존)
+    grep -q 'HOME/.claude/sessions' "${HOOKS_DIR}/pre-compact.sh"
+    ! grep -q '$(pwd)/.claude/sessions' "${HOOKS_DIR}/pre-compact.sh"
     grep -q '~/.claude/sessions' "${REPO_DIR}/commands/save-session.md"
     # 옛 프로젝트 상대경로(`.claude/sessions/` 단독)로 안내하지 않아야 함
     ! grep -qE '저장 위치: `\.claude/sessions' "${REPO_DIR}/commands/save-session.md"
+}
+
+#-------------------------------------------------------------------------------
+# Stop 훅 매 턴 실행 대응 — fetch 스로틀·스냅샷 하루 1파일·보존 기간 정리
+#-------------------------------------------------------------------------------
+@test "session-end.sh: 간격 내 fetch 스탬프는 갱신하지 않음 (스로틀)" {
+    TMP_REPO=$(mktemp -d)
+    TMP_HOME=$(mktemp -d)
+    git -C "${TMP_REPO}" init -q
+    git -C "${TMP_REPO}" -c user.email=t@t -c user.name=t commit -q --allow-empty -m init
+    mkdir -p "${TMP_REPO}/.claude"
+    stamp_before=$(( $(date +%s) - 10 ))
+    echo "${stamp_before}" > "${TMP_REPO}/.claude/last-fetch-epoch"
+
+    run bash -c "cd '${TMP_REPO}' && HOME='${TMP_HOME}' bash '${HOOKS_DIR}/session-end.sh'"
+    [ "$status" -eq 0 ]
+    [ "$(cat "${TMP_REPO}/.claude/last-fetch-epoch")" = "${stamp_before}" ]
+    rm -rf "${TMP_REPO}" "${TMP_HOME}"
+}
+
+@test "session-end.sh: 자동 스냅샷은 하루 1파일(auto-YYYY-MM-DD.md) 덮어쓰기" {
+    TMP_REPO=$(mktemp -d)
+    TMP_HOME=$(mktemp -d)
+    git -C "${TMP_REPO}" init -q
+    git -C "${TMP_REPO}" -c user.email=t@t -c user.name=t commit -q --allow-empty -m init
+
+    run bash -c "cd '${TMP_REPO}' && HOME='${TMP_HOME}' bash '${HOOKS_DIR}/session-end.sh'"
+    [ "$status" -eq 0 ]
+    run bash -c "cd '${TMP_REPO}' && HOME='${TMP_HOME}' bash '${HOOKS_DIR}/session-end.sh'"
+    [ "$status" -eq 0 ]
+    [ "$(ls "${TMP_HOME}"/.claude/sessions/auto-*.md | wc -l | tr -d ' ')" = "1" ]
+    rm -rf "${TMP_REPO}" "${TMP_HOME}"
+}
+
+@test "session-end.sh: 14일 지난 auto 스냅샷은 정리, 수동 세션은 보존" {
+    TMP_REPO=$(mktemp -d)
+    TMP_HOME=$(mktemp -d)
+    git -C "${TMP_REPO}" init -q
+    git -C "${TMP_REPO}" -c user.email=t@t -c user.name=t commit -q --allow-empty -m init
+    mkdir -p "${TMP_HOME}/.claude/sessions"
+    touch -d '20 days ago' "${TMP_HOME}/.claude/sessions/auto-2026-01-01.md" 2>/dev/null \
+        || touch -t 202601010000 "${TMP_HOME}/.claude/sessions/auto-2026-01-01.md"
+    touch -d '20 days ago' "${TMP_HOME}/.claude/sessions/2026-01-01-manual.md" 2>/dev/null \
+        || touch -t 202601010000 "${TMP_HOME}/.claude/sessions/2026-01-01-manual.md"
+
+    run bash -c "cd '${TMP_REPO}' && HOME='${TMP_HOME}' bash '${HOOKS_DIR}/session-end.sh'"
+    [ "$status" -eq 0 ]
+    [ ! -f "${TMP_HOME}/.claude/sessions/auto-2026-01-01.md" ]
+    [ -f "${TMP_HOME}/.claude/sessions/2026-01-01-manual.md" ]
+    rm -rf "${TMP_REPO}" "${TMP_HOME}"
+}
+
+@test "pre-compact.sh: 스냅샷을 홈 세션 경로에 생성" {
+    TMP_REPO=$(mktemp -d)
+    TMP_HOME=$(mktemp -d)
+    git -C "${TMP_REPO}" init -q
+    git -C "${TMP_REPO}" -c user.email=t@t -c user.name=t commit -q --allow-empty -m init
+
+    run bash -c "cd '${TMP_REPO}' && HOME='${TMP_HOME}' bash '${HOOKS_DIR}/pre-compact.sh'"
+    [ "$status" -eq 0 ]
+    ls "${TMP_HOME}"/.claude/sessions/auto-*.md >/dev/null
+    [ ! -d "${TMP_REPO}/.claude/sessions" ]
+    rm -rf "${TMP_REPO}" "${TMP_HOME}"
 }

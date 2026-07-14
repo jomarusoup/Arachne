@@ -4,9 +4,16 @@ description: git 커밋·푸시. GitHub MCP 연결 시 Claude Code 안에서 바
 
 # /git $ARGUMENTS
 
-**이 스킬은 Haiku 에이전트에 위임한다.**
+**단순 커밋은 직접, 그 외에는 Haiku 에이전트에 위임한다.**
 
-아래 프롬프트로 `Agent(model: "haiku")` 를 즉시 호출한다. 추가 판단 없이 호출만 하면 된다.
+- **직접 처리 (위임 생략)**: 변경이 이미 이번 세션에서 파악한 파일뿐이고, 검증 대상
+  (`*.sh`·tests·`.arachne/verify.sh`)이 없는 문서·소규모 변경이면 아래 프롬프트의
+  1~7단계를 메인 세션이 그대로 축약 실행한다 — 에이전트 콜드 스타트(수만 토큰)가
+  커밋 한 번보다 비싸다.
+- **위임**: 그 외(검증 필요, 변경 소유권 불확실, 파일 다수)에는 아래 프롬프트로
+  `Agent(model: "haiku")` 를 즉시 호출한다. 추가 판단 없이 호출만 하면 된다.
+
+어느 경로든 각 가드와 6단계의 git-bus 기준점 갱신은 생략하지 않는다.
 
 ---
 
@@ -71,6 +78,12 @@ git push
 ```
 - `git push`가 **non-fast-forward**로 거부되면(병렬 세션이 origin을 진전시킨 경우):
   `git pull --no-rebase` 후 다시 push. **머지 충돌이 나면 임의로 해결하지 말고 중단·보고**한다.
+- 푸시 성공 후 **git-bus 기준점을 갱신**한다 — 방금 만든 자기 커밋이 다음 프롬프트에서
+  "업스트림 새 커밋"으로 재공지되는 노이즈 방지:
+```bash
+mkdir -p "$(git rev-parse --show-toplevel)/.claude"
+git rev-parse HEAD > "$(git rev-parse --show-toplevel)/.claude/last-seen-commit"
+```
 
 ### 7. 결과 보고
 커밋 해시·푸시 결과·스테이징한 파일 목록을 한 줄로 보고.

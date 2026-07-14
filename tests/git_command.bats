@@ -49,3 +49,13 @@ setup() {
     grep -q "pull --no-rebase" "${GIT_CMD}"
     grep -q "임의로 해결하지 말고" "${GIT_CMD}"
 }
+
+@test "git command: 푸시 후 git-bus 기준점 갱신 규칙 명시 (자기 커밋 재공지 방지)" {
+    grep -q "last-seen-commit" "${GIT_CMD}"
+    grep -q "재공지" "${GIT_CMD}"
+}
+
+@test "git command: 단순 커밋 직접 처리 분기 명시 (위임 오버헤드 절감)" {
+    grep -q "직접 처리" "${GIT_CMD}"
+    grep -q "Haiku" "${GIT_CMD}"
+}

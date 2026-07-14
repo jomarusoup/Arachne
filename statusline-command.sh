@@ -57,18 +57,21 @@ cost_5h=0
 [ -f "$TRACK_FILE" ] && cost_5h=$(jq "[.[] | select(.ts >= $WINDOW_5H) | .cost] | add // 0" "$TRACK_FILE")
 
 # --- weekly window: since last Saturday noon ---
+# GNU `date -d` 는 BSD date(macOS)에 없다 — epoch 산술로 이식성 확보 (F-03).
+# DST 전환 주에는 ±1시간 오차가 날 수 있으나 예산 표시 용도로 허용.
 dow=$(date +%u)   # 1=Mon .. 7=Sun
 hour=$(date +%H)
+secs_today=$(( 10#$(date +%H)*3600 + 10#$(date +%M)*60 + 10#$(date +%S) ))
 days_since_sat=$(( (dow - 6 + 7) % 7 ))
 [ "$days_since_sat" -eq 0 ] && [ "$hour" -lt 12 ] && days_since_sat=7
-LAST_SAT_NOON=$(date -d "${days_since_sat} days ago 12:00:00" +%s)
+LAST_SAT_NOON=$(( NOW - days_since_sat*86400 - secs_today + 43200 ))
 cost_7d=0
 [ -f "$TRACK_FILE" ] && cost_7d=$(jq "[.[] | select(.ts >= $LAST_SAT_NOON) | .cost] | add // 0" "$TRACK_FILE")
 
 # --- time until next Saturday noon ---
 days_to_next_sat=$(( (6 - dow + 7) % 7 ))
 [ "$days_to_next_sat" -eq 0 ] && [ "$hour" -ge 12 ] && days_to_next_sat=7
-NEXT_SAT_NOON=$(date -d "+${days_to_next_sat} days 12:00:00" +%s)
+NEXT_SAT_NOON=$(( NOW + days_to_next_sat*86400 - secs_today + 43200 ))
 secs_until=$(( NEXT_SAT_NOON - NOW ))
 hours_total=$(( secs_until / 3600 ))
 reset_days=$(( hours_total / 24 ))

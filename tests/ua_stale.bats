@@ -105,3 +105,51 @@ make_meta() {
     [ "$status" -eq 0 ]
     [ -z "$output" ]
 }
+
+@test "ua-stale: 같은 기준 커밋 경고는 스누즈 기간 내 1회만" {
+    make_repo
+    hash=$(add_commit c1)
+    make_meta "${hash}"
+    add_commit c2 >/dev/null
+
+    UA_STALE_REPO="${FIX}" run bash "${HOOK}"
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"UA-stale"* ]]
+    [ -f "${FIX}/.claude/ua-stale-warned" ]
+
+    # 두 번째 실행 — 같은 기준 커밋이므로 침묵
+    UA_STALE_REPO="${FIX}" run bash "${HOOK}"
+    [ "$status" -eq 0 ]
+    [ -z "$output" ]
+}
+
+@test "ua-stale: UA_STALE_SNOOZE_DAYS=0 이면 매번 경고" {
+    make_repo
+    hash=$(add_commit c1)
+    make_meta "${hash}"
+    add_commit c2 >/dev/null
+
+    UA_STALE_REPO="${FIX}" UA_STALE_SNOOZE_DAYS=0 run bash "${HOOK}"
+    [[ "$output" == *"UA-stale"* ]]
+    UA_STALE_REPO="${FIX}" UA_STALE_SNOOZE_DAYS=0 run bash "${HOOK}"
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"UA-stale"* ]]
+}
+
+@test "ua-stale: 재분석으로 기준 커밋이 바뀌면 스누즈 무효화·재경고" {
+    make_repo
+    hash1=$(add_commit c1)
+    make_meta "${hash1}"
+    add_commit c2 >/dev/null
+
+    UA_STALE_REPO="${FIX}" run bash "${HOOK}"
+    [[ "$output" == *"UA-stale"* ]]
+
+    # 재분석 상당 — 기준 커밋 갱신 후 다시 뒤처짐
+    hash2=$(add_commit c3)
+    make_meta "${hash2}"
+    add_commit c4 >/dev/null
+    UA_STALE_REPO="${FIX}" run bash "${HOOK}"
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"UA-stale"* ]]
+}

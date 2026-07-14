@@ -78,14 +78,33 @@ TEMPLATE
 
 #===============================================================================
 # FUNCTION    : UpdateUpstreamRef
-# DESCRIPTION : git-bus 기준점 — fetch 후 리모트 HEAD를 last-seen-commit 에 저장
+# DESCRIPTION : git-bus 기준점 — fetch 후 리모트 HEAD를 last-seen-commit 에 저장.
+#               Stop 훅은 매 턴 실행되므로 fetch 는 git-bus-check.sh 와 같은
+#               스탬프(last-fetch-epoch)로 스로틀한다 (F-04 우회 방지).
 #===============================================================================
 UpdateUpstreamRef() {
     local repo_dir
     repo_dir=$(git rev-parse --show-toplevel 2>/dev/null)
     [ -z "$repo_dir" ] && return
 
-    git -C "$repo_dir" fetch -q origin 2>/dev/null || true
+    #---------------------------------------------------------------------------
+    # fetch 스로틀 — 기본 300초 간격 (GIT_BUS_FETCH_INTERVAL 초로 조정, 0이면 매번)
+    #---------------------------------------------------------------------------
+    local fetch_interval="${GIT_BUS_FETCH_INTERVAL:-300}"
+    local fetch_stamp="$repo_dir/.claude/last-fetch-epoch"
+    local now last_fetch
+    now=$(date +%s)
+    last_fetch=0
+    [ -f "$fetch_stamp" ] && last_fetch=$(cat "$fetch_stamp" 2>/dev/null)
+    case "$last_fetch" in
+        ''|*[!0-9]*) last_fetch=0 ;;
+    esac
+
+    if [ $(( now - last_fetch )) -ge "$fetch_interval" ]; then
+        git -C "$repo_dir" fetch -q origin 2>/dev/null || true
+        mkdir -p "$(dirname "$fetch_stamp")"
+        echo "$now" > "$fetch_stamp"
+    fi
 
     local remote_branch
     remote_branch=$(git -C "$repo_dir" rev-parse --abbrev-ref --symbolic-full-name '@{u}' 2>/dev/null)
@@ -105,15 +124,25 @@ UpdateUpstreamRef() {
 
 #-------------------------------------------------------------------------------
 # 오늘 수동 저장 세션이 있으면 스냅샷 생략
+# (수동 세션은 날짜로 시작, 자동 세션은 auto- 접두사 — 글롭이 겹치지 않는다)
 #-------------------------------------------------------------------------------
-SAVED=$(ls "$SESSION_DIR"/${TODAY}[^a]*.md 2>/dev/null | head -1)
+SAVED=$(ls "$SESSION_DIR/${TODAY}"*.md 2>/dev/null | head -1)
 
 if [ -n "$SAVED" ]; then
     echo "[세션 종료] 세션 파일 저장됨: $(basename "$SAVED")"
 else
-    FILE="$SESSION_DIR/auto-${DATE}.md"
+    #---------------------------------------------------------------------------
+    # Stop 훅은 매 턴 실행되므로 스냅샷 파일은 하루 1개(auto-YYYY-MM-DD.md)를
+    # 덮어쓴다 — 분 단위 파일명은 하루 수십 개씩 무한 누적됐다.
+    #---------------------------------------------------------------------------
+    FILE="$SESSION_DIR/auto-${TODAY}.md"
     SaveSnapshot "$FILE"
-    echo "[세션 종료] ⚠️  /save-session 미실행 → auto-${DATE}.md 자동 생성"
+    echo "[세션 종료] ⚠️  /save-session 미실행 → auto-${TODAY}.md 자동 갱신"
 fi
+
+#-------------------------------------------------------------------------------
+# 보존 기간 정리 — 14일 지난 자동 스냅샷은 삭제 (수동 세션은 건드리지 않음)
+#-------------------------------------------------------------------------------
+find "$SESSION_DIR" -maxdepth 1 -name 'auto-*.md' -mtime +14 -delete 2>/dev/null || true
 
 UpdateUpstreamRef

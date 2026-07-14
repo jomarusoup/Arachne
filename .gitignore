@@ -1,6 +1,7 @@
-# git-bus 상태 파일 (기기마다 다름)
+# git-bus·훅 상태 파일 (기기마다 다름)
 last-seen-commit
 last-fetch-epoch
+ua-stale-warned
 
 # 런타임 / 세션 데이터 (추적 불필요)
 *.bak

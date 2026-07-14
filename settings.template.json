@@ -13,6 +13,12 @@
       "Bash(codex-task:*)",
       "Bash(atask:*)",
       "Bash(arachne-task:*)"
+    ],
+    "ask": [
+      "Bash(ctask -w:*)",
+      "Bash(codex-task -w:*)",
+      "Bash(atask -w:*)",
+      "Bash(arachne-task -w:*)"
     ]
   },
   "hooks": {
@@ -81,8 +87,6 @@
     ]
   },
   "enabledPlugins": {
-    "chrome-devtools-mcp@claude-plugins-official": true,
-    "figma@claude-plugins-official": true,
     "claude-code-setup@claude-plugins-official": true,
     "github@claude-plugins-official": true,
     "commit-commands@claude-plugins-official": true,
