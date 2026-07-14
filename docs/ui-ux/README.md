@@ -20,7 +20,7 @@ FROM:: [[docs/README]]
 
 | 위치 | 용도 |
 | --- | --- |
-| [rules/common/ui-layout](../../rules/common/ui-layout.md) | 간격, 정렬, 밀도, 상태별 레이아웃 기준 |
+| [rules/web/ui-layout](../../rules/web/ui-layout.md) | 간격, 정렬, 밀도, 상태별 레이아웃 기준 |
 | [rules/web/design-quality](../../rules/web/design-quality.md) | 제네릭 UI 방지, 시각 방향, 디자인 품질 기준 |
 | [skills/frontend-patterns](../../skills/frontend-patterns.md) | React/Next 컴포넌트·상태·성능 패턴 |
 | [skills/make-interfaces-feel-better](../../skills/make-interfaces-feel-better.md) | radius, optical alignment, motion, hit area 같은 디테일 |
@@ -42,6 +42,6 @@ FROM:: [[docs/README]]
 1. 사용자와 반복 작업을 먼저 쓴다.
 2. 화면 밀도를 정한다: 운영 도구, 폼, 랜딩, 모바일 작업 화면.
 3. 기준 예시를 `examples/`에서 찾는다.
-4. `rules/common/ui-layout.md`로 간격과 정렬을 잡는다.
+4. `rules/web/ui-layout.md`로 간격과 정렬을 잡는다.
 5. `rules/web/design-quality.md`로 제네릭한 결과를 거른다.
 6. 실제 브라우저 또는 스크린샷으로 overflow, 겹침, 상태 전이를 확인한다.

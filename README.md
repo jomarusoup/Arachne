@@ -143,7 +143,7 @@ Arachne/
 ├── statusline-command.sh        # Claude Code 상태표시줄 렌더러
 │
 ├── rules/                       # Claude 전역 행동 규칙
-│   ├── common/                  # 언어 공통 (workflow, coding-style, patterns 등 12개)
+│   ├── common/                  # 언어 공통 (workflow, coding-style, patterns 등 10개)
 │   ├── ...                      # 언어별 규칙 (c, cpp, golang, rust, python, js, bash)
 │   └── web/                     # 웹 디자인 품질 (design-quality)
 │

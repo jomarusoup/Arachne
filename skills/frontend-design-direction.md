@@ -34,6 +34,6 @@ UI를 단순히 동작하게 만드는 것이 아니라 제품에 맞게 보이�
 
 ## 연결 문서
 
-- [rules/common/ui-layout](../rules/common/ui-layout.md)
+- [rules/web/ui-layout](../rules/web/ui-layout.md)
 - [rules/web/design-quality](../rules/web/design-quality.md)
 - [docs/ui-ux/README](../docs/ui-ux/README.md)

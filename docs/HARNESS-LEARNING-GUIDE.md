@@ -87,7 +87,7 @@ FROM:: [[100. Project/110. Side-Project/111. Arachne/docs/README]]
 읽을 문서:
 
 1. [rules/web/design-quality](../rules/web/design-quality.md)
-2. [rules/common/ui-layout](../rules/common/ui-layout.md)
+2. [rules/web/ui-layout](../rules/web/ui-layout.md)
 3. [skills/frontend-patterns](../skills/frontend-patterns.md)
 4. [skills/make-interfaces-feel-better](../skills/make-interfaces-feel-better.md)
 

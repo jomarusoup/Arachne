@@ -149,6 +149,28 @@ jq '.enabledPlugins | keys[]' ~/.claude/settings.json | grep -E 'understand|tast
 > `settings.template.json` 변경은 Arachne 레포 변경이다. 커밋하면 다른 머신에서도
 > (Syncthing/git) 동일 플러그인이 재설치 시 켜진다.
 
+## 플러그인 스코프 정책 — 전역 최소화 (토큰 절감)
+
+전역 `enabledPlugins`의 각 플러그인은 **모든 프로젝트의 모든 세션** 시스템 프롬프트에
+스킬 설명을 주입한다(플러그인당 수백~수천 토큰 상시). 따라서:
+
+- **전역(템플릿) 유지**: 어디서나 쓰는 것만 — `github`, `commit-commands`,
+  `claude-code-setup`, `understand-anything`, `taste-skill`(extras 옵트인 동기화).
+- **프로젝트 스코프**: 특정 도메인 전용(`figma`, `chrome-devtools-mcp` 등 웹/디자인
+  도구)은 해당 프로젝트의 `.claude/settings.json`에서만 켠다:
+
+```json
+{
+  "enabledPlugins": {
+    "figma@claude-plugins-official": true,
+    "chrome-devtools-mcp@claude-plugins-official": true
+  }
+}
+```
+
+> 2026-07-14: figma·chrome-devtools-mcp 를 전역 템플릿에서 제거했다. 웹 프로젝트에서
+> 위처럼 프로젝트 로컬로 활성화한다 (마켓플레이스 등록은 전역이라 그대로 동작).
+
 ## 멱등성
 
 전 과정이 재실행 안전하다. 이미 등록된 마켓플레이스·설치된 플러그인·PATH의 codegraph는

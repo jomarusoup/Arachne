@@ -58,8 +58,8 @@ Claude Code가 이를 네이티브로 자동 로드한다:
 │   └── ua-stale-check.sh            # SessionStart — UA 지식그래프 stale(HEAD 대비 뒤처짐) 경고
 │
 ├── rules/                           # 항상 적용되는 전역 규칙
-│   ├── common/                      # 언어 무관 공통 규칙 (12개)
-│   │   ├── workflow.md              # Claude/Codex/Gemini 3-레인 역할 분담·행동 규칙
+│   ├── common/                      # 언어 무관 공통 규칙 (10개, 매 세션 로드 — 최소 유지)
+│   │   ├── workflow.md              # Claude/Codex/Gemini 3-레인 역할 분담·행동 규칙 (다이제스트)
 │   │   ├── coding-style.md          # 헤더 구조·네이밍·포매팅 공통 원칙
 │   │   ├── patterns.md              # SRP·불변성·에러 처리
 │   │   ├── agents.md                # 에이전트 목록·활성화 기준
@@ -68,16 +68,14 @@ Claude Code가 이를 네이티브로 자동 로드한다:
 │   │   ├── hooks.md                 # 훅 유형·등록 방법
 │   │   ├── security.md              # 보안 체크리스트·비밀값 관리
 │   │   ├── testing.md               # TDD·AAA·메모리 테스트
-│   │   ├── performance.md           # 모델 선택·컨텍스트 관리
-│   │   ├── issue-workflow.md        # 이슈 타입별 처리 원칙
-│   │   └── ui-layout.md             # UI 레이아웃 기준
+│   │   └── performance.md           # 모델 선택·컨텍스트 관리
 │   ├── c/          # C 시스템 프로그래밍 (coding-style·hooks·patterns·security·testing)
 │   ├── cpp/        # C++ (coding-style·hooks·patterns·security·testing)
 │   ├── golang/     # Go (coding-style·hooks·patterns·security·testing)
 │   ├── java/       # Java/Spring Boot (coding-style·hooks·patterns·security·testing)
 │   ├── rust/       # Rust (coding-style·hooks·patterns·security·testing)
 │   ├── python/     # Python (coding-style·hooks·patterns·security·testing·fastapi·data-handling)
-│   ├── web/        # 웹 디자인 품질 (design-quality)
+│   ├── web/        # 웹 디자인 품질·UI 레이아웃 (design-quality·ui-layout)
 │   ├── docker/     # Docker/Compose (coding-style·hooks·patterns·security·testing)
 │   ├── javascript/ # JS/TS (coding-style·hooks·patterns·security·testing)
 │   └── bash/       # Bash/Shell (coding-style·hooks·patterns·security·testing)
