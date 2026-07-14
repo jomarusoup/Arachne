@@ -15,7 +15,7 @@ FROM:: [[arachne-tools]]
 
 # 확장 도구 설치 메커니즘 — `setup-extras`
 
-[arachne-tools](README.md)의 세 도구를 설치·갱신·제거하는 크로스플랫폼 스크립트와
+[arachne-tools](100.%20Project/110.%20Side-Project/111.%20Arachne/docs/tools/README.md)의 세 도구를 설치·갱신·제거하는 크로스플랫폼 스크립트와
 Arachne installer 연동을 설명한다.
 
 ## 파일

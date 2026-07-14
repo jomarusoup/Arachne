@@ -9,7 +9,7 @@ aliases:
  - "arachne-learning-guide"
 ---
 MOC:: [[Arachne]]
-FROM:: [[README]]
+FROM:: [[100. Project/110. Side-Project/111. Arachne/docs/README]]
 
 # Arachne 학습 순서
 
@@ -21,7 +21,7 @@ FROM:: [[README]]
 읽을 문서:
 
 1. [README](../README.md)
-2. [docs/README](README.md)
+2. [docs/README](100.%20Project/110.%20Side-Project/111.%20Arachne/docs/README.md)
 3. [docs/CAPABILITY-MAP](CAPABILITY-MAP.md)
 4. [docs/GLOSSARY](GLOSSARY.md)
 

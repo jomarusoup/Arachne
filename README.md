@@ -1,5 +1,6 @@
 ---
 Title: README
+description: 📚 Documentation Map · 🚀 Installation · macOS / Linux
 creation: 2026-05-05
 modification: 2026-06-09
 Description: Python·Web과 시스템 개발을 위한 멀티 CLI 엔지니어링 하네스
@@ -7,7 +8,7 @@ tags:
 aliases:
 ---
 > MOC::
-> FROM::
+> FROM:: #Project / #Side_Project / #Arachne
 
 # Arachne
 
@@ -35,8 +36,6 @@ Python·Web과 C/C++·Go·Rust 시스템 개발에 공통 규약, 역할 분담,
 | 플랫폼·동기화 — Windows·호환성·다중 머신·Obsidian | [WINDOWS-SETUP](docs/WINDOWS-SETUP.md) · [COMPATIBILITY](docs/COMPATIBILITY.md) · [SYNCTHING-SETUP](docs/SYNCTHING-SETUP.md) · [OBSIDIAN-DOCS-SYNC](docs/OBSIDIAN-DOCS-SYNC.md) |
 | 학습 — 익히는 순서·역량 지도·AI 엔지니어링 노트 | [HARNESS-LEARNING-GUIDE](docs/HARNESS-LEARNING-GUIDE.md) · [CAPABILITY-MAP](docs/CAPABILITY-MAP.md) · [AI-ENGINEERING-NOTES](docs/AI-ENGINEERING-NOTES.md) |
 | 저장소 자체 CI·UI/UX 기준·장기 설계 결정(ADR) | [CI](docs/CI.md) · [ui-ux/README](docs/ui-ux/README.md) · [decisions/](docs/decisions/README.md) |
-
----
 
 ## 🚀 Installation
 
@@ -108,8 +107,6 @@ Bash에서는 `./install.sh -i --target copilot`을 사용합니다. 모든 경�
 | `atask` (= `arachne-task`) | **헤드리스 폴백 디스패처** — 역할별 순서로 실행 후보를 바꾸지만 Codex/Gemini 단계는 각각 tester/fixer·reader/advisor 래퍼 제약을 유지 |
 | `docs-sync` | 원격 프로젝트 README/docs/Markdown 문서 ↔ Obsidian Vault 동기화 |
 
----
-
 ### Project CI
 
 Arachne 저장소의 CI는 하네스 자체를 검증한다. Arachne를 사용하는 각 프로젝트는 별도의 프로젝트 CI를
@@ -126,8 +123,6 @@ arachne project-check
 로컬과 GitHub의 검증 기준이 일치한다. `minimal`, `python`, `web`, `python-web`의 도구·소유권·
 갱신 정책은 [PROJECT-CI.md](docs/PROJECT-CI.md)가 정본이다. Web 계열 profile의 제품 디자인 문서
 위치와 `/design` 탐색 계약은 [DESIGN-DOCS.md](docs/DESIGN-DOCS.md)가 정본이다.
-
----
 
 ## 📁 Structure
 
@@ -176,8 +171,6 @@ Arachne/
 └── dotfiles/                    # bash_profile, vimrc (병합 원본)
 ```
 
----
-
 ## ⌨️ Slash Commands
 
 | 커맨드 | 설명 |
@@ -202,16 +195,12 @@ Arachne/
 | `/learn` | 세션 발견 패턴을 rules에 저장 |
 | `/codegraph` | 코드 그래프·심볼·영향 범위 분석 (확장 도구 codegraph) |
 
----
-
 ## 🏗️ Workspace Management (`-s`)
 
 `arachne -s` (또는 `tws`) 로
  Claude Code 세션을 효율적으로 관리할 수 있습니다.
 - **템플릿 지원**: 기본 터미널 / Claude Code 자동 실행(dev) / 테스트용 2분할 화면
 - **세션 관리**: 생성, 접속(Attach), 삭제(Kill), 일괄 종료 지원
-
----
 
 ## 🤝 Multi-CLI Collaboration (3-Lane)
 
@@ -252,8 +241,6 @@ Claude Code가 **중심(오케스트레이터 + 주 구현자)**이고, Codex·G
 > 상세 역할·비용 라우팅은 [docs/MULTI-CLI.md](docs/MULTI-CLI.md)·[docs/USAGE.md](docs/USAGE.md) 6장 참고.
 > 정책 SSOT(Single Source of Truth, 단일 진실 공급원)는 [`rules/common/workflow.md`](rules/common/workflow.md).
 
----
-
 ## 🔄 Sync & Update
 
 Arachne은 심볼릭 링크를 기반으로 하며, `-u` 옵션으로 소스 동기화와 재설치를 한 번에 처리합니다.
@@ -266,8 +253,6 @@ arachne -u
 arachne -e   # settings.json → settings.template.json
 arachne -d   # ~/.bash_profile, ~/.vimrc → dotfiles/ 내보내기
 ```
-
----
 
 ## 🚫 Git-Ignored Paths
 

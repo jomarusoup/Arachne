@@ -9,7 +9,7 @@ aliases:
  - "arachne-capability-map"
 ---
 MOC:: [[Arachne]]
-FROM:: [[README]]
+FROM:: [[100. Project/110. Side-Project/111. Arachne/docs/README]]
 
 # Arachne 역량 지도
 

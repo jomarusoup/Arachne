@@ -20,7 +20,7 @@ FROM:: [[empty]]
 - **상태**: done
 - **우선순위**: medium
 - **담당**: unassigned
-- **관련 문서**: [Task 작성 규약](README.md)
+- **관련 문서**: [Task 작성 규약](100.%20Project/110.%20Side-Project/111.%20Arachne/docs/task/README.md)
 
 ## 목표
 

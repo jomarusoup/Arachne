@@ -9,7 +9,7 @@ aliases:
  - "arachne-docs"
 ---
 MOC:: [[Arachne]]
-FROM:: [[README]]
+FROM:: [[100. Project/110. Side-Project/111. Arachne/docs/README]]
 
 # Arachne 문서 인덱스
 
