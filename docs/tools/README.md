@@ -32,7 +32,7 @@ Arachne 핵심(agents·commands·rules·hooks·skills)에 더해, **외부 저�
 
 ```mermaid
 flowchart TD
-    A["arachne -i --with-ua<br/>arachne -i --with-extras / --extras"] --> S["setup-extras.sh / .ps1"]
+    A["arachne -i (자동 설치·갱신)<br/>arachne --extras (단독 실행)"] --> S["setup-extras.sh / .ps1"]
     S --> P["A계층: Claude 플러그인<br/>UA · taste-skill"]
     S --> C["B계층: 독립 CLI<br/>codegraph"]
     P --> M["claude plugin marketplace add ~/클론<br/>claude plugin install"]
@@ -50,17 +50,14 @@ flowchart TD
 ## 빠른 시작
 
 ```bash
-# 대화형 — 항목별 Y/n 선택
-arachne --extras
-
-# 전부 비대화형
-arachne --extras --all          # 또는: bash ~/Arachne/setup-extras.sh --all
-
-# 설치(재설치)·업데이트와 함께 (멱등)
-arachne -i --with-ua            # Understand-Anything 만
+# 설치(재설치)가 자동으로 전체 설치·최신 갱신 (미설치는 설치, 기설치는 갱신 — 멱등)
+arachne -i
+arachne -i --with-ua            # 확장 도구를 Understand-Anything 만으로 한정
 arachne -u --with-ua
-arachne -i --with-extras
-arachne -u --with-extras
+
+# 확장 도구만 단독 실행
+arachne --extras                # 대화형 — 항목별 Y/n 선택
+arachne --extras --all          # 전부 비대화형 (또는: bash ~/Arachne/setup-extras.sh --all)
 ```
 
 > 클론 위치 기본값은 `$HOME/Understand-Anything`, `$HOME/taste-skill`, `$HOME/codegraph`.

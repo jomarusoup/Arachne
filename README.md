@@ -77,8 +77,8 @@ Windows 설치기는 관리자 권한 없이 디렉터리 junction과 파일 har
 4. **dotfiles 병합**: `~/.bash_profile`, `~/.vimrc`에 Arachne 설정을 안전하게 병합 (기존 내용 보존)
 5. **Copilot 지침**: `arachne -i --target copilot`으로 Copilot CLI와 VS Code 사용자 프로필에 전역 규약 설치
 6. **CLI 등록**: `~/.local/bin/`에 `arachne`, `tws`, `gemini-task`(=`gtask`), `codex-task`(=`ctask`), `arachne-task`(=`atask`), `docs-sync` 커맨드 등록
-7. **선택 확장 도구**: `arachne -i --with-ua`로 Understand-Anything을 설치 흐름에 붙이거나,
-   `arachne -i --with-extras`로 UA·taste-skill·codegraph를 함께 설정
+7. **확장 도구 자동 설치·갱신**: 설치 시 UA·taste-skill·codegraph를 함께 설치하고,
+   이미 있으면 최신으로 갱신한다 (`--with-ua`로 Understand-Anything만으로 한정 가능)
 
 Windows 네이티브 PowerShell에서는 `.\install.ps1 -Install -Target copilot`을 실행합니다.
 독립 설치 경로가 필요하면 `.\install-copilot.ps1`도 사용할 수 있습니다. macOS/Linux/WSL/Git

@@ -2,7 +2,7 @@
 # FILE NAME   : install.ps1
 # DESCRIPTION : Windows용 Arachne 하네스 설치 및 관리 스크립트
 # DATA        : 2026-06-07
-# Modification: 2026-06-07
+# Modification: 2026-07-17
 ################################################################################
 
 [CmdletBinding()]
@@ -121,11 +121,11 @@ function ShowUsage {
     Write-Output "Arachne - Windows harness manager"
     Write-Output ""
     Write-Output "Options:"
-    Write-Output "  -i, -Install          install or reinstall"
+    Write-Output "  -i, -Install          install or reinstall + auto install/update extras"
     Write-Output "  -u, -Update           git pull, then reinstall"
     Write-Output "  -Target T             claude|gemini|codex|copilot|all (default: all)"
-    Write-Output "  -WithUa               with -Install/-Update: set up Understand-Anything only"
-    Write-Output "  -WithExtras           with -Install/-Update: set up extras (UA / taste-skill / codegraph)"
+    Write-Output "  -WithUa               with -Install/-Update: limit extras to Understand-Anything only"
+    Write-Output "  -WithExtras           (compat) same as default: extras auto install+update"
     Write-Output "  -Extras               run extras setup only (interactive menu)"
     Write-Output "  -c, -Check            verify Claude, Gemini, Codex, and Copilot wiring"
     Write-Output "  -h, -Help             show help"
@@ -450,9 +450,10 @@ function RunExtras {
 
 ################################################################################
 # FUNCTION    : MaybeRunExtras
-# DESCRIPTION : -Install/-Update 후 확장 도구 설정 분기. Claude 타깃에서만 동작.
-#               -WithUa 지정 시 Understand-Anything 만 실행한다.
-#               -WithExtras 지정 시 실행, 미지정 시 대화형일 때만 설치/갱신 질의.
+# DESCRIPTION : -Install/-Update 후 확장 도구 동기화. Claude 타깃에서만 동작.
+#               -WithUa 지정 시 Understand-Anything 만 실행하고, 그 외에는 항상
+#               전체 확장 도구를 설치·갱신한다(-All -Update 멱등 — 미설치는
+#               설치, 기설치는 git pull/plugin update 로 최신화).
 # PARAMETERS  : string[] PassArgs - setup-extras.ps1 로 전달 (예: -Update)
 ################################################################################
 function MaybeRunExtras {
@@ -470,23 +471,14 @@ function MaybeRunExtras {
         return
     }
 
-    if ($WithExtras) {
-        WriteArachneLog "STEP" "extras: all extras setup start"
-        if ([Environment]::UserInteractive) { RunExtras $PassArgs }
-        else { RunExtras (@("-All") + $PassArgs) }
-        WriteArachneLog "DONE" "extras: all extras setup complete"
-        return
-    }
-
-    if ([Environment]::UserInteractive) {
-        $action = if ($PassArgs -contains "-Update") { "Update" } else { "Set up" }
-        $reply = Read-Host "[Arachne] $action extras (Understand-Anything / taste-skill / codegraph)? [y/N]"
-        if ($reply -match '^(y|yes)$') {
-            RunExtras $PassArgs
-        } else {
-            WriteArachneLog "SKIP" "extras: skipped by user (run later: arachne -Extras)"
-        }
-    }
+    #---------------------------------------------------------------------------
+    # 기본 동작: 전체 확장 도구를 항상 설치하고 기설치면 최신으로 갱신한다.
+    # PowerShell 은 동일 스위치 중복 지정이 바인딩 에러라 PassArgs 에서 제외한다.
+    #---------------------------------------------------------------------------
+    $forward_args = @($PassArgs | Where-Object { $_ -notin @("-All", "-Update") })
+    WriteArachneLog "STEP" "extras: all extras install+update start"
+    RunExtras (@("-All", "-Update") + $forward_args)
+    WriteArachneLog "DONE" "extras: all extras install+update complete"
 }
 
 ################################################################################

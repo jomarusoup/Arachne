@@ -2,7 +2,7 @@
 # FILE NAME   : install_windows.ps1
 # DESCRIPTION : Windows PowerShell 설치기의 링크, 설정, 병합 동작 검증
 # DATA        : 2026-06-07
-# Modification: 2026-06-07
+# Modification: 2026-07-17
 ################################################################################
 
 Set-StrictMode -Version Latest
@@ -39,6 +39,8 @@ function RunInstaller {
 
     $env:ARACHNE_HOME = $SCRIPT:TEST_HOME
     $env:ARACHNE_SKIP_PATH = "1"
+    # -Install 이 확장 도구를 항상 설치·갱신하므로 존재하지 않는 스텁 경로로 격리(SKIP)
+    $env:ARACHNE_EXTRAS_SCRIPT = Join-Path $SCRIPT:TEST_HOME "no-extras-stub.ps1"
     & $SCRIPT:INSTALLER -Install -Target $Target
 }
 

@@ -3,7 +3,7 @@
 # FILE NAME   : install.sh
 # DESCRIPTION : Arachne 멀티 CLI 설정 설치 스크립트
 # DATA        : 2026-05-05
-# Modification: 2026-07-02
+# Modification: 2026-07-17
 ################################################################################
 
 set -euo pipefail
@@ -114,12 +114,13 @@ Usage() {
     echo "Arachne — Claude Code 글로벌 설정 관리 도구"
     echo ""
     echo "Options:"
-    echo "  -i, --install          설치/재설치 수행"
+    echo "  -i, --install          설치/재설치 수행 + 확장 도구(UA·taste-skill·codegraph)"
+    echo "                          자동 설치·최신 갱신 (미설치는 설치, 기설치는 갱신)"
     echo "  -u, --update           대화형: Arachne/Understand/codegraph 중 선택 갱신"
     echo "      --target T          설치 대상 CLI: claude|gemini|codex|copilot|all (기본 all)"
     echo "                          (-i/-u 와 함께 사용. 미감지 CLI는 자동 스킵)"
-    echo "      --with-ua           -i/-u 와 함께: Understand-Anything 만 멱등 설정"
-    echo "      --with-extras       -i/-u 와 함께: 확장 도구(UA·taste-skill·codegraph) 멱등 설정"
+    echo "      --with-ua           -i/-u 와 함께: 확장 도구를 Understand-Anything 만으로 한정"
+    echo "      --with-extras       (하위 호환) 기본 동작과 동일 — 전체 확장 도구 멱등 설정"
     echo "      --extras            확장 도구 통합 설치만 단독 실행 (대화형 선택 메뉴)"
     echo "  -c, --check            CLI 연결 상태 점검 (심볼릭 댕글링·병합본 stale 탐지)"
     echo "  -n, --new P [DIR]      신규 프로젝트 스캐폴딩 (README + AGENTS/CLAUDE 지침 스텁"
@@ -301,9 +302,8 @@ UpdateArachne() {
     fi
 
     UpdateArachneCore
-    # -u 도 -i 와 동일하게 확장 도구 분기. --with-extras 면 멱등 동기화,
-    # 미지정 대화형이면 질의(자동 강제 X — noarg-safe 원칙 유지).
-    # update 모드 — 선택된 확장 도구의 클론·플러그인·CLI 를 git pull/plugin update 로 갱신.
+    # -u 도 -i 와 동일하게 확장 도구 동기화 — 전체 설치·갱신이 기본,
+    # --with-ua 지정 시 Understand-Anything 만.
     MaybeRunExtras --update
 }
 
@@ -610,10 +610,10 @@ RunExtras() {
 
 #===============================================================================
 # FUNCTION    : MaybeRunExtras
-# DESCRIPTION : -i/-u 설치 후 확장 도구 설정 분기. Claude 타깃(all|claude)에서만 동작.
-#               --with-ua 지정 시 Understand-Anything 만 실행한다.
-#               --with-extras 지정 시 실행(비TTY는 --all), 미지정 시 대화형일 때만
-#               설치 여부를 질의한다(무인자=help 원칙 유지 — 비대화형은 조용히 스킵).
+# DESCRIPTION : -i/-u 설치 후 확장 도구 동기화. Claude 타깃(all|claude)에서만 동작.
+#               --with-ua 지정 시 Understand-Anything 만 실행하고, 그 외에는 항상
+#               전체 확장 도구를 설치·갱신한다(--all --update 멱등 — 미설치는
+#               설치, 기설치는 git pull/plugin update 로 최신화).
 # PARAMETERS  : 나머지 인자 - setup-extras.sh 로 전달 (예: --update)
 #===============================================================================
 MaybeRunExtras() {
@@ -637,22 +637,21 @@ MaybeRunExtras() {
         return 0
     fi
 
-    if [ "${ARACHNE_WITH_EXTRAS:-0}" -eq 1 ]; then
-        ArachneSection "전체 확장 도구 ${action} 시작"
-        if [ -t 0 ]; then RunExtras ${pass_args[@]+"${pass_args[@]}"}; else RunExtras --all ${pass_args[@]+"${pass_args[@]}"}; fi
-        ArachneSection "전체 확장 도구 ${action} 완료"
-        return 0
-    fi
-
-    if [ -t 0 ]; then
-        local reply
-        ArachneSection "확장 도구 ${action} 선택"
-        read -r -p "[Arachne] 확장 도구(Understand-Anything·taste-skill·codegraph)도 ${action}할까요? [y/N] " reply || true
-        case "$reply" in
-            [yY]|[yY][eE][sS]) RunExtras ${pass_args[@]+"${pass_args[@]}"}; ArachneSection "확장 도구 ${action} 완료" ;;
-            *) ArachneLog "SKIP" "extras: ${action} 건너뜀 (나중에 'arachne --extras' 로 가능)" ;;
+    #---------------------------------------------------------------------------
+    # 기본 동작: 전체 확장 도구를 항상 설치하고 기설치면 최신으로 갱신한다.
+    # --all/--update 는 이미 강제하므로 pass_args 의 중복 지정은 걸러 전달한다.
+    #---------------------------------------------------------------------------
+    local forward_args=()
+    local pass_arg
+    for pass_arg in ${pass_args[@]+"${pass_args[@]}"}; do
+        case "$pass_arg" in
+            --all|--update) ;;
+            *)              forward_args+=("$pass_arg") ;;
         esac
-    fi
+    done
+    ArachneSection "전체 확장 도구 ${action} 시작 (미설치는 설치, 기설치는 최신 갱신)"
+    RunExtras --all --update ${forward_args[@]+"${forward_args[@]}"}
+    ArachneSection "전체 확장 도구 ${action} 완료"
 }
 
 #===============================================================================

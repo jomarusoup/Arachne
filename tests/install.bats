@@ -3,7 +3,7 @@
 # FILE NAME   : install.bats
 # DESCRIPTION : install.sh 동작 검증 테스트
 # DATA        : 2026-06-01
-# Modification: 2026-06-09
+# Modification: 2026-07-17
 ################################################################################
 
 REPO_DIR="$(cd "$(dirname "$BATS_TEST_FILENAME")/.." && pwd)"
@@ -11,6 +11,17 @@ REPO_DIR="$(cd "$(dirname "$BATS_TEST_FILENAME")/.." && pwd)"
 setup() {
     TMP_DIR=$(mktemp -d)
     export HOME="${TMP_DIR}"
+
+    #---------------------------------------------------------------------------
+    # -i/-u 가 확장 도구를 항상 설치·갱신하므로 실제 setup-extras.sh 실행을
+    # 기록 스텁으로 격리한다 (호출 인자는 extras.args 로 검증).
+    #---------------------------------------------------------------------------
+    FAKE_EXTRAS="${TMP_DIR}/fake-extras.sh"
+    cat > "${FAKE_EXTRAS}" <<EOF
+#!/bin/bash
+printf '%s\n' "\$*" > "${TMP_DIR}/extras.args"
+EOF
+    export ARACHNE_EXTRAS_SCRIPT="${FAKE_EXTRAS}"
 }
 
 teardown() {
@@ -331,6 +342,27 @@ EOF
 @test "install(#34): 전체 설치(-i)는 공통 bin 을 등록" {
     run_install
     [ -L "${TMP_DIR}/.local/bin/arachne" ]
+}
+
+@test "install: -i 는 확장 도구 전체를 자동 설치·갱신 (--all --update)" {
+    run_install
+    [[ "$output" == *"전체 확장 도구 설정 시작"* ]]
+    [ "$(cat "${TMP_DIR}/extras.args")" = "--all --update" ]
+}
+
+@test "update: -u 는 확장 도구 전체를 자동 설치·갱신 (--all --update)" {
+    make_mock_git
+    PATH="${TMP_DIR}/mockbin:${PATH}" ARACHNE_FORCE=1 \
+        run bash "${REPO_DIR}/install.sh" -u
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"전체 확장 도구 갱신 시작"* ]]
+    [ "$(cat "${TMP_DIR}/extras.args")" = "--all --update" ]
+}
+
+@test "install: --target gemini 는 확장 도구를 실행하지 않음" {
+    run bash "${REPO_DIR}/install.sh" -i --target gemini
+    [ "$status" -eq 0 ]
+    [ ! -e "${TMP_DIR}/extras.args" ]
 }
 
 @test "install: --with-ua 는 Understand-Anything 설정만 호출" {
