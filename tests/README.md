@@ -55,8 +55,9 @@ pwsh -File tests/install_windows.ps1
 | `data_contract.bats` | `fixtures/python-db` — 데이터 계약 정적 검사 + alembic·pytest 실행 게이트 (uv 필요) | bats |
 | `sgrep.bats` | `dotfiles/bash_profile` — sgrep/lgrep 확장자 커버리지·제외 디렉터리·rg/find 폴백 | bats |
 | `ua_stale.bats` | `hooks/ua-stale-check.sh` — UA 지식그래프 stale 감지 (최신/뒤처짐/해시 유실/임계값) | bats |
-| `check_index.sh` | 인덱스 ↔ 실제 파일 일치 + 문서 "(N개)" 개수 표기 검증 (skills·commands·agents·rules) | bash |
+| `check_index.sh` | 인덱스 ↔ 실제 파일 일치 + 문서 "(N개)" 개수 표기 + 상대 .md 링크 해소 검증 (skills·commands·agents·rules·docs) | bash |
 | `check_convention_sync.sh` | `AGENTS.md` ↔ `rules/common/*` 핵심 토큰 동기화 | bash |
+| `check_ps_syntax.ps1` | 저장소 전체 `.ps1` 구문 파싱 — Linux pwsh 에서 Windows 러너 전 조기 차단 | PowerShell |
 | `validate_settings.sh` | `settings.template.json` — JSON 유효성·필수 키 | bash + jq |
 | `smoke_hooks.sh` | Windows Git Bash와 Ubuntu smoke job 공용 런타임 스모크 | bash |
 | `install_windows.ps1` | `install.ps1` — 링크·경로 치환·Gemini/Codex·CMD 래퍼 | PowerShell |

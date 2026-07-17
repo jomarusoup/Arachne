@@ -24,6 +24,10 @@ jobs:
       - name: Shellcheck (모든 셸 스크립트 — glob 으로 드리프트 차단)
         run: shellcheck -S warning ./*.sh lib/*.sh hooks/*.sh tests/*.sh
 
+      - name: PowerShell 구문 검사 (Linux pwsh — Windows 러너 전 조기 차단)
+        shell: pwsh
+        run: ./tests/check_ps_syntax.ps1
+
       - name: Bats (전체 *.bats — 새 테스트 자동 포함)
         run: bats tests/*.bats
 

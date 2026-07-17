@@ -101,9 +101,9 @@ FROM:: [[100. Project/110. Side-Project/111. Arachne/docs/README]]
 읽을 문서:
 
 1. [rules/java](../rules/java)
-2. [skills/java-coding-standards](../skills/java-coding-standards.md)
-3. [skills/springboot-patterns](../skills/springboot-patterns.md)
-4. [skills/jpa-patterns](../skills/jpa-patterns.md)
+2. [skills/java-coding-standards](../skills/archive/java-coding-standards.md)
+3. [skills/springboot-patterns](../skills/archive/springboot-patterns.md)
+4. [skills/jpa-patterns](../skills/archive/jpa-patterns.md)
 5. [rules/docker](../rules/docker)
 6. [skills/docker-patterns](../skills/docker-patterns.md)
 

@@ -47,11 +47,11 @@ Arachne는 Python·Web과 C/C++·Go·Rust 시스템 개발에서 출발했지만
 
 | 목적 | 자산 |
 | --- | --- |
-| Java 기본 규칙 | [rules/java](../rules/java), [skills/java-coding-standards](../skills/java-coding-standards.md) |
-| Spring Boot 구조 | [skills/springboot-patterns](../skills/springboot-patterns.md) |
-| Spring Security | [skills/springboot-security](../skills/springboot-security.md) |
-| Spring TDD/검증 | [skills/springboot-tdd](../skills/springboot-tdd.md), [skills/springboot-verification](../skills/springboot-verification.md) |
-| JPA/Hibernate | [skills/jpa-patterns](../skills/jpa-patterns.md) |
+| Java 기본 규칙 | [rules/java](../rules/java), [skills/java-coding-standards](../skills/archive/java-coding-standards.md) |
+| Spring Boot 구조 | [skills/springboot-patterns](../skills/archive/springboot-patterns.md) |
+| Spring Security | [skills/springboot-security](../skills/archive/springboot-security.md) |
+| Spring TDD/검증 | [skills/springboot-tdd](../skills/archive/springboot-tdd.md), [skills/springboot-verification](../skills/archive/springboot-verification.md) |
+| JPA/Hibernate | [skills/jpa-patterns](../skills/archive/jpa-patterns.md) |
 
 ## 5. Docker·배포
 
@@ -71,7 +71,7 @@ Arachne는 Python·Web과 C/C++·Go·Rust 시스템 개발에서 출발했지만
 | C++ 시스템 규칙 | [rules/cpp](../rules/cpp) |
 | 저지연 시스템 | [skills/latency-critical-systems](../skills/latency-critical-systems.md) |
 | 메모리 검사 | [skills/memory-check](../skills/memory-check.md) |
-| 네트워크 운영 진단 | [skills/network-interface-health](../skills/network-interface-health.md), [skills/network-config-validation](../skills/network-config-validation.md) |
+| 네트워크 운영 진단 | [skills/network-interface-health](../skills/network-interface-health.md), [skills/network-config-validation](../skills/archive/network-config-validation.md) |
 
 ## 7. 사용 방식
 

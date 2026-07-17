@@ -4,6 +4,7 @@
 # DESCRIPTION : 인덱스 ↔ 실제 파일 일치 검사 — 파일을 추가하고 인덱스 갱신을
 #               누락하는 드리프트를 CI에서 차단한다.
 # DATA        : 2026-06-05
+# Modification: 2026-07-17
 ################################################################################
 
 set -uo pipefail
@@ -135,6 +136,48 @@ for doc in README.md CLAUDE.md AGENTS.md docs/ARCHITECTURE.md docs/USAGE.md docs
     CheckCount "스킬"         "$SKILL_COUNT" "$doc" '스킬[^()]{0,12}\([0-9]+개?'          || FAIL=1
     CheckCount "커맨드"       "$CMD_COUNT"   "$doc" '커맨드[^()]{0,12}\([0-9]+개?'        || FAIL=1
     CheckCount "서브에이전트" "$AGENT_COUNT" "$doc" '서브에이전트[^0-9()]{0,6}\(?[0-9]+개' || FAIL=1
+done
+
+#===============================================================================
+# FUNCTION    : CheckRelativeLinks
+# DESCRIPTION : 디렉터리 내 .md 파일의 상대 .md 링크가 실제 파일로 해소되는지
+#               검사 — 파일 이동(아카이브 등) 후 링크 갱신 누락을 차단한다.
+#               외부 URL·절대 경로·Obsidian 볼트 경로(NNN.%20 접두)는 제외.
+# PARAMETERS  : string scan_dir - 검사 대상 디렉터리 (REPO_DIR 상대)
+# RETURNED    : 0(모두 해소) / 1(깨진 링크 있음)
+#===============================================================================
+CheckRelativeLinks() {
+    local scan_dir="$1"
+    local bad=0
+    local md_file
+    local link
+    local target
+
+    while IFS= read -r md_file; do
+        while IFS= read -r link; do
+            [ -z "$link" ] && continue
+            target="${link%%#*}"
+            case "$target" in
+                ''|http://*|https://*|mailto:*|/*) continue ;;
+                [0-9]*.%20*) continue ;;   # Obsidian 볼트 경로 — 저장소 밖
+            esac
+            if [ ! -e "$(dirname "$md_file")/$target" ]; then
+                echo "  [DRIFT] ${md_file#"$REPO_DIR"/}: 깨진 링크 → $target"
+                bad=1
+            fi
+        done < <(grep -oE '\]\([^)]+\.md(#[^)]*)?\)' "$md_file" 2>/dev/null \
+                     | sed -E 's/^\]\(//; s/\)$//')
+    done < <(find "$REPO_DIR/$scan_dir" -name '*.md')
+    return "$bad"
+}
+
+#-------------------------------------------------------------------------------
+# 검사 7: 상대 .md 링크 해소 — rules·skills·agents·commands·docs
+#         (A-32/A-35: 스킬 아카이브 이동 후 링크 깨짐 재발 방지)
+#-------------------------------------------------------------------------------
+echo "[index] 상대 .md 링크 해소 검사"
+for link_dir in rules skills agents commands docs; do
+    CheckRelativeLinks "$link_dir" || FAIL=1
 done
 
 #-------------------------------------------------------------------------------

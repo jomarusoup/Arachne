@@ -26,6 +26,24 @@
   디렉터리 표기만 대상이라 미검출.
 - **수정**: 마커 제거.
 
+### A-35 상대 .md 링크 해소 검사 신설 + docs 잔존 깨진 링크 10건 [LOW / 검증 누락]
+
+- **문제**: A-32 류(파일 이동 후 링크 깨짐)를 잡는 자동 검사가 없었다. 검사 신설 직후
+  드라이런에서 docs/CAPABILITY-MAP.md(7건)·docs/HARNESS-LEARNING-GUIDE.md(3건)의
+  아카이브 스킬 링크 깨짐을 추가 발견 — A-32 와 같은 근본 원인(5a27665 아카이브 이동).
+- **수정**: ① 깨진 링크 10건 `skills/archive/` 경로로 갱신. ② `check_index.sh` 에
+  검사 7(CheckRelativeLinks) 신설 — rules·skills·agents·commands·docs 의 상대 .md
+  링크 해소를 CI 에서 강제. 외부 URL·절대 경로·Obsidian 볼트 경로(`NNN.%20` 접두,
+  docs-sync 산물)는 제외. 네거티브 테스트(깨진 링크 주입 → DRIFT + exit 1)로 검증.
+
+### A-36 PowerShell 구문 검사 CI 사각지대 [LOW / 검증 누락]
+
+- **문제**: `.ps1` 4종은 verify-windows job 의 실행 테스트가 유일한 검증 —
+  Linux/macOS job 과 로컬(pwsh 미설치)에서는 구문 오류도 감지 불가.
+- **수정**: `tests/check_ps_syntax.ps1` 신설(전체 .ps1 을 PowerShell Parser 로 파싱,
+  오류 시 exit 1) + verify-ubuntu job 에 pwsh 스텝 추가 — Windows 러너 실행 전
+  조기 차단.
+
 ### A-34 dotfiles/bash_profile shellcheck 셸 미지정 [LOW / 검증 누락]
 
 - **문제**: 확장자 없는 dotfile 이라 shellcheck 이 SC2148(셸 불명)로 분석 불가 —
