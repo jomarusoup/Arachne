@@ -418,7 +418,7 @@ powershell -ExecutionPolicy Bypass -File .\install.ps1 -Install
 | `arachne -u --with-extras` | 업데이트 + 확장 도구 멱등 동기화 |
 | `arachne --extras [--all\|--ua\|--taste\|--codegraph]` | 확장 도구만 단독 설치(무인자=대화형 항목별 선택) |
 | `arachne -c`, `--check` | Claude·Gemini·Codex·Copilot 연결 상태 점검 — 심볼릭 댕글링·병합본 stale 탐지 |
-| `arachne -n <P> [DIR] --profile <PROFILE>`, `--new` | 신규 프로젝트 스캐폴딩. `--no-git`, `minimal|python|web|python-web` 지원 |
+| `arachne -n <P> [DIR] --profile <PROFILE>`, `--new` | 신규 프로젝트 스캐폴딩. `--no-git`, `minimal|python|web|python-web|cpp|rust` 지원 |
 | `arachne init-ci [DIR] --profile <PROFILE>`, `--init-ci` | 기존 프로젝트에 profile 기반 검증 runner와 workflow 생성/갱신 |
 | `arachne project-check [DIR]`, `--project-check` | 프로젝트의 `.arachne/verify.sh`를 실행하고 실패 상태를 그대로 반환 |
 | `arachne feedback new/list/submit` | Arachne 개선 피드백을 프로젝트 로컬에 기록하고 명시 확인 후 GitHub Issue로 제출 |

@@ -28,22 +28,27 @@ jobs:
         shell: bash
         run: |
           profile="$(cat .arachne/profile 2>/dev/null || printf 'minimal')"
+          python=false
+          web=false
+          rust=false
           case "$profile" in
             minimal)
-              python=false
-              web=false
               ;;
             python)
               python=true
-              web=false
               ;;
             web)
-              python=false
               web=true
               ;;
             python-web)
               python=true
               web=true
+              ;;
+            cpp)
+              # gcc·cmake·ctest 는 ubuntu-latest 러너에 사전 설치 — 별도 셋업 불필요
+              ;;
+            rust)
+              rust=true
               ;;
             *)
               echo "::error::Unknown Arachne profile: $profile"
@@ -52,6 +57,7 @@ jobs:
           esac
           echo "python=$python" >> "$GITHUB_OUTPUT"
           echo "web=$web" >> "$GITHUB_OUTPUT"
+          echo "rust=$rust" >> "$GITHUB_OUTPUT"
 
       - name: Set up Python
         if: steps.profile.outputs.python == 'true'
@@ -73,6 +79,12 @@ jobs:
       - name: Enable Corepack
         if: steps.profile.outputs.web == 'true'
         run: corepack enable
+
+      - name: Set up Rust
+        if: steps.profile.outputs.rust == 'true'
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt, clippy
 
       - name: Run project verification
         run: bash .arachne/verify.sh

@@ -1,0 +1,23 @@
+# C/C++ profile. The project owns CMakeLists.txt (Makefile 프로젝트는 아래 주석 참고).
+git diff --check
+
+# Configure + build — Debug + ASan/UBSan (메모리 오염·UB를 테스트 단계에서 잡는다)
+cmake -S . -B build -DCMAKE_BUILD_TYPE=Debug -DCMAKE_C_FLAGS="-fsanitize=address,undefined -fno-omit-frame-pointer -g" -DCMAKE_CXX_FLAGS="-fsanitize=address,undefined -fno-omit-frame-pointer -g"
+cmake --build build --parallel
+
+# Test — ctest (GoogleTest/cmocka 연동, sanitizer 활성 바이너리로 실행)
+ctest --test-dir build --output-on-failure
+
+# Makefile 프로젝트면 위 cmake/ctest 세 줄을 다음으로 대체:
+# make CFLAGS="-fsanitize=address,undefined -fno-omit-frame-pointer -g"
+# make test
+
+# Optional: 정적 분석 (cppcheck 설치 시 주석 해제 — CI는 apt-get install cppcheck 추가)
+# cppcheck --error-exitcode=1 --enable=warning,performance,portability --inline-suppr src/
+
+# Optional: 레이스 컨디션 게이트 — TSan은 ASan과 동시 사용 불가라 별도 빌드
+# cmake -S . -B build-tsan -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_FLAGS="-fsanitize=thread -g"
+# cmake --build build-tsan --parallel && ctest --test-dir build-tsan --output-on-failure
+
+# Optional: valgrind 정밀 검사 (느려서 로컬·야간 전용 권장)
+# valgrind --leak-check=full --error-exitcode=1 ./build/tests/test_binary

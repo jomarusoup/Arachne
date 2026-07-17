@@ -77,6 +77,18 @@ run_new() {
     [ -f "${TMP_DIR}/myproj/docs/design/DESIGN.md" ]
 }
 
+@test "new: systems profile(cpp·rust) 은 해당 검증 계약으로 스캐폴딩" {
+    run_new sysproj "${TMP_DIR}" --profile cpp
+    [ "$status" -eq 0 ]
+    [ "$(cat "${TMP_DIR}/sysproj/.arachne/profile")" = "cpp" ]
+    grep -qF "fsanitize=address,undefined" "${TMP_DIR}/sysproj/.arachne/commands"
+
+    run_new rsproj "${TMP_DIR}" --profile rust
+    [ "$status" -eq 0 ]
+    [ "$(cat "${TMP_DIR}/rsproj/.arachne/profile")" = "rust" ]
+    grep -qF "cargo clippy" "${TMP_DIR}/rsproj/.arachne/commands"
+}
+
 @test "new: minimal 과 python profile 은 디자인 문서 미생성" {
     run_new minimalproj "${TMP_DIR}" --profile minimal
     [ "$status" -eq 0 ]

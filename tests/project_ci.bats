@@ -41,6 +41,32 @@ teardown() {
     grep -qF "git diff --check" "${PROJECT_DIR}/.arachne/commands"
 }
 
+@test "project ci: cpp profile 은 빌드·테스트·sanitizer 게이트 생성" {
+    run bash "${REPO_DIR}/install.sh" init-ci "${PROJECT_DIR}" --profile cpp
+    [ "$status" -eq 0 ]
+    [ "$(cat "${PROJECT_DIR}/.arachne/profile")" = "cpp" ]
+    grep -qF "cmake -S . -B build" "${PROJECT_DIR}/.arachne/commands"
+    grep -qF "fsanitize=address,undefined" "${PROJECT_DIR}/.arachne/commands"
+    grep -qF "ctest --test-dir build" "${PROJECT_DIR}/.arachne/commands"
+    # workflow 가 cpp profile 을 인식해야 한다 (미인식이면 ::error 로 CI 실패)
+    grep -qF "cpp)" "${PROJECT_DIR}/.github/workflows/arachne.yml"
+    # 디자인 문서는 web 계열 전용 — systems profile 은 생성하지 않음
+    [ ! -e "${PROJECT_DIR}/docs/design/DESIGN.md" ]
+}
+
+@test "project ci: rust profile 은 fmt·clippy·test 게이트와 툴체인 셋업 생성" {
+    run bash "${REPO_DIR}/install.sh" init-ci "${PROJECT_DIR}" --profile rust
+    [ "$status" -eq 0 ]
+    [ "$(cat "${PROJECT_DIR}/.arachne/profile")" = "rust" ]
+    grep -qF "cargo fmt --check" "${PROJECT_DIR}/.arachne/commands"
+    grep -qF "cargo clippy --all-targets" "${PROJECT_DIR}/.arachne/commands"
+    grep -qF "cargo test --locked" "${PROJECT_DIR}/.arachne/commands"
+    grep -qF "dtolnay/rust-toolchain@stable" \
+        "${PROJECT_DIR}/.github/workflows/arachne.yml"
+    grep -qF "rustfmt, clippy" \
+        "${PROJECT_DIR}/.github/workflows/arachne.yml"
+}
+
 @test "project ci: python-web profile 은 Python과 Web 검증 명령 생성" {
     run bash "${REPO_DIR}/install.sh" init-ci "${PROJECT_DIR}" \
         --profile python-web

@@ -16,7 +16,7 @@ REPO_DIR="$(cd "$(dirname "$BATS_TEST_FILENAME")/.." && pwd)"
     local token
 
     help_output=$(bash "${REPO_DIR}/install.sh" --help)
-    for token in "init-ci" "project-check" "python-web" "feedback"; do
+    for token in "init-ci" "project-check" "python-web" "cpp" "rust" "feedback"; do
         [[ "$help_output" == *"$token"* ]]
         grep -qF "$token" "${REPO_DIR}/README.md"
         grep -qF "$token" "${REPO_DIR}/docs/USAGE.md"

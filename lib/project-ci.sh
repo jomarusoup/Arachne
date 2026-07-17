@@ -12,16 +12,16 @@
 #===============================================================================
 # FUNCTION    : ValidateProjectProfile
 # DESCRIPTION : 프로젝트 CI profile 이름 검증
-# PARAMETERS  : string profile - minimal|python|web|python-web
+# PARAMETERS  : string profile - minimal|python|web|python-web|cpp|rust
 # RETURNED    : 유효하면 0, 아니면 1
 #===============================================================================
 ValidateProjectProfile() {
     local profile="$1"
 
     case "$profile" in
-        minimal|python|web|python-web) return 0 ;;
+        minimal|python|web|python-web|cpp|rust) return 0 ;;
         *)
-            ArachneLog "ERROR" "알 수 없는 profile: '$profile' (minimal|python|web|python-web)"
+            ArachneLog "ERROR" "알 수 없는 profile: '$profile' (minimal|python|web|python-web|cpp|rust)"
             return 1
             ;;
     esac
@@ -211,7 +211,7 @@ CheckProject() {
 # DESCRIPTION : 신규 프로젝트를 기록 가능한 문서 구조로 스캐폴딩.
 #               문서 종류별 frontmatter 는 docs/template/*.md 에서 파생.
 # PARAMETERS  : 위치인자 project_name [parent_dir] + 플래그 --no-git
-#               --profile minimal|python|web|python-web
+#               --profile minimal|python|web|python-web|cpp|rust
 #               parent_dir 생략 시 현재 디렉터리. 대상 존재 시 거부.
 #===============================================================================
 NewProject() {

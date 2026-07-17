@@ -39,4 +39,5 @@ FROM:: [[arachne-docs]]
 | ADR | 결정 |
 | --- | --- |
 | [0001-python-web-profile](0001-python-web-profile.md) | Python·Web profile을 Arachne의 기본 프로젝트 적용 축으로 둔다. |
+| [0002-systems-profiles](0002-systems-profiles.md) | cpp·rust profile로 빌드+테스트+sanitizer 게이트를 기본 제공한다. |
 | [0002-external-analysis-plugins](0002-external-analysis-plugins.md) | 결정론 분석(스캔·그래프·심볼)은 외부 플러그인에 두고 Arachne는 계약 지점(설치·신선도·영속화·폴백)만 소유한다. |

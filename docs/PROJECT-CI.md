@@ -20,7 +20,7 @@ Arachne 저장소 CI와 Arachne 사용 프로젝트 CI는 별개다. 각 프로�
 
 ```text
 .arachne/
-├── profile          # Arachne 관리: minimal|python|web|python-web
+├── profile          # Arachne 관리: minimal|python|web|python-web|cpp|rust
 ├── verify.sh        # Arachne 관리: 로컬·CI 공통 runner
 ├── commands         # 프로젝트 소유: 실제 검증 명령
 └── reports/         # 프로젝트 소유: /verify 리포트 (첫 /verify 시 생성, 커밋 대상)
@@ -90,12 +90,24 @@ workflow는 profile을 읽고 필요한 런타임만 준비한다.
 
 - `python`, `python-web`: Python 3.12와 uv
 - `web`, `python-web`: Node.js 22와 Corepack
+- `rust`: stable 툴체인 + rustfmt·clippy (dtolnay/rust-toolchain)
+- `cpp`: 추가 셋업 없음 — gcc·cmake·ctest는 ubuntu-latest 러너에 사전 설치
 - `minimal`: 추가 런타임 없음
 
 > **minimal의 의도**: `minimal`은 `git diff --check`(공백 오류)만 실행하는 **의도적 최소
 > 게이트**다. clean checkout인 CI에서는 사실상 통과 자리표시자이며, 실질 검증은 프로젝트가
 > `.arachne/commands`에 자기 명령을 추가하는 순간 시작된다. 언어 도구를 강제하지 않기 위한
 > 설계 결정이다 (감사 F-06).
+
+## 시스템 프로필 (cpp·rust)
+
+- `cpp`: CMake 구성 → **ASan/UBSan 플래그 빌드** → ctest. Makefile 프로젝트는 commands의
+  주석대로 `make CFLAGS=...`/`make test`로 교체한다. TSan(레이스)·cppcheck·valgrind는
+  주석 게이트로 제공 — 프로젝트가 필요 시 주석 해제(TSan은 ASan과 동시 사용 불가라 별도 빌드).
+- `rust`: `cargo fmt --check` → `clippy -D warnings` → `build --locked` → `test --locked`.
+  cargo-audit·nextest·miri는 주석 게이트.
+- 두 프로필 모두 `.arachne/commands`는 프로젝트 소유(재실행 시 보존)라, 템플릿은 시작점이고
+  프로젝트 빌드 체계에 맞게 편집한다.
 
 그 후 모든 profile이 `bash .arachne/verify.sh`를 호출한다. commands의 첫 실패 상태가 job 실패로
 전파된다.

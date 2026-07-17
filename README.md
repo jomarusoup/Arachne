@@ -120,7 +120,7 @@ arachne project-check
 
 생성되는 `.github/workflows/arachne.yml`은 `main` push와 `main` 대상 PR에서
 `bash .arachne/verify.sh`를 실행한다. Claude Code의 `/git`도 같은 runner를 커밋 전에 실행하므로
-로컬과 GitHub의 검증 기준이 일치한다. `minimal`, `python`, `web`, `python-web`의 도구·소유권·
+로컬과 GitHub의 검증 기준이 일치한다. `minimal`, `python`, `web`, `python-web`, `cpp`, `rust`의 도구·소유권·
 갱신 정책은 [PROJECT-CI.md](docs/PROJECT-CI.md)가 정본이다. Web 계열 profile의 제품 디자인 문서
 위치와 `/design` 탐색 계약은 [DESIGN-DOCS.md](docs/DESIGN-DOCS.md)가 정본이다.
 

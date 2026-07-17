@@ -1,0 +1,15 @@
+# Rust profile. The project owns Cargo.toml and Cargo.lock.
+git diff --check
+cargo fmt --check
+cargo clippy --all-targets --all-features -- -D warnings
+cargo build --locked
+cargo test --locked
+
+# Optional: 의존성 취약점 감사 (cargo-audit 설치 시 주석 해제)
+# cargo audit
+
+# Optional: 빠른 테스트 러너 (cargo-nextest 설치 시 cargo test 대체)
+# cargo nextest run --locked
+
+# Optional: UB·미정의 동작 정밀 검사 (nightly + miri 필요, 느려서 야간 전용 권장)
+# cargo +nightly miri test
