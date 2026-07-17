@@ -89,7 +89,6 @@
   "enabledPlugins": {
     "claude-code-setup@claude-plugins-official": true,
     "github@claude-plugins-official": true,
-    "commit-commands@claude-plugins-official": true,
     "understand-anything@understand-anything": true,
     "taste-skill@taste-skill": true
   }

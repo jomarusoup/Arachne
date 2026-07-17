@@ -1,6 +1,6 @@
 # Skills
 
-Claude Code 세션에서 호출 가능한 워크플로·도메인 스킬 모음 (51개).
+Claude Code 세션에서 호출 가능한 워크플로·도메인 스킬 모음 (42개 현역 + archive/ 보관 9개).
 
 ---
 
@@ -28,17 +28,11 @@ Claude Code 세션에서 호출 가능한 워크플로·도메인 스킬 모음 
 | `go-http-patterns` | Go HTTP 서버, gRPC, graceful shutdown |
 | `python-patterns` | EAFP·타입힌트·컨텍스트매니저·`__slots__` (자원/메모리 사고 선행 학습) |
 | `python-testing` | pytest·TDD·픽스처·autospec 모킹·async 테스트 |
-| `java-coding-standards` | Java record·Optional·예외·불변 컬렉션·패키지 기준 |
 
 ## Java 백엔드
 
 | 스킬 | 설명 |
 |---|---|
-| `springboot-patterns` | Spring Boot REST·service·validation·exception·profile 패턴 |
-| `springboot-security` | Spring Security·CORS/CSRF·actuator·secret·safe error 기준 |
-| `springboot-tdd` | JUnit 5·AssertJ·MockMvc·DataJpaTest·Testcontainers TDD |
-| `springboot-verification` | Spring Boot 빌드·테스트·정적 분석·보안·컨테이너 검증 루프 |
-| `jpa-patterns` | JPA/Hibernate entity·relationship·N+1·projection·transaction |
 
 ## 백엔드·웹
 
@@ -98,10 +92,7 @@ Claude Code 세션에서 호출 가능한 워크플로·도메인 스킬 모음 
 
 | 스킬 | 설명 |
 |---|---|
-| `network-config-validation` | 라우터·스위치 설정 사전 검증 |
 | `network-interface-health` | 인터페이스 오류·CRC·플래핑 진단 |
-| `network-bgp-diagnostics` | BGP neighbor·prefix·route-map·next-hop·flap 진단 |
-| `netmiko-ssh-automation` | Python Netmiko SSH 자동화 |
 | `data-throughput-accelerator` | queue·batch·DB write·network I/O 처리량 병목 개선 |
 
 ## 메타·하네스
@@ -109,3 +100,7 @@ Claude Code 세션에서 호출 가능한 워크플로·도메인 스킬 모음 
 | 스킬 | 설명 |
 |---|---|
 | `agentic-engineering` | eval-우선 실행·작업 분해·비용 인식 모델 라우팅 (하네스 설계·운영 관점) |
+
+---
+
+> 비활성 도메인 스킬(Java/Spring·네트워크 장비 9개)은 [archive/](archive/README.md)에 보관 — 복원 방법 포함.

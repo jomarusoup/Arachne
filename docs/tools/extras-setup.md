@@ -154,8 +154,9 @@ jq '.enabledPlugins | keys[]' ~/.claude/settings.json | grep -E 'understand|tast
 전역 `enabledPlugins`의 각 플러그인은 **모든 프로젝트의 모든 세션** 시스템 프롬프트에
 스킬 설명을 주입한다(플러그인당 수백~수천 토큰 상시). 따라서:
 
-- **전역(템플릿) 유지**: 어디서나 쓰는 것만 — `github`, `commit-commands`,
-  `claude-code-setup`, `understand-anything`, `taste-skill`(extras 옵트인 동기화).
+- **전역(템플릿) 유지**: 어디서나 쓰는 것만 — `github`, `claude-code-setup`,
+  `understand-anything`, `taste-skill`(extras 옵트인 동기화).
+  (`commit-commands`는 자체 `/git`과 커밋 경로가 3중 중복이라 2026-07-17 전역 해제.)
 - **프로젝트 스코프**: 특정 도메인 전용(`figma`, `chrome-devtools-mcp` 등 웹/디자인
   도구)은 해당 프로젝트의 `.claude/settings.json`에서만 켠다:
 

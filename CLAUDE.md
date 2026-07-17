@@ -84,7 +84,7 @@ Claude Code가 이를 네이티브로 자동 로드한다:
 │   ├── bash_profile                 # → ~/.bash_profile (sgrep 등 유틸 포함)
 │   └── vimrc                        # → ~/.vimrc
 │
-├── skills/                          # 워크플로·도메인 스킬 (51개, README.md 참고)
+├── skills/                          # 워크플로·도메인 스킬 (42개 현역, README.md 참고 — 비활성 도메인은 archive/)
 │   ├── build-debug.md / memory-check.md                             # Harness 전용
 │   ├── cpp-testing.md / latency-critical-systems.md / error-handling.md
 │   ├── trading-systems.md / performance-profiling.md
@@ -98,7 +98,7 @@ Claude Code가 이를 네이티브로 자동 로드한다:
 │   ├── tdd-workflow.md / verification-loop.md
 │   ├── security-review.md / security-scan.md
 │   ├── docker-patterns.md
-│   └── network-config-validation.md / network-interface-health.md / netmiko-ssh-automation.md
+│   └── network-interface-health.md / data-throughput-accelerator.md
 ├── mcp-configs/                     # MCP 서버 설정 템플릿 (github·filesystem)
 └── tests/                           # Arachne 자체 테스트 (bats + 인덱스 검사)
 ```

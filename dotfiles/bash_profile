@@ -144,60 +144,15 @@ lgrep()
 }
 
 #-------------------------------------------------------------------------------
-# FUNCTION    : rgrep
-# DESCRIPTION : .res 리소스 파일에서만 키워드 검색
-# PARAMETERS  : string keyword - 검색할 키워드
-# RETURNED    : 파일명:행번호:내용 형식으로 출력
-#-------------------------------------------------------------------------------
-rgrep()
-{
-        find . -name '*.res' -print | xargs -r grep -H "$*"
-}
-
-#-------------------------------------------------------------------------------
 # FUNCTION    : mgrep
 # DESCRIPTION : Makefile에서만 키워드 검색
+#               (rgrep/ugrep/vgrep 레거시 함수는 2026-07-17 정리 — sgrep 이 대체)
 # PARAMETERS  : string keyword - 검색할 키워드
 # RETURNED    : 파일명:행번호:내용 형식으로 출력
 #-------------------------------------------------------------------------------
 mgrep()
 {
         find . -name '[Mm]akefile' -print | xargs -r grep -H "$1"
-}
-
-#-------------------------------------------------------------------------------
-# FUNCTION    : ugrep
-# DESCRIPTION : C/C++ 소스에서 키워드 검색 후 파일명만 중복 없이 출력
-#               bak/back/test 파일은 결과에서 제외
-# PARAMETERS  : string pattern - 검색할 정규식 패턴
-# RETURNED    : 매칭된 파일명 목록 (중복 제거)
-#-------------------------------------------------------------------------------
-ugrep()
-{
-        find . -name "*.[hc]" -or -name "*.cc" -or -name "*.pc" -or -name "*.sc" | \
-        xargs -r grep -E "$1"                                                     | \
-        grep -Ev "bak|back|test"                                                  | \
-        sed 's/[:|*]/ /g'                                                         | \
-        awk '{printf("%s\n", $1);}'                                               | \
-        sort                                                                      | \
-        uniq
-}
-
-#-------------------------------------------------------------------------------
-# FUNCTION    : vgrep
-# DESCRIPTION : .sc 및 C/C++ 소스에서 키워드 검색, 행번호 포함 정렬 출력
-#               bak/back/test/org/OLD/diff/tobe 파일 제외
-# PARAMETERS  : string keyword - 검색할 키워드
-# RETURNED    : 파일명:행번호:내용 형식으로 정렬 출력
-#-------------------------------------------------------------------------------
-vgrep()
-{
-        find . -name '*.sc' -print | \
-        grep -Ev "bak|back|BACK|test|Test|org|OLD|diff|tobe" | \
-        xargs -r grep -Hn "$*" | sort | grep "$*"
-        find . -name '*.[hc]' -print | \
-        grep -Ev "bak|back|BACK|test|Test|org|OLD|diff|tobe" | \
-        xargs -r grep -Hn "$*" | sort | grep "$*"
 }
 
 #===============================================================================
