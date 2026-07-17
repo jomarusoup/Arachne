@@ -390,11 +390,41 @@ function RegisterCommands {
 }
 
 ################################################################################
+# FUNCTION    : InvokePreflightCheck
+# DESCRIPTION : 설치 전 권장 의존성 존재 점검 — 누락 도구와 영향을 경고로만
+#               출력하고 설치는 차단하지 않는다
+################################################################################
+function InvokePreflightCheck {
+    $tools = @(
+        @{ Cmd = "git";    Impact = "extras clone and -Update unavailable" },
+        @{ Cmd = "bash";   Impact = "hooks and delegated commands unavailable (install Git for Windows)" },
+        @{ Cmd = "gh";     Impact = "feedback submit / issue / PR flows unavailable" },
+        @{ Cmd = "npm";    Impact = "codegraph install and update unavailable" },
+        @{ Cmd = "claude"; Impact = "UA / taste-skill plugin install unavailable" }
+    )
+    $missing_count = 0
+
+    WriteArachneLog "STEP" "preflight: dependency check (warn only; install continues)"
+    foreach ($tool in $tools) {
+        if (Get-Command $tool.Cmd -ErrorAction SilentlyContinue) { continue }
+        WriteArachneLog "WARN" ("preflight: {0} not found; {1}" -f $tool.Cmd, $tool.Impact)
+        $missing_count++
+    }
+
+    if ($missing_count -eq 0) {
+        WriteArachneLog "OK" "preflight: all recommended tools detected"
+    } else {
+        WriteArachneLog "WARN" "preflight: $missing_count missing; only those features are limited"
+    }
+}
+
+################################################################################
 # FUNCTION    : InstallHarness
 # DESCRIPTION : 선택 타깃 설치 후 Windows 공통 명령 등록
 ################################################################################
 function InstallHarness {
     WriteArachneLog "STEP" "install: target=$Target repo=$SCRIPT:REPO_DIR"
+    InvokePreflightCheck
     switch ($Target) {
         "claude" { InstallClaude }
         "gemini" { InstallGemini }
@@ -421,9 +451,6 @@ function InstallHarness {
     }
 
     RegisterCommands
-    if ($null -eq (Get-Command bash -ErrorAction SilentlyContinue)) {
-        WriteArachneLog "WARN" "install: bash.exe not found. Install Git for Windows for hooks and delegated commands."
-    }
     WriteArachneLog "DONE" "install: target=$Target"
 }
 

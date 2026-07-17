@@ -100,6 +100,20 @@ SYMLINK_TARGETS=(
     "skills"
 )
 
+# 권장 의존성 목록 — "명령어:없을 때 영향" 형식. 경고만 하고 설치는 차단하지 않는다.
+# 테스트용 override: ARACHNE_PREFLIGHT_TOOLS (공백 구분 항목 — 항목 내 공백 불가)
+PREFLIGHT_TOOLS=(
+    "git:확장 도구 클론과 arachne -u 업데이트 불가"
+    "jq:재설치 시 settings.json 의 model·theme 보존 병합 생략"
+    "rg:sgrep 이 느린 find+grep 폴백으로 동작"
+    "gh:arachne feedback submit·/issue·PR 흐름 불가"
+    "shellcheck:셸 정적 분석 훅·테스트 게이트 불가"
+    "bats:Arachne 자체 테스트(tests/) 실행 불가"
+    "npm:codegraph 설치·갱신 불가"
+    "claude:UA·taste-skill 플러그인 설치 불가"
+    "tmux:tws 워크스페이스 매니저 불가"
+)
+
 #===============================================================================
 # FUNCTION    : Usage
 # DESCRIPTION : 사용법 출력
@@ -539,6 +553,45 @@ _DetectZshTarget() {
 }
 
 #===============================================================================
+# FUNCTION    : PreflightCheck
+# DESCRIPTION : 설치 전 권장 의존성 존재 점검 — 누락 도구와 영향을 경고로만
+#               출력하고 설치는 차단하지 않는다 (항상 성공)
+# RETURNED    : 0 (항상)
+#===============================================================================
+PreflightCheck() {
+    local entry
+    local cmd
+    local impact
+    local missing_count=0
+    local tools=("${PREFLIGHT_TOOLS[@]}")
+
+    #---------------------------------------------------------------------------
+    # 테스트용 override — 공백 구분 "명령어:영향" 항목 (항목 내 공백 불가)
+    #---------------------------------------------------------------------------
+    if [ -n "${ARACHNE_PREFLIGHT_TOOLS:-}" ]; then
+        read -r -a tools <<< "${ARACHNE_PREFLIGHT_TOOLS}"
+    fi
+
+    ArachneSection "의존성 사전 점검 (경고만 — 설치는 계속)"
+    for entry in "${tools[@]}"; do
+        cmd="${entry%%:*}"
+        impact="${entry#*:}"
+        if command -v "$cmd" >/dev/null 2>&1; then
+            continue
+        fi
+        ArachneLog "WARN" "preflight: ${cmd} 미설치 — ${impact}"
+        missing_count=$((missing_count + 1))
+    done
+
+    if [ "$missing_count" -eq 0 ]; then
+        ArachneLog "OK" "preflight: 권장 도구 모두 감지됨"
+    else
+        ArachneLog "WARN" "preflight: 누락 ${missing_count}건 — 해당 기능만 제한되고 설치는 진행됨"
+    fi
+    return 0
+}
+
+#===============================================================================
 # FUNCTION    : InstallShared
 # DESCRIPTION : 타깃 무관 공통 설치 (dotfiles 병합 + bin 등록) — 항상 1회
 #===============================================================================
@@ -555,6 +608,7 @@ InstallShared() {
 Install() {
     local target="${ARACHNE_TARGET:-all}"
     ArachneSection "설치/재설치 시작 (target=$target)"
+    PreflightCheck
     case "$target" in
         claude) InstallClaude ;;
         gemini) InstallGemini ;;

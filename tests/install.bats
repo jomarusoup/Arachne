@@ -365,6 +365,30 @@ EOF
     [ ! -e "${TMP_DIR}/extras.args" ]
 }
 
+#-------------------------------------------------------------------------------
+# 의존성 사전 점검(preflight) — 경고만 출력, 설치 비차단
+#-------------------------------------------------------------------------------
+@test "preflight: -i 설치 시 의존성 사전 점검 섹션 출력" {
+    run_install
+    [[ "$output" == *"의존성 사전 점검"* ]]
+}
+
+@test "preflight: 누락 도구는 경고만 출력하고 설치는 계속 (exit 0)" {
+    ARACHNE_PREFLIGHT_TOOLS="missing_tool_xyz_123:테스트영향" \
+        run bash "${REPO_DIR}/install.sh" -i
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"[Arachne][WARN] preflight: missing_tool_xyz_123 미설치 — 테스트영향"* ]]
+    [[ "$output" == *"누락 1건"* ]]
+    [ -L "${TMP_DIR}/.claude/CLAUDE.md" ]
+}
+
+@test "preflight: 권장 도구 모두 존재하면 OK 출력" {
+    ARACHNE_PREFLIGHT_TOOLS="bash:없음" \
+        run bash "${REPO_DIR}/install.sh" -i
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"preflight: 권장 도구 모두 감지됨"* ]]
+}
+
 @test "install: --with-ua 는 Understand-Anything 설정만 호출" {
     local fake_extras="${TMP_DIR}/setup-extras.sh"
     cat > "${fake_extras}" <<EOF

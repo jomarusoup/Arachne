@@ -409,7 +409,7 @@ powershell -ExecutionPolicy Bypass -File .\install.ps1 -Install
 | 명령 | 동작 |
 | ---- | ---- |
 | `arachne`, `arachne -h`, `--help` | 도움말 출력 |
-| `arachne -i`, `--install` | `~/.claude/` 심볼릭 링크 + `settings.json` 생성 + dotfiles 병합 + bin 등록 (재설치) + 확장 도구(UA·taste-skill·codegraph) 자동 설치·최신 갱신 |
+| `arachne -i`, `--install` | 의존성 사전 점검(경고만) + `~/.claude/` 심볼릭 링크 + `settings.json` 생성 + dotfiles 병합 + bin 등록 (재설치) + 확장 도구(UA·taste-skill·codegraph) 자동 설치·최신 갱신 |
 | `arachne -i --with-ua` | 위 설치 + 확장 도구를 Understand-Anything 만으로 한정 |
 | `arachne -i --with-extras` | (하위 호환) 기본 동작과 동일 |
 | `arachne -u`, `--update` | 대화형 선택: Arachne 업데이트/재설치, Understand-Anything 갱신, codegraph 갱신 (비대화형은 전체 갱신) |
