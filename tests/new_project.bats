@@ -3,7 +3,7 @@
 # FILE NAME   : new_project.bats
 # DESCRIPTION : arachne new <project> 스캐폴딩 동작 검증
 # DATA        : 2026-06-06
-# Modification: 2026-06-12
+# Modification: 2026-07-17
 ################################################################################
 
 REPO_DIR="$(cd "$(dirname "$BATS_TEST_FILENAME")/.." && pwd)"
@@ -27,21 +27,33 @@ run_new() {
 #-------------------------------------------------------------------------------
 # 구조 생성 검증
 #-------------------------------------------------------------------------------
-@test "new: 기록 구조 생성 (README + docs/{issue,idea,task,feedback,template})" {
+@test "new: 기록 구조 생성 (README + docs/{plan,issue,idea,task,feedback,template})" {
     run_new myproj "${TMP_DIR}"
     [ "$status" -eq 0 ]
     [ -f "${TMP_DIR}/myproj/README.md" ]
+    [ -d "${TMP_DIR}/myproj/docs/plan" ]
     [ -d "${TMP_DIR}/myproj/docs/issue" ]
     [ -d "${TMP_DIR}/myproj/docs/idea" ]
     [ -d "${TMP_DIR}/myproj/docs/task" ]
     [ -d "${TMP_DIR}/myproj/docs/feedback" ]
     [ -f "${TMP_DIR}/myproj/docs/task/README.md" ]
     [ -f "${TMP_DIR}/myproj/docs/template/example.md" ]
+    [ -f "${TMP_DIR}/myproj/docs/template/plan.md" ]
     [ -f "${TMP_DIR}/myproj/docs/template/idea.md" ]
     [ -f "${TMP_DIR}/myproj/docs/template/issue.md" ]
     [ -f "${TMP_DIR}/myproj/docs/template/audit.md" ]
     [ -f "${TMP_DIR}/myproj/docs/template/task.md" ]
     [ -f "${TMP_DIR}/myproj/docs/template/feedback.md" ]
+}
+
+@test "new: docs/plan/PLAN.md 기획 정본 스텁 생성 (프로젝트명 치환 + README 링크)" {
+    run_new myproj "${TMP_DIR}"
+    [ "$status" -eq 0 ]
+    [ -f "${TMP_DIR}/myproj/docs/plan/PLAN.md" ]
+    grep -qF 'Title: "[plan] myproj"' "${TMP_DIR}/myproj/docs/plan/PLAN.md"
+    grep -qF 'MOC:: [[myproj]]' "${TMP_DIR}/myproj/docs/plan/PLAN.md"
+    ! grep -qF "YYYY-MM-DD" "${TMP_DIR}/myproj/docs/plan/PLAN.md"
+    grep -qF "docs/plan/PLAN.md" "${TMP_DIR}/myproj/README.md"
 }
 
 @test "new: 프로젝트 검증 스크립트와 GitHub Actions workflow 생성" {

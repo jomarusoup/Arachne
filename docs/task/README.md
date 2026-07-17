@@ -1,7 +1,7 @@
 ---
 Title: "Task 작성 규약"
 creation: 2026-06-07
-modification: 2026-07-01
+modification: 2026-07-17
 status: "done"
 tags:
  - "arachne"
@@ -16,13 +16,19 @@ FROM:: [[empty]]
 # Task 작성 규약
 
 `docs/task/`는 **실행하기로 결정한 작업과 진행 상태**를 기록하는 곳이다.
-문제 발견과 원인 분석은 `docs/issue/`, 구현 후보 아이디어는 `docs/idea/`, 실제로 수행할
-작업 계획과 결과는 `docs/task/`에 둔다.
+전체 기획 정본은 `docs/plan/PLAN.md`, 문제 발견과 원인 분석은 `docs/issue/`,
+구현 후보 아이디어는 `docs/idea/`, 실제로 수행할 작업 계획과 결과는 `docs/task/`에 둔다.
+
+수명주기: `docs/plan/`(전체 기획) → 항목 분해 → `docs/idea/`(미정) 또는
+`docs/task/`(확정, `FROM::` 링크) → task 단위로 worktree 분기·구현. plan 은 살아있는
+정본 1개로 유지하고(버전별 사본 금지 — git 이력이 버전), 병렬 세션에서는 읽기 전용
+상류 문서로 취급한다.
 
 ## 생성 기준
 
 - 구현·수정·문서화·조사 등 후속 행동이 합의되면 task를 만든다.
 - 단순 메모나 구현 여부가 정해지지 않은 제안은 `docs/idea/`에 둔다.
+- 프로젝트 전체 목표·범위·로드맵은 개별 task가 아니라 `docs/plan/PLAN.md`에서 관리한다.
 - 결함의 증상·재현·원인 추적은 `docs/issue/`에 남기고 task에서 해당 issue를 링크한다.
 - 여러 issue를 하나의 변경으로 처리할 수 있으면 task 하나에서 의존 관계와 범위를 명시한다.
 

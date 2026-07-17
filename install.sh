@@ -138,7 +138,7 @@ Usage() {
     echo "      --extras            확장 도구 통합 설치만 단독 실행 (대화형 선택 메뉴)"
     echo "  -c, --check            CLI 연결 상태 점검 (심볼릭 댕글링·병합본 stale 탐지)"
     echo "  -n, --new P [DIR]      신규 프로젝트 스캐폴딩 (README + AGENTS/CLAUDE 지침 스텁"
-    echo "                         + docs/{issue,idea,task,template})"
+    echo "                         + docs/{plan,issue,idea,task,template})"
     echo "                         DIR 생략 시 현재 디렉터리. --no-git 으로 git init 생략"
     echo "                         --profile minimal|python|web|python-web|cpp|rust (기본 minimal)"
     echo "      --init-ci [DIR]    프로젝트 검증 runner + GitHub Actions workflow 생성/갱신"

@@ -5,7 +5,7 @@
 #               되는 라이브러리로, 단독 실행하지 않는다 (REPO_DIR·ArachneLog·
 #               ArachneSection 은 install.sh 가 정의).
 # DATA        : 2026-07-02
-# Modification: 2026-07-02
+# Modification: 2026-07-17
 ################################################################################
 # shellcheck shell=bash
 
@@ -253,6 +253,7 @@ NewProject() {
     ValidateProjectProfile "$profile" || exit 1
 
     local tmpl="$REPO_DIR/docs/template/example.md"
+    local plan_tmpl="$REPO_DIR/docs/template/plan.md"
     local idea_tmpl="$REPO_DIR/docs/template/idea.md"
     local issue_tmpl="$REPO_DIR/docs/template/issue.md"
     local audit_tmpl="$REPO_DIR/docs/template/audit.md"
@@ -261,7 +262,7 @@ NewProject() {
     local task_rules="$REPO_DIR/docs/task/README.md"
     local agents_tmpl="$REPO_DIR/templates/project/AGENTS.md"
     local claude_tmpl="$REPO_DIR/templates/project/CLAUDE.md"
-    if [ ! -f "$tmpl" ] || [ ! -f "$idea_tmpl" ] || [ ! -f "$issue_tmpl" ] \
+    if [ ! -f "$tmpl" ] || [ ! -f "$plan_tmpl" ] || [ ! -f "$idea_tmpl" ] || [ ! -f "$issue_tmpl" ] \
         || [ ! -f "$audit_tmpl" ] || [ ! -f "$task_tmpl" ] || [ ! -f "$feedback_tmpl" ] || [ ! -f "$task_rules" ] \
         || [ ! -f "$agents_tmpl" ] || [ ! -f "$claude_tmpl" ]; then
         ArachneLog "ERROR" "문서 템플릿 또는 task 규약이 없습니다"
@@ -277,9 +278,10 @@ NewProject() {
     #---------------------------------------------------------------------------
     # 기록 구조 생성
     #---------------------------------------------------------------------------
-    mkdir -p "$dest/docs/issue" "$dest/docs/idea" "$dest/docs/task" "$dest/docs/feedback" "$dest/docs/template"
+    mkdir -p "$dest/docs/plan" "$dest/docs/issue" "$dest/docs/idea" "$dest/docs/task" "$dest/docs/feedback" "$dest/docs/template"
     touch "$dest/docs/issue/.gitkeep" "$dest/docs/idea/.gitkeep" "$dest/docs/feedback/.gitkeep"
     cp "$tmpl" "$dest/docs/template/example.md"
+    cp "$plan_tmpl" "$dest/docs/template/plan.md"
     cp "$idea_tmpl" "$dest/docs/template/idea.md"
     cp "$issue_tmpl" "$dest/docs/template/issue.md"
     cp "$audit_tmpl" "$dest/docs/template/audit.md"
@@ -289,6 +291,7 @@ NewProject() {
 
     #---------------------------------------------------------------------------
     # README.md — example.md frontmatter 치환 (Title·날짜·MOC)
+    # README 는 프로젝트 설명 전용 — 전체 기획은 docs/plan/PLAN.md 링크로 연결
     #---------------------------------------------------------------------------
     local today
     today=$(date +%F)
@@ -296,7 +299,16 @@ NewProject() {
         -e "s/YYYY-MM-DD/${today}/g" \
         -e "s/\[\[Project_name\]\]/[[${proj}]]/" \
         "$tmpl" > "$dest/README.md"
-    printf '\n# %s\n' "$proj" >> "$dest/README.md"
+    printf '\n# %s\n\n전체 기획 정본: [docs/plan/PLAN.md](docs/plan/PLAN.md)\n' "$proj" >> "$dest/README.md"
+
+    #---------------------------------------------------------------------------
+    # docs/plan/PLAN.md — 전체 기획 정본 스텁 (살아있는 문서 1개, git 이력이 버전)
+    #---------------------------------------------------------------------------
+    sed -e "s/^Title:.*/Title: \"[plan] ${proj}\"/" \
+        -e "s/YYYY-MM-DD/${today}/g" \
+        -e "s/\[\[Project_name\]\]/[[${proj}]]/" \
+        -e "s/# \[plan\] 전체 기획 정본/# [plan] ${proj} 전체 기획/" \
+        "$plan_tmpl" > "$dest/docs/plan/PLAN.md"
 
     #---------------------------------------------------------------------------
     # 지침 스텁 — AGENTS.md(프로젝트 SSOT) + CLAUDE.md(포인터)
@@ -323,7 +335,7 @@ NewProject() {
 
     ArachneSection "신규 프로젝트 생성 완료: $dest"
     echo "  profile: $profile"
-    echo "  구조: README.md, AGENTS.md, CLAUDE.md, docs/{issue,idea,task,feedback,template}, .arachne, .github/workflows"
+    echo "  구조: README.md, AGENTS.md, CLAUDE.md, docs/{plan,issue,idea,task,feedback,template}, .arachne, .github/workflows"
     [ "$do_git" -eq 1 ] && echo "  git 저장소 초기화됨"
     return 0
 }
