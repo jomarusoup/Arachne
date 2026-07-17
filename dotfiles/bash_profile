@@ -1,9 +1,11 @@
 ###########################################################################
 # .bash_profile
 ###########################################################################
+# shellcheck shell=bash
 
 # Get the aliases and functions
 if [ -f ~/.bashrc ]; then
+    # shellcheck source=/dev/null
     . ~/.bashrc
 fi
 
@@ -152,7 +154,7 @@ lgrep()
 #-------------------------------------------------------------------------------
 mgrep()
 {
-        find . -name '[Mm]akefile' -print | xargs -r grep -H "$1"
+        find . -name '[Mm]akefile' -print0 | xargs -r0 grep -H "$1"
 }
 
 #===============================================================================

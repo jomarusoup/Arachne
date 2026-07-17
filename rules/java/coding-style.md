@@ -84,6 +84,6 @@ return repository.findById(id)
 
 ## 관련 스킬
 
-- [java-coding-standards](../../skills/java-coding-standards.md)
-- [springboot-patterns](../../skills/springboot-patterns.md)
-- [jpa-patterns](../../skills/jpa-patterns.md)
+- [java-coding-standards](../../skills/archive/java-coding-standards.md)
+- [springboot-patterns](../../skills/archive/springboot-patterns.md)
+- [jpa-patterns](../../skills/archive/jpa-patterns.md)

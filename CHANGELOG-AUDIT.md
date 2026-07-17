@@ -5,6 +5,37 @@
 
 ---
 
+## 2026-07-17 — 전수 재검사 (4차 — 도메인 아카이브 후속 드리프트)
+
+> 검사 범위: 전체 .sh 문법(bash -n 23개)·shellcheck 경고 0, bats 213개 전체 통과,
+> `arachne -c` 전 CLI 연결 정상, 훅 7종 settings 등록 일치, mcp-configs JSON 유효,
+> rules→skills 상대 링크 전수 해소 확인. 아래는 발견·수정 항목.
+
+### A-32 rules/java → 아카이브 스킬 링크 8건 깨짐 [LOW / 문서 불일치]
+
+- **문제**: 5a27665(비활성 도메인 스킬 아카이브)가 java·spring 스킬을 `skills/archive/`로
+  이동했으나 현역 `rules/java/*.md` 4개 파일의 참조 링크 8건이 옛 `skills/` 경로를 가리킴 —
+  `*.java` 편집 시 로드되는 규칙이 존재하지 않는 경로를 안내.
+- **수정**: 8건 모두 `skills/archive/` 경로로 갱신. 현역 스킬 링크(api-design·
+  security-review)는 유지. rules 전체 상대 링크 해소 검사로 잔존 0 확인.
+
+### A-33 performance.md 낡은 "(예정)" 마커 [LOW / 문서 불일치]
+
+- **문제**: `rules/common/performance.md` 가 `debugger` 에이전트를 "(예정)"으로 표기 —
+  에이전트는 이미 존재(agents/debugger.md). check_index 의 (예정) 검사는 CLAUDE.md 의
+  디렉터리 표기만 대상이라 미검출.
+- **수정**: 마커 제거.
+
+### A-34 dotfiles/bash_profile shellcheck 셸 미지정 [LOW / 검증 누락]
+
+- **문제**: 확장자 없는 dotfile 이라 shellcheck 이 SC2148(셸 불명)로 분석 불가 —
+  CI shellcheck 대상(`./*.sh lib hooks tests`)에서도 제외돼 정적 분석 사각지대.
+- **수정**: `# shellcheck shell=bash` 지시어 추가. 분석 활성화로 드러난 2건 동반 수정 —
+  ① `. ~/.bashrc` SC1090 source 지시어, ② `mgrep` SC2038: `find -print0 | xargs -r0`
+  (공백 포함 경로 안전 — sgrep 의 NUL 구분 방식과 통일).
+
+---
+
 ## 2026-07-14 — 전수 조사 후속 (3차 — 세션 상태·토큰·이식성, 사용자 승인분)
 
 ### A-20 PreCompact 세션 경로 통일 (workflow-04 잔존) [HIGH / 버그]

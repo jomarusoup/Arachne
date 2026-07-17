@@ -53,6 +53,6 @@ Controller -> Application Service -> Domain Model -> Repository -> Database
 
 ## 관련 스킬
 
-- [springboot-patterns](../../skills/springboot-patterns.md)
-- [jpa-patterns](../../skills/jpa-patterns.md)
+- [springboot-patterns](../../skills/archive/springboot-patterns.md)
+- [jpa-patterns](../../skills/archive/jpa-patterns.md)
 - [api-design](../../skills/api-design.md)

@@ -65,5 +65,5 @@ void createOrder_rejectsEmptyCustomerName() {
 
 ## 관련 스킬
 
-- [springboot-tdd](../../skills/springboot-tdd.md)
-- [springboot-verification](../../skills/springboot-verification.md)
+- [springboot-tdd](../../skills/archive/springboot-tdd.md)
+- [springboot-verification](../../skills/archive/springboot-verification.md)
