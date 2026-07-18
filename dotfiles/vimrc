@@ -28,6 +28,42 @@ set smartcase                    " 대소문자 구별 검색
 set noai
 set hlsearch                     " 검색어 하이라이팅
 
+" 하네스 지원 언어별 파일타입 감지·들여쓰기 (rules/README.md 자동 활성화 표 기준)
+filetype plugin indent on
+
+" 공통 기본값: 4 스페이스, 탭 문자 금지 (rules/common/coding-style.md)
+set expandtab
+set shiftwidth=4
+set softtabstop=4
+
+" vim 기본 ftdetect에 없는 확장자 보강
+autocmd BufRead,BufNewFile Dockerfile*,*.Dockerfile set filetype=dockerfile
+autocmd BufRead,BufNewFile docker-compose*.yml,docker-compose*.yaml,compose*.yml,compose*.yaml
+    \ set filetype=yaml
+
+augroup harness_lang_settings
+    autocmd!
+    " C / C++ — rules/c, rules/cpp
+    autocmd FileType c,cpp                                  setlocal ts=4 sw=4 sts=4 expandtab cindent
+    " Go — gofmt 공식 규칙: 탭 들여쓰기 (rules/golang/coding-style.md, common 4스페이스 예외)
+    autocmd FileType go                                     setlocal ts=4 sw=4 sts=4 noexpandtab
+    " Java — rules/java
+    autocmd FileType java                                   setlocal ts=4 sw=4 sts=4 expandtab
+    " Rust — rustfmt 4 스페이스 (rules/rust)
+    autocmd FileType rust                                   setlocal ts=4 sw=4 sts=4 expandtab
+    " Python — PEP 8 4 스페이스 (rules/python)
+    autocmd FileType python                                 setlocal ts=4 sw=4 sts=4 expandtab
+    " JavaScript / TypeScript (rules/javascript)
+    autocmd FileType javascript,javascriptreact,typescript,typescriptreact,vue
+        \                                                   setlocal ts=4 sw=4 sts=4 expandtab
+    " Web — HTML/CSS/SCSS (rules/web)
+    autocmd FileType html,css,scss                          setlocal ts=4 sw=4 sts=4 expandtab
+    " Docker — Dockerfile / compose (rules/docker)
+    autocmd FileType dockerfile,yaml                        setlocal ts=4 sw=4 sts=4 expandtab
+    " Bash / Shell (rules/bash)
+    autocmd FileType sh,bash                                setlocal ts=4 sw=4 sts=4 expandtab
+augroup END
+
 " 제목 표시 줄 설정
 set title                          " 제목 표시 줄 사용
 set titlestring=%{hostname()}:\ %F " 제목 표시 줄 포맷
