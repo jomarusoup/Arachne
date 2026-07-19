@@ -140,7 +140,7 @@ triggers:
 | 백엔드·웹 | `backend-patterns` `frontend-patterns` `frontend-design-direction` `frontend-a11y` `design-system` `api-design` `fastapi-patterns` `make-interfaces-feel-better` |
 | 데이터·DB | `json-contracts` `database-migrations` `postgres-patterns` `redis-patterns` |
 | 제품·기획·아키텍처 | `product-lens` `product-capability` `plan-orchestrate` `architecture-decision-records` `hexagonal-architecture` `agent-architecture-audit` |
-| 워크플로·보안·기타 | `tdd-workflow` `verification-loop` `security-review` `security-scan` `docker-patterns` `deployment-patterns` `agentic-engineering` |
+| 워크플로·보안·기타 | `tdd-workflow` `verification-loop` `research-routing` `security-review` `security-scan` `docker-patterns` `deployment-patterns` `agentic-engineering` |
 | 네트워크 | `network-interface-health` `data-throughput-accelerator` |
 
 ### 새 스킬 추가
