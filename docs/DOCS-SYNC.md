@@ -1,7 +1,7 @@
-# Obsidian Project Docs Sync — `docs-sync` 설정 가이드
+# Project Docs Sync — `docs-sync` 설정 가이드
 
-원격 Linux 서버의 프로젝트에서 `README.md`와 `docs/`만 골라 Obsidian Vault로 가져오거나,
-반대로 Obsidian에서 고친 문서를 원격으로 올린다. 상시 데몬 없이 **호출할 때만 1회 rsync**가
+원격 Linux 서버의 프로젝트에서 `README.md`와 `docs/`만 골라 로컬 문서 폴더로 가져오거나,
+반대로 로컬에서 고친 문서를 원격으로 올린다. 상시 데몬 없이 **호출할 때만 1회 rsync**가
 돈다(rsync = remote sync, 변경된 블록만 복사).
 
 > 자동·양방향 동기화가 필요하면 [SYNCTHING-SETUP.md](SYNCTHING-SETUP.md)를 본다. 두 방식은 공존 가능하다.
@@ -15,12 +15,12 @@
 점이다. 규칙은 하나뿐이다.
 
 > **`docs-sync`를 실행하는 그 컴퓨터가 `local`이다.**
-> `local_dir` = 실행하는 컴퓨터의 Obsidian Vault 경로
+> `local_dir` = 실행하는 컴퓨터의 문서 폴더 (아무 폴더나 가능 — Obsidian 등 노트 앱 vault 안 폴더를 지정해도 된다)
 > `ssh_target` + `remote_dir` = SSH로 접속해 들어갈 상대편 프로젝트 경로
 
 | | 실행하는 컴퓨터 (local) | SSH 상대편 (remote) |
 | --- | --- | --- |
-| 무엇이 있나 | **Obsidian Vault** | **프로젝트 git 저장소** |
+| 무엇이 있나 | **문서 폴더** (`local_dir`) | **프로젝트 git 저장소** |
 | 설정 파일 위치 | **`~/.config/arachne/docs-sync.conf`** (여기 있어야 함) | 불필요 |
 | 설치 필요 | `docs-sync`, `rsync`, `ssh` | `rsync`, `sshd` |
 | `pull` 시 | 받는 쪽 (덮어써짐) | 주는 쪽 |
@@ -28,19 +28,19 @@
 
 ```
    [ 실행하는 컴퓨터 = local ]                    [ SSH 상대편 = remote ]
-   ~/Obsidian/프로젝트/Arachne      <-- pull --   /home/<user>/Arachne
+   ~/notes/Arachne                  <-- pull --   /home/<user>/Arachne
    (local_dir)                      -- push -->   (ssh_target : remote_dir)
                                   ssh -p <ssh_port>
 ```
 
-**중요**: `docs-sync.conf`는 Vault가 있는 컴퓨터에만 있으면 된다. Vault가 없는 서버에 설정 파일을
-만들어 두면 `pull` 시 빈 디렉터리만 새로 생기고 아무 의미가 없다.
+**중요**: `docs-sync.conf`는 문서 폴더가 있는 컴퓨터에만 있으면 된다. 문서 폴더가 없는 서버에
+설정 파일을 만들어 두면 `pull` 시 빈 디렉터리만 새로 생기고 아무 의미가 없다.
 
 ---
 
 ## 1. 설치
 
-Vault가 있는 컴퓨터(= `docs-sync`를 실행할 컴퓨터)에서 실행한다.
+문서 폴더가 있는 컴퓨터(= `docs-sync`를 실행할 컴퓨터)에서 실행한다.
 
 ```bash
 arachne -i          # ~/.local/bin/docs-sync 로 등록된다
@@ -65,10 +65,10 @@ brew install rsync
 설정 파일을 쓰기 **전에** 반드시 SSH가 비밀번호 없이 붙는지 확인한다. rsync는 SSH 위에서 돌기
 때문에, SSH가 안 되면 `docs-sync`도 100% 실패한다.
 
-### 2.1 로컬(Vault 쪽)에서 키 생성 — 없을 때만
+### 2.1 로컬에서 키 생성 — 없을 때만
 
 ```bash
-[ -f ~/.ssh/id_ed25519 ] || ssh-keygen -t ed25519 -C "obsidian-docs-sync"
+[ -f ~/.ssh/id_ed25519 ] || ssh-keygen -t ed25519 -C "docs-sync"
 ```
 
 ### 2.2 공개키를 원격 서버에 등록
@@ -129,7 +129,7 @@ name <TAB> ssh_target <TAB> ssh_port <TAB> remote_dir <TAB> local_dir
 | `ssh_target` | SSH 접속 대상. `user@host` 또는 `~/.ssh/config` 별칭 | 상대편 | `Arachne@203.0.113.10` |
 | `ssh_port` | SSH 포트. 기본이면 `22` | 상대편 | `22` |
 | `remote_dir` | 상대편 **프로젝트 루트**. `docs/`의 부모이지 `docs/` 자체가 아니다 | 상대편 | `/home/Arachne/Arachne` |
-| `local_dir` | 실행하는 컴퓨터의 **Obsidian Vault 안 프로젝트 폴더**. `$HOME`·`~` 확장됨 | 실행 쪽 | `$HOME/Obsidian/프로젝트/Arachne` |
+| `local_dir` | 실행하는 컴퓨터의 **문서 폴더**. `$HOME`·`~` 확장됨 | 실행 쪽 | `$HOME/notes/Arachne` |
 
 > `remote_dir`에 `/home/Arachne/Arachne/docs`처럼 `docs`까지 적으면 안 된다. 필터가
 > `remote_dir` 기준 `/README.md`·`/docs/**`를 찾으므로 아무것도 안 걸린다.
@@ -163,7 +163,7 @@ cat -A ~/.config/arachne/docs-sync.conf | grep -v '^#'
 `printf`로 만들면 탭이 확실히 보장되므로 더 안전하다.
 
 ```bash
-printf 'arachne\t<user>@<host>\t22\t/home/<user>/Arachne\t$HOME/Obsidian/프로젝트/Arachne\n' \
+printf 'arachne\t<user>@<host>\t22\t/home/<user>/Arachne\t$HOME/notes/Arachne\n' \
   >> ~/.config/arachne/docs-sync.conf
 ```
 
@@ -174,39 +174,35 @@ printf 'arachne\t<user>@<host>\t22\t/home/<user>/Arachne\t$HOME/Obsidian/프로�
 
 이 저장소는 두 방향 모두에서 쓰인다. 각 컴퓨터마다 **자기 것만** 넣으면 된다.
 
-#### (A) MacBook에서 실행 — 이 서버의 문서를 Vault로 가져오는 경우
+#### (A) 다른 컴퓨터에서 실행 — 이 서버의 문서를 가져오는 경우
 
-`~/.config/arachne/docs-sync.conf` (MacBook에 위치):
+`~/.config/arachne/docs-sync.conf` (실행하는 컴퓨터에 위치):
 
 ```text
 # docs-sync project map
 # name<TAB>ssh_target<TAB>ssh_port<TAB>remote_dir<TAB>local_dir
-arachne	<user>@<host>	22	/home/<user>/Arachne	$HOME/Obsidian/프로젝트/Arachne
+arachne	<user>@<host>	22	/home/<user>/Arachne	$HOME/notes/Arachne
 ```
 
 이 서버 기준 실제값을 넣으면:
 
 ```text
-arachne	Arachne@203.0.113.10	22	/home/Arachne/Arachne	$HOME/Obsidian/프로젝트/Arachne
+arachne	Arachne@203.0.113.10	22	/home/Arachne/Arachne	$HOME/notes/Arachne
 ```
 
 - `<user>` → `Arachne` (이 서버의 로그인 사용자)
 - `<host>` → 이 서버의 공인 IP 또는 도메인
 - `remote_dir` → `/home/Arachne/Arachne` (이 저장소 루트)
-- `local_dir` → MacBook Vault 안 경로
+- `local_dir` → 실행하는 컴퓨터의 문서 폴더 (노트 앱 vault 안 폴더도 가능)
 
-#### (B) 이 서버에서 실행 — 다른 원격 프로젝트를 이 서버 Vault로 가져오는 경우
+#### (B) 이 서버에서 실행 — 다른 원격 프로젝트를 이 서버로 가져오는 경우
 
 `~/.config/arachne/docs-sync.conf` (이 서버에 위치):
 
 ```text
 # name<TAB>ssh_target<TAB>ssh_port<TAB>remote_dir<TAB>local_dir
-project-b	<user>@<other-host>	2222	/home/<user>/project-b	$HOME/Obsidian/프로젝트/project-b
+project-b	<user>@<other-host>	2222	/home/<user>/project-b	$HOME/notes/project-b
 ```
-
-> **이 서버에는 아직 Vault가 없다** (`~/Obsidian` 미생성). (B)를 쓰려면 Vault 경로를 먼저 정하고
-> 만들어야 한다. Vault를 둘 생각이 없다면 이 서버의 `docs-sync.conf`는 비워 두는 게 맞다 —
-> 서버는 (A)에서 **remote 역할**만 하며, remote 쪽에는 설정 파일이 필요 없다.
 
 여러 프로젝트는 줄을 추가하면 된다. 프로젝트명을 생략하고 `docs-sync pull`을 실행하면
 **모든 줄을 순회**한다.
@@ -224,7 +220,7 @@ Host arachne-prod
 ```
 
 ```text
-arachne	arachne-prod	22	/home/Arachne/Arachne	$HOME/Obsidian/프로젝트/Arachne
+arachne	arachne-prod	22	/home/Arachne/Arachne	$HOME/notes/Arachne
 ```
 
 > 별칭에 `Port`를 적었어도 `ssh_port` 컬럼은 비울 수 없다. 값이 없으면 5컬럼 파싱이 깨지므로
@@ -236,7 +232,7 @@ arachne	arachne-prod	22	/home/Arachne/Arachne	$HOME/Obsidian/프로젝트/Arachn
 
 ```text
 # name<TAB>remote_root<TAB>local_dir
-arachne	Arachne@203.0.113.10:/home/Arachne/Arachne	$HOME/Obsidian/프로젝트/Arachne
+arachne	Arachne@203.0.113.10:/home/Arachne/Arachne	$HOME/notes/Arachne
 ```
 
 포트를 명시할 수 없어 기본 22로 고정된다. 전환할 때는 `remote_root`를 `ssh_target`과
@@ -266,11 +262,11 @@ docs-sync pull arachne --dry-run
 ## 5. 사용
 
 ```bash
-docs-sync pull                    # 설정의 모든 프로젝트를 Vault로 가져오기
+docs-sync pull                    # 설정의 모든 프로젝트를 로컬로 가져오기
 docs-sync pull arachne            # 특정 프로젝트만
 docs-sync pull arachne --dry-run  # 미리보기
 docs-sync push arachne --dry-run  # 올리기 미리보기
-docs-sync push arachne            # Vault → 원격 프로젝트
+docs-sync push arachne            # 로컬 → 원격 프로젝트
 ```
 
 삭제 반영은 기본 꺼져 있다. 원본에서 사라진 파일을 대상에서도 지우려면 명시한다.
@@ -281,7 +277,7 @@ docs-sync pull arachne --delete
 
 > `push`는 원격 저장소의 `README.md`와 `docs/`를 덮어쓴다. 원격이 git 저장소라면 push 후
 > `git status`로 의도치 않은 변경이 없는지 확인하고 커밋한다. `--delete`와 `push`를 함께 쓰면
-> Vault에 없는 원격 문서가 삭제되므로 특히 조심한다.
+> 로컬에 없는 원격 문서가 삭제되므로 특히 조심한다.
 
 ---
 
@@ -334,7 +330,7 @@ docs-sync pull arachne --delete
 ## 9. 운영 원칙
 
 - 처음에는 항상 `--dry-run`으로 확인하고, 결과가 납득될 때만 실제 실행한다.
-- `push`는 프로젝트 단위로만, Obsidian에서 문서를 고친 게 확실할 때만 실행한다.
+- `push`는 프로젝트 단위로만, 로컬에서 문서를 고친 게 확실할 때만 실행한다.
 - `--delete`는 양방향 모두 파괴적이다. 쓰기 전에 반드시 `--dry-run`을 먼저 건다.
 - 설정 파일에는 비밀값이 없지만 서버 IP·계정이 들어간다. 저장소에 커밋하지 않는다.
 

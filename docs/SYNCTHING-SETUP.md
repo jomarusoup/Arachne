@@ -59,7 +59,7 @@ flowchart LR
 
 > 두 방식은 공존 가능하다. Syncthing이 상시 동기화를 담당하고, `docs-sync.sh`는
 > Syncthing 미설치 환경(또는 디버그용)에서 단발 동기화로 활용한다.
-> 수동·arachne 관리 방식(`docs-sync`)은 [OBSIDIAN-DOCS-SYNC.md](OBSIDIAN-DOCS-SYNC.md) 참고.
+> 수동·arachne 관리 방식(`docs-sync`)은 [DOCS-SYNC.md](DOCS-SYNC.md) 참고.
 
 ---
 
@@ -819,6 +819,6 @@ sudo systemctl is-enabled syncthing@<user>.service
 
 ## 관련 문서
 
-- [`OBSIDIAN-DOCS-SYNC.md`](./OBSIDIAN-DOCS-SYNC.md) — `docs-sync.sh` 수동 동기화 CLI
+- [`DOCS-SYNC.md`](./DOCS-SYNC.md) — `docs-sync.sh` 수동 동기화 CLI
 - [공식 문서](https://docs.syncthing.net/) — Syncthing 전체 레퍼런스
 - [REST API 레퍼런스](https://docs.syncthing.net/dev/rest.html) — `curl`로 직접 호출 시 참고

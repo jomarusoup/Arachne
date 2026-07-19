@@ -27,24 +27,24 @@ teardown() {
 
 @test "docs-sync list: reads tab-delimited project map" {
     # shellcheck disable=SC2016
-    printf 'sample\tuser@example.com\t2222\t/srv/sample\t$HOME/Obsidian/프로젝트/sample\n' > "${TMP_DIR}/docs-sync.conf"
+    printf 'sample\tuser@example.com\t2222\t/srv/sample\t$HOME/notes/sample\n' > "${TMP_DIR}/docs-sync.conf"
 
     run bash "${SCRIPT}" list --config "${TMP_DIR}/docs-sync.conf"
 
     [ "$status" -eq 0 ]
     [[ "$output" == *"sample"* ]]
     [[ "$output" == *"2222"* ]]
-    [[ "$output" == *"${HOME}/Obsidian/프로젝트/sample"* ]]
+    [[ "$output" == *"${HOME}/notes/sample"* ]]
 }
 
 @test "docs-sync list: keeps legacy remote-root format working" {
     # shellcheck disable=SC2016
-    printf 'legacy\tuser@example.com:/srv/legacy\t$HOME/Obsidian/프로젝트/legacy\n' > "${TMP_DIR}/docs-sync.conf"
+    printf 'legacy\tuser@example.com:/srv/legacy\t$HOME/notes/legacy\n' > "${TMP_DIR}/docs-sync.conf"
 
     run bash "${SCRIPT}" list --config "${TMP_DIR}/docs-sync.conf"
 
     [ "$status" -eq 0 ]
     [[ "$output" == *"legacy"* ]]
     [[ "$output" == *"user@example.com:/srv/legacy"* ]]
-    [[ "$output" == *"${HOME}/Obsidian/프로젝트/legacy"* ]]
+    [[ "$output" == *"${HOME}/notes/legacy"* ]]
 }

@@ -1,9 +1,9 @@
 #!/bin/bash
 ################################################################################
 # FILE NAME   : docs-sync.sh
-# DESCRIPTION : 원격 프로젝트 문서를 Obsidian 프로젝트 폴더와 rsync로 동기화
+# DESCRIPTION : 원격 프로젝트 문서를 로컬 문서 폴더와 rsync로 동기화
 # DATA        : 2026-06-06
-# Modification: 2026-06-06
+# Modification: 2026-07-19
 ################################################################################
 
 set -euo pipefail
@@ -36,15 +36,15 @@ Usage:
 
 Config format:
   # name<TAB>ssh_target<TAB>ssh_port<TAB>remote_dir<TAB>local_dir
-  arachne	user@203.0.113.10	22	/home/Harness/Arachne	$HOME/Obsidian/프로젝트/Arachne
+  arachne	user@203.0.113.10	22	/home/user/Arachne	$HOME/notes/Arachne
 
 Legacy config format is also supported:
   # name<TAB>remote_root<TAB>local_dir
-  arachne	user@203.0.113.10:/home/Harness/Arachne	$HOME/Obsidian/프로젝트/Arachne
+  arachne	user@203.0.113.10:/home/user/Arachne	$HOME/notes/Arachne
 
 Notes:
-  - pull: remote project docs -> local Obsidian project folder
-  - push: local Obsidian project folder -> remote project docs
+  - pull: remote project docs -> local docs folder
+  - push: local docs folder -> remote project docs
   - --dry-run prints the rsync plan without changing files
   - --delete is opt-in because it removes files missing from the source
 EOF
@@ -98,7 +98,7 @@ InitConfig() {
         printf '# docs-sync project map\n'
         printf '# name<TAB>ssh_target<TAB>ssh_port<TAB>remote_dir<TAB>local_dir\n'
         # shellcheck disable=SC2016
-        printf '# arachne\tuser@203.0.113.10\t22\t/home/Harness/Arachne\t$HOME/Obsidian/프로젝트/Arachne\n'
+        printf '# arachne\tuser@203.0.113.10\t22\t/home/user/Arachne\t$HOME/notes/Arachne\n'
     } > "$config_path"
 
     echo "[docs-sync] 생성: $config_path"
@@ -139,7 +139,7 @@ ListProjects() {
 # PARAMETERS  : string ssh_target       - user@host 또는 legacy remote_root
 #               string ssh_port         - SSH 포트 또는 legacy local_dir
 #               string remote_dir       - 원격 프로젝트 루트
-#               string local_dir        - Obsidian 내 프로젝트 문서 폴더
+#               string local_dir        - 로컬 문서 폴더
 # RETURNED    : remote_root, local_dir, ssh_port 를 탭 구분 stdout
 ################################################################################
 BuildRemoteRoot() {
@@ -172,7 +172,7 @@ BuildRemoteRoot() {
 # PARAMETERS  : string mode        - pull | push
 #               string name        - 프로젝트명
 #               string remote_root - 원격 프로젝트 루트
-#               string local_dir   - Obsidian 내 프로젝트 문서 폴더
+#               string local_dir   - 로컬 문서 폴더
 #               string ssh_port    - SSH 포트(비어 있으면 기본값)
 #               string dry_run     - 1이면 변경 없음
 #               string delete_flag - 1이면 대상에서 사라진 파일 삭제

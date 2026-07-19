@@ -33,7 +33,7 @@ Python·Web과 C/C++·Go·Rust 시스템 개발에 공통 규약, 역할 분담,
 | 멀티 CLI(Claude·Codex·Gemini·Copilot) 역할·위임 | [MULTI-CLI](docs/MULTI-CLI.md) |
 | 프로젝트 적용 — CI 계약·profile·데이터·디자인 문서 | [PROJECT-CI](docs/PROJECT-CI.md) · [PYTHON-WEB-PROFILE](docs/PYTHON-WEB-PROFILE.md) · [DATA-HANDLING](docs/DATA-HANDLING.md) · [DESIGN-DOCS.md](docs/DESIGN-DOCS.md) |
 | 확장 도구 — Understand-Anything·taste-skill·codegraph | [tools/README](docs/tools/README.md) |
-| 플랫폼·동기화 — Windows·호환성·다중 머신·Obsidian | [WINDOWS-SETUP](docs/WINDOWS-SETUP.md) · [COMPATIBILITY](docs/COMPATIBILITY.md) · [SYNCTHING-SETUP](docs/SYNCTHING-SETUP.md) · [OBSIDIAN-DOCS-SYNC](docs/OBSIDIAN-DOCS-SYNC.md) |
+| 플랫폼·동기화 — Windows·호환성·다중 머신·문서 | [WINDOWS-SETUP](docs/WINDOWS-SETUP.md) · [COMPATIBILITY](docs/COMPATIBILITY.md) · [SYNCTHING-SETUP](docs/SYNCTHING-SETUP.md) · [DOCS-SYNC](docs/DOCS-SYNC.md) |
 | 학습 — 익히는 순서·역량 지도·AI 엔지니어링 노트 | [HARNESS-LEARNING-GUIDE](docs/HARNESS-LEARNING-GUIDE.md) · [CAPABILITY-MAP](docs/CAPABILITY-MAP.md) · [AI-ENGINEERING-NOTES](docs/AI-ENGINEERING-NOTES.md) |
 | 저장소 자체 CI·UI/UX 기준·장기 설계 결정(ADR) | [CI](docs/CI.md) · [ui-ux/README](docs/ui-ux/README.md) · [decisions/](docs/decisions/README.md) |
 

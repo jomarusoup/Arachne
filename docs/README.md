@@ -81,7 +81,7 @@ flowchart TD
 | [COMPATIBILITY](COMPATIBILITY.md) | 기능별 Linux/macOS/Windows 지원 범위 |
 | [WINDOWS-SETUP](WINDOWS-SETUP.md) | Windows 설치 — PowerShell·Git Bash·WSL |
 | [SYNCTHING-SETUP](SYNCTHING-SETUP.md) | 다중 머신 설정 동기화 |
-| [OBSIDIAN-DOCS-SYNC](OBSIDIAN-DOCS-SYNC.md) | 문서 Obsidian 동기화 |
+| [DOCS-SYNC](DOCS-SYNC.md) | 프로젝트 문서 rsync 동기화 |
 
 ## 3. Profiles — 프로젝트 기준
 
