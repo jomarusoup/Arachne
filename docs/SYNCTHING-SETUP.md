@@ -106,11 +106,12 @@ sudo firewall-cmd --permanent --add-port=22000/tcp 2>/dev/null && sudo firewall-
 sudo systemctl enable --now "syncthing@${USER_NAME}.service"
 
 # 4) 문서만 동기화: README.md + docs/ 외 전부 무시
+#    ⚠️ 순서 주의 — ignore 는 first-match-wins 라 예외(!)가 반드시 먼저 와야 한다 (§5.1)
 cat > "${REPO_DIR}/.stignore" << 'EOF'
-(?d)*
 !/README.md
 !/docs
 !/docs/**
+(?d)*
 EOF
 
 # 5) 이 서버의 Device ID 출력 (Mac에 등록할 값)
@@ -273,10 +274,11 @@ sudo journalctl -u syncthing@<user>.service -n 50 --no-pager
 원격에서는 GUI를 외부에 노출하지 않는다. 기본값(`127.0.0.1:8384`) 유지를 확인:
 
 ```bash
-grep '<address>' ~/.local/state/syncthing/config.xml
+# gui 섹션만 추출 — 그냥 grep '<address>' 하면 device 의 dynamic 주소까지 섞여 나온다
+sed -n '/<gui/,/<\/gui>/p' ~/.local/state/syncthing/config.xml | grep '<address>'
 ```
 
-`127.0.0.1:8384`이면 OK. `0.0.0.0:8384`로 잡혀 있다면 즉시 바꾼다.
+`<address>127.0.0.1:8384</address>`이면 OK. `0.0.0.0:8384`로 잡혀 있다면 즉시 바꾼다.
 
 ### 1.5 원격 Device ID 확인
 
@@ -432,9 +434,12 @@ Spotlight에서 `Syncthing` 실행 → 메뉴바 아이콘이 뜬다.
 GUI 우상단 **Actions → Show ID**, 또는:
 
 ```bash
-cat ~/Library/Application\ Support/Syncthing/cert.pem | \
-  grep -oE 'Device ID: [A-Z0-9-]+'
+syncthing device-id
 ```
+
+> `cert.pem`을 `grep`해 Device ID를 뽑으려는 방법이 돌아다니지만 **동작하지 않는다** —
+> 인증서는 base64 DER이라 "Device ID" 같은 평문이 들어 있지 않다. Device ID는 그 인증서의
+> 해시를 인코딩한 값이므로 `syncthing device-id`(또는 GUI)로 계산해 얻어야 한다.
 
 ---
 
@@ -496,9 +501,11 @@ Mac이 Save한 직후 원격에 pending 폴더가 생긴다. Auto-accept가 켜�
 
 ```bash
 syncthing cli config folders list
-# default        ← 설치 시 자동 생성된 기본 폴더
 # ygpiw-w5hcx    ← Mac이 공유한 Arachne 폴더
 ```
+
+> v2 신규 설치는 폴더가 **하나도 없는 상태**로 시작한다(출력이 비어 있는 게 정상).
+> 예전 버전이 만들던 `Default Folder`(`~/Sync`)는 더 이상 자동 생성되지 않는다.
 
 폴더 설정 조회 (REST API 직접 호출):
 
@@ -533,24 +540,30 @@ Mac으로 내려온다. Obsidian 노트로는 문서만 필요하므로 화이�
 
 ```bash
 cat > /home/<user>/Arachne/.stignore << 'EOF'
-// README.md와 docs/만 허용, 나머지 전부 무시
-(?d)*
+// 예외(!)를 먼저, 포괄 무시를 마지막에 — 순서가 뒤집히면 아무것도 동기화되지 않는다
 !/README.md
 !/docs
 !/docs/**
+(?d)*
 EOF
 ```
 
+> ⚠️ **순서가 전부다.** Syncthing의 ignore 패턴은 **first-match-wins**(위에서부터 첫 매칭이
+> 파일의 운명을 결정)이며 `!`에 우선권이 **없다**. `(?d)*`를 위에 두면 모든 파일이 거기서
+> 먼저 매칭돼 아래 `!` 줄에 도달조차 못 하고, 결과적으로 **동기화되는 파일이 0개**가 된다.
+> 공식 문서의 화이트리스트 예시도 `!` 줄이 포괄 패턴보다 **앞**에 온다.
+
 ### 5.2 패턴 의미
 
-| 패턴            | 의미                                              |
-| --------------- | ------------------------------------------------- |
-| `(?d)*`         | 모든 항목을 무시. `(?d)`는 대상에서도 삭제 허용    |
-| `!/README.md`   | 루트 `README.md`는 예외 (동기화 허용)             |
-| `!/docs`        | 루트 `docs/` 디렉터리는 예외                      |
-| `!/docs/**`     | `docs/` 하위 모든 파일·디렉터리는 예외            |
+읽는 순서(위→아래)가 곧 우선순위다.
 
-> `!` 가 우선순위가 높다. 무시 패턴 뒤에 와도 예외가 적용된다.
+| 순서 | 패턴            | 의미                                              |
+| --- | --------------- | ------------------------------------------------- |
+| 1 | `!/README.md`   | 루트 `README.md`는 동기화 허용 (여기서 확정)      |
+| 2 | `!/docs`        | 루트 `docs/` 디렉터리 허용                        |
+| 3 | `!/docs/**`     | `docs/` 하위 모든 파일·디렉터리 허용              |
+| 4 | `(?d)*`         | 위에서 안 걸린 나머지 전부 무시. `(?d)`는 대상에서도 삭제 허용 |
+
 > `(?d)` 접두사는 "이 패턴에 매칭되는 파일이 대상에 있으면 삭제 가능"을 뜻한다.
 
 ### 5.3 Mac 쪽 `.stignore` (선택)
@@ -567,14 +580,14 @@ Syncthing은 `.stignore` 자체를 동기화하므로 Prod에서 만들면 Mac�
 | `*` | 한 경로 구간(슬래시 제외) 매칭 | `*.log` → 모든 로그 파일 |
 | `**` | 여러 구간(슬래시 포함) 매칭 | `build/**` → build 하위 전부 |
 | `/` 시작 | 폴더 루트 기준 절대 경로 | `/README.md` → 루트의 그것만 |
-| `!` 시작 | **예외**(무시하지 않음). 무시 패턴보다 우선 | `!/docs/**` |
+| `!` 시작 | **예외**(무시하지 않음). 우선권은 없고 **먼저 쓴 줄이 이긴다** | `!/docs/**` |
 | `(?d)` | 접두사 — 매칭 파일이 대상에 있으면 **삭제 허용** | `(?d)*` |
 | `(?i)` | 접두사 — 대소문자 무시 매칭 | `(?i)*.PDF` |
 | `#include` | 다른 ignore 파일 포함 | `#include .gitignore-like` |
 
-> 화이트리스트 패턴(전부 무시 후 `!`로 되살리기)이 의도가 명확해 권장된다.
-> 줄 순서가 중요하다 — 위에서부터 첫 매칭이 적용되므로 `!` 예외를 `(?d)*` **앞**에 둬도 되고
-> Syncthing은 `!`에 절대 우선권을 준다.
+> 화이트리스트 패턴(허용할 것을 `!`로 먼저 나열하고 마지막에 포괄 무시)이 의도가 명확해 권장된다.
+> **줄 순서가 결과를 바꾼다** — 위에서부터 첫 매칭이 파일의 운명을 결정하므로, `!` 예외는
+> 반드시 `(?d)*` 같은 포괄 패턴보다 **앞**에 와야 한다. 뒤에 두면 도달하지 못해 무시된다.
 
 ---
 
@@ -818,7 +831,7 @@ sudo systemctl is-enabled syncthing@<user>.service
 
 - 큰 파일 일괄 추가 시 LAN/공인망 대역 소모 주의 → `.stignore`로 좁히기
 - 양쪽 시계가 크게 어긋나면 충돌 판정이 어색해진다 → NTP 동기화 확인
-- `default` 폴더(설치 시 자동 생성)는 사용하지 않으면 GUI에서 삭제
+- v2는 기본 폴더를 자동 생성하지 않는다 — 예전 버전에서 올라왔다면 남아 있는 `Default Folder`(`~/Sync`)를 GUI에서 삭제
 - Syncthing은 **삭제도 동기화**한다. 한쪽에서 지운 파일은 다른 쪽도 사라진다.
   버전 관리가 필요하면 GUI에서 **File Versioning** 활성화 (Staggered, Trash Can 등)
 
