@@ -114,7 +114,7 @@ cat > "${REPO_DIR}/.stignore" << 'EOF'
 EOF
 
 # 5) 이 서버의 Device ID 출력 (Mac에 등록할 값)
-syncthing --device-id
+syncthing device-id
 ```
 
 ### B. 로컬(Mac) — 압축 단계
@@ -181,6 +181,12 @@ ARCH="linux-amd64"        # arm64 서버면 linux-arm64
 
 cd "$(mktemp -d)"
 curl -fsSLO "https://github.com/syncthing/syncthing/releases/download/${STVER}/syncthing-${ARCH}-${STVER}.tar.gz"
+
+# 무결성 검증 — 반드시 tar 풀기 전에, tarball 이 있는 이 디렉터리에서 실행
+curl -fsSLO "https://github.com/syncthing/syncthing/releases/download/${STVER}/sha256sum.txt.asc"
+sha256sum --ignore-missing -c sha256sum.txt.asc 2>/dev/null
+# 기대 출력: syncthing-linux-amd64-v2.1.2.tar.gz: OK (또는 "성공")
+
 tar xzf "syncthing-${ARCH}-${STVER}.tar.gz"
 cd "syncthing-${ARCH}-${STVER}"
 
@@ -189,12 +195,11 @@ sudo install -m 0755 syncthing /usr/local/bin/syncthing
 syncthing --version
 ```
 
-무결성을 검증하려면 같은 릴리스의 서명 파일을 함께 받아 확인한다.
-
-```bash
-curl -fsSLO "https://github.com/syncthing/syncthing/releases/download/${STVER}/sha256sum.txt.asc"
-sha256sum -c sha256sum.txt.asc 2>/dev/null | grep "syncthing-${ARCH}-${STVER}.tar.gz"
-```
+> **검증 주의 2가지**: ① `sha256sum.txt.asc`에는 전 플랫폼 파일의 체크섬이 들어 있어
+> `--ignore-missing` 없이 돌리면 내려받지 않은 파일마다 `FAILED open or read`가 쏟아진다 —
+> 내 tarball 줄이 `OK`(한국어 로케일은 `성공`)면 정상이다. ② tarball을 받은 디렉터리에서
+> 실행해야 한다. `tar xzf` 후 압축 해제 디렉터리로 `cd`한 상태에서 돌리면 tarball이 없어
+> 그 파일마저 `FAILED open or read`가 난다.
 
 #### (b) Debian / Ubuntu — 공식 apt 저장소
 
@@ -276,14 +281,14 @@ grep '<address>' ~/.local/state/syncthing/config.xml
 ### 1.5 원격 Device ID 확인
 
 ```bash
-syncthing --device-id
+syncthing device-id
 # 예: UBH364Y-E6QZ5NV-JRCBAP2-SASYS7S-CAOMXFU-M3AR6D7-NVSAW4Q-YNRRKAR
 ```
 
 이 값을 Mac에 등록할 때 쓴다.
 
 > 서비스를 띄운 사용자로 실행해야 그 사용자의 인증서를 읽는다. root로 실행하면 다른 ID가 나온다.
-> `sudo -u <user> syncthing --device-id`
+> `sudo -u <user> syncthing device-id`
 
 ---
 
@@ -393,7 +398,7 @@ sudo -u <user> syncthing cli config options global-ann-enabled set false
 버전에 따라 다르므로 실제 경로를 확인해 쓴다.
 
 ```bash
-sudo -u <user> syncthing --paths | head -5
+sudo -u <user> syncthing paths | head -5
 ```
 
 | 버전 | 설정 경로 |
