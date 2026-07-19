@@ -1,6 +1,6 @@
 # Syncthing 양방향 자동 동기화 (Linux ↔ macOS)
 
-원격 Linux 서버의 `/home/Harness/Arachne`와 MacBook의 Obsidian 프로젝트 폴더를
+원격 Linux 서버의 `/home/<user>/Arachne`와 MacBook의 Obsidian 프로젝트 폴더를
 **Syncthing**으로 양방향 자동 동기화한다. 변경된 파일은 양쪽이 온라인일 때 즉시
 전파되며, 충돌 발생 시 양쪽 모두 보존된다.
 
@@ -23,7 +23,7 @@
 ```mermaid
 flowchart LR
     subgraph PROD["🐧 Prod (Linux, 헤드리스)"]
-        PD["syncthing@Harness.service<br/>(systemd 시스템 서비스)"]
+        PD["syncthing@USER.service<br/>(systemd 시스템 서비스)"]
         PDIR["~/Arachne<br/>(.stignore: README + docs/만)"]
         PGUI["GUI 127.0.0.1:8384<br/>(외부 비노출)"]
     end
@@ -70,16 +70,36 @@ flowchart LR
 
 ### A. 원격(Linux) — 원샷 스크립트 (복붙)
 
+> **Rocky/RHEL 9 주의**: `dnf install syncthing`은 **동작하지 않는다.** Rocky 9 기본 저장소에도,
+> EPEL 9에도 syncthing 패키지가 없고 Syncthing 프로젝트는 공식 RPM 저장소를 제공하지 않는다
+> (공식 저장소는 Debian/Ubuntu용 apt만 존재). RPM 계열은 **공식 tarball 설치**가 정석이다.
+> Debian/Ubuntu는 apt 저장소를 쓴다 — 아래 §1.1에 두 경로를 모두 정리했다.
+
 ```bash
 # 설치 + 방화벽(22000) + 시스템 서비스 + 문서만 동기화하는 .stignore 까지 한 번에
-USER_NAME="$(whoami)"
-REPO_DIR="$HOME/Arachne"                       # 동기화할 프로젝트 경로로 교체
+# 플레이스홀더 <user>·<REPO_DIR> 는 자기 환경 값으로 교체 (이 서버 기준 실제값을 주석에 병기)
+USER_NAME="$(whoami)"                          # 이 서버 기준: Arachne
+REPO_DIR="$HOME/Arachne"                       # 이 서버 기준: /home/Arachne/Arachne
+STVER="v2.1.2"                                 # https://github.com/syncthing/syncthing/releases 에서 최신 확인
 
-# 1) 설치 (배포판 자동 분기)
-if command -v dnf >/dev/null; then sudo dnf install -y syncthing
-else sudo apt-get update -qq && sudo apt-get install -y syncthing; fi
+# 1) 설치 — RPM 계열은 tarball, Debian 계열은 공식 apt 저장소
+if command -v apt-get >/dev/null; then
+    sudo apt-get update -qq && sudo apt-get install -y syncthing
+else
+    ARCH="linux-amd64"                         # arm64 서버면 linux-arm64
+    cd "$(mktemp -d)"
+    curl -fsSLO "https://github.com/syncthing/syncthing/releases/download/${STVER}/syncthing-${ARCH}-${STVER}.tar.gz"
+    tar xzf "syncthing-${ARCH}-${STVER}.tar.gz"
+    cd "syncthing-${ARCH}-${STVER}"
+    sudo install -m 0755 syncthing /usr/local/bin/syncthing
+    # tarball 안에 systemd 유닛이 동봉되어 있다
+    sudo install -m 0644 etc/linux-systemd/system/syncthing@.service /etc/systemd/system/
+    # 유닛의 ExecStart 가 /usr/bin/syncthing 을 가리키므로 설치 경로에 맞춘다
+    sudo sed -i 's|/usr/bin/syncthing|/usr/local/bin/syncthing|' /etc/systemd/system/syncthing@.service
+    sudo systemctl daemon-reload
+fi
 
-# 2) 방화벽: 데이터 포트만 개방 (GUI는 닫아 둔다)
+# 2) 방화벽: 데이터 포트만 개방 (GUI 8384 는 닫아 둔다)
 sudo firewall-cmd --permanent --add-port=22000/tcp 2>/dev/null && sudo firewall-cmd --reload || true
 
 # 3) 시스템 서비스로 기동 (SSH 세션엔 --user 가 D-Bus 없어 실패하므로 시스템 서비스 사용)
@@ -111,9 +131,26 @@ brew install --cask syncthing && open -a Syncthing      # 메뉴바 아이콘 �
 
 ## 사전 준비
 
+### 문서 표기 규칙 — 플레이스홀더
+
+이 문서의 명령은 플레이스홀더로 쓰여 있다. 자기 환경 값으로 바꿔 실행한다.
+
+| 플레이스홀더 | 의미 | **이 서버 기준 실제값** |
+| --- | --- | --- |
+| `<user>` | Syncthing을 소유할 리눅스 사용자명 | `Arachne` |
+| `<host>` | 서버의 공인 IP 또는 도메인 | (환경별로 다름) |
+| `<REPO_DIR>` | 동기화할 프로젝트 루트 | `/home/Arachne/Arachne` |
+| `<folder-id>` | Syncthing이 자동 생성한 폴더 ID | 페어링 후 확인 |
+| `<mac-device-id>` | Mac의 Device ID | Mac GUI → Actions → Show ID |
+
+> 예: `sudo systemctl enable --now syncthing@<user>.service`
+> → 이 서버에서는 `sudo systemctl enable --now syncthing@Arachne.service`
+
+### 환경 요구사항
+
 | 항목                       | 원격 (Linux)                          | 로컬 (macOS)                    |
 | -------------------------- | ------------------------------------- | ------------------------------- |
-| 사용자                     | `Harness` (실제 사용자)               | `jomarusoup`                    |
+| 사용자                     | `<user>` (이 서버: `Arachne`)         | `jomarusoup`                    |
 | 패키지 관리자              | `dnf` / `apt`                         | Homebrew                        |
 | sudo 권한                  | 필요 (방화벽·systemd)                 | 불필요                          |
 | 양방향 TCP 22000           | 서버에서 열기 (방화벽)                | 클라이언트 발신만 가능하면 됨   |
@@ -128,12 +165,46 @@ brew install --cask syncthing && open -a Syncthing      # 메뉴바 아이콘 �
 
 ### 1.1 패키지 설치
 
-```bash
-# RHEL/CentOS/Rocky
-sudo dnf install -y syncthing
+배포판에 따라 경로가 갈린다. **RPM 계열에는 패키지가 없다**는 점이 핵심이다.
 
-# Debian/Ubuntu
-sudo apt-get install -y syncthing
+| 배포판 | 방법 | 비고 |
+| --- | --- | --- |
+| **Rocky / RHEL / AlmaLinux 9** | **공식 tarball** | 기본 저장소·EPEL 9 모두 syncthing 없음. 공식 RPM 저장소도 없음 |
+| Fedora | `sudo dnf install -y syncthing` | Fedora 본 저장소에 존재 |
+| Debian / Ubuntu | 공식 apt 저장소 | 배포판 패키지는 버전이 낡은 경우가 많음 |
+
+#### (a) Rocky / RHEL 9 — tarball 설치
+
+```bash
+STVER="v2.1.2"            # 최신 버전 확인: https://github.com/syncthing/syncthing/releases
+ARCH="linux-amd64"        # arm64 서버면 linux-arm64
+
+cd "$(mktemp -d)"
+curl -fsSLO "https://github.com/syncthing/syncthing/releases/download/${STVER}/syncthing-${ARCH}-${STVER}.tar.gz"
+tar xzf "syncthing-${ARCH}-${STVER}.tar.gz"
+cd "syncthing-${ARCH}-${STVER}"
+
+# 바이너리 설치
+sudo install -m 0755 syncthing /usr/local/bin/syncthing
+syncthing --version
+```
+
+무결성을 검증하려면 같은 릴리스의 서명 파일을 함께 받아 확인한다.
+
+```bash
+curl -fsSLO "https://github.com/syncthing/syncthing/releases/download/${STVER}/sha256sum.txt.asc"
+sha256sum -c sha256sum.txt.asc 2>/dev/null | grep "syncthing-${ARCH}-${STVER}.tar.gz"
+```
+
+#### (b) Debian / Ubuntu — 공식 apt 저장소
+
+```bash
+sudo mkdir -p /etc/apt/keyrings
+sudo curl -fsSLo /etc/apt/keyrings/syncthing-archive-keyring.gpg \
+  https://syncthing.net/release-key.gpg
+echo "deb [signed-by=/etc/apt/keyrings/syncthing-archive-keyring.gpg] https://apt.syncthing.net/ syncthing stable" \
+  | sudo tee /etc/apt/sources.list.d/syncthing.list
+sudo apt-get update && sudo apt-get install -y syncthing
 ```
 
 ### 1.2 방화벽 개방
@@ -158,12 +229,39 @@ sudo firewall-cmd --reload
 > **주의**: `systemctl --user`는 SSH 세션에서 D-Bus가 없어 실패한다
 > ("미디어가 없음" 오류). 시스템 서비스 형태인 `syncthing@<user>`를 사용한다.
 
+#### 1.3.1 유닛 파일 설치 — tarball 설치 시에만 필요
+
+apt/dnf 패키지로 설치했다면 유닛이 이미 들어 있으므로 이 단계를 건너뛴다.
+tarball로 설치했다면 압축 해제 디렉터리에서 유닛을 직접 넣는다.
+
 ```bash
-sudo systemctl enable --now syncthing@Harness.service
-sudo systemctl status syncthing@Harness.service
+# tarball 을 푼 디렉터리(syncthing-linux-amd64-vX.Y.Z) 안에서
+sudo install -m 0644 etc/linux-systemd/system/syncthing@.service /etc/systemd/system/
+
+# 유닛 기본 ExecStart 는 /usr/bin/syncthing — /usr/local/bin 에 설치했다면 맞춰준다
+sudo sed -i 's|/usr/bin/syncthing|/usr/local/bin/syncthing|' /etc/systemd/system/syncthing@.service
+
+sudo systemctl daemon-reload
 ```
 
-`Active: active (running)`이면 정상.
+#### 1.3.2 기동
+
+`syncthing@<user>`의 `<user>`는 **Syncthing을 소유할 리눅스 사용자명**이다.
+(이 서버 기준 실제값: `Arachne`)
+
+```bash
+sudo systemctl enable --now syncthing@<user>.service
+sudo systemctl status  syncthing@<user>.service
+
+# 이 서버 기준 실제 명령
+sudo systemctl enable --now syncthing@Arachne.service
+```
+
+`Active: active (running)`이면 정상. 실패하면 로그를 본다.
+
+```bash
+sudo journalctl -u syncthing@<user>.service -n 50 --no-pager
+```
 
 ### 1.4 GUI 리스닝 주소 확인
 
@@ -183,6 +281,125 @@ syncthing --device-id
 ```
 
 이 값을 Mac에 등록할 때 쓴다.
+
+> 서비스를 띄운 사용자로 실행해야 그 사용자의 인증서를 읽는다. root로 실행하면 다른 ID가 나온다.
+> `sudo -u <user> syncthing --device-id`
+
+---
+
+## 추가 서버 설정 (헤드리스 Prod 권장)
+
+설치·기동 이후 서버에서 추가로 잡아두면 좋은 항목들. 문서 동기화 정도의 소규모 사용이면
+**(a) inotify 한도**와 **(c) GUI 인증**만 해도 충분하다.
+
+### (a) inotify watch 한도 — "Watch for Changes" 안정화
+
+Syncthing은 파일 변경을 inotify로 즉시 감지한다. 커널 기본 한도(보통 8192)는 파일이 많은
+저장소에서 금방 고갈되며, 그러면 조용히 주기적 스캔으로 후퇴해 반영이 최대 1시간까지 늦어진다.
+
+```bash
+# 현재 값 확인
+cat /proc/sys/fs/inotify/max_user_watches
+
+# 영구 상향
+echo "fs.inotify.max_user_watches=204800" | sudo tee /etc/sysctl.d/60-syncthing.conf
+sudo sysctl --system
+```
+
+로그에 다음이 보이면 이 한도가 원인이다.
+
+```
+Failed to start filesystem watcher ... too many open files
+```
+
+### (b) SELinux — Rocky/RHEL 기본 Enforcing
+
+`/usr/local/bin`에 설치한 바이너리를 systemd가 실행할 때, 그리고 홈 디렉터리 밖(예: `/srv`,
+외장 마운트)을 동기화할 때 SELinux가 막을 수 있다.
+
+```bash
+getenforce                                   # Enforcing 이면 아래 확인
+sudo ausearch -m avc -ts recent | grep -i syncthing   # 거부 로그 확인 (없으면 문제 없음)
+```
+
+홈 디렉터리 안(`/home/<user>/...`)만 동기화한다면 대개 추가 설정이 필요 없다. 홈 밖 경로를
+쓸 때만 레이블을 맞춘다.
+
+```bash
+sudo semanage fcontext -a -t user_home_t "/srv/sync(/.*)?"
+sudo restorecon -Rv /srv/sync
+```
+
+> `semanage`가 없으면 `sudo dnf install -y policycoreutils-python-utils`.
+
+### (c) GUI 인증 — 포트를 닫아도 걸어두기
+
+GUI는 `127.0.0.1:8384`에만 바인딩하지만, SSH 포트포워딩으로 접근하는 경우를 대비해 인증을 건다.
+
+```bash
+sudo -u <user> syncthing cli config gui user set "admin"
+sudo -u <user> syncthing cli config gui password set "<강한-비밀번호>"
+```
+
+Mac에서 서버 GUI를 볼 때는 포트를 열지 말고 SSH 터널을 쓴다.
+
+```bash
+# Mac 에서 실행 → 브라우저로 http://localhost:18384
+ssh -N -L 18384:127.0.0.1:8384 <user>@<host>
+```
+
+### (d) 파일 디스크립터 한도
+
+파일이 매우 많은 저장소에서 `too many open files`가 나면 서비스 단위로 올린다.
+
+```bash
+sudo systemctl edit syncthing@<user>.service
+```
+
+```ini
+[Service]
+LimitNOFILE=65536
+```
+
+```bash
+sudo systemctl daemon-reload && sudo systemctl restart syncthing@<user>.service
+```
+
+### (e) 폴더 자동 수락 (선택)
+
+Mac이 공유한 폴더를 서버에서 매번 수동 수락하는 게 번거로우면 해당 device에 auto-accept를 켠다.
+
+```bash
+sudo -u <user> syncthing cli config devices <mac-device-id> auto-accept-folders set true
+```
+
+> 편의와 보안의 교환이다. 그 device가 공유하는 **모든** 폴더가 서버 홈 아래에 자동 생성된다.
+> 신뢰하는 자기 단말에만 적용한다.
+
+### (f) 릴레이·글로벌 디스커버리 끄기 (고정 IP 서버)
+
+공인 IP가 고정이고 22000을 직접 열었다면, 외부 의존을 줄이기 위해 끌 수 있다.
+
+```bash
+sudo -u <user> syncthing cli config options relays-enabled set false
+sudo -u <user> syncthing cli config options global-ann-enabled set false
+```
+
+> 단, Mac이 NAT 뒤에서 이동하는 노트북이면 릴레이를 켜두는 편이 연결 안정성에 낫다.
+> 서버가 고정 IP이므로 Mac 쪽에서 `tcp://<서버IP>:22000`을 명시하면 릴레이 없이도 붙는다.
+
+### (g) 설정 파일 위치
+
+버전에 따라 다르므로 실제 경로를 확인해 쓴다.
+
+```bash
+sudo -u <user> syncthing --paths | head -5
+```
+
+| 버전 | 설정 경로 |
+| --- | --- |
+| v1.27+ / v2.x | `~/.local/state/syncthing/config.xml` |
+| 구버전 | `~/.config/syncthing/config.xml` |
 
 ---
 
@@ -223,8 +440,8 @@ cat ~/Library/Application\ Support/Syncthing/cert.pem | \
 ### 3.1 원격 → Mac 등록 (CLI)
 
 ```bash
-# 반드시 Harness 사용자로 실행 (root에서는 cert.pem 못 찾음)
-su - Harness
+# 반드시 <user> 사용자로 실행 (root에서는 cert.pem 못 찾음)
+su - <user>
 syncthing cli config devices add \
   --device-id <Mac의 Device ID> \
   --name Mac
@@ -303,14 +520,14 @@ syncthing cli config folders <folder-id> devices add \
 
 ## 5단계 — `.stignore`로 동기화 범위 제한
 
-기본 상태로 두면 `/home/Harness/Arachne` 전체(소스 코드·빌드 산출물 포함)가
+기본 상태로 두면 `/home/<user>/Arachne` 전체(소스 코드·빌드 산출물 포함)가
 Mac으로 내려온다. Obsidian 노트로는 문서만 필요하므로 화이트리스트 패턴으로
 좁힌다.
 
 ### 5.1 Prod에 `.stignore` 생성
 
 ```bash
-cat > /home/Harness/Arachne/.stignore << 'EOF'
+cat > /home/<user>/Arachne/.stignore << 'EOF'
 // README.md와 docs/만 허용, 나머지 전부 무시
 (?d)*
 !/README.md
@@ -374,7 +591,7 @@ Syncthing은 `.stignore` 자체를 동기화하므로 Prod에서 만들면 Mac�
 | **API Key** | Settings → GUI → API Key | REST API 호출용. 노출 시 재발급 |
 
 ```bash
-# CLI로 GUI 인증 설정 (Prod, Harness 사용자)
+# CLI로 GUI 인증 설정 (Prod, <user> 사용자)
 syncthing cli config gui user set "admin"
 syncthing cli config gui password set "강한-비밀번호"
 
@@ -441,16 +658,16 @@ Syncthing은 **삭제·변경도 동기화**하므로, 실수로 지운 파일�
 Prod(헤드리스)에서 자주 쓰는 점검·제어 명령. CLI subcommand가 없는 버전은 `curl` REST로 대체한다.
 
 ```bash
-# 공통: API Key 미리 잡아두기 (Harness 사용자)
+# 공통: API Key 미리 잡아두기 (<user> 사용자)
 API_KEY=$(grep -oP '(?<=<apikey>)[^<]+' ~/.local/state/syncthing/config.xml)
 ST="http://127.0.0.1:8384"
 ```
 
 | 작업 | 명령 |
 | --- | --- |
-| 서비스 상태 | `sudo systemctl status syncthing@Harness.service` |
-| 실시간 로그 | `sudo journalctl -u syncthing@Harness.service -f` |
-| 재시작 | `sudo systemctl restart syncthing@Harness.service` |
+| 서비스 상태 | `sudo systemctl status syncthing@<user>.service` |
+| 실시간 로그 | `sudo journalctl -u syncthing@<user>.service -f` |
+| 재시작 | `sudo systemctl restart syncthing@<user>.service` |
 | 폴더 즉시 재스캔 | `curl -s -X POST -H "X-API-Key: $API_KEY" "$ST/rest/db/scan?folder=<folder-id>"` |
 | 동기화 진행률 | `curl -s -H "X-API-Key: $API_KEY" "$ST/rest/db/status?folder=<folder-id>"` |
 | 폴더 일시정지 | `curl -s -X PATCH -H "X-API-Key: $API_KEY" -d '{"paused":true}' "$ST/rest/config/folders/<folder-id>"` |
@@ -468,9 +685,9 @@ ST="http://127.0.0.1:8384"
 ### 동기화 확인
 
 1. Mac GUI에서 Arachne 폴더가 **최신** 상태인지 확인
-2. Prod에서 `/home/Harness/Arachne/docs/` 안에 테스트 파일 생성:
+2. Prod에서 `/home/<user>/Arachne/docs/` 안에 테스트 파일 생성:
    ```bash
-   echo "test" > /home/Harness/Arachne/docs/sync-test.md
+   echo "test" > /home/<user>/Arachne/docs/sync-test.md
    ```
 3. 수 초 내로 Mac 로컬 폴더에 동일 파일 등장 확인:
    ```bash
@@ -479,7 +696,7 @@ ST="http://127.0.0.1:8384"
 4. 반대 방향도 동일하게 검증 (Mac에서 만들고 Prod에서 확인)
 5. 정리:
    ```bash
-   rm /home/Harness/Arachne/docs/sync-test.md
+   rm /home/<user>/Arachne/docs/sync-test.md
    ```
 
 ### 충돌 시뮬레이션
@@ -498,7 +715,7 @@ SSH 세션은 user systemd 인스턴스 D-Bus가 없다.
 **해결**: 시스템 서비스 형태인 `syncthing@<user>.service`를 sudo로 활성화.
 
 ```bash
-sudo systemctl enable --now syncthing@Harness.service
+sudo systemctl enable --now syncthing@<user>.service
 ```
 
 ### SSH publickey 거부 — `authorized_keys` 권한 664
@@ -516,17 +733,17 @@ chmod 600 ~/.ssh/authorized_keys
 root 또는 다른 사용자로 실행 중. Syncthing config는
 `~/.local/state/syncthing/`에 사용자별로 저장된다.
 
-**해결**: 실제 syncthing 인스턴스를 띄운 사용자(Harness)로 전환.
+**해결**: 실제 syncthing 인스턴스를 띄운 사용자(<user>)로 전환.
 
 ```bash
-su - Harness
+su - <user>
 syncthing cli <command>
 ```
 
 또는 `sudo`로 위임:
 
 ```bash
-sudo -u Harness syncthing cli <command>
+sudo -u <user> syncthing cli <command>
 ```
 
 ### Mac GUI에 "Failed to verify encryption consistency" 에러
@@ -582,7 +799,7 @@ Syncthing 자체 동작과 Arachne 기여자 테스트의 플랫폼 요구사항
 ### Prod
 
 ```bash
-sudo systemctl is-enabled syncthing@Harness.service
+sudo systemctl is-enabled syncthing@<user>.service
 # enabled ← 부팅 시 자동 시작
 ```
 
