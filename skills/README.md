@@ -1,6 +1,6 @@
 # Skills
 
-Claude Code 세션에서 호출 가능한 워크플로·도메인 스킬 모음 (42개 현역 + archive/ 보관 9개).
+Claude Code 세션에서 호출 가능한 워크플로·도메인 스킬 모음 (43개 현역 + archive/ 보관 9개).
 
 ---
 
@@ -62,6 +62,7 @@ Claude Code 세션에서 호출 가능한 워크플로·도메인 스킬 모음 
 |---|---|
 | `tdd-workflow` | Red-Green-Refactor 범용 워크플로 |
 | `verification-loop` | Claude Code 세션 검증 시스템 |
+| `research-routing` | 모델 선택(Haiku/Sonnet/Opus)·조사 도구 라우팅(codegraph vs sgrep) |
 
 ## 제품·기획·아키텍처
 

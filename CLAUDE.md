@@ -58,7 +58,7 @@ Claude Code가 이를 네이티브로 자동 로드한다:
 │   └── ua-stale-check.sh            # SessionStart — UA 지식그래프 stale(HEAD 대비 뒤처짐) 경고
 │
 ├── rules/                           # 항상 적용되는 전역 규칙
-│   ├── common/                      # 언어 무관 공통 규칙 (10개, 매 세션 로드 — 최소 유지)
+│   ├── common/                      # 언어 무관 공통 규칙 (10개 — 9개 매 세션 로드, hooks.md는 paths 지연 — 최소 유지)
 │   │   ├── workflow.md              # Claude/Codex/Gemini 3-레인 역할 분담·행동 규칙 (다이제스트)
 │   │   ├── coding-style.md          # 헤더 구조·네이밍·포매팅 공통 원칙
 │   │   ├── patterns.md              # SRP·불변성·에러 처리
@@ -84,7 +84,7 @@ Claude Code가 이를 네이티브로 자동 로드한다:
 │   ├── bash_profile                 # → ~/.bash_profile (sgrep 등 유틸 포함)
 │   └── vimrc                        # → ~/.vimrc
 │
-├── skills/                          # 워크플로·도메인 스킬 (42개 현역, README.md 참고 — 비활성 도메인은 archive/)
+├── skills/                          # 워크플로·도메인 스킬 (43개 현역, README.md 참고 — 비활성 도메인은 archive/)
 │   ├── build-debug.md / memory-check.md                             # Harness 전용
 │   ├── cpp-testing.md / latency-critical-systems.md / error-handling.md
 │   ├── trading-systems.md / performance-profiling.md

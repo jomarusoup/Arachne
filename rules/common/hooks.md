@@ -1,3 +1,9 @@
+---
+paths:
+  - "**/settings.json"
+  - "**/settings.local.json"
+  - "**/hooks/*.sh"
+---
 # 훅 시스템
 
 Claude Code 이벤트에 반응하는 자동화 훅 기준.
