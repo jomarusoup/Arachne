@@ -51,7 +51,7 @@ codex-task -w "실패하는 test_auth 를 green 까지 수정"        # 직접 �
 
 - **파일 전체 읽기 금지** — `sgrep <키워드>`로 위치 먼저, 해당 범위만 Read.
   심볼 정의·호출 관계·영향 범위는 `codegraph` 설치 시 그것부터(미설치 시 `sgrep` 폴백,
-  라우팅 상세는 `rules/common/performance.md`). 대용량 일괄 분석은 `gemini-task`로 위임.
+  라우팅 상세는 `skills/research-routing.md`). 대용량 일괄 분석은 `gemini-task`로 위임.
 - **테스트·검증은 `codex-task` 위임 고려** — 구현(Claude)과 검증(Codex)을 다른 모델이
   맡으면 상관된 맹점이 줄어든다. 기본은 제안 모드, 직접 수정은 `-w`.
 - **Gemini 자문은 저비용 sanity check 후 채택** — 구현 직전 명백한 결함만 1회 가볍게
@@ -59,4 +59,5 @@ codex-task -w "실패하는 test_auth 를 green 까지 수정"        # 직접 �
 - **병행 중복 작업 금지** — 위임한 작업을 Claude가 선제 중복 수행하지 않는다.
 - **수정 전 보고** — 기능 추가·삭제 전 `[PLAN]`으로 승인 요청.
 - **코딩 스타일 준수** — `rules/common/coding-style.md` 적용.
-- **수정 완료 시 자동 git push** — 수정 → `/verify` → `git push` 순서로 진행.
+- **수정 완료 시 자동 git push (기능 브랜치 한정)** — 수정 → `/verify` → `git push`.
+  `main` 은 직접 push 하지 않고 PR 로 반영한다.

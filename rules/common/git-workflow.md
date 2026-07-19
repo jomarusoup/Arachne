@@ -53,27 +53,8 @@ waitpid(WNOHANG)를 SIGCHLD 핸들러에 추가해
 > **여러 세션·AI 인스턴스가 한 폴더를 공유하면, 서로 다른 브랜치를 체크아웃하며 충돌한다.**
 > 동시 작업에서 충돌을 막는 것은 브랜치가 아니라 **worktree(폴더 분리)**다.
 
-| 상황 | 방식 |
-| --- | --- |
-| 한 번에 한 작업 (단일 세션) | `main` 직접 또는 `feat/<task>` 단일 브랜치로 충분 |
-| **동시 다중 작업** (세션·에이전트 병렬) | **반드시 worktree로 폴더까지 분리** |
-
-```bash
-# 작업마다 독립 폴더 + 독립 브랜치
-git worktree add ../Arachne-<task-a>  feat/<task-a>
-git worktree add ../Arachne-<task-b>  feat/<task-b>
-
-# 각 세션은 자기 폴더에서만 작업 (체크아웃 충돌 0)
-cd ../Arachne-<task-a>   # 세션 A
-cd ../Arachne-<task-b>   # 세션 B
-
-# 끝나면 각 브랜치를 main에 머지(PR 권장) 후 worktree 정리
-git worktree remove ../Arachne-<task-a>
-```
-
-Claude Code에서는 `/worktree create <task>`, `/worktree status`, `/worktree cleanup <path>`를
-표준 진입점으로 사용한다. 직접 git 명령을 실행해도 되지만, 커맨드 문서의 dirty 작업트리·기존 경로·
-push/PR 반영 가드를 같은 기준으로 확인한다.
+한 번에 한 작업이면 단일 브랜치로 충분하다. **동시 다중 작업이면 반드시 worktree로 폴더까지
+분리한다.** 생성·점검·정리 절차와 가드는 `/worktree` 커맨드가 정본이다 (`commands/worktree.md`).
 
 규칙:
 - **같은 작업 디렉터리에서 두 세션이 `git checkout`으로 브랜치를 바꾸지 않는다.** 병렬이면 worktree.
@@ -96,4 +77,6 @@ PR 생성 시:
 /verify → git add → git commit → git push
 ```
 
-별도 요청 없이 이 순서로 자동 진행.
+**기능 브랜치에 한해** 별도 요청 없이 이 순서로 자동 진행한다.
+`main` 직접 push 는 하지 않는다 — main 반영은 항상 PR 을 거친다.
+저장소 규약(프로젝트 CLAUDE.md)이 더 엄격하면 그쪽이 우선한다.
