@@ -59,5 +59,5 @@ codex-task -w "실패하는 test_auth 를 green 까지 수정"        # 직접 �
 - **병행 중복 작업 금지** — 위임한 작업을 Claude가 선제 중복 수행하지 않는다.
 - **수정 전 보고** — 기능 추가·삭제 전 `[PLAN]`으로 승인 요청.
 - **코딩 스타일 준수** — `rules/common/coding-style.md` 적용.
-- **수정 완료 시 자동 git push (기능 브랜치 한정)** — 수정 → `/verify` → `git push`.
-  `main` 은 직접 push 하지 않고 PR 로 반영한다.
+- **수정 완료 시 자동 git push** — 수정 → `/verify` → `git push`.
+  main 직접 push 여부는 저장소 규약 우선 — PR 을 요구하는 저장소는 기능 브랜치→PR 로 반영.

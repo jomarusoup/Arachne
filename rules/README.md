@@ -15,6 +15,7 @@ Claude Code에 항상 적용되는 전역 규칙 모음.
 | 규칙 | 로드 시점 |
 |---|---|
 | `rules/common/*` (paths frontmatter 없음) | **매 세션 자동 로드** |
+| `rules/common/hooks.md` (공통이지만 paths 있음) | settings.json·`hooks/*.sh` 편집 시 자동 로드 |
 | `rules/<언어>/*` (paths frontmatter 있음) | **해당 확장자 파일 편집 시** 자동 로드 |
 
 Gemini CLI·Codex CLI·GitHub Copilot은 `rules/` 자동 로더가 없으므로, 공통 규약을 추출한
