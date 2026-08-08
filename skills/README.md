@@ -1,6 +1,6 @@
 # Skills
 
-Claude Code 세션에서 호출 가능한 워크플로·도메인 스킬 모음 (43개 현역 + archive/ 보관 9개).
+Claude Code 세션에서 호출 가능한 워크플로·도메인 스킬 모음 (44개 현역 + archive/ 보관 9개).
 
 ---
 
@@ -25,6 +25,7 @@ Claude Code 세션에서 호출 가능한 워크플로·도메인 스킬 모음 
 | `golang-testing` | 테이블 드리븐·벤치마크·퍼징 |
 | `rust-patterns` | tokio 비동기, lock-free, zero-copy, 저지연 Rust |
 | `rust-testing` | criterion 벤치마크, proptest, flamegraph |
+| `rust-library-crate` | 재사용 crate 저작 — feature flag·no_std·MSRV·퍼징·크로스 플랫폼·docs.rs |
 | `go-http-patterns` | Go HTTP 서버, gRPC, graceful shutdown |
 | `python-patterns` | EAFP·타입힌트·컨텍스트매니저·`__slots__` (자원/메모리 사고 선행 학습) |
 | `python-testing` | pytest·TDD·픽스처·autospec 모킹·async 테스트 |

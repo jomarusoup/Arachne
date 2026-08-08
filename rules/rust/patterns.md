@@ -7,6 +7,9 @@ paths:
 # Rust 패턴
 
 > [common/patterns.md](../common/patterns.md) 를 확장한다.
+> 아래 `async`·저지연 예제는 **애플리케이션 핫패스** 도메인이다 — 원칙은 범용이되
+> 예시는 한 도메인일 뿐. **재사용 라이브러리·crate** 를 만든다면 feature flag·
+> `no_std`·MSRV·최소 의존성·퍼징·배포 규율은 `skills/rust-library-crate.md` 참고.
 
 ## 소유권·빌림
 

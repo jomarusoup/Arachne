@@ -19,11 +19,19 @@ paths:
 let tick = unsafe { buf.get_unchecked(idx) };
 ```
 
+- `// SAFETY:` 는 "안전함"이 아니라 **어떤 불변식이 성립하므로 안전한지** 그 논증을
+  적는다 (regex-automata 는 unsafe 57곳마다 근거 주석 병행).
+- `unsafe impl` 트레이트에도 각 메서드 구현이 왜 계약을 지키는지 근거를 남긴다.
+
 ## 메모리 안전성
 
-- 미정의 동작 검출: `cargo +nightly miri test`
+- 미정의 동작 검출: `cargo +nightly miri test` (unsafe·FFI 있으면 CI 필수)
 - 정수 오버플로 — 핫패스는 `wrapping_*`/`checked_*` 명시, 디버그 빌드 패닉 의존 금지
 - FFI 경계에서 널 포인터·정렬·수명 직접 검증
+- **바이트 직렬화·`transmute`·정렬 가정**은 빅엔디안·32비트에서 깨질 수 있다 —
+  크로스 타깃(`i686`·`s390x` 등) CI 로 검증 (`skills/rust-library-crate.md`)
+- **적대적 입력 방어는 퍼징으로** — 파서·역직렬화는 `cargo fuzz` 로 패닉·UB·DoS
+  (무한루프·과대 할당) 를 상시 검출 (`rules/rust/testing.md`)
 
 ## 비밀값 관리
 
