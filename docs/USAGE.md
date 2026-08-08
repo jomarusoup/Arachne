@@ -113,6 +113,7 @@ model: opus               # opus / sonnet / haiku
 슬래시 커맨드와 달리 **직접 호출하는 것이 아니라**, 관련 작업을 할 때 Claude가 해당 지식 파일을 참조한다. `name`·`description` YAML frontmatter와 마크다운 본문으로 구성된 지식 문서다.
 
 - 예: Rust 저지연 코드를 작성할 때 → `rust-patterns`, `latency-critical-systems` 참조
+- 예: 재사용 Rust 라이브러리·crate 를 만들 때 → `rust-library-crate` 참조
 - 예: C/C++ 메모리 문제 → `memory-check`, `build-debug` 참조
 
 ### 구성
@@ -136,7 +137,7 @@ triggers:
 | 카테고리 | 스킬 |
 |---|---|
 | 시스템 프로그래밍 | `latency-critical-systems` `linux-system-network-programming` `trading-systems` `performance-profiling` `build-debug` `memory-check` `cpp-testing` `error-handling` |
-| 언어별 패턴·테스팅 | `rust-patterns` `rust-testing` `golang-patterns` `golang-testing` `go-http-patterns` `python-patterns` `python-testing` |
+| 언어별 패턴·테스팅 | `rust-patterns` `rust-testing` `rust-library-crate` `golang-patterns` `golang-testing` `go-http-patterns` `python-patterns` `python-testing` |
 | 백엔드·웹 | `backend-patterns` `frontend-patterns` `frontend-design-direction` `frontend-a11y` `design-system` `api-design` `fastapi-patterns` `make-interfaces-feel-better` |
 | 데이터·DB | `json-contracts` `database-migrations` `postgres-patterns` `redis-patterns` |
 | 제품·기획·아키텍처 | `product-lens` `product-capability` `plan-orchestrate` `architecture-decision-records` `hexagonal-architecture` `agent-architecture-audit` |
