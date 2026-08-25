@@ -1,7 +1,7 @@
 ---
 Title: ARCHITECTURE
 creation: 2026-06-06
-modification: 2026-06-09
+modification: 2026-08-25
 Description: Arachne 하네스 구조 다이어그램 (Mermaid) — CLI별 설정 배선 · 3-레인 협업 · 훅 · SSOT 로딩 · 워크플로
 tags:
 aliases:
@@ -171,6 +171,11 @@ flowchart TB
 > blind spot)이 줄어든다. Gemini는 코딩 스타일 충실도가 낮아 최종 구현 코드는 맡기지 않고 읽기·자문에 둔다.
 > `codex-task`/`gemini-task`는 블로킹·순차 호출이라 두 모델이 같은 파일을 동시에 건드리지 않으며, **커밋은 항상 Claude**다.
 
+> **계측(기준선)** — 래퍼 3종은 호출 이력과 쿨다운 진입 이력을 `~/.claude/metrics/`
+> (`wrapper-calls-YYYY-MM.log` · `cooldown-entries-YYYY-MM.log`, append-only·90일 보존)에 남긴다.
+> [ADR-0003](decisions/0003-dynamic-workflows-adoption.md)의 재평가 기준선 수집용 **관찰 전용**이라
+> 폴백 판정·종료코드에 영향을 주지 않으며, 경로는 CWD 무관($HOME 고정)이다. 검증: `tests/metrics.bats`.
+
 **`codex-task` 통합 경계 (제안 / 실행)**:
 
 | 모드 | 플래그 | Codex 동작 | Claude 동작 |
@@ -230,7 +235,7 @@ Arachne/
 │   ├── c · cpp · golang · rust  # 언어별 규칙
 │   ├── python · javascript · bash
 │   └── web/                     # design-quality
-├── skills/                      # 워크플로·도메인 스킬 (43개 현역 + archive)
+├── skills/                      # 워크플로·도메인 스킬 (44개 현역 + archive)
 ├── commands/                    # 슬래시 커맨드 (19개)
 ├── agents/                      # 서브에이전트 8개 (planner·code-reviewer·tdd·debugger
 │                                #   ·python-reviewer·fastapi-reviewer·react-reviewer

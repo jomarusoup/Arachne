@@ -1,7 +1,7 @@
 ---
 Title: "Issue 기록 규약"
 creation: 2026-07-01
-modification: 2026-07-01
+modification: 2026-08-25
 status: "done"
 tags:
  - "arachne"
@@ -45,13 +45,13 @@ FROM:: [[arachne-docs]]
 | `data-handling-*` | 데이터 취급과 보안 경계 관련 gap |
 | `macos-*`, `windows-*` | 플랫폼별 동작 차이와 검증 이슈 |
 
-## 현재 인벤토리 (2026-07-01)
+## 현재 인벤토리 (2026-08-25)
 
-현재 `docs/issue/`에는 README를 제외하고 24개 issue/audit 기록이 있다.
+현재 `docs/issue/`에는 README를 제외하고 25개 issue/audit 기록이 있다.
 
 | 상태 | 개수 | 의미 |
 | --- | ---: | --- |
-| `done` | 24 | 해결됐거나 감사 스냅샷으로 종료된 기록 |
+| `done` | 25 | 해결됐거나 감사 스냅샷으로 종료된 기록 |
 | `in progress` | 0 | 연결 task의 열린 체크박스가 남아 있는 기록 |
 | `to do` | 0 | 조사 또는 재현을 아직 시작하지 않은 기록 없음 |
 

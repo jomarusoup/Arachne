@@ -341,11 +341,12 @@ atask --dry-run -R impl "..."                  # 실제 호출 없이 순서·�
 
 | 동작 | 설명 |
 | --- | --- |
-| 쿼터 감지 | 출력의 `rate limit`·`quota`·`429`·`overloaded`·`resource exhausted` 등 패턴 |
+| 쿼터 감지 | stdout·stderr의 `rate limit`·`usage limit`·`429`·`too many requests`·`overloaded`·`resource exhausted`·`insufficient_quota`·`quota exceeded` 패턴 (bare `quota` 단독은 매칭 안 함, `disk quota` 등 명백한 일반 오류는 NON_QUOTA 가드로 제외 — 정본은 `arachne-task.sh`의 `QUOTA_PATTERN`/`NON_QUOTA_PATTERN`) |
 | 쿨다운 | 소진 CLI를 `~/.claude/arachne-quota-state`에 기록(기본 Claude 5h·그 외 1h) → 그 동안 건너뜀 |
 | 미설치 스킵 | 종료코드 **127**(하위 CLI 미설치)은 쿨다운 없이 즉시 다음 후보로 — 솔로 모드 지원(§5.3) |
 | 일반 에러 | 쿼터가 **아닌** 실패(문법 오류 등)는 폴백하지 않고 그대로 중단(세 CLI 토큰 낭비 방지) |
 | 사전 경고 | `atask-quota-warn.sh` 훅이 상태 파일에서 impl 순서의 첫 가용 후보와 회복 시각을 표시 |
+| 계측 | 래퍼 3종(gtask/ctask/atask)이 호출·쿨다운 진입 이력을 `~/.claude/metrics/*-YYYY-MM.log`에 append-only 기록 — ADR-0003(dynamic workflows 미도입) 재평가 기준선 수집용 관찰 전용, 폴백 동작·종료코드에 영향 없음 |
 
 > **한계(정직)**: `atask`는 **헤드리스 호출 전용**이다. Codex와 Gemini 단계는 각각 `codex-task`
 > (tester/fixer)와 `gemini-task`(reader/advisor)를 호출하므로 `impl` 요청의 역할을 그대로 보존하지 않는다.
