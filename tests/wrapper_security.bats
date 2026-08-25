@@ -23,6 +23,8 @@ exit 0
 MOCK
     chmod +x "${MOCK_BIN}/codex"
     export PATH="${MOCK_BIN}:${PATH}"
+    # 계측 로그가 실기 ~/.claude/metrics 기준선을 오염시키지 않도록 상태 격리
+    export ARACHNE_STATE_DIR="${TMP_DIR}/state"
 }
 
 teardown() {

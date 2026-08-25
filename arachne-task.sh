@@ -38,6 +38,52 @@ readonly STATE_FILE="${STATE_DIR}/arachne-quota-state"
 readonly COOLDOWN_CLAUDE="${ATASK_COOLDOWN_CLAUDE:-18000}"
 readonly COOLDOWN_DEFAULT="${ATASK_COOLDOWN_DEFAULT:-3600}"
 
+#--- METRICS-BLOCK-BEGIN (동기화 필수 — codex-task.sh/gemini-task.sh/arachne-task.sh 3파일 동일, tests/metrics.bats 가 검증) ---
+#-------------------------------------------------------------------------------
+# 계측(ADR-0003 기준선 수집): 래퍼 호출·쿨다운 진입을 append-only 로 남긴다.
+# 관찰 전용 — 이 로그를 읽고 동작을 결정하는 코드는 없다(경합 영향 반경 격리).
+# 동시 쓰기 안전성은 flock 없이 O_APPEND + 단일 write 로 보장한다:
+#   '>>' 는 O_APPEND 로 열려 오프셋 이동·쓰기가 원자적으로 파일 끝에 붙고(유실 없음),
+#   한 줄(~60B)을 printf 1회 = write(2) 1회로 방출하므로 PIPE_BUF 하한(512B)보다
+#   작아 로컬 파일시스템에서 라인이 분할·교차되지 않는다. 한계: NFS 는 O_APPEND
+#   원자성이 보장되지 않음(대상 경로 $HOME/.claude 는 로컬 전제).
+#   flock(1) 은 macOS(BSD)·Git Bash 에 명령이 없어 도입하지 않는다.
+# 실패는 전부 무시한다 — 계측이 본작업(위임·폴백)을 막지 않는다.
+#-------------------------------------------------------------------------------
+readonly METRICS_DIR="${ARACHNE_STATE_DIR:-$HOME/.claude}/metrics"
+
+#===============================================================================
+# FUNCTION    : MetricAppend
+# DESCRIPTION : 계측 이벤트 1줄 append — 실패 무시, 호출측 종료코드 불오염
+# PARAMETERS  : string kind - call(래퍼 호출) / cooldown(쿨다운 진입)
+#               call:     $2 wrapper  $3 lane  $4 mode(suggest|write)  $5 rc
+#               cooldown: $2 cli      $3 lane
+#===============================================================================
+MetricAppend() {
+    {
+        local kind="$1"
+        local ts
+        local month
+        local line
+        local file
+        ts=$(date -u +%Y-%m-%dT%H:%M:%SZ)
+        month="${ts:0:7}"
+        if [ "${kind}" = "call" ]; then
+            file="${METRICS_DIR}/wrapper-calls-${month}.log"
+            line=$(printf '%s\t%s\t%s\t%s\t%s\t%s' "${ts}" "$2" "$3" "$4" "$5" "$$")
+        else
+            file="${METRICS_DIR}/cooldown-entries-${month}.log"
+            line=$(printf '%s\t%s\t%s\t%s' "${ts}" "$2" "$3" "$$")
+        fi
+        mkdir -p "${METRICS_DIR}"
+        # 보존 90일(기준선 4주 + 여유) — 월 파일 단위 삭제라 B-11 식 덮어쓰기 없음
+        find "${METRICS_DIR}" -name '*.log' -mtime +90 -delete
+        # 한 줄 전체를 printf 1회로 방출 — 원자성 근거는 블록 상단 주석
+        printf '%s\n' "${line}" >> "${file}"
+    } 2>/dev/null || true
+}
+#--- METRICS-BLOCK-END ---
+
 #===============================================================================
 # FUNCTION    : Usage
 # DESCRIPTION : 사용법 출력 후 지정 코드로 종료
@@ -243,6 +289,12 @@ while getopts ":R:wh" opt; do
 done
 shift $((OPTIND - 1))
 
+# 계측용 모드 라벨 (suggest=제안 / write=-w 실행)
+metric_mode="suggest"
+if [ "${write_mode}" -eq 1 ]; then
+    metric_mode="write"
+fi
+
 order=$(OrderForRole "${role}")
 if [ -z "${order}" ]; then
     echo "[atask] 알 수 없는 역할: ${role}" >&2
@@ -277,7 +329,9 @@ fi
 #-------------------------------------------------------------------------------
 out_file=$(mktemp)
 err_file=$(mktemp)
-trap 'rm -f "${out_file}" "${err_file}"' EXIT
+# rc=$? 를 첫 문장으로 캡처하고 이후 모든 명령을 실패 무시로 두어, 트랩이 래퍼의
+# 종료코드를 오염시키지 않는다 (이 값이 폴백 판정 계약 — tests/metrics.bats T5)
+trap 'rc=$?; MetricAppend call arachne-task "${role}" "${metric_mode}" "${rc}"; rm -f "${out_file}" "${err_file}" 2>/dev/null || true' EXIT
 
 for cli in ${order}; do
     bin=$(CliBin "${cli}")
@@ -341,6 +395,8 @@ for cli in ${order}; do
 
     if IsQuotaError "${out_file}" "${err_file}"; then
         SetCooldown "${cli}"
+        # 계측(관찰 전용): 쿨다운 진입 이력 — SetCooldown 동작 자체는 불변
+        MetricAppend cooldown "${cli}" "${role}"
         Warn "${cli} 쿼터 소진 감지 → 쿨다운 등록, 다음으로 폴백"
         continue
     fi
