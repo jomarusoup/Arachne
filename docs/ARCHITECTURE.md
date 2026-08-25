@@ -126,6 +126,7 @@ Git for Windows의 `bash.exe`를 통해 실행한다.
 ## 2. Collaboration Architecture — 3-Lane Delegation
 
 §1이 **정적 배선**(레포→CLI별 심볼릭/병합)이라면, 이 절은 **런타임 협업 구조**다.
+래퍼 동작·폴백 정책의 정본은 [MULTI-CLI §5](MULTI-CLI.md)이고, 이 절은 다이어그램 요약이다.
 **Claude Code가 중심(오케스트레이터 + 주 구현자 + 유일 커미터)**이고, 토큰 무겁거나 검증성
 작업을 두 위임 대상에게 **역할을 분리해서** 떠넘긴다. 셋 다 같은 `AGENTS.md` 규약을 공유하므로
 인계 마찰이 작다.

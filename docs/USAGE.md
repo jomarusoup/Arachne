@@ -199,6 +199,12 @@ triggers:
 
 종료 코드: `0` 성공(경고 출력 가능), `2` 차단(`PreToolUse`에서만 유효).
 
+> **검증된 범위**: 위 훅들은 **메인 세션** 이벤트에서 동작이 확인됐다. 서브에이전트(Task 도구)의
+> 도구 호출에도 `PostToolUse` 등이 발화하는지는 미검증이며(감사
+> [2026-08-22-harness-runtime-audit](issue/2026-08-22-harness-runtime-audit.md) Q2 [추정] —
+> 확정 실험은 [task/2026-08-25-hook-subagent-experiment](task/2026-08-25-hook-subagent-experiment.md)),
+> 컨텍스트 조립 과정은 관측 수단이 없다(같은 감사 B-10).
+
 ### 상태표시줄 (`statusline-command.sh`)
 
 Claude Code 상태표시줄은 `settings.template.json`의 `statusLine.command`로 자동 등록된다.
@@ -585,6 +591,7 @@ Claude Code는 터미널을 점유하므로, 여러 프로젝트나 테스트 �
 ## 9. Delegation Wrappers (`gemini-task` / `codex-task`) — CLI Reference
 
 **언제·왜·비용 라우팅**은 [6장](#6-claude--codex--gemini-collaboration-3-lane)을 참고. 이 절은 명령 레퍼런스만 다룬다.
+래퍼의 **동작·폴백 정책·쿼터 감지의 정본은 [MULTI-CLI §5](MULTI-CLI.md)** 다 — 여기 서술이 어긋나면 그쪽을 따른다.
 두 래퍼 모두 내부 CLI 노이즈(stderr)를 걸러 **결과만 stdout**으로 돌려준다. 각각 짧은 별칭과 명시적 이름으로 등록된다
 (`gemini-task`=`gtask` → `gemini-task.sh`, `codex-task`=`ctask` → `codex-task.sh`).
 
@@ -638,7 +645,7 @@ atask [-R ROLE] [-w] [--dry-run] "프롬프트..."
 | 모델 지정 | **옵션 없음(#32)** — 어느 CLI가 실행될지 미리 알 수 없어 단일 모델명이 CLI 모델 공간을 혼합한다. CLI별 모델은 `GTASK_MODEL`(Gemini)·`CTASK_MODEL`(Codex) 환경변수로 지정하거나 해당 래퍼를 직접 호출 |
 | 종료 코드 | 처리한 CLI 결과 전파 / 전 CLI 소진 시 1 |
 | 상태 파일 | `~/.claude/arachne-quota-state` (쿨다운 만료 epoch 기록) |
-| 계측 로그 | `~/.claude/metrics/wrapper-calls-YYYY-MM.log`(호출 이력)·`cooldown-entries-YYYY-MM.log`(쿨다운 진입 이력) — append-only·90일 보존, ADR-0003 기준선 수집용 관찰 전용(동작에 영향 없음, 실패 무시) |
+| 계측 로그 | `~/.claude/metrics/wrapper-calls-YYYY-MM.log`(호출 이력: 시각(UTC)·래퍼·레인·모드·종료코드·pid)·`cooldown-entries-YYYY-MM.log`(쿨다운 진입: 시각(UTC)·CLI·레인·pid) — TSV 1줄=1이벤트, append-only·90일 보존, ADR-0003 기준선 수집용 관찰 전용(동작에 영향 없음, 실패 무시). 판독 절차: [task/2026-08-25-metrics-baseline](task/2026-08-25-metrics-baseline.md) |
 | 환경변수 | `ATASK_COOLDOWN_CLAUDE`(기본 18000s) · `ATASK_COOLDOWN_DEFAULT`(기본 3600s) · `ARACHNE_STATE_DIR` |
 
 > **헤드리스 전용** — 대화형 세션 중간 구제는 못 한다. 자동 폴백 동작·한계·역할별 순서의 근거는
