@@ -78,22 +78,21 @@ to do -> in progress -> done
 - 발견된 추가 작업이 현재 목표에 필수면 같은 task에 추가하고, 독립적이면 새 task로 분리한다.
 - 완료한 항목만 `[x]`로 바꾸며 미실행 항목을 완료 처리하지 않는다.
 
-## 현재 인벤토리 (2026-08-25)
+## 현재 인벤토리 (2026-08-29)
 
 현재 `docs/task/`에는 README를 제외하고 26개 task가 있다.
 
 | 상태 | 개수 | 의미 |
 | --- | ---: | --- |
-| `done` | 22 | 구현·문서화·검증 기록이 완료된 항목 |
-| `in progress` | 1 | 일부 체크박스 또는 후속 검증 설계가 남은 항목 |
+| `done` | 23 | 구현·문서화·검증 기록이 완료된 항목 |
+| `in progress` | 0 | 일부 체크박스 또는 후속 검증 설계가 남은 항목 |
 | `to do` | 3 | 아직 구현에 착수하지 않았거나 트리거를 기다리는 항목 |
 
 ### 열린 task
 
 | 우선순위 | 상태 | 문서 | 남은 범위 |
 | --- | --- | --- | --- |
-| high | `to do` | [PC-1~6 현행 결함 수리](2026-08-25-pc-defect-repair.md) | 쿼터 오판 패턴, 상태 파일 경합·비원자 교체, git-bus 폴백·rebase, 스냅샷 덮어쓰기(B-11) |
-| medium | `in progress` | [계측 기준선 4주 수집·판독](2026-08-25-metrics-baseline.md) | 수집 중 — **2026-09-22 이후 판독** 후 ADR-0003 재평가 트리거 대조 |
+| high | `to do` | [현행 결함 수리 B-04·05·11](2026-08-25-pc-defect-repair.md) | git-bus 폴백·rebase 미탐, 스냅샷 덮어쓰기 — atask 계열은 ADR-0004로 소멸 |
 | medium | `to do` | [PC-8 훅-서브에이전트 발화 실험](2026-08-25-hook-subagent-experiment.md) | 실험 1회 + 감사 Q2 [추정] 확정, C-08 구조 이관 설계의 선행 |
 | medium | `to do` | [아키텍처 감사 후속](2026-06-11-audit-followup.md) | uninstall/recovery, statusline macOS, 릴리스 정책, 훅 로그, 구조 단순화 트리거 |
 

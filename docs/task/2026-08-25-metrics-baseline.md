@@ -1,8 +1,8 @@
 ---
 Title: "[task] 계측 기준선 4주 수집·판독 — ADR-0003 재평가 입력"
 creation: 2026-08-25
-modification: 2026-08-25
-status: "in progress"
+modification: 2026-08-29
+status: "done"
 tags:
  - "arachne"
  - "task"
@@ -15,7 +15,7 @@ FROM:: [[0003-dynamic-workflows-adoption]]
 
 # [task] 계측 기준선 4주 수집·판독 — ADR-0003 재평가 입력
 
-- **상태**: in progress (수집 중 — 판독 대기)
+- **상태**: done (조기 종결 — 측정 대상 소멸)
 - **우선순위**: medium
 - **담당**: unassigned
 - **관련 문서**: [[0003-dynamic-workflows-adoption]], [[2026-08-22-harness-runtime-audit]]
@@ -58,6 +58,14 @@ wc -l ~/.claude/metrics/*.log
   근거와 함께 남는다 (충족/미충족 어느 쪽이든 완료).
 
 ## 진행 기록
+
+### 2026-08-29
+
+- **조기 종결**: [[0004-remove-3lane-runtime]] (ADR-0004)로 3-레인 런타임과 계측 코드
+  (`MetricAppend`)가 `archive/multi-cli/`로 제거되어 측정 대상이 소멸했다. 4주 판독은
+  수행하지 않는다. ADR-0003 재평가 트리거 중 "오프로드 절약 실측" 축은 무의미해졌고,
+  "감사 fan-out 한계 2회 문서화" 축만 유효하게 남는다. 수집됐던 로그(127 가드 4건)는
+  `~/.claude/metrics/`에 잔존하며 90일 후 자동 소멸.
 
 ### 2026-08-25
 

@@ -217,9 +217,9 @@ flowchart TB
     G --> H["GEMINI.md 확인"]
     H --> I["install.ps1 -Install -Target codex<br/>2회 실행"]
     I --> J["AGENTS.md 사용자 내용 보존<br/>마커 멱등성 확인"]
-    J --> K["arachne.cmd / atask.cmd wrapper 확인"]
+    J --> K["arachne.cmd / docs-sync.cmd wrapper 확인"]
     K --> L["bash tests/smoke_hooks.sh"]
-    L --> M["atask --dry-run<br/>quota warn<br/>doc drift<br/>git bus"]
+    L --> M["doc drift<br/>git bus<br/>ua stale"]
 ```
 
 Windows 실패 분리 흐름:
@@ -238,7 +238,7 @@ flowchart TB
 
     B --> B1{"오류 유형"}
     B1 -->|bash 없음| B2["Git for Windows PATH 확인"]
-    B1 -->|atask 실패| B3["ARACHNE_STATE_DIR<br/>dry-run 외부 CLI 차단 확인"]
+    B1 -->|hook 상태 실패| B3["ARACHNE_STATE_DIR<br/>상태 파일 경로 확인"]
     B1 -->|hook 실패| B4["hook 스크립트 문법<br/>Windows 경로 처리 확인"]
 ```
 

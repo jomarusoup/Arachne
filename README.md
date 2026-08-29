@@ -64,7 +64,7 @@ powershell -ExecutionPolicy Bypass -File .\install.ps1 -Install
 ```
 
 Windows 설치기는 관리자 권한 없이 디렉터리 junction과 파일 hard link를 우선 사용하고,
-불가능하면 복사로 폴백합니다. Claude 훅과 `gtask`/`ctask`/`atask`는 Bash 스크립트이므로
+불가능하면 복사로 폴백합니다. Claude 훅은 Bash 스크립트이므로
 [Git for Windows](https://gitforwindows.org/)의 `bash.exe`가 PATH에 있어야 합니다.
 `tws`는 Windows 네이티브에서 지원하지 않으며 WSL 등 tmux 환경에서 사용합니다.
 
@@ -76,7 +76,7 @@ Windows 설치기는 관리자 권한 없이 디렉터리 junction과 파일 har
 3. `settings.template.json`의 `__HOME__` → 실제 홈 경로로 치환해 `settings.json` 생성
 4. **dotfiles 병합**: `~/.bash_profile`, `~/.vimrc`에 Arachne 설정을 안전하게 병합 (기존 내용 보존)
 5. **Copilot 지침**: `arachne -i --target copilot`으로 Copilot CLI와 VS Code 사용자 프로필에 전역 규약 설치
-6. **CLI 등록**: `~/.local/bin/`에 `arachne`, `tws`, `gemini-task`(=`gtask`), `codex-task`(=`ctask`), `arachne-task`(=`atask`), `docs-sync` 커맨드 등록
+6. **CLI 등록**: `~/.local/bin/`에 `arachne`, `tws`, `docs-sync` 커맨드 등록
 7. **확장 도구 자동 설치·갱신**: 설치 시 UA·taste-skill·codegraph를 함께 설치하고,
    이미 있으면 최신으로 갱신한다 (`--with-ua`로 Understand-Anything만으로 한정 가능)
 
@@ -102,9 +102,6 @@ Bash에서는 `./install.sh -i --target copilot`을 사용합니다. 모든 경�
 | `arachne -e` (`--export-settings`) | settings.json → 템플릿 내보내기 |
 | `arachne -d` (`--export-dotfiles`) | dotfiles → 레포 내보내기 |
 | `arachne -v` | 버전 정보 |
-| `gemini-task` (= `gtask`) | **Gemini 위임 래퍼 (reader/advisor 레인)** — Claude Code가 `gemini -p`를 Bash로 호출해 읽기·요약·자문을 위임 |
-| `codex-task` (= `ctask`) | **Codex 위임 래퍼 (tester/fixer 레인)** — Claude Code가 `codex exec`를 Bash로 호출해 테스트 작성·실행·버그 수정을 위임 |
-| `atask` (= `arachne-task`) | **헤드리스 폴백 디스패처** — 역할별 순서로 실행 후보를 바꾸지만 Codex/Gemini 단계는 각각 tester/fixer·reader/advisor 래퍼 제약을 유지 |
 | `docs-sync` | 원격 프로젝트 README/docs/Markdown 문서 ↔ Obsidian Vault 동기화 |
 
 ### Project CI
@@ -136,9 +133,7 @@ Arachne/
 ├── lib/                         # install.sh 도메인 라이브러리 (project-ci · feedback)
 ├── install-copilot.ps1          # Windows PowerShell용 Copilot 설치기
 ├── tmux.sh                      # tmux 워크스페이스 매니저 (CLI: tws)
-├── gemini-task.sh               # Gemini 위임 래퍼 — reader/advisor (CLI: gemini-task, gtask)
-├── codex-task.sh                # Codex 위임 래퍼 — tester/fixer (CLI: codex-task, ctask)
-├── arachne-task.sh              # 자동 폴백 캐스케이드 디스패처 (CLI: arachne-task, atask)
+├── archive/                     # 제거된 현역 외 자산 (multi-cli 런타임 — ADR-0004)
 ├── docs-sync.sh                 # 원격 프로젝트 문서 ↔ Obsidian 동기화 (CLI: docs-sync)
 ├── statusline-command.sh        # Claude Code 상태표시줄 렌더러
 │
@@ -153,7 +148,7 @@ Arachne/
 │                                #   · python-reviewer · fastapi-reviewer · react-reviewer
 │                                #   · database-reviewer)
 ├── hooks/                       # 이벤트 훅 (session-start/end, pre-compact, git-bus-check,
-│                                #   atask-quota-warn, doc-drift-check, ua-stale-check)
+│                                #   doc-drift-check, ua-stale-check)
 ├── mcp-configs/                 # MCP (Model Context Protocol) 서버 설정 템플릿
 ├── docs/CI.md                   # GitHub Actions CI 운영·로컬 재현 가이드
 ├── docs/PROJECT-CI.md           # Arachne 사용 프로젝트의 CI 계약
@@ -202,39 +197,16 @@ Arachne/
 - **템플릿 지원**: 기본 터미널 / Claude Code 자동 실행(dev) / 테스트용 2분할 화면
 - **세션 관리**: 생성, 접속(Attach), 삭제(Kill), 일괄 종료 지원
 
-## 🤝 Multi-CLI Collaboration (3-Lane)
+## 🤝 Multi-CLI — 공통 규약 배포
 
-> **Claude Code만 있어도 됩니다(솔로 모드)** — Codex·Gemini·Copilot 미설치 환경에서도 규칙·
-> 에이전트·스킬·훅·커맨드·프로젝트 CI 전부가 그대로 동작하며, 설치기는 미감지 CLI를 자동으로
-> 건너뜁니다. 위임 명령(`gtask`/`ctask`)은 미설치 시 안내와 함께 127로 실패하고 `atask`는 다음
-> 후보로 넘어갑니다. 상세: [MULTI-CLI.md §5.3](docs/MULTI-CLI.md). 협업 규율의 계층 원칙
-> (사상 동일·수단 상이·집행은 CI)은 [MULTI-CLI.md §5.0](docs/MULTI-CLI.md) 참고.
+Arachne는 **Claude Code 단독 운용**입니다. 공통 규약(`AGENTS.md`)은 SSOT로 유지되어
+Gemini(심볼릭)·Codex(마커 병합)·Copilot(지침 생성) 어댑터로 배포됩니다 — 미감지 도구는
+설치기가 자동으로 건너뜁니다(graceful skip). 상세: [MULTI-CLI.md](docs/MULTI-CLI.md).
 
-Claude Code가 **중심(오케스트레이터 + 주 구현자)**이고, Codex·Gemini는 위임 대상입니다.
-세 CLI가 같은 공통 규약(`AGENTS.md`)을 공유하므로 인계 마찰이 작습니다.
-**토큰 무겁고 정밀도가 덜 중요한 일은 위임으로 떠넘기고, 정밀 구현·통합·커밋은 Claude가 맡습니다.**
+> 과거의 3-레인 협업 런타임(위임 래퍼 `gtask`/`ctask`·가용성 폴백 `atask`)은
+> [ADR-0004](docs/decisions/0004-remove-3lane-runtime.md)로 [`archive/multi-cli/`](archive/multi-cli/)에
+> 보존·제거됐습니다. 재도입 절차는 archive README 참고.
 
-| 레인 (Lane) | CLI | 위임 호출 | 하는 일 |
-|---|---|---|---|
-| **오케스트레이터 + 주 구현자** | **Claude** | (중심) | 설계·구현·리팩터링·통합·커밋, 보안/임계 리뷰, 설정·마이그레이션·인프라 |
-| **tester / fixer** | **Codex** | `codex-task` (=`ctask`) | 테스트 작성·실행, 버그 수정 — **기능 추가는 안 함** |
-| **reader / advisor** | **Gemini** | `gemini-task` (=`gtask`) | 대용량 읽기·요약, 설계 탐색, 1차 리뷰, 장문 생성 — **구현은 안 함** |
-
-방향이 반대인 두 우선순위 사슬:
-- **오프로드 (offload, 비용 기준)**: Gemini → Codex → (Claude 안 씀) — 토큰 무거운 일을 싸게 떠넘김
-- **실행 후보 순서 (availability fallback)**: Claude → Codex → Gemini — 쿼터 소진 시 다음
-  헤드리스 CLI를 시도하지만 역할·커밋 권한이 자동 승계되는 것은 아님
-
-위임 경로:
-- **`gemini-task` (Gemini reader/advisor)**: Claude Code가 터미널 전환 없이 `gemini -p`를 Bash로 호출 → 답변 수신
-  - 끌어오기(요약·자문): `gemini-task "이 로그 요약: $(cat app.log)"` → 큰 입력, 작은 출력으로 **절약**
-  - 쏟아내기(생성): `gemini-task "README 작성" > README.md` → 파일로 빼고 **내용 재독 안 함**
-- **`codex-task` (Codex tester/fixer)**: Claude Code가 `codex exec`를 Bash로 호출 → 테스트·수정 위임
-  - 제안 모드(기본): `codex-task "parser 테스트 보강안 제시: $(cat src/parser.c)"` → diff만 반환, 트리 미변경
-  - 실행 모드: `codex-task -w "실패하는 test_auth 를 green 까지 수정"` → 직접 쓰고 돌려 수정 (커밋은 Claude)
-- **`atask` (자동 폴백)**: `atask -R impl "..."`이 역할별 순서로 헤드리스 CLI를 시도하고 쿼터 소진 시 다음 후보로 전환 (헤드리스 전용)
-  - Codex는 `codex-task`, Gemini는 `gemini-task`를 거치므로 각각의 역할 제한이 유지된다. 소진 상태는 `atask-quota-warn.sh` 훅이 사전 경고.
-  - 특히 `impl` 폴백의 종료코드 0은 기능 구현 완료를 보장하지 않으므로 결과와 diff를 사람이 검증해야 한다.
 - **git-bus 감지 (보조)**: `git-bus-check.sh`가 업스트림 브랜치의 새 커밋을 감지한다. 작성 CLI는 판별하지
   않으며, 업스트림이 설정된 경우 다른 로컬 터미널의 미푸시 커밋은 감지하지 않는다.
 

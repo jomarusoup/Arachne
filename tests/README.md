@@ -41,7 +41,6 @@ pwsh -File tests/install_windows.ps1
 |---|---|---|
 | `install.bats` | `install.sh` — 링크·settings·Codex/Copilot 병합·연결 점검 | bats |
 | `hooks.bats` | `hooks/*.sh` — 존재·권한·문법·기본 동작 | bats |
-| `atask.bats` | `arachne-task.sh` — 역할 순서·쿼터 폴백·쿨다운·오류 처리 | bats |
 | `docs_sync.bats` | `docs-sync.sh` — 설정 생성·목록·문법 | bats |
 | `drift.bats` | 인덱스·규약 드리프트 검사 fixture | bats |
 | `git_command.bats` | `/git` 커맨드 문서 계약 | bats |
@@ -50,12 +49,10 @@ pwsh -File tests/install_windows.ps1
 | `new_project.bats` | `arachne new` — 문서 구조·템플릿·git init·입력 안전성 | bats |
 | `project_ci.bats` | 사용 프로젝트 profile·`init-ci`·`project-check`·실패 상태 전파 | bats |
 | `docs_cli_contract.bats` | 핵심 CLI 도움말과 README·USAGE 발견성 계약 | bats |
-| `smoke.bats` | 훅·`atask` 런타임 스모크 | bats |
-| `wrapper_security.bats` | `gtask`/`ctask` wrapper 프리앰블·raw·쓰기 경고 | bats |
+| `smoke.bats` | 훅 런타임 스모크 | bats |
 | `data_contract.bats` | `fixtures/python-db` — 데이터 계약 정적 검사 + alembic·pytest 실행 게이트 (uv 필요) | bats |
 | `sgrep.bats` | `dotfiles/bash_profile` — sgrep/lgrep 확장자 커버리지·제외 디렉터리·rg/find 폴백 | bats |
 | `ua_stale.bats` | `hooks/ua-stale-check.sh` — UA 지식그래프 stale 감지 (최신/뒤처짐/해시 유실/임계값) | bats |
-| `metrics.bats` | 래퍼 계측(MetricAppend, ADR-0003 기준선) — 동시 쓰기 무결성·실패 3경로 불가침·복제 블록 동기화·prune·종료코드 보존 | bats |
 | `check_index.sh` | 인덱스 ↔ 실제 파일 일치 + 문서 "(N개)" 개수 표기 + 상대 .md 링크 해소 검증 (skills·commands·agents·rules·docs) | bash |
 | `check_convention_sync.sh` | `AGENTS.md` ↔ `rules/common/*` 핵심 토큰 동기화 | bash |
 | `check_ps_syntax.ps1` | 저장소 전체 `.ps1` 구문 파싱 — Linux pwsh 에서 Windows 러너 전 조기 차단 | PowerShell |

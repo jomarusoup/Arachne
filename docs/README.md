@@ -26,7 +26,7 @@ FROM:: [[100. Project/110. Side-Project/111. Arachne/docs/README]]
 | 처음 설치하고 5분 안에 감을 잡고 싶다 | [루트 README](../README.md), [USAGE](USAGE.md) |
 | Arachne를 매일 어떻게 쓰는지 알고 싶다 | [USAGE](USAGE.md), [GLOSSARY](GLOSSARY.md) |
 | Python·Web 프로젝트에 붙이고 싶다 | [PYTHON-WEB-PROFILE](PYTHON-WEB-PROFILE.md), [PROJECT-CI](PROJECT-CI.md), [DATA-HANDLING](DATA-HANDLING.md), [DESIGN-DOCS](DESIGN-DOCS.md) |
-| Claude·Codex·Gemini·Copilot 역할을 구분하고 싶다 | [MULTI-CLI](MULTI-CLI.md), [ARCHITECTURE](ARCHITECTURE.md) |
+| 공통 규약(AGENTS.md)을 여러 CLI에 배포하고 싶다 | [MULTI-CLI](MULTI-CLI.md), [ARCHITECTURE](ARCHITECTURE.md) |
 | 설치 플랫폼과 동기화 범위를 확인하고 싶다 | [COMPATIBILITY](COMPATIBILITY.md), [WINDOWS-SETUP](WINDOWS-SETUP.md), [SYNCTHING-SETUP](SYNCTHING-SETUP.md) |
 | 확장 도구를 설치하거나 비교하고 싶다 | [tools/README](tools/README.md) |
 | UI/UX 기준과 예시가 필요하다 | [ui-ux/README](ui-ux/README.md) |

@@ -1,7 +1,7 @@
 ---
 Title: "ADR 인덱스"
 creation: 2026-07-01
-modification: 2026-08-22
+modification: 2026-08-29
 status: "done"
 tags:
  - "arachne"
@@ -42,3 +42,4 @@ FROM:: [[arachne-docs]]
 | [0002-systems-profiles](0002-systems-profiles.md) | cpp·rust profile로 빌드+테스트+sanitizer 게이트를 기본 제공한다. |
 | [0002-external-analysis-plugins](0002-external-analysis-plugins.md) | 결정론 분석(스캔·그래프·심볼)은 외부 플러그인에 두고 Arachne는 계약 지점(설치·신선도·영속화·폴백)만 소유한다. |
 | [0003-dynamic-workflows-adoption](0003-dynamic-workflows-adoption.md) | (Proposed) dynamic workflows를 도입하지 않는다 — 증분 편익 미식별(기존 Agent fan-out으로 충족). 결함 수리(PC-1~6)·계측은 도입과 무관하게 진행, 재평가 트리거 명시. |
+| [0004-remove-3lane-runtime](0004-remove-3lane-runtime.md) | 3-레인 협업 런타임(위임 래퍼·폴백·쿨다운·계측)을 archive/multi-cli/로 제거하고, 규약 배포 계층(AGENTS.md SSOT + 어댑터)은 유지한다. |

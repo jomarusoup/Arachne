@@ -18,9 +18,7 @@ Arachne 문서에 나오는 줄임말을 **풀어 쓴 말(원어)** 과 함께 �
 | **TWS** | Tmux Workspace Manager (트뮤스 워크스페이스 매니저) | `arachne -s`(=`tws`)로 여는 대화형 tmux 세션 매니저. Claude Code 세션을 생성·접속·삭제. |
 | **IPC** | Inter-Process Communication (프로세스 간 통신) | 소켓·파이프·공유 메모리 등으로 프로세스끼리 데이터를 주고받는 것. 시스템 프로그래밍의 핵심. |
 | **git-bus** | — | `UserPromptSubmit` 훅(`git-bus-check.sh`)이 업스트림의 **새 커밋을 감지해 다음 프롬프트에 알리는** 보조 채널. 작성 CLI 판별·미푸시 로컬 커밋 감지는 없다. 기준점은 `.claude/last-seen-commit`. |
-| **오프로드 / 폴백 사슬** | offload / fallback chain | 방향이 반대인 두 우선순위: **오프로드**(비용, Gemini→Codex)는 토큰 무거운 일을 싸게 떠넘기고, **폴백**(가용성, Claude→Codex→Gemini)은 쿼터 소진 시 `atask`가 다음 실행 후보를 시도한다. |
-| **솔로 모드** | solo mode | Codex·Gemini 미설치 환경. 래퍼는 127로 즉시 실패하고 Claude가 세 레인을 직접 수행한다 — 하네스 기능(규칙·훅·커맨드)은 전부 그대로 동작. |
-| **계측(기준선)** | metrics baseline | 래퍼 호출·쿨다운 진입을 `~/.claude/metrics/`에 append-only 기록하는 관찰 전용 로그. [ADR-0003](decisions/0003-dynamic-workflows-adoption.md) 재평가의 실측 근거를 4주 축적한다. |
+| **3-레인 (역사)** | 3-lane | 과거의 Claude/Codex/Gemini 협업 런타임. [ADR-0004](decisions/0004-remove-3lane-runtime.md)로 `archive/multi-cli/`에 보존·제거 — 현재는 Claude Code 단독 운용. |
 
 ## 개발 방법론 (Development Methodology)
 
@@ -57,16 +55,6 @@ Arachne 문서에 나오는 줄임말을 **풀어 쓴 말(원어)** 과 함께 �
 | **P2P** | Peer-to-Peer (단말 간 직접) | 중앙 서버 없이 단말끼리 직접 통신하는 방식. Syncthing이 P2P로 동기화한다. |
 | **BEP** | Block Exchange Protocol | Syncthing이 파일을 블록으로 쪼개 **바뀐 블록만** 주고받는 자체 동기화 프로토콜. |
 | **TLS** | Transport Layer Security | 전송 구간을 암호화하는 표준. Syncthing의 Device ID는 이 TLS 인증서 지문이다. |
-
-## Arachne Delegation Wrappers
-
-> 정식 명령은 **`gemini-task` / `codex-task`**, `gtask` / `ctask`는 같은 스크립트의 **짧은 별칭**이다(둘 다 동작).
-
-| 정식 이름 | 짧은 별칭 | 설명 |
-| --- | --- | --- |
-| **gemini-task** | `gtask` | Claude가 Gemini에 **읽기·요약·자문**을 위임하는 래퍼(`gemini -p` 감쌈). reader/advisor 레인. |
-| **codex-task** | `ctask` | Claude가 Codex에 **테스트·버그 수정**을 위임하는 래퍼(`codex exec` 감쌈). tester/fixer 레인. |
-| **arachne-task** | `atask` | **헤드리스 폴백 디스패처** — 역할별 순서로 CLI 실행 후보를 바꾼다. Codex/Gemini 단계는 기존 tester/fixer·reader/advisor 제약을 유지하며 중심·커밋 권한을 자동 승계하지 않는다. |
 
 ---
 

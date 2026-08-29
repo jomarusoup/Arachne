@@ -21,7 +21,6 @@ FROM:: [[Arachne]]
 | Unix `install.sh` | 지원 | 지원 | 미지원 | 지원 |
 | PowerShell `install.ps1` | 미지원 | 미지원 | 지원 | 해당 없음 |
 | Claude hooks | 지원 | 지원 | Git Bash 필요 | 지원 |
-| `gtask`/`ctask`/`atask` | 지원 | 지원 | Git Bash 필요 | 지원 |
 | `tws` | 지원 | 지원 | 미지원 | WSL에서 지원 |
 | `new`, `init-ci`, `project-check` | 지원 | 지원 | Git Bash/WSL | 지원 |
 | 확장 도구 `--extras`(UA·taste·codegraph) | 지원 | 지원 | 지원(`setup-extras.ps1`) | 지원 |
