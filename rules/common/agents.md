@@ -44,12 +44,3 @@
 # BAD: 독립 작업을 순차 실행
 Agent 1 완료 후 → Agent 2 → Agent 3
 ```
-
-## Gemini와의 역할 분리
-
-에이전트 위임 전에 Claude/Gemini 역할 확인:
-
-- 설계·기획·README → **Gemini** (`gemini -p "..."`)
-- 구현·리뷰·디버깅 → **Claude 에이전트**
-
-자세한 역할 분담: `rules/common/workflow.md` 참고

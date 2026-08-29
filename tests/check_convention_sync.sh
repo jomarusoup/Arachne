@@ -22,7 +22,7 @@ SYNC_GROUPS=(
     "rules/common/coding-style.md::snake_case g_SnakeCase PascalCase SCREAMING_SNAKE_CASE camelCase"
     "rules/common/testing.md::RED GREEN REFACTOR AAA"
     "rules/common/git-workflow.md::feat fix refactor docs test chore perf style"
-    "rules/common/workflow.md::gemini-task codex-task atask /handoff tester/fixer reader/advisor"
+    "rules/common/workflow.md::sgrep codegraph [PLAN]"
 )
 
 #===============================================================================

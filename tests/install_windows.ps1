@@ -110,10 +110,12 @@ try {
     # Windows 명령 래퍼 등록
     #---------------------------------------------------------------------------
     AssertTrue (Test-Path (Join-Path $SCRIPT:TEST_HOME ".local\bin\arachne.cmd")) "arachne wrapper"
+    $docsync_path = Join-Path $SCRIPT:TEST_HOME ".local\bin\docs-sync.cmd"
+    AssertTrue (Test-Path $docsync_path) "docs-sync wrapper"
+    $docsync_text = [System.IO.File]::ReadAllText($docsync_path)
+    AssertTrue ($docsync_text.Contains("/docs-sync.sh")) "Bash wrapper uses slash path"
     $atask_path = Join-Path $SCRIPT:TEST_HOME ".local\bin\atask.cmd"
-    AssertTrue (Test-Path $atask_path) "atask wrapper"
-    $atask_text = [System.IO.File]::ReadAllText($atask_path)
-    AssertTrue ($atask_text.Contains("/arachne-task.sh")) "Bash wrapper uses slash path"
+    AssertTrue (-not (Test-Path $atask_path)) "3-lane wrapper not registered (ADR-0004)"
 
     Write-Output "[PASS] Windows installer tests"
 } finally {

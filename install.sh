@@ -77,16 +77,9 @@ ArachneSection() {
 }
 
 # "스크립트명:커맨드명" 형식 — git pull 시 심볼릭 링크라 자동 업데이트됨
-# 위임 래퍼는 짧은 별칭(gtask/ctask)과 명시적 이름(gemini-task/codex-task) 둘 다 등록
 BIN_TARGETS=(
     "install.sh:arachne"
     "tmux.sh:tws"
-    "gemini-task.sh:gtask"
-    "gemini-task.sh:gemini-task"
-    "codex-task.sh:ctask"
-    "codex-task.sh:codex-task"
-    "arachne-task.sh:atask"
-    "arachne-task.sh:arachne-task"
     "docs-sync.sh:docs-sync"
 )
 

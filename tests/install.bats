@@ -67,14 +67,15 @@ run_install() {
     [ -L "${TMP_DIR}/.claude/skills" ]
 }
 
-@test "install: task 명령 별칭은 gtask ctask atask 로 등록" {
+@test "install: 현역 CLI(arachne·tws·docs-sync)만 등록, 3-레인 래퍼는 미등록(ADR-0004)" {
     run_install
 
-    [ -L "${TMP_DIR}/.local/bin/gtask" ]
-    [ -L "${TMP_DIR}/.local/bin/ctask" ]
-    [ -L "${TMP_DIR}/.local/bin/atask" ]
-    [ ! -e "${TMP_DIR}/.local/bin/gask" ]
-    [ ! -e "${TMP_DIR}/.local/bin/cask" ]
+    [ -L "${TMP_DIR}/.local/bin/arachne" ]
+    [ -L "${TMP_DIR}/.local/bin/tws" ]
+    [ -L "${TMP_DIR}/.local/bin/docs-sync" ]
+    [ ! -e "${TMP_DIR}/.local/bin/gtask" ]
+    [ ! -e "${TMP_DIR}/.local/bin/ctask" ]
+    [ ! -e "${TMP_DIR}/.local/bin/atask" ]
 }
 
 #-------------------------------------------------------------------------------

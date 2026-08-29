@@ -3,7 +3,7 @@ description: AI 전환 전 현재 작업 상태를 HANDOFF.md에 저장
 ---
 # /handoff — AI 전환 전 상태 저장
 
-Gemini(또는 다른 AI)로 전환하기 전에 실행.
+다른 AI 도구·새 세션으로 전환하기 전에 실행.
 HANDOFF.md를 현재 상태로 갱신한다.
 
 **매번 자동 저장 안 함 — 이 커맨드 실행 시에만 갱신.**
@@ -48,7 +48,7 @@ git diff --stat
 
 ```
 HANDOFF.md 갱신 완료.
-Gemini 전환: 프로젝트 디렉토리에서 gemini 실행
+다른 도구/세션 전환: 프로젝트 디렉토리에서 해당 CLI 실행
 첫 메시지: "HANDOFF.md 읽고 이어서 진행해줘"
 ```
 
@@ -57,5 +57,5 @@ Gemini 전환: 프로젝트 디렉토리에서 gemini 실행
 ## 갱신 기준
 
 - 큰 기능 완료 후 git push 직후
-- Gemini로 전환하기 직전
+- 다른 AI 도구·세션으로 전환하기 직전
 - 사용자 명시 요청 시

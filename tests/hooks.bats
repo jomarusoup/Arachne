@@ -43,11 +43,6 @@ HOOKS_DIR="${REPO_DIR}/hooks"
     [ -x "${HOOKS_DIR}/git-bus-check.sh" ]
 }
 
-@test "hooks: atask-quota-warn.sh 존재·실행권한" {
-    [ -f "${HOOKS_DIR}/atask-quota-warn.sh" ]
-    [ -x "${HOOKS_DIR}/atask-quota-warn.sh" ]
-}
-
 @test "hooks: doc-drift-check.sh 존재·실행권한" {
     [ -f "${HOOKS_DIR}/doc-drift-check.sh" ]
     [ -x "${HOOKS_DIR}/doc-drift-check.sh" ]
@@ -81,11 +76,6 @@ HOOKS_DIR="${REPO_DIR}/hooks"
     [ "$status" -eq 0 ]
 }
 
-@test "hooks: atask-quota-warn.sh 문법 오류 없음" {
-    run bash -n "${HOOKS_DIR}/atask-quota-warn.sh"
-    [ "$status" -eq 0 ]
-}
-
 @test "hooks: doc-drift-check.sh 문법 오류 없음" {
     run bash -n "${HOOKS_DIR}/doc-drift-check.sh"
     [ "$status" -eq 0 ]
@@ -94,17 +84,6 @@ HOOKS_DIR="${REPO_DIR}/hooks"
 @test "hooks: ua-stale-check.sh 문법 오류 없음" {
     run bash -n "${HOOKS_DIR}/ua-stale-check.sh"
     [ "$status" -eq 0 ]
-}
-
-#-------------------------------------------------------------------------------
-# atask-quota-warn.sh: 상태 파일 없으면 조용히 종료
-#-------------------------------------------------------------------------------
-@test "atask-quota-warn.sh: 상태 파일 없으면 침묵·종료 0" {
-    TMP_DIR=$(mktemp -d)
-    run env ARACHNE_STATE_DIR="${TMP_DIR}" bash "${HOOKS_DIR}/atask-quota-warn.sh"
-    [ "$status" -eq 0 ]
-    [ -z "$output" ]
-    rm -rf "${TMP_DIR}"
 }
 
 #-------------------------------------------------------------------------------

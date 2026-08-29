@@ -25,12 +25,12 @@ make_fixture() {
 naming: snake_case g_SnakeCase PascalCase SCREAMING_SNAKE_CASE camelCase
 tdd: RED GREEN REFACTOR AAA
 git: feat fix refactor docs test chore perf style
-lanes: gemini-task codex-task atask /handoff tester/fixer reader/advisor
+lanes: sgrep codegraph [PLAN]
 EOF
     echo "snake_case g_SnakeCase PascalCase SCREAMING_SNAKE_CASE camelCase" > "${FIX}/rules/common/coding-style.md"
     echo "RED GREEN REFACTOR AAA" > "${FIX}/rules/common/testing.md"
     echo "feat fix refactor docs test chore perf style" > "${FIX}/rules/common/git-workflow.md"
-    echo "gemini-task codex-task atask /handoff tester/fixer reader/advisor" > "${FIX}/rules/common/workflow.md"
+    echo "sgrep codegraph [PLAN]" > "${FIX}/rules/common/workflow.md"
 }
 
 @test "check_convention_sync(#39): 실제 레포에서 PASS" {

@@ -68,7 +68,7 @@ git rev-parse --show-toplevel
 예) fix: 널 포인터 역참조 수정
 
 ### 5. README.md 동기화 (생략)
-README.md 업데이트는 Gemini CLI가 담당한다. 이 단계에서는 README.md를 직접 수정하지 않는다.
+이 단계에서는 README.md를 직접 수정하지 않는다 — 문서 갱신은 doc-drift 알림에 따라 범위를 확인해 별도로 반영한다.
 
 ### 6. 커밋 & 푸시
 ```bash

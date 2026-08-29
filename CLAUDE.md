@@ -53,13 +53,12 @@ Claude Code가 이를 네이티브로 자동 로드한다:
 │   ├── session-end.sh               # Stop          — git 기반 스냅샷 저장
 │   ├── pre-compact.sh               # PreCompact    — 압축 전 상태 저장
 │   ├── git-bus-check.sh             # UserPromptSubmit — 외부 새 커밋 감지 (git-bus, 작성 CLI 판별 없음)
-│   ├── atask-quota-warn.sh          # UserPromptSubmit — atask 쿼터 소진·impl 첫 가용 후보 경고
 │   ├── doc-drift-check.sh           # PostToolUse — 기능 파일 변경 시 문서 갱신 알림
 │   └── ua-stale-check.sh            # SessionStart — UA 지식그래프 stale(HEAD 대비 뒤처짐) 경고
 │
 ├── rules/                           # 항상 적용되는 전역 규칙
 │   ├── common/                      # 언어 무관 공통 규칙 (10개 — 9개 매 세션 로드, hooks.md는 paths 지연 — 최소 유지)
-│   │   ├── workflow.md              # Claude/Codex/Gemini 3-레인 역할 분담·행동 규칙 (다이제스트)
+│   │   ├── workflow.md              # 전역 행동 규칙 — Claude 단독 운용 (다이제스트)
 │   │   ├── coding-style.md          # 헤더 구조·네이밍·포매팅 공통 원칙
 │   │   ├── patterns.md              # SRP·불변성·에러 처리
 │   │   ├── agents.md                # 에이전트 목록·활성화 기준

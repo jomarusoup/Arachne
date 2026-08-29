@@ -10,7 +10,7 @@ description: 세션에서 발견한 비자명 패턴을 rules에 저장해 다�
 
 | 패턴 성격 | 위치 | 이유 |
 | --- | --- | --- |
-| 모든 CLI가 알아야 함 (구조·빌드·grep 키워드 등) | 프로젝트 `AGENTS.md` 해당 섹션 | Codex·Gemini 위임·Copilot도 봐야 함 (프로젝트 SSOT) |
+| 모든 CLI가 알아야 함 (구조·빌드·grep 키워드 등) | 프로젝트 `AGENTS.md` 해당 섹션 | Copilot 등 다른 CLI도 봐야 함 (프로젝트 SSOT) |
 | 위 외의 비자명 패턴 | 프로젝트 `AGENTS.md` `## 학습된 패턴` | 〃 |
 | Claude 전용 (훅·커맨드·에이전트 관련) | `.claude/rules/learned-YYYY-MM-DD.md` | 다른 CLI엔 무의미 |
 

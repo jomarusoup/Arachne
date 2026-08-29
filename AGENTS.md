@@ -151,29 +151,11 @@
 
 > **도구별 보충**: 이 공유 코어 외에, 각 도구는 자기만의 보충 설정을 가진다.
 > 예) Claude Code는 `CLAUDE.md`/`rules/`에 서브에이전트·이벤트 훅·슬래시 커맨드·모델
-> 라우팅·위임 래퍼(`gemini-task`=Gemini reader/advisor, `codex-task`=Codex tester/fixer)를 추가로
-> 정의한다. 그 내용은 다른 도구와 공유되지 않으므로 이 파일에 넣지 않는다.
+> 라우팅을 추가로 정의한다. 그 내용은 다른 도구와 공유되지 않으므로 이 파일에 넣지 않는다.
 >
-> **3-레인 협업**: Claude=오케스트레이터+주 구현자, Codex=tester/fixer, Gemini=reader/advisor.
-> Claude가 `gemini-task`로 Gemini에 읽기·요약·자문을, `codex-task`로 Codex에 테스트·버그 수정을 위임한다.
-> 위임 호출에는 역할 프리앰블이 주입된다 — Codex는 테스트·수정에 집중(기능 추가 X), Gemini는 읽기·자문에
-> 집중(최종 구현 코드 X). 산출물의 최종 통합·**커밋은 항상 Claude**가 한다.
-> 방향이 반대인 두 우선순위 사슬: **오프로드**(비용) = Gemini → Codex → (Claude 안 씀),
-> **실행 후보 폴백**(가용성) = Claude → Codex → Gemini. 후자는 역할·커밋 권한의 자동 승계가 아니다.
-> 상세 정책은 `rules/common/workflow.md`(SSOT).
-> 단계별 동작·다이어그램은 `docs/ARCHITECTURE.md` §2 참고.
->
-> **사용 모드**: 각 CLI는 ① **단독**(이 규약을 읽고 혼자 동작) ② **위임 대상**(Claude가 `gemini-task`/
-> `codex-task`로 호출) ③ **헤드리스 실행 후보**(`atask`가 쿼터 소진 시 다음 CLI를 시도)로 쓰인다.
-> 중심 변경과 커밋 권한 이전은 `/handoff`를 포함한 명시적 사람 인계가 필요하다.
-> 단독이든 위임이든 **읽는 공통 규약은 이 파일로 동일**하다. 캐스케이드 표·단독 사용·cross-harness 패키징
-> (같은 자산을 Claude/Codex/Gemini/Copilot/Cursor/OpenCode로 어댑터 배포)은
-> `docs/MULTI-CLI.md` §5 참고.
->
-> **단독 사용 원칙 — 사상 동일 · 수단 상이 · 집행은 CI**: 이 규약(스타일·패턴·보안·테스트·git·이슈)은
-> 어느 CLI를 단독으로 쓰든 동일하게 적용된다. 다만 **집행 수단**은 도구마다 다르다 — Claude는
-> 훅·서브에이전트·언어 규칙 자동 로드가 규율을 강제하고, 다른 CLI는 이 문서(텍스트 규약)를 따른다.
-> 3-레인 역할 제한(tester/fixer·reader/advisor)과 "커밋은 Claude"는 **Claude가 오케스트레이터일 때의
-> 계약**이며, 단독 사용 시에는 세션을 모는 사람이 커밋을 결정한다. 어느 CLI가 작성했든 **최종 게이트는
-> 프로젝트 CI**(`.arachne/verify.sh`·GitHub Actions)로 동일하다. Codex/Gemini가 없는 Claude 단독
-> 환경(솔로 모드)에서는 Claude가 세 레인을 모두 직접 수행한다 — `rules/common/workflow.md` 참고.
+> **운용 형태 — Claude Code 단독**: 과거의 3-레인 협업 런타임(Codex tester/fixer·Gemini
+> reader/advisor 위임 래퍼와 가용성 폴백)은 ADR-0004로 `archive/multi-cli/`에 보존·제거됐다
+> (`docs/decisions/0004-remove-3lane-runtime.md`). 이 파일(SSOT)과 CLI별 어댑터(Gemini 심볼릭·
+> Codex 마커 병합·Copilot 지침)는 다른 도구를 다시 쓸 때를 위해 유지된다 — 어느 CLI를 단독으로
+> 쓰든 읽는 공통 규약은 이 파일로 동일하고, 어느 CLI가 작성했든 **최종 게이트는 프로젝트 CI**
+> (`.arachne/verify.sh`·GitHub Actions)로 동일하다. 커밋은 세션을 모는 사람이 결정한다.

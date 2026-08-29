@@ -5,22 +5,6 @@
   },
   "theme": "dark-daltonized",
   "model": "sonnet",
-  "permissions": {
-    "allow": [
-      "Bash(gtask:*)",
-      "Bash(gemini-task:*)",
-      "Bash(ctask:*)",
-      "Bash(codex-task:*)",
-      "Bash(atask:*)",
-      "Bash(arachne-task:*)"
-    ],
-    "ask": [
-      "Bash(ctask -w:*)",
-      "Bash(codex-task -w:*)",
-      "Bash(atask -w:*)",
-      "Bash(arachne-task -w:*)"
-    ]
-  },
   "hooks": {
     "UserPromptSubmit": [
       {
@@ -29,10 +13,6 @@
           {
             "type": "command",
             "command": "bash \"__HOME__/.claude/hooks/git-bus-check.sh\""
-          },
-          {
-            "type": "command",
-            "command": "bash \"__HOME__/.claude/hooks/atask-quota-warn.sh\""
           }
         ]
       }
