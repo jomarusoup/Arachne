@@ -83,9 +83,10 @@ Claude Code가 이를 네이티브로 자동 로드한다:
 │   ├── bash_profile                 # → ~/.bash_profile (sgrep 등 유틸 포함)
 │   └── vimrc                        # → ~/.vimrc
 │
-├── skills/                          # 워크플로·도메인 스킬 (44개 현역, README.md 참고 — 비활성 도메인은 archive/)
+├── skills/                          # 워크플로·도메인 스킬 (47개 현역, README.md 참고 — 비활성 도메인은 archive/)
 │   ├── build-debug.md / memory-check.md                             # Harness 전용
-│   ├── cpp-testing.md / latency-critical-systems.md / error-handling.md
+│   ├── cpp-patterns.md / cpp-testing.md / c-testing.md / embedded-sql.md    # C/C++·임베디드 SQL
+│   ├── latency-critical-systems.md / error-handling.md
 │   ├── trading-systems.md / performance-profiling.md
 │   ├── golang-patterns.md / golang-testing.md / go-http-patterns.md
 │   ├── rust-patterns.md / rust-testing.md / rust-library-crate.md

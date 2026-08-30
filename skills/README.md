@@ -1,6 +1,6 @@
 # Skills
 
-Claude Code 세션에서 호출 가능한 워크플로·도메인 스킬 모음 (44개 현역 + archive/ 보관 9개).
+Claude Code 세션에서 호출 가능한 워크플로·도메인 스킬 모음 (47개 현역 + archive/ 보관 9개).
 
 ---
 
@@ -21,6 +21,8 @@ Claude Code 세션에서 호출 가능한 워크플로·도메인 스킬 모음 
 
 | 스킬 | 설명 |
 |---|---|
+| `cpp-patterns` | C++ Core Guidelines 다이제스트 — RAII·Rule of Zero/Five·concepts·동시성 |
+| `c-testing` | cmocka·링커 --wrap 모킹·valgrind/ASan 게이팅 C 테스트 |
 | `golang-patterns` | 이디엄틱 Go 패턴 |
 | `golang-testing` | 테이블 드리븐·벤치마크·퍼징 |
 | `rust-patterns` | tokio 비동기, lock-free, zero-copy, 저지연 Rust |
@@ -56,6 +58,7 @@ Claude Code 세션에서 호출 가능한 워크플로·도메인 스킬 모음 
 | `database-migrations` | Alembic migration 안전 운영 — expand-contract·CONCURRENTLY·backfill·forward-fix |
 | `postgres-patterns` | PostgreSQL 설계·운영 — 타입·제약·인덱스 선택·EXPLAIN 증거·pool/timeout·RLS |
 | `redis-patterns` | Redis 운영 — namespace·TTL jitter·stampede·negative cache·Lua/MULTI·lock token·Streams·fallback |
+| `embedded-sql` | Pro*C(Oracle)·ecpg(PostgreSQL) 임베디드 SQL — 호스트/인디케이터 변수·SQLCA·커서·프리컴파일 빌드 |
 
 ## TDD·검증
 

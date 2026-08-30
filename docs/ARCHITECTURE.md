@@ -160,7 +160,7 @@ Arachne/
 │   ├── c · cpp · golang · rust  # 언어별 규칙
 │   ├── python · javascript · bash
 │   └── web/                     # design-quality
-├── skills/                      # 워크플로·도메인 스킬 (44개 현역 + archive)
+├── skills/                      # 워크플로·도메인 스킬 (47개 현역 + archive)
 ├── commands/                    # 슬래시 커맨드 (19개)
 ├── agents/                      # 서브에이전트 8개 (planner·code-reviewer·tdd·debugger
 │                                #   ·python-reviewer·fastapi-reviewer·react-reviewer

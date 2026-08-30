@@ -115,6 +115,8 @@ model: opus               # opus / sonnet / haiku
 - 예: Rust 저지연 코드를 작성할 때 → `rust-patterns`, `latency-critical-systems` 참조
 - 예: 재사용 Rust 라이브러리·crate 를 만들 때 → `rust-library-crate` 참조
 - 예: C/C++ 메모리 문제 → `memory-check`, `build-debug` 참조
+- 예: 모던 C++ 작성·리뷰 → `cpp-patterns`, C 테스트 → `c-testing` 참조
+- 예: Pro*C(`*.pc`)·ecpg(`*.pgc`) 임베디드 SQL → `embedded-sql` 참조
 
 ### 구성
 각 스킬 파일은 다음 3요소로 작성한다.
@@ -137,9 +139,9 @@ triggers:
 | 카테고리 | 스킬 |
 |---|---|
 | 시스템 프로그래밍 | `latency-critical-systems` `linux-system-network-programming` `trading-systems` `performance-profiling` `build-debug` `memory-check` `cpp-testing` `error-handling` |
-| 언어별 패턴·테스팅 | `rust-patterns` `rust-testing` `rust-library-crate` `golang-patterns` `golang-testing` `go-http-patterns` `python-patterns` `python-testing` |
+| 언어별 패턴·테스팅 | `cpp-patterns` `c-testing` `rust-patterns` `rust-testing` `rust-library-crate` `golang-patterns` `golang-testing` `go-http-patterns` `python-patterns` `python-testing` |
 | 백엔드·웹 | `backend-patterns` `frontend-patterns` `frontend-design-direction` `frontend-a11y` `design-system` `api-design` `fastapi-patterns` `make-interfaces-feel-better` |
-| 데이터·DB | `json-contracts` `database-migrations` `postgres-patterns` `redis-patterns` |
+| 데이터·DB | `json-contracts` `database-migrations` `postgres-patterns` `redis-patterns` `embedded-sql` |
 | 제품·기획·아키텍처 | `product-lens` `product-capability` `plan-orchestrate` `architecture-decision-records` `hexagonal-architecture` `agent-architecture-audit` |
 | 워크플로·보안·기타 | `tdd-workflow` `verification-loop` `research-routing` `security-review` `security-scan` `docker-patterns` `deployment-patterns` `agentic-engineering` |
 | 네트워크 | `network-interface-health` `data-throughput-accelerator` |
