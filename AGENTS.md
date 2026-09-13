@@ -159,3 +159,5 @@
 > Codex 마커 병합·Copilot 지침)는 다른 도구를 다시 쓸 때를 위해 유지된다 — 어느 CLI를 단독으로
 > 쓰든 읽는 공통 규약은 이 파일로 동일하고, 어느 CLI가 작성했든 **최종 게이트는 프로젝트 CI**
 > (`.arachne/verify.sh`·GitHub Actions)로 동일하다. 커밋은 세션을 모는 사람이 결정한다.
+> 어댑터별 벤더 현황(Gemini 소비자 티어의 Antigravity CLI 전환, Codex/Gemini headless
+> 구조화 출력 등, 2026-09 확인)은 `docs/MULTI-CLI.md`와 `archive/multi-cli/README.md`가 정본이다.

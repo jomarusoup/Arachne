@@ -32,6 +32,12 @@ aliases:
 - **도구 전용 기능**(Claude의 서브에이전트·훅·슬래시 커맨드·모델 라우팅)은 `CLAUDE.md`/`rules/`에만 둔다.
 - Codex는 심볼릭이 아니라 **AGENTS.md 수정 후 재병합 필요** — `arachne --check`가 stale을 잡는다.
 - 설치는 미감지 도구를 건너뛴다(graceful skip) — Claude 단독 환경에서 비용 0.
+- Gemini는 심볼릭 대신 `~/.gemini/settings.json`의
+  `"context": {"fileName": ["AGENTS.md", "GEMINI.md"]}` 설정으로 AGENTS.md를 직독하는
+  대안도 있다(2026-09 확인). 현 심볼릭 방식이 "수정 즉시 반영" 장점을 유지하므로 교체하지 않는다.
+- **Gemini CLI 지속성(2026-09 확인)**: 무료·소비자 티어는 2026-06-18부로 Antigravity CLI로
+  대체됐다(유료 API 키·엔터프라이즈만 Gemini CLI 유지). 어댑터는 미감지 시 무해하므로 유지하되,
+  재도입 시 인증 방식에 따라 대상 CLI를 재선정한다 — [archive/multi-cli/README.md](../archive/multi-cli/README.md) 참고.
 
 ## 2. 각 CLI 단독 사용
 
@@ -40,10 +46,13 @@ aliases:
 
 ```bash
 gemini            # 대화형 — ~/.gemini/GEMINI.md(→AGENTS.md) 자동 로드
-gemini -p "..."   # 비대화 1회 (헤드리스는 --skip-trust 필요)
+gemini -p "..."   # 비대화 1회 (헤드리스는 --skip-trust 필요; 구조화 출력은 --output-format json)
 codex             # 대화형 — ~/.codex/AGENTS.md(병합본) 자동 로드
-codex exec "..."  # 비대화 1회
+codex exec "..."  # 비대화 1회 (구조화 출력은 --json — JSONL 이벤트 스트림)
 ```
+
+> 외부 프로세스에서 결과를 파싱할 때는 plain-text가 아니라 위 구조화 출력을 쓴다.
+> Codex의 MCP 서버 모드(`codex mcp-server`)는 제거됐다(2026-09 확인).
 
 ## 3. 상태 점검 — `arachne --check`
 
