@@ -1,7 +1,7 @@
 # 성능 최적화
 
 > 모델 선택 기준(Haiku/Sonnet/Opus)과 codegraph·sgrep 조사 라우팅 표는
-> `skills/research-routing.md` 스킬로 분리했다 — 필요할 때만 로드한다.
+> `skills/research-routing/SKILL.md` 스킬로 분리했다 — 필요할 때만 로드한다.
 
 ## 컨텍스트 창 관리
 

@@ -29,7 +29,7 @@ let tick = unsafe { buf.get_unchecked(idx) };
 - 정수 오버플로 — 핫패스는 `wrapping_*`/`checked_*` 명시, 디버그 빌드 패닉 의존 금지
 - FFI 경계에서 널 포인터·정렬·수명 직접 검증
 - **바이트 직렬화·`transmute`·정렬 가정**은 빅엔디안·32비트에서 깨질 수 있다 —
-  크로스 타깃(`i686`·`s390x` 등) CI 로 검증 (`skills/rust-library-crate.md`)
+  크로스 타깃(`i686`·`s390x` 등) CI 로 검증 (`skills/rust-library-crate/SKILL.md`)
 - **적대적 입력 방어는 퍼징으로** — 파서·역직렬화는 `cargo fuzz` 로 패닉·UB·DoS
   (무한루프·과대 할당) 를 상시 검출 (`rules/rust/testing.md`)
 

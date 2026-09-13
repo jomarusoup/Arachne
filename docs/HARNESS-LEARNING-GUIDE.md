@@ -47,8 +47,8 @@ FROM:: [[100. Project/110. Side-Project/111. Arachne/docs/README]]
 
 읽을 문서:
 
-1. [skills/tdd-workflow](../skills/tdd-workflow.md)
-2. [skills/verification-loop](../skills/verification-loop.md)
+1. [skills/tdd-workflow](../skills/tdd-workflow/SKILL.md)
+2. [skills/verification-loop](../skills/verification-loop/SKILL.md)
 3. [docs/PROJECT-CI](PROJECT-CI.md)
 
 연습:
@@ -60,9 +60,9 @@ FROM:: [[100. Project/110. Side-Project/111. Arachne/docs/README]]
 
 읽을 문서:
 
-1. [skills/product-lens](../skills/product-lens.md)
-2. [skills/product-capability](../skills/product-capability.md)
-3. [skills/api-design](../skills/api-design.md)
+1. [skills/product-lens](../skills/product-lens/SKILL.md)
+2. [skills/product-capability](../skills/product-capability/SKILL.md)
+3. [skills/api-design](../skills/api-design/SKILL.md)
 
 연습:
 
@@ -73,7 +73,7 @@ FROM:: [[100. Project/110. Side-Project/111. Arachne/docs/README]]
 
 읽을 문서:
 
-1. [skills/architecture-decision-records](../skills/architecture-decision-records.md)
+1. [skills/architecture-decision-records](../skills/architecture-decision-records/SKILL.md)
 2. [docs/decisions](decisions/)
 3. [rules/common/patterns](../rules/common/patterns.md)
 
@@ -88,8 +88,8 @@ FROM:: [[100. Project/110. Side-Project/111. Arachne/docs/README]]
 
 1. [rules/web/design-quality](../rules/web/design-quality.md)
 2. [rules/web/ui-layout](../rules/web/ui-layout.md)
-3. [skills/frontend-patterns](../skills/frontend-patterns.md)
-4. [skills/make-interfaces-feel-better](../skills/make-interfaces-feel-better.md)
+3. [skills/frontend-patterns](../skills/frontend-patterns/SKILL.md)
+4. [skills/make-interfaces-feel-better](../skills/make-interfaces-feel-better/SKILL.md)
 
 연습:
 
@@ -105,7 +105,7 @@ FROM:: [[100. Project/110. Side-Project/111. Arachne/docs/README]]
 3. [skills/springboot-patterns](../skills/archive/springboot-patterns.md)
 4. [skills/jpa-patterns](../skills/archive/jpa-patterns.md)
 5. [rules/docker](../rules/docker)
-6. [skills/docker-patterns](../skills/docker-patterns.md)
+6. [skills/docker-patterns](../skills/docker-patterns/SKILL.md)
 
 연습:
 
@@ -116,12 +116,12 @@ FROM:: [[100. Project/110. Side-Project/111. Arachne/docs/README]]
 
 읽을 문서:
 
-1. [skills/linux-system-network-programming](../skills/linux-system-network-programming.md)
+1. [skills/linux-system-network-programming](../skills/linux-system-network-programming/SKILL.md)
 2. [rules/c](../rules/c)
 3. [rules/cpp](../rules/cpp)
-4. [skills/latency-critical-systems](../skills/latency-critical-systems.md)
-5. [skills/memory-check](../skills/memory-check.md)
-6. [skills/network-interface-health](../skills/network-interface-health.md)
+4. [skills/latency-critical-systems](../skills/latency-critical-systems/SKILL.md)
+5. [skills/memory-check](../skills/memory-check/SKILL.md)
+6. [skills/network-interface-health](../skills/network-interface-health/SKILL.md)
 
 연습:
 

@@ -13,7 +13,7 @@
 |---|---|---|---|
 | 슬래시 커맨드 | `commands/*.md` | 채팅에 `/이름` 입력 | YAML frontmatter(`description`) 자동 인식 |
 | 에이전트 | `agents/*.md` | Claude가 자동 활성화 / `Task`·`Agent` 호출 | YAML frontmatter(`name`,`tools`,`model`) |
-| 스킬(지식) | `skills/*.md` | 관련 작업 시 Claude가 참조 | YAML frontmatter(`name`,`description`) + 마크다운 본문 |
+| 스킬(지식) | `skills/<이름>/SKILL.md` | Claude가 자동 발견 / `/이름` 직접 호출 | Agent Skills 표준 — YAML frontmatter(`name`,`description`) + 마크다운 본문 |
 | 훅 | `hooks/*.sh` | Claude Code 이벤트가 자동 실행 | `settings.json`의 `hooks` 섹션 |
 | 규칙 | `rules/**/*.md` | 공통=매 세션 / 언어=확장자 매칭 시 | `~/.claude/rules/` 네이티브 자동 로드 (paths frontmatter) |
 
@@ -110,7 +110,9 @@ model: opus               # opus / sonnet / haiku
 ## 3. Skills — Domain Knowledge (`skills/`)
 
 ### 사용법
-슬래시 커맨드와 달리 **직접 호출하는 것이 아니라**, 관련 작업을 할 때 Claude가 해당 지식 파일을 참조한다. `name`·`description` YAML frontmatter와 마크다운 본문으로 구성된 지식 문서다.
+각 스킬은 **Agent Skills 표준 포맷** `skills/<이름>/SKILL.md`로, Claude Code가 네이티브로
+발견한다 — 관련 작업 시 `description` 매칭으로 자동 참조되고, `/이름`으로 직접 호출할 수도 있다.
+`name`·`description` YAML frontmatter와 마크다운 본문으로 구성된다.
 
 - 예: Rust 저지연 코드를 작성할 때 → `rust-patterns`, `latency-critical-systems` 참조
 - 예: 재사용 Rust 라이브러리·crate 를 만들 때 → `rust-library-crate` 참조
@@ -124,16 +126,20 @@ model: opus               # opus / sonnet / haiku
 2. **어떻게 동작하는지** — 핵심 절차·도구
 3. **예시** — 구체 코드/명령
 
-frontmatter는 `name`(파일명과 일치)·`description`에 더해 **`triggers`** 를 계약 필드로 가진다:
+frontmatter 계약은 `name`(디렉터리명과 일치)·`description` 두 필드다. 대상 경로·활성화
+키워드 힌트는 `description` 말미에 담는다 (예: `… 대상 경로 — **/*.py. 키워드 — Python, 타입 힌트.`):
 
 ```yaml
-triggers:
-  paths: ["**/*.py"]                  # 관련 파일 패턴 (경로 무관 스킬은 빈 배열)
-  keywords: ["Python", "타입 힌트"]   # 작업 설명에 등장하는 활성화 키워드 (필수, 1개 이상)
+---
+name: python-patterns              # skills/python-patterns/ 디렉터리명과 일치
+description: >-                    # 자동 발견 매칭 기준 — 경로·키워드 힌트 포함
+  이디엄틱 Python 패턴. 대상 경로 — **/*.py. 키워드 — Python, 타입 힌트.
+---
 ```
 
-`triggers`는 스킬 선택의 결정론 힌트다 — 편집 대상 경로가 `paths`와 매칭되거나 작업 설명에
-`keywords`가 등장하면 해당 스킬을 우선 참조한다. 형식은 `tests/skill_meta.bats`가 CI에서 강제한다.
+`description`의 경로·키워드 힌트는 스킬 선택의 결정론 힌트다 — 편집 대상 경로나 작업 설명이
+매칭되면 해당 스킬을 우선 참조한다. 형식은 `tests/skill_meta.bats`가 CI에서 강제한다
+(구 평면 `skills/*.md` 포맷·비표준 `triggers` 블록 회귀 차단 포함).
 
 ### 분류
 | 카테고리 | 스킬 |
@@ -147,7 +153,8 @@ triggers:
 | 네트워크 | `network-interface-health` `data-throughput-accelerator` |
 
 ### 새 스킬 추가
-`skills/새스킬.md` 생성 → `name`·`description` frontmatter를 달고 "언제 / 어떻게 / 예시" 3요소로 작성.
+`skills/새스킬/SKILL.md` 생성 → `name`(디렉터리명 일치)·`description` frontmatter를 달고
+"언제 / 어떻게 / 예시" 3요소로 작성. `skills/README.md`·`docs/USAGE.md` 표에 행 추가.
 
 ---
 

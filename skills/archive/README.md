@@ -13,9 +13,14 @@
 해당 도메인 작업을 재개하면:
 
 ```bash
-git mv skills/archive/<스킬>.md skills/
+# 현역 스킬은 Agent Skills 표준 포맷(skills/<이름>/SKILL.md)이다 — 평면 복원 금지
+mkdir skills/<스킬>
+git mv skills/archive/<스킬>.md skills/<스킬>/SKILL.md
+# frontmatter를 표준 계약에 맞춘다: triggers 블록 제거,
+# 경로·키워드 힌트는 description 말미로 (tests/skill_meta.bats 참고)
 # skills/README.md·docs/USAGE.md 표에 행 복원 + 개수 표기 갱신
 bash tests/check_index.sh   # 인덱스 일치 확인
+bats tests/skill_meta.bats  # frontmatter 계약 확인
 ```
 
 > 참고: `rules/java/`는 paths frontmatter 로 Java 파일 편집 시에만 로드되므로(상시 비용 0)

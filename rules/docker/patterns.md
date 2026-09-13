@@ -60,5 +60,5 @@ services:
 
 ## 관련 스킬
 
-- [docker-patterns](../../skills/docker-patterns.md)
-- [deployment-patterns](../../skills/deployment-patterns.md)
+- [docker-patterns](../../skills/docker-patterns/SKILL.md)
+- [deployment-patterns](../../skills/deployment-patterns/SKILL.md)

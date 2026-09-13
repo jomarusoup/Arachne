@@ -29,7 +29,7 @@ cargo audit                                # 의존성 취약점
 
 ## 라이브러리·crate 추가 게이트
 
-배포용 crate 는 위에 더해 다음을 CI job 으로 둔다 (`skills/rust-library-crate.md`):
+배포용 crate 는 위에 더해 다음을 CI job 으로 둔다 (`skills/rust-library-crate/SKILL.md`):
 
 ```bash
 cargo +1.65.0 build                        # MSRV 고정 검증 (rust-version 과 일치)

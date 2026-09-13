@@ -22,8 +22,8 @@ FROM:: [[docs/README]]
 | --- | --- |
 | [rules/web/ui-layout](../../rules/web/ui-layout.md) | 간격, 정렬, 밀도, 상태별 레이아웃 기준 |
 | [rules/web/design-quality](../../rules/web/design-quality.md) | 제네릭 UI 방지, 시각 방향, 디자인 품질 기준 |
-| [skills/frontend-patterns](../../skills/frontend-patterns.md) | React/Next 컴포넌트·상태·성능 패턴 |
-| [skills/make-interfaces-feel-better](../../skills/make-interfaces-feel-better.md) | radius, optical alignment, motion, hit area 같은 디테일 |
+| [skills/frontend-patterns](../../skills/frontend-patterns/SKILL.md) | React/Next 컴포넌트·상태·성능 패턴 |
+| [skills/make-interfaces-feel-better](../../skills/make-interfaces-feel-better/SKILL.md) | radius, optical alignment, motion, hit area 같은 디테일 |
 | [examples/](examples/) | 화면·컴포넌트 예시와 before/after 기록 |
 
 ## 예시 작성 규칙

@@ -48,7 +48,7 @@ RETURNED    : 반환값 설명
 ```
 
 > 재사용 라이브러리·crate 저작 전반(feature flag·no_std·MSRV·퍼징·배포)은
-> `skills/rust-library-crate.md` 참고.
+> `skills/rust-library-crate/SKILL.md` 참고.
 
 ## "왜" 주석
 

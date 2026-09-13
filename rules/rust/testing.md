@@ -74,7 +74,7 @@ libfuzzer_sys::fuzz_target!(|data: &[u8]| { let _ = mycrate::parse(data); });
 ```
 
 > 재현 코퍼스(`fuzz/regressions/`)는 커밋해 회귀로 재실행. 상세는
-> `skills/rust-library-crate.md`.
+> `skills/rust-library-crate/SKILL.md`.
 
 ## feature-matrix·크로스 플랫폼
 

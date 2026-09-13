@@ -84,21 +84,22 @@ Claude Code가 이를 네이티브로 자동 로드한다:
 │   └── vimrc                        # → ~/.vimrc
 │
 ├── skills/                          # 워크플로·도메인 스킬 (47개 현역, README.md 참고 — 비활성 도메인은 archive/)
-│   ├── build-debug.md / memory-check.md                             # Harness 전용
-│   ├── cpp-patterns.md / cpp-testing.md / c-testing.md / embedded-sql.md    # C/C++·임베디드 SQL
-│   ├── latency-critical-systems.md / error-handling.md
-│   ├── trading-systems.md / performance-profiling.md
-│   ├── golang-patterns.md / golang-testing.md / go-http-patterns.md
-│   ├── rust-patterns.md / rust-testing.md / rust-library-crate.md
-│   ├── python-patterns.md / python-testing.md                       # Python
-│   ├── backend-patterns.md / frontend-patterns.md / make-interfaces-feel-better.md  # 백엔드·웹
-│   ├── api-design.md / fastapi-patterns.md                            # API·FastAPI
-│   ├── database-migrations.md / postgres-patterns.md / json-contracts.md  # 데이터·DB
-│   ├── agentic-engineering.md                                       # 메타·하네스
-│   ├── tdd-workflow.md / verification-loop.md
-│   ├── security-review.md / security-scan.md
-│   ├── docker-patterns.md
-│   └── network-interface-health.md / data-throughput-accelerator.md
+│   │                                # 각 스킬은 skills/<이름>/SKILL.md (Agent Skills 표준 포맷)
+│   ├── build-debug / memory-check                                   # Harness 전용
+│   ├── cpp-patterns / cpp-testing / c-testing / embedded-sql        # C/C++·임베디드 SQL
+│   ├── latency-critical-systems / error-handling
+│   ├── trading-systems / performance-profiling
+│   ├── golang-patterns / golang-testing / go-http-patterns
+│   ├── rust-patterns / rust-testing / rust-library-crate
+│   ├── python-patterns / python-testing                             # Python
+│   ├── backend-patterns / frontend-patterns / make-interfaces-feel-better  # 백엔드·웹
+│   ├── api-design / fastapi-patterns                                  # API·FastAPI
+│   ├── database-migrations / postgres-patterns / json-contracts     # 데이터·DB
+│   ├── agentic-engineering                                          # 메타·하네스
+│   ├── tdd-workflow / verification-loop
+│   ├── security-review / security-scan
+│   ├── docker-patterns
+│   └── network-interface-health / data-throughput-accelerator
 ├── mcp-configs/                     # MCP 서버 설정 템플릿 (github·filesystem)
 └── tests/                           # Arachne 자체 테스트 (bats + 인덱스 검사)
 ```
@@ -124,10 +125,11 @@ description: /명령어 설명  # /help 에서 표시되는 설명
 ---
 ```
 
-**skills/** — 워크플로 스킬 (`name`·`description`·`triggers` YAML frontmatter + 마크다운 본문)
+**skills/** — 워크플로 스킬. Agent Skills 표준 포맷 `skills/<이름>/SKILL.md`
+(`name`·`description` YAML frontmatter + 마크다운 본문 — Claude Code가 네이티브로 발견·호출)
 - 구성: 언제 사용하는지 / 어떻게 동작하는지 / 예시
-- `triggers.paths`(파일 패턴)·`triggers.keywords`(활성화 키워드)가 스킬 선택의 결정론 힌트 —
-  편집 경로·작업 설명이 매칭되는 스킬을 우선 참조 (형식 강제: `tests/skill_meta.bats`)
+- 대상 경로·활성화 키워드 힌트는 `description` 말미에 담는다 — 자동 발견(description 매칭)의
+  판단 재료이자 스킬 선택의 결정론 힌트 (형식 강제: `tests/skill_meta.bats`, 구 평면 `*.md` 포맷 회귀 차단 포함)
 
 **rules/** — 지시서. `@import` 하지 않는다 — `~/.claude/rules/` 심볼릭으로 네이티브 자동 로드
 (공통=매 세션, 언어=`paths` frontmatter 매칭 시). 상단 주석 참고.

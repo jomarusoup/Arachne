@@ -55,4 +55,4 @@ Controller -> Application Service -> Domain Model -> Repository -> Database
 
 - [springboot-patterns](../../skills/archive/springboot-patterns.md)
 - [jpa-patterns](../../skills/archive/jpa-patterns.md)
-- [api-design](../../skills/api-design.md)
+- [api-design](../../skills/api-design/SKILL.md)

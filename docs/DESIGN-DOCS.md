@@ -15,7 +15,7 @@ FROM:: [[2026-06-09-project-design-docs-contract]]
 
 # 프로젝트 디자인 문서 계약
 
-Arachne 자체의 디자인 품질 규칙은 `rules/web/design-quality.md`와 `skills/frontend-design-direction.md`가
+Arachne 자체의 디자인 품질 규칙은 `rules/web/design-quality.md`와 `skills/frontend-design-direction/SKILL.md`가
 담당한다. Arachne를 사용하는 개별 Web 프로젝트의 제품 디자인 정본은 `docs/design/DESIGN.md`다.
 
 ## 위치와 소유권

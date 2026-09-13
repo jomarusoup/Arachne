@@ -70,4 +70,4 @@ mvn dependency:tree
 ## 관련 스킬
 
 - [springboot-security](../../skills/archive/springboot-security.md)
-- [security-review](../../skills/security-review.md)
+- [security-review](../../skills/security-review/SKILL.md)

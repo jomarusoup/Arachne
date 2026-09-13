@@ -8,7 +8,7 @@
 
 - **파일 전체 읽기 금지** — `sgrep <키워드>`로 위치 먼저, 해당 범위만 Read.
   심볼 정의·호출 관계·영향 범위는 `codegraph` 설치 시 그것부터(미설치 시 `sgrep` 폴백,
-  라우팅 상세는 `skills/research-routing.md`).
+  라우팅 상세는 `skills/research-routing/SKILL.md`).
 - **구현·검증 동일 모델 유의** — 구현과 검증을 같은 모델이 수행하므로 상관된 맹점이 생긴다.
   `code-reviewer` 에이전트 리뷰와 `/verify`를 한 단계 더 신중하게 적용한다.
 - **수정 전 보고** — 기능 추가·삭제 전 `[PLAN]`으로 승인 요청.

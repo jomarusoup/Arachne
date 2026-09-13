@@ -4,7 +4,7 @@
 # DESCRIPTION : 인덱스 ↔ 실제 파일 일치 검사 — 파일을 추가하고 인덱스 갱신을
 #               누락하는 드리프트를 CI에서 차단한다.
 # DATA        : 2026-06-05
-# Modification: 2026-07-17
+# Modification: 2026-09-13
 ################################################################################
 
 set -uo pipefail
@@ -44,13 +44,38 @@ CheckReferenced() {
     return "$missing"
 }
 
+#===============================================================================
+# FUNCTION    : CheckSkillReferenced
+# DESCRIPTION : skills/<이름>/ 각 스킬 디렉터리명이 index_file 에 등장하는지 검사
+#               (스킬은 Agent Skills 표준 포맷 skills/<이름>/SKILL.md — archive/ 제외)
+# PARAMETERS  : string index_file - 스킬명이 나열돼야 할 인덱스 문서
+# RETURNED    : 0(모두 참조됨) / 1(누락 있음)
+#===============================================================================
+CheckSkillReferenced() {
+    local index_file="$1"
+    local missing=0
+
+    local dir
+    for dir in "$REPO_DIR"/skills/*/; do
+        [ -d "$dir" ] || continue
+        local name
+        name=$(basename "$dir")
+        [ "$name" = "archive" ] && continue
+        if ! grep -qwF "$name" "$REPO_DIR/$index_file"; then
+            echo "  [DRIFT] skills/$name/ 가 $index_file 에 없음"
+            missing=1
+        fi
+    done
+    return "$missing"
+}
+
 #-------------------------------------------------------------------------------
-# 검사 1: skills/*.md ↔ skills/README.md · docs/USAGE.md
+# 검사 1: skills/<이름>/SKILL.md ↔ skills/README.md · docs/USAGE.md
 #-------------------------------------------------------------------------------
 echo "[index] skills/ ↔ skills/README.md"
-CheckReferenced "skills" "skills/README.md" || FAIL=1
+CheckSkillReferenced "skills/README.md" || FAIL=1
 echo "[index] skills/ ↔ docs/USAGE.md"
-CheckReferenced "skills" "docs/USAGE.md" || FAIL=1
+CheckSkillReferenced "docs/USAGE.md" || FAIL=1
 
 #-------------------------------------------------------------------------------
 # 검사 2: commands/*.md ↔ CLAUDE.md · docs/USAGE.md
@@ -124,10 +149,10 @@ CheckCount() {
 #-------------------------------------------------------------------------------
 # 검사 6: 문서 개수 표기 ↔ 실제 파일 개수 (skills·commands·agents)
 #         파일을 추가/삭제하고 문서의 "(N개)" 표기 갱신을 누락하는 드리프트 차단.
-#         개수 기준: 각 디렉터리 최상위 *.md (README.md 제외)
+#         개수 기준: 스킬은 skills/<이름>/SKILL.md, 나머지는 최상위 *.md (README.md 제외)
 #-------------------------------------------------------------------------------
 echo "[index] 문서 개수 표기 ↔ 실제 파일 개수"
-SKILL_COUNT=$(find "$REPO_DIR/skills"   -maxdepth 1 -name '*.md' ! -name 'README.md' | wc -l | tr -d ' ')
+SKILL_COUNT=$(find "$REPO_DIR/skills"   -mindepth 2 -maxdepth 2 -name 'SKILL.md' | wc -l | tr -d ' ')
 CMD_COUNT=$(find "$REPO_DIR/commands"   -maxdepth 1 -name '*.md' ! -name 'README.md' | wc -l | tr -d ' ')
 AGENT_COUNT=$(find "$REPO_DIR/agents"   -maxdepth 1 -name '*.md' ! -name 'README.md' | wc -l | tr -d ' ')
 

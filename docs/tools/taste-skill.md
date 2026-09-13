@@ -70,7 +70,7 @@ arachne --extras --taste       # 또는: bash ~/Arachne/setup-extras.sh --taste
 
 ## Arachne 워크플로와의 접점
 
-`rules/web/design-quality.md`(안티-템플릿 정책)와 `skills/frontend-patterns.md`·
+`rules/web/design-quality.md`(안티-템플릿 정책)와 `skills/frontend-patterns/SKILL.md`·
 `make-interfaces-feel-better.md`를 보완한다. 웹/프론트엔드 작업 시 디자인 품질 게이트로
 함께 사용한다.
 
