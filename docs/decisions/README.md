@@ -41,5 +41,8 @@ FROM:: [[arachne-docs]]
 | [0001-python-web-profile](0001-python-web-profile.md) | Python·Web profile을 Arachne의 기본 프로젝트 적용 축으로 둔다. |
 | [0002-systems-profiles](0002-systems-profiles.md) | cpp·rust profile로 빌드+테스트+sanitizer 게이트를 기본 제공한다. |
 | [0002-external-analysis-plugins](0002-external-analysis-plugins.md) | 결정론 분석(스캔·그래프·심볼)은 외부 플러그인에 두고 Arachne는 계약 지점(설치·신선도·영속화·폴백)만 소유한다. |
+
+> ⚠ 번호 `0002`는 두 ADR이 중복 사용한다(부여 실수). "기록은 재작성하지 않는다" 원칙에 따라
+> 재번호 없이 유지하며, 참조 시 전체 파일명으로 구분한다. 다음 신규 ADR은 `0005`부터.
 | [0003-dynamic-workflows-adoption](0003-dynamic-workflows-adoption.md) | (Proposed) dynamic workflows를 도입하지 않는다 — 증분 편익 미식별(기존 Agent fan-out으로 충족). 결함 수리(PC-1~6)·계측은 도입과 무관하게 진행, 재평가 트리거 명시. |
 | [0004-remove-3lane-runtime](0004-remove-3lane-runtime.md) | 3-레인 협업 런타임(위임 래퍼·폴백·쿨다운·계측)을 archive/multi-cli/로 제거하고, 규약 배포 계층(AGENTS.md SSOT + 어댑터)은 유지한다. |

@@ -32,11 +32,6 @@ Claude Code 세션에서 호출 가능한 워크플로·도메인 스킬 모음 
 | `python-patterns` | EAFP·타입힌트·컨텍스트매니저·`__slots__` (자원/메모리 사고 선행 학습) |
 | `python-testing` | pytest·TDD·픽스처·autospec 모킹·async 테스트 |
 
-## Java 백엔드
-
-| 스킬 | 설명 |
-|---|---|
-
 ## 백엔드·웹
 
 | 스킬 | 설명 |
