@@ -30,6 +30,12 @@ paths:
 - 부호 있는 정수 오버플로 방지
 - null·댕글링 포인터 역참조 금지
 
+## 민감정보
+
+- 로그에는 개인정보를 필드 단위로 마스킹한 값만 남긴다. 개인정보 타입은 `operator<<`·`std::formatter`에서 마스킹한 값만 출력한다.
+- 비밀번호·키 버퍼는 소멸자에서 `explicit_bzero`(또는 `OPENSSL_cleanse`)로 지운다. `std::string`은 재할당 때 사본이 남으므로 비밀값에는 고정 버퍼를 쓴다.
+- 처리 기준 전체는 `skills/sensitive-data-handling/SKILL.md`를 따른다.
+
 ## Sanitizer 적용
 
 ```bash
