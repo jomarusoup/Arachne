@@ -118,6 +118,8 @@ EXEC SQL CLOSE emp_cur;
 ```c
 /* emp_report.pc */
 #include <stdio.h>
+#include <stdlib.h>
+#include <string.h>             /* explicit_bzero (glibc 2.25 이상) */
 #include <sqlca.h>
 
 EXEC SQL BEGIN DECLARE SECTION;
@@ -147,6 +149,7 @@ int main(void)
 
     EXEC SQL WHENEVER SQLERROR DO SqlErrorHandler();
     EXEC SQL CONNECT :db_user IDENTIFIED BY :db_pass;
+    explicit_bzero(db_pass, sizeof(db_pass));       /* 접속 후 비밀번호 소거 */
 
     emp_id = 42;
     EXEC SQL SELECT name INTO :emp_name INDICATOR :name_ind
@@ -282,6 +285,12 @@ clean:
 - [ ] `char` 호스트 변수 크기 = 컬럼 크기 + 1(종단 NUL) — 절단은 인디케이터 `>0`으로 감지
 - [ ] 에러 경로마다 ROLLBACK + 커서 CLOSE + DISCONNECT (자원 누수 방지)
 - [ ] 에러 메시지에 스키마·비밀값 노출 금지
+- [ ] `CONNECT`에 리터럴 자격증명 금지 — `EXEC SQL CONNECT :db_user IDENTIFIED BY :db_pass` 처럼
+      호스트 변수로만 넘기고, 값은 권한 600 설정 파일이나 환경변수에서 읽는다
+- [ ] 비밀번호 호스트 변수는 `CONNECT` 직후 `explicit_bzero(db_pass, sizeof(db_pass))`로 지운다
+      (`VARCHAR`면 `.arr` 버퍼와 `.len`을 함께 지운다)
+- [ ] SQL 트레이스·디버그 로그는 바인드 값을 그대로 남길 수 있다 — 운영에서는 끄고,
+      켜야 하면 기간을 정한 뒤 로그 파일을 개인정보로 취급해 파기한다 (`sensitive-data-handling`)
 
 ## 테스트 전략
 

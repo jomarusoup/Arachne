@@ -76,6 +76,12 @@ if (setuid(getuid()) < 0)
 }
 ```
 
+## 민감정보
+
+- 로그에는 개인정보(주민등록번호·카드·계좌번호·연락처)를 필드 단위로 마스킹한 값만 남긴다. 비밀값은 마스킹도 하지 않고 아예 빼낸다.
+- 비밀번호·키를 담은 버퍼는 사용 직후 `explicit_bzero(buf, sizeof(buf))`로 지운다. `memset`은 최적화로 제거될 수 있다.
+- 마스킹 헬퍼·코어 덤프 차단·저장 기준은 `skills/sensitive-data-handling/SKILL.md`를 따른다.
+
 ## 정적 분석 도구
 
 ```bash

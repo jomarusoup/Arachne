@@ -5,6 +5,7 @@ description: AI 전환 전 현재 작업 상태를 HANDOFF.md에 저장
 
 다른 AI 도구·새 세션으로 전환하기 전에 실행.
 HANDOFF.md를 현재 상태로 갱신한다.
+HANDOFF.md에는 비밀값·개인정보·고객 데이터 원문을 넣지 않는다. 필요하면 파일 경로와 항목 이름만 적는다(`skills/sensitive-data-handling`).
 
 **매번 자동 저장 안 함 — 이 커맨드 실행 시에만 갱신.**
 
