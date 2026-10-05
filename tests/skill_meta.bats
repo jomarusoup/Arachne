@@ -18,11 +18,12 @@ frontmatter() {
     awk '/^---$/{c++; next} c==1' "$1"
 }
 
-# 스킬 디렉터리 나열 (archive/ 제외)
+# 스킬 디렉터리 나열 (archive/, Claude 앱 동기화 산출물 synced/ 제외)
 skill_dirs() {
     local path
     for path in "${SKILLS_DIR}"/*/; do
         [ "$(basename "$path")" = "archive" ] && continue
+        [ "$(basename "$path")" = "synced" ] && continue
         echo "${path%/}"
     done
 }

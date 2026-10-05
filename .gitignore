@@ -45,3 +45,6 @@ session-env/
 
 # macOS 아티팩트
 .DS_Store
+
+# Claude 앱 스킬 동기화 산출물 (~/.claude/skills → 이 저장소 skills/ 심볼릭이라 여기에 생성됨)
+skills/synced/
