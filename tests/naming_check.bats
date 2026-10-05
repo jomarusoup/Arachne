@@ -146,3 +146,19 @@ EOF
     [[ "$output" == *"추출=ctags"* ]]
     [[ "$output" == *"미등록약어"*"GetUsrName"* ]]
 }
+
+@test "naming: C 관용 짧은 이름(ret·env·fp·cb·sig·fd)은 미등록 약어로 보지 않음" {
+    printf 'int RunTask(int fd, int sig)\n{\n    int ret = 0;\n    char *env = 0;\n    void *fp = 0;\n    void *cb = 0;\n    return ret;\n}\n' > "${PROJ}/src/a.c"
+    run_check --all
+    [ "$status" -eq 0 ]
+    [[ "$output" != *"'ret'"* ]]
+    [[ "$output" != *"'env'"* ]]
+    [[ "$output" != *"'sig'"* ]]
+}
+
+@test "naming: 여러 파일을 한 번에 검사해도 파일·줄 위치가 정확함" {
+    printf 'int Ok(void);\n' > "${PROJ}/src/a.c"
+    printf '\n\nint GetUsrName(void);\n' > "${PROJ}/src/b.c"
+    run_check --all
+    [[ "$output" == *"src/b.c:3"* ]]
+}

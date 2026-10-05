@@ -133,11 +133,9 @@ ListTargets() {
 ExtractWithCtags() {
     local path
 
-    while IFS= read -r path; do
-        [ -f "${path}" ] || continue
-        ctags -x --_xformat=$'%F\t%n\t%N' --langmap=C:+.pc.pgc \
-            --kinds-C=+lpz --kinds-C++=+lpz -o - "${path}" 2> /dev/null || true
-    done < "${WORK_DIR}/targets"
+    # 파일 목록을 한 번에 넘겨 ctags 를 한 번만 실행한다(큰 저장소에서 프로세스 기동 비용 절감)
+    ctags -x --_xformat=$'%F\t%n\t%N' --langmap=C:+.pc.pgc \
+        --kinds-C=+lpz --kinds-C++=+lpz -L "${WORK_DIR}/targets" -o - 2> /dev/null || true
 }
 
 #===============================================================================
@@ -148,11 +146,8 @@ ExtractWithCtags() {
 # RETURNED    : stdout 에 "<파일>\t<줄>\t<식별자>"
 #===============================================================================
 ExtractWithRegex() {
-    local path
-
-    while IFS= read -r path; do
-        [ -f "${path}" ] || continue
-        awk -v f="${path}" '
+    # 파일 목록 전체를 awk 한 번에 넘긴다(파일마다 프로세스를 띄우지 않음)
+    tr '\n' '\000' < "${WORK_DIR}/targets" | xargs -0 awk '
             BEGIN {
                 n = split("return else case goto sizeof new delete throw typeof instanceof " \
                           "await yield use mod impl for in as if while switch do not and or " \
@@ -164,6 +159,7 @@ ExtractWithRegex() {
                           "string number boolean any unknown never undefined", w, " ")
                 for (i = 1; i <= n; i++) stop_second[w[i]] = 1
             }
+            FNR == 1 { f = FILENAME; in_comment = 0; in_sql = 0 }
             {
                 s = $0
                 sub(/\r$/, "", s)
@@ -188,7 +184,7 @@ ExtractWithRegex() {
 
                 if (match(s, /^[ \t]*#[ \t]*define[ \t]+[A-Za-z_][A-Za-z0-9_]*/)) {
                     d = substr(s, RSTART, RLENGTH); sub(/^[ \t]*#[ \t]*define[ \t]+/, "", d)
-                    print f "\t" NR "\t" d
+                    print f "\t" FNR "\t" d
                     next
                 }
                 while (match(s, /[A-Za-z_][A-Za-z0-9_]*[ \t*&]+[A-Za-z_][A-Za-z0-9_]*[ \t]*[=;,(){:<[]/)) {
@@ -197,13 +193,12 @@ ExtractWithRegex() {
                     rest = substr(m, RLENGTH + 1)
                     match(rest, /[A-Za-z_][A-Za-z0-9_]*/); second = substr(rest, RSTART, RLENGTH)
                     if (!(first in stop_first) && !(second in stop_second) && !(second in stop_first))
-                        print f "\t" NR "\t" second
+                        print f "\t" FNR "\t" second
                     # 첫 식별자만 건너뛰고 이어서 찾는다 (매개변수 목록 처리)
                     s = substr(s, index(s, m) + length(first))
                 }
             }
-        ' "${path}"
-    done < "${WORK_DIR}/targets"
+        ' 2> /dev/null || true
 }
 
 #===============================================================================
@@ -319,7 +314,8 @@ Analyze() {
                 "write year zero with without over under after before old new base kill " \
                 "io db ui os ip fd tx rx tcp udp http https url uri sql api cpu gpu ram json " \
                 "xml html csv utf ascii tls ssl uuid crc pid tid uid gid eof shm ipc sem mutex " \
-                "posix epoll errno ctx min max str src dst cmd fmt ii jj kk", eng, " ")
+                "posix epoll errno ctx min max str src dst cmd fmt ii jj kk " \
+                "ret rc obj env fp cb sig fn opt arg argc argv len pos val var buf", eng, " ")
             for (i = 1; i <= n; i++) common[eng[i]] = 1
         }
         {

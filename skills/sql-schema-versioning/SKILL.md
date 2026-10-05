@@ -138,7 +138,10 @@ SQL_CLIENT='sqlplus -s /@APP_DB' bash sql/apply-schema.sh --dialect oracle --emp
 
 ### 접속 정보
 
-- `SQL_CLIENT`·`SQL_APPLIED_CMD` 내용은 출력하지 않는다. 그래도 명령줄에 비밀번호를 넣지 않는다.
+- `SQL_CLIENT`·`SQL_APPLIED_CMD` 내용은 출력하지 않는다. 다만 클라이언트 실행 파일을 찾지 못하면 셸 오류 메시지에
+  명령의 첫 단어가 나올 수 있다. 비밀번호는 명령줄에 넣지 말고 접속 프로필(`service=`·Oracle wallet `/@`)을 쓴다.
+- Oracle 은 DDL 이 자동 커밋된다. 스키마 변경 뒤 이력 INSERT 가 실패하면 변경만 반영된 상태가 되므로,
+  오류가 나면 `SCHEMA_HISTORY` 를 수동으로 맞춘다. PostgreSQL 은 스크립트가 `BEGIN` 으로 둘을 한 트랜잭션에 묶는다.
 - Oracle은 wallet(`sqlplus -s /@APP_DB`), PostgreSQL은 `service=`·`.pgpass`를 쓴다.
 - `--applied-from`은 DB 없이 계획을 검토할 때 쓴다. 형식은 한 줄에 `<버전> [체크섬]`이다.
 
