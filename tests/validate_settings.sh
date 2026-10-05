@@ -66,6 +66,8 @@ REQUIRED_KEYS=(
     ".hooks.SessionStart"
     ".hooks.Stop"
     ".hooks.PreCompact"
+    ".hooks.PreToolUse"
+    ".permissions.deny"
     ".enabledPlugins"
 )
 

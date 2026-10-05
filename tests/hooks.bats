@@ -288,3 +288,9 @@ HOOKS_DIR="${REPO_DIR}/hooks"
     [ ! -d "${TMP_REPO}/.claude/sessions" ]
     rm -rf "${TMP_REPO}" "${TMP_HOME}"
 }
+
+@test "hooks: 보안 가드 스크립트 존재·실행권한" {
+    [ -x "${HOOKS_DIR}/guard-bash.sh" ]
+    [ -x "${HOOKS_DIR}/guard-secrets.sh" ]
+    [ -f "${HOOKS_DIR}/lib-guard.sh" ]
+}

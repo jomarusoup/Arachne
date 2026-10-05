@@ -5,7 +5,54 @@
   },
   "theme": "dark-daltonized",
   "model": "sonnet",
+  "permissions": {
+    "deny": [
+      "Read(**/.env)",
+      "Read(**/.env.local)",
+      "Read(**/.env.*.local)",
+      "Read(**/.env.production)",
+      "Read(**/.env.prod)",
+      "Read(**/.env.staging)",
+      "Read(**/.env.development)",
+      "Read(**/.env.dev)",
+      "Read(**/*.pem)",
+      "Read(**/*.key)",
+      "Read(**/*.p12)",
+      "Read(**/*.pfx)",
+      "Read(**/*.jks)",
+      "Read(~/.ssh/id_*)",
+      "Read(~/.aws/credentials)",
+      "Read(~/.claude/.credentials.json)",
+      "Read(**/*credentials*.json)",
+      "Read(**/secrets/**)",
+      "Read(**/wallet/**)",
+      "Read(**/tnsnames.ora)",
+      "Read(**/sqlnet.ora)",
+      "Read(~/.pgpass)",
+      "Read(~/.netrc)",
+      "Read(~/.docker/config.json)",
+      "Read(**/*.dmp)",
+      "Read(**/*.dump)"
+    ]
+  },
   "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"__HOME__/.claude/hooks/guard-bash.sh\"",
+            "timeout": 10
+          },
+          {
+            "type": "command",
+            "command": "bash \"__HOME__/.claude/hooks/guard-secrets.sh\"",
+            "timeout": 30
+          }
+        ]
+      }
+    ],
     "UserPromptSubmit": [
       {
         "matcher": "*",

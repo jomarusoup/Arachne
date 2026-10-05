@@ -148,7 +148,7 @@ Arachne/
 │                                #   · python-reviewer · fastapi-reviewer · react-reviewer
 │                                #   · database-reviewer)
 ├── hooks/                       # 이벤트 훅 (session-start/end, pre-compact, git-bus-check,
-│                                #   doc-drift-check, ua-stale-check)
+│                                #   doc-drift-check, ua-stale-check, 보안 가드 guard-bash·guard-secrets)
 ├── mcp-configs/                 # MCP (Model Context Protocol) 서버 설정 템플릿
 ├── docs/CI.md                   # GitHub Actions CI 운영·로컬 재현 가이드
 ├── docs/PROJECT-CI.md           # Arachne 사용 프로젝트의 CI 계약

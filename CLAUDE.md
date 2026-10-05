@@ -54,7 +54,10 @@ Claude Code가 이를 네이티브로 자동 로드한다:
 │   ├── pre-compact.sh               # PreCompact    — 압축 전 상태 저장
 │   ├── git-bus-check.sh             # UserPromptSubmit — 외부 새 커밋 감지 (git-bus, 작성 CLI 판별 없음)
 │   ├── doc-drift-check.sh           # PostToolUse — 기능 파일 변경 시 문서 갱신 알림
-│   └── ua-stale-check.sh            # SessionStart — UA 지식그래프 stale(HEAD 대비 뒤처짐) 경고
+│   ├── ua-stale-check.sh            # SessionStart — UA 지식그래프 stale(HEAD 대비 뒤처짐) 경고
+│   ├── guard-bash.sh                # PreToolUse(Bash) — 검사 우회 차단, 파괴 명령·비밀 파일 읽기 확인
+│   ├── guard-secrets.sh             # PreToolUse(Bash) — git commit 시 비밀값·개인정보 검사
+│   └── lib-guard.sh                 # 가드 공용 함수 (입력 JSON 파싱·결정 출력)
 │
 ├── rules/                           # 항상 적용되는 전역 규칙
 │   ├── common/                      # 언어 무관 공통 규칙 (10개 — 9개 매 세션 로드, hooks.md는 paths 지연 — 최소 유지)
