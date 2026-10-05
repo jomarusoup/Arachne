@@ -222,8 +222,11 @@ static int FormatTimestamp(char *buf, size_t size)
         g_TsCacheSec = now.tv_sec;
         g_TsCacheGen = gen;
     }
-    return snprintf(buf, size, "%s.%06ld%s", g_TsCachePrefix,
-                    (long)(now.tv_nsec / 1000), g_TsCacheZone);
+    /* 마이크로초는 0~999999 로 묶고, 접두(19자)·시간대(최대 6자)도 길이를 제한해
+       gcc -Wformat-truncation 이 출력 길이를 증명할 수 있게 한다 */
+    int micros = (int)(now.tv_nsec / 1000);
+    if (micros < 0 || micros > 999999) { micros = 0; }
+    return snprintf(buf, size, "%.19s.%06d%.6s", g_TsCachePrefix, micros, g_TsCacheZone);
 }
 
 /* 메시지 안의 제어 문자를 공백으로 바꾼다 — 가짜 줄 삽입(로그 인젝션) 방지 */
