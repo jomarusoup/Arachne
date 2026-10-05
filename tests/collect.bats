@@ -101,6 +101,22 @@ extract_bundle() {
     grep -q 'txn=G01-1728104602123456-000042' "${masked}"
 }
 
+@test "collect: 전화번호·이메일도 가린다(끝 4자리·아이디 첫 글자만 남김)" {
+    printf '%s\n' 'ts=1 txn=T1 phone=010-1234-5678 tel=02-345-6789 mail=kim.cs@example.com amt=15000' \
+        > "${TMP_DIR}/contact.log"
+    run bash "${SCRIPT}" --env dev --log "${TMP_DIR}/contact.log" --out "${OUT_DIR}"
+    [ "$status" -eq 0 ]
+    bundle=$(extract_bundle)
+    masked=$(ls "${bundle}"/logs/*contact.log.masked)
+    refute_grep '1234-5678' "${masked}"
+    refute_grep '345-6789' "${masked}"
+    refute_grep 'kim.cs@' "${masked}"
+    grep -q 'phone=010-\*\*\*\*-5678' "${masked}"
+    grep -q 'tel=02-\*\*\*\*-6789' "${masked}"
+    grep -q 'mail=k\*\*\*@example.com' "${masked}"
+    grep -q 'amt=15000' "${masked}"
+}
+
 @test "collect: 환경변수 값을 수집하지 않는다" {
     COLLECT_CANARY_SECRET=canary-value-7f3 run bash "${SCRIPT}" --out "${OUT_DIR}"
     [ "$status" -eq 0 ]

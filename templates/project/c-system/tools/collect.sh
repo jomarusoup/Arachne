@@ -5,7 +5,7 @@
 #               시스템 정보·IPC·프로세스·소켓 요약·지정 로그 꼬리를 모으고,
 #               --allow-profile 과 개발·스테이징 표시가 함께 있을 때만 perf 를 돈다.
 #               환경변수·셸 이력·지정하지 않은 파일은 모으지 않는다.
-#               로그 꼬리는 카드번호·주민등록번호 모양의 숫자를 가리고 담는다.
+#               로그 꼬리는 카드번호·주민등록번호·전화번호·이메일을 가리고 담는다.
 #               bash 3.2 호환, 외부 다운로드 없음. 규약 정본: skills/remote-linux-analysis/SKILL.md
 ################################################################################
 # 사용법:
@@ -132,13 +132,18 @@ CheckProfilePolicy() {
 
 #===============================================================================
 # FUNCTION    : MaskDigits
-# DESCRIPTION : 표준 입력의 카드번호·주민등록번호 모양 숫자를 가려 표준 출력으로 낸다.
+# DESCRIPTION : 표준 입력의 카드번호·주민등록번호·전화번호·이메일을 가려 표준 출력으로 낸다.
 #               주민등록번호 모양(6자리-7자리)은 앞 7자리만 남긴다.
 #               구분자(공백·-) 포함 13~19자리 숫자열은 끝 4자리만 남긴다.
+#               전화번호(휴대·유선)는 끝 4자리만, 이메일은 아이디 첫 글자만 남긴다.
 #               필드 단위 마스킹을 대신하지 못하는 보조 필터다. 넘치게 가리는 쪽을 택한다.
 #===============================================================================
 MaskDigits() {
-    LC_ALL=C awk '
+    LC_ALL=C sed -E \
+        -e 's/(01[016789])[- .]?[0-9]{3,4}[- .]?([0-9]{4})/\1-****-\2/g' \
+        -e 's/(^|[^0-9])(0[2-6][0-9]?)-[0-9]{3,4}-([0-9]{4})/\1\2-****-\3/g' \
+        -e 's/([A-Za-z0-9])[A-Za-z0-9._%+-]*@([A-Za-z0-9.-]+\.[A-Za-z]{2,})/\1***@\2/g' \
+    | LC_ALL=C awk '
         function digits_of(s) { gsub(/[^0-9]/, "", s); return s }
         function is_rrn(s,   parts) {
             if (split(s, parts, "-") != 2) return 0
@@ -357,7 +362,7 @@ WriteManifest() {
         echo "log_count=${#g_LogFiles[@]}"
         echo "tail_lines=${g_TailLines}"
         echo "profile=${g_AllowProfile}"
-        echo "masking=card_rrn_digits"
+        echo "masking=card_rrn_phone_email"
         echo "files:"
         (cd "${dir}" && find . -type f ! -name MANIFEST.txt | LC_ALL=C sort)
     } > "${dir}/MANIFEST.txt"
