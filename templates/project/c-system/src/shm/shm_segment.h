@@ -35,6 +35,8 @@ typedef enum ShmState
 /* attach 옵션 비트 */
 #define SHM_ATTACH_RDONLY         0x1u  /* 읽기 전용 매핑(조회 도구용) */
 #define SHM_ATTACH_ALLOW_CORRUPT  0x2u  /* CORRUPT 상태도 attach 허용(복구 도구용) */
+#define SHM_ATTACH_NO_CHECK       0x4u  /* 헤더 검증 생략 — 진단·복구 도구 전용.
+                                           호출자가 ShmHdrCheck 를 직접 부르고 판정한다 */
 
 /*-----------------------------------------------------------------------------
 락 영역 — pthread_mutex_t 크기는 플랫폼마다 다르므로 고정 크기 공간 안에 둔다.
@@ -131,6 +133,27 @@ RETURNED    : 0 성공, 음수 errno(ShmHdrCheck 반환값 포함)
 =============================================================================*/
 int ShmSegAttach(const char *name, const ShmLayout *layout, uint32_t flags, ShmSeg **out);
 
+/*=============================================================================
+FUNCTION    : ShmSegPeekHdr
+DESCRIPTION : 헤더 128바이트만 읽기 전용으로 매핑해 사본을 돌려준다(검증하지 않음).
+              조회·복구 도구가 rec_cap 을 알아내 레이아웃을 만들 때 쓴다
+PARAMETERS  : const char *name - POSIX 이름
+              ShmHdr *out      - 헤더 사본(락 영역 사본은 쓰지 않는다)
+RETURNED    : 0 성공, -EAGAIN 생성 중(크기 부족), 그 밖의 음수 errno
+=============================================================================*/
+int ShmSegPeekHdr(const char *name, ShmHdr *out);
+
+/*=============================================================================
+FUNCTION    : ShmSegResetHdr
+DESCRIPTION : 손상된 헤더를 레이아웃대로 다시 쓰고 상태를 RECOVERING 으로 둔다.
+              뮤텍스도 다시 초기화한다. 매직은 맨 마지막에 쓴다.
+              복구 도구 전용 — 다른 프로세스가 attach 하지 않은 상태에서만 부른다
+PARAMETERS  : ShmSeg *seg             - 쓰기 매핑 핸들(SHM_ATTACH_NO_CHECK 로 attach)
+              const ShmLayout *layout - 다시 쓸 레이아웃(매핑 크기와 같아야 한다)
+RETURNED    : 0 성공, -EINVAL 읽기 전용·크기 불일치, 그 밖의 음수 errno
+=============================================================================*/
+int ShmSegResetHdr(ShmSeg *seg, const ShmLayout *layout);
+
 /* 매핑을 풀고 핸들을 해제한다. 세그먼트 자체는 남는다. NULL 허용 */
 void ShmSegDetach(ShmSeg *seg);
 
@@ -138,6 +161,7 @@ void ShmSegDetach(ShmSeg *seg);
 int ShmSegRemove(const char *name);
 
 ShmHdr *ShmSegHdr(ShmSeg *seg);
+size_t  ShmSegMapSize(const ShmSeg *seg);
 void   *ShmSegData(ShmSeg *seg);
 bool    ShmSegIsReady(const ShmSeg *seg);
 
