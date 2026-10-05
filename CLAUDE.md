@@ -83,7 +83,8 @@ Claude Code가 이를 네이티브로 자동 로드한다:
 │   ├── react/      # React (coding-style·patterns·testing)
 │   ├── docker/     # Docker/Compose (coding-style·hooks·patterns·security·testing)
 │   ├── javascript/ # JS/TS (coding-style·hooks·patterns·security·testing)
-│   └── bash/       # Bash/Shell (coding-style·hooks·patterns·security·testing)
+│   ├── bash/       # Bash/Shell (coding-style·hooks·patterns·security·testing)
+│   └── systems/    # C/C++/Rust 공통 철학 (philosophy·decisions) — 시스템 언어 파일 편집 시 로드
 │
 ├── dotfiles/                        # 홈 디렉토리 설정 파일
 │   ├── bash_profile                 # → ~/.bash_profile (sgrep 등 유틸 포함)

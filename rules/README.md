@@ -40,3 +40,4 @@ Codex는 `~/.codex/AGENTS.md` 마커 병합, Copilot은 저장소 `AGENTS.md`와
 | `*.css`, `*.scss`, `*.html`, `*.jsx`, `*.tsx`, `*.vue` | `web/*.md` (security·performance는 확장자 일부) |
 | `*.tsx`, `*.jsx` | `react/*.md` 전체 |
 | `*.sh` | `bash/*.md` 전체 |
+| C·C++·Rust·`*.pc`·`*.pgc` | `systems/*.md` (공통 철학·결정) |
