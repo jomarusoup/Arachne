@@ -90,10 +90,11 @@ Claude Code가 이를 네이티브로 자동 로드한다:
 │   ├── bash_profile                 # → ~/.bash_profile (sgrep 등 유틸 포함)
 │   └── vimrc                        # → ~/.vimrc
 │
-├── skills/                          # 워크플로·도메인 스킬 (52개 현역, README.md 참고 — 비활성 도메인은 archive/)
+├── skills/                          # 워크플로·도메인 스킬 (61개 현역, README.md 참고 — 비활성 도메인은 archive/)
 │   │                                # 각 스킬은 skills/<이름>/SKILL.md (Agent Skills 표준 포맷)
 │   ├── build-debug / memory-check                                   # Harness 전용
 │   ├── cpp-patterns / cpp-testing / c-testing / embedded-sql        # C/C++·임베디드 SQL
+│   ├── c-server-patterns / c-to-rust-migration / operational-logging # C 서버·Rust 이식·운영 로그
 │   ├── naming-dictionary                                            # 네이밍 사전·검사
 │   ├── latency-critical-systems / error-handling
 │   ├── trading-systems / performance-profiling
@@ -104,12 +105,13 @@ Claude Code가 이를 네이티브로 자동 로드한다:
 │   ├── react-testing / vite-patterns                                # React 테스트·Vite
 │   ├── api-design / fastapi-patterns                                  # API·FastAPI
 │   ├── database-migrations / postgres-patterns / json-contracts     # 데이터·DB
-│   ├── sql-schema-versioning                                        # 도구 없는 .sql 버전 규약
+│   ├── sql-schema-versioning / oracle-patterns / api-contracts      # .sql 버전 규약·Oracle·계약 우선
+│   ├── c-data-structures / shm-db-patterns                          # C 자료구조·공유메모리⇄DB
 │   ├── agentic-engineering                                          # 메타·하네스
 │   ├── tdd-workflow / verification-loop
 │   ├── security-review / security-scan / sensitive-data-handling
 │   ├── docker-patterns
-│   └── network-interface-health / data-throughput-accelerator
+│   └── network-interface-health / data-throughput-accelerator / stream-pipeline-patterns / load-testing
 ├── mcp-configs/                     # MCP 서버 설정 템플릿 (github·filesystem)
 └── tests/                           # Arachne 자체 테스트 (bats + 인덱스 검사)
 ```
