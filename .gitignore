@@ -48,3 +48,18 @@ session-env/
 
 # Claude 앱 스킬 동기화 산출물 (~/.claude/skills → 이 저장소 skills/ 심볼릭이라 여기에 생성됨)
 skills/synced/
+
+# 비밀값·키·DB 덤프 (실수로 커밋하지 않게 — 커밋 시 guard-secrets.sh 가 한 번 더 검사)
+.env
+.env.*
+!.env.example
+!.env.sample
+*.pem
+*.key
+*.p12
+*.pfx
+*.dmp
+*.dump
+
+# Claude Code 서브에이전트 worktree (isolation: worktree 작업 공간)
+.claude/worktrees/
