@@ -52,7 +52,7 @@ description: /명령어 설명
 | `/add` `/fix` `/refactor` | 기능 추가 · 버그 수정 · 리팩터링 |
 | `/tdd` `/verify` `/e2e` | TDD 사이클 · 2단계 검증(+`.arachne/reports/` 리포트 기록) · E2E 테스트 |
 | `/design` `/python-review` | 설계 문서 · Python 코드 리뷰 |
-| `/fastapi-review` `/react-review` | FastAPI API 리뷰 · React/Next 웹 리뷰 |
+| `/fastapi-review` `/react-review` `/ts-review` | FastAPI API 리뷰 · React/Next 웹 리뷰 · TypeScript 리뷰 |
 | `/database-review` | DB schema·쿼리·migration·데이터 보안 리뷰 |
 | `/issue` `/status` | GitHub 이슈 순차 처리 · 프로젝트 현황 |
 | `/git` `/worktree` | 커밋·푸시 · 병렬 세션 worktree 생성/점검/정리 |
@@ -100,6 +100,7 @@ model: opus               # opus / sonnet / haiku
 | `python-reviewer` | sonnet | PEP 8·타입 힌트·보안·이디엄 Python 리뷰 |
 | `fastapi-reviewer` | sonnet | FastAPI async·DI·스키마·API 보안 리뷰 |
 | `react-reviewer` | sonnet | React/Next 렌더·Hooks·a11y·XSS·성능 리뷰 |
+| `typescript-reviewer` | sonnet | TS async 정확성·`any`/`as`/`!` 남용·tsconfig·Node 보안·branded 타입·바이너리 처리 리뷰 |
 | `database-reviewer` | sonnet | DB schema·쿼리·migration·ORM 변경 리뷰 (read-first) |
 
 ### 병렬 실행
@@ -146,10 +147,10 @@ description: >-                    # 자동 발견 매칭 기준 — 경로·키
 |---|---|
 | 시스템 프로그래밍 | `latency-critical-systems` `linux-system-network-programming` `trading-systems` `performance-profiling` `build-debug` `memory-check` `cpp-testing` `error-handling` |
 | 언어별 패턴·테스팅 | `cpp-patterns` `c-testing` `rust-patterns` `rust-testing` `rust-library-crate` `golang-patterns` `golang-testing` `go-http-patterns` `python-patterns` `python-testing` |
-| 백엔드·웹 | `backend-patterns` `frontend-patterns` `frontend-design-direction` `frontend-a11y` `design-system` `api-design` `fastapi-patterns` `make-interfaces-feel-better` |
-| 데이터·DB | `json-contracts` `database-migrations` `postgres-patterns` `redis-patterns` `embedded-sql` |
+| 백엔드·웹 | `backend-patterns` `frontend-patterns` `frontend-design-direction` `frontend-a11y` `design-system` `api-design` `fastapi-patterns` `make-interfaces-feel-better` `react-testing` `vite-patterns` |
+| 데이터·DB | `json-contracts` `database-migrations` `postgres-patterns` `redis-patterns` `embedded-sql` `sql-schema-versioning` |
 | 제품·기획·아키텍처 | `product-lens` `product-capability` `plan-orchestrate` `architecture-decision-records` `hexagonal-architecture` `agent-architecture-audit` |
-| 워크플로·보안·기타 | `tdd-workflow` `verification-loop` `research-routing` `security-review` `security-scan` `docker-patterns` `deployment-patterns` `agentic-engineering` |
+| 워크플로·보안·기타 | `tdd-workflow` `verification-loop` `research-routing` `security-review` `security-scan` `sensitive-data-handling` `naming-dictionary` `docker-patterns` `deployment-patterns` `agentic-engineering` |
 | 네트워크 | `network-interface-health` `data-throughput-accelerator` |
 
 ### 새 스킬 추가
@@ -271,7 +272,7 @@ Claude Code 상태표시줄은 `settings.template.json`의 `statusLine.command`�
 
 | 확장자 | 자동 로드되는 규칙 |
 |---|---|
-| `*.c` `*.h` | `rules/c/*` |
+| `*.c` `*.h` `*.pc` `*.pgc` | `rules/c/*` |
 | `*.cpp` `*.hpp` | `rules/cpp/*` |
 | `*.go` | `rules/golang/*` |
 | `*.java` `pom.xml` `build.gradle*` | `rules/java/*` |
@@ -279,11 +280,12 @@ Claude Code 상태표시줄은 `settings.template.json`의 `statusLine.command`�
 | `*.py` | `rules/python/*` |
 | `*.js` `*.ts` | `rules/javascript/*` |
 | `Dockerfile` `*.Dockerfile` `docker-compose*.yml` `compose*.yml` | `rules/docker/*` |
-| `*.css` `*.scss` `*.html` `*.jsx` `*.tsx` `*.vue` | `rules/web/design-quality.md` |
+| `*.css` `*.scss` `*.html` `*.jsx` `*.tsx` `*.vue` | `rules/web/*` (design-quality·ui-layout·security·performance) |
+| `*.tsx` `*.jsx` | `rules/react/*` |
 | `*.sh` | `rules/bash/*` |
 
 각 언어 폴더는 `coding-style · hooks · patterns · security · testing` 5개 파일을 기본으로 한다
-(Python은 `fastapi`·`data-handling` 추가, web은 `design-quality` 단일 파일).
+(Python은 `fastapi`·`data-handling` 추가, web은 `design-quality`·`ui-layout`·`security`·`performance`, react는 3개 파일).
 
 ---
 

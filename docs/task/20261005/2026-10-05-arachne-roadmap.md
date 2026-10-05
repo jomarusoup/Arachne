@@ -586,6 +586,8 @@ E-2b (W3, I-2와 같은 PR) — 대량·동시성 (= D-3)
 | 개수 표기 | README·CLAUDE.md·ARCHITECTURE·skills/README·AGENTS.md | 전 트랙 합산 |
 | 루트 기록물·`docs/task/20261005/` | D-15 | 이동 |
 | `docs/decisions/README.md` | ADR 표 중간에 `0002` 번호 안내문이 끼어 표가 끊김 | 안내문을 표 아래로 이동 |
+| 언어별 coding-style 헤더 예시 (python·golang·bash·javascript 등) | D20(날짜 필드 삭제)이 공통 규격·C/C++에만 반영됨 | 헤더 예시에서 `DATA`·`Modification` 제거 |
+| 크기 경고 대상 (`check_index.sh` 검사 8) | 기준 초과 파일 다수 | 역할이 섞였으면 분리, 아니면 압축 |
 | `README.md` L206, `docs/ARCHITECTURE.md` L127, `tests/install.bats` L76~78 | 과거형·회귀 가드 | 유지 |
 
 **Z-2. 완료 기준**: 제거 런타임 서술 0, 깨진 참조 0, status 불일치 0, 출처 불명 파일 0, 인벤토리 표가
