@@ -24,7 +24,7 @@ description: C 서버의 수신 데이터 저장소를 자료구조와 정렬로
 
 - 공유메모리 생성·락·DB 적재 절차 → `shm-db-patterns`
 - C++ 코드 → 표준 컨테이너를 먼저 쓴다(`cpp-patterns`)
-- 스레드 간 메시지 전달 큐의 동기화 세부 → `latency-critical-systems`
+- 스레드 간 메시지 전달 큐의 동기화 세부 → `stream-pipeline-patterns`
 
 ## 선택표 — 접근 패턴이 자료구조를 정한다
 

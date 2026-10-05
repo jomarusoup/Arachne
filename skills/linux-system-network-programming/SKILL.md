@@ -67,7 +67,7 @@ ss -tnlp
 
 ## 관련 스킬
 
-- [latency-critical-systems](../latency-critical-systems/SKILL.md)
+- [latency-critical-systems](../latency-critical-systems/SKILL.md) — 프로세스 내부 핫패스 지연
 - [memory-check](../memory-check/SKILL.md)
 - [build-debug](../build-debug/SKILL.md)
 - [network-interface-health](../network-interface-health/SKILL.md)

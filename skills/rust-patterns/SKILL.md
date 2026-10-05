@@ -1,6 +1,6 @@
 ---
 name: rust-patterns
-description: 저지연 시스템용 이디엄틱 Rust 패턴. tokio 비동기, lock-free 자료구조, zero-copy, 트레이딩·실시간 데이터 컨텍스트에 최적화. 대상 경로 — **/*.rs. 키워드 — Rust, tokio, lock-free, zero-copy, 소유권.
+description: 저지연 시스템용 이디엄틱 Rust 패턴. 소유권, tokio 비동기, 에러 타입(thiserror·non_exhaustive), enum 상태 표현·newtype, trait 설계(정적·동적 디스패치·sealed·From/TryFrom), 빌더, lock-free, zero-copy. 대상 경로 — **/*.rs. 키워드 — Rust, tokio, lock-free, zero-copy, 소유권, 에러 enum, trait, 빌더, API Guidelines.
 ---
 
 # Rust 개발 패턴
@@ -68,6 +68,74 @@ pub enum FeedError {
 /* 애플리케이션: 컨텍스트 체인 (anyhow) */
 let feed = connect(addr).await.context("마켓 피드 연결 실패")?;
 ```
+
+에러 타입은 Rust API Guidelines의 C-GOOD-ERR를 따른다.
+
+- 공개 에러 타입은 `Error + Send + Sync + 'static`을 만족시킨다. `thiserror`가 이를 맞춰 준다.
+- 공개 에러 enum에는 `#[non_exhaustive]`를 붙인다. 변형을 추가해도 호환이 깨지지 않는다.
+- 원인 에러는 `#[source]`나 `#[from]`으로 연결한다. 메시지에 원인 문자열을 다시 붙이지 않는다.
+- 메시지는 소문자로 시작하고 마침표를 붙이지 않는다. 상위에서 맥락이 덧붙기 때문이다.
+- `()`나 `String`을 에러 타입으로 쓰지 않는다. 호출자가 분기할 수 없다.
+
+## enum으로 상태 표현
+
+플래그 조합 대신 상태별 enum을 쓴다. 불가능한 상태를 표현할 수 없게 된다(`rules/systems/philosophy.md` 4절).
+
+```rust
+/* BAD: is_connected·is_authed 조합 4가지 중 하나는 불가능한 상태 */
+struct Session { is_connected: bool, is_authed: bool, token: Option<Token> }
+
+/* GOOD: 상태마다 필요한 데이터만 가진다 */
+enum Session {
+    Disconnected,
+    Connected { stream: TcpStream },
+    Authed { stream: TcpStream, token: Token },
+}
+```
+
+- 경계에서 한 번 파싱해 newtype으로 만든다. `struct Price(u64)`는 `TryFrom<u64>`에서만 검증한다.
+- `match`는 와일드카드 `_` 대신 변형을 모두 적는다. 변형이 늘면 컴파일러가 알려 준다.
+- 바이트·정수 코드는 `TryFrom<u8>`으로 enum에 매핑한다. `as` 캐스트로 enum을 만들지 않는다.
+
+## trait 설계
+
+| 상황 | 선택 |
+|---|---|
+| 구현이 컴파일 타임에 정해지고 핫패스다 | 제네릭 `impl Trait` (정적 디스패치) |
+| 런타임에 구현을 고르거나 이종 컬렉션이 필요하다 | `Box<dyn Trait>` (동적 디스패치) |
+| 외부에서 구현하면 안 된다 | sealed trait (비공개 모듈의 `Sealed` 상위 trait) |
+| 외부 타입에 메서드를 더한다 | 확장 trait (`FooExt`) |
+
+- 변환은 표준 trait로 한다. 실패 없는 변환은 `From`, 실패 가능한 변환은 `TryFrom`이다(C-CONV-TRAITS).
+- 공개 타입은 의미가 있는 한 `Debug`·`Clone`·`PartialEq`·`Default`를 미리 구현한다(C-COMMON-TRAITS).
+- 테스트에서 바꿔 끼울 의존성(시계·전송·저장소)은 trait로 받는다. `rust-testing`의 mockall과 맞물린다.
+
+## 빌더
+
+선택 인자가 많은 생성자는 빌더로 바꾼다(C-BUILDER).
+
+```rust
+pub struct FeedConfig { addr: SocketAddr, recv_buf: usize, timeout: Duration }
+
+#[derive(Default)]
+pub struct FeedConfigBuilder { addr: Option<SocketAddr>, recv_buf: Option<usize>, timeout: Option<Duration> }
+
+impl FeedConfigBuilder {
+    pub fn addr(mut self, addr: SocketAddr) -> Self { self.addr = Some(addr); self }
+    pub fn recv_buf(mut self, size: usize) -> Self { self.recv_buf = Some(size); self }
+
+    pub fn build(self) -> Result<FeedConfig, ConfigError> {
+        Ok(FeedConfig {
+            addr: self.addr.ok_or(ConfigError::MissingAddr)?,
+            recv_buf: self.recv_buf.unwrap_or(DEFAULT_RECV_BUF),
+            timeout: self.timeout.unwrap_or(DEFAULT_TIMEOUT),
+        })
+    }
+}
+```
+
+- 필수 인자 누락은 `build()`의 `Result`로 알린다. 필수 인자가 하나면 빌더 생성자의 인자로 받는다.
+- 필수 인자 누락을 컴파일 타임에 막아야 하면 typestate 빌더를 검토한다. 타입이 늘어나므로 공개 API에만 쓴다.
 
 ## Lock-free 패턴
 

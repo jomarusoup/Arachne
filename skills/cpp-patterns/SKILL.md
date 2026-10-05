@@ -1,6 +1,6 @@
 ---
 name: cpp-patterns
-description: C++ Core Guidelines 다이제스트 — RAII·Rule of Zero/Five·값 의미론·스마트 포인터·concepts·동시성·예외 전략. 모던 C++(17/20) 작성·리뷰·리팩터링 시 참조. 대상 경로 — **/*.cpp, **/*.hpp, **/*.cc. 키워드 — C++ 패턴, RAII, 스마트 포인터, Rule of Five, concepts, Core Guidelines.
+description: C++ Core Guidelines 다이제스트 — 규칙 ID 색인(P·I·F·C·R·ES·E·Con·CP)·RAII·Rule of Zero/Five·값 의미론·스마트 포인터·concepts·동시성·예외 전략. 모던 C++(17/20) 작성·리뷰·리팩터링 시 참조. 대상 경로 — **/*.cpp, **/*.hpp, **/*.cc. 키워드 — C++ 패턴, RAII, 스마트 포인터, Rule of Five, concepts, Core Guidelines.
 ---
 
 # C++ 개발 패턴 (Core Guidelines 다이제스트)
@@ -32,6 +32,48 @@ description: C++ Core Guidelines 다이제스트 — RAII·Rule of Zero/Five·�
 3. **타입 안전** (P.4, I.4, ES.46-49) — 컴파일 타임에 오류 차단
 4. **의도 표현** (P.3, F.1, T.10) — 이름·타입·concept이 목적을 말하게
 5. **값 의미론 우선** (C.10, R.3-5, F.20) — 포인터 의미론보다 값 반환·스코프 객체
+
+## 규칙 ID 색인
+
+리뷰 코멘트에는 규칙 ID를 붙인다. 접두어로 영역을 찾고, 자주 쓰는 ID의 뜻을 한 줄로 확인한다.
+
+| 접두어 | 영역 | 자주 쓰는 ID → 뜻 |
+|---|---|---|
+| P | 철학 | P.1 의도를 코드로 표현 · P.4 정적 타입 안전 · P.8 자원 누수 금지 · P.10 가변보다 불변 |
+| I | 인터페이스 | I.2 비-const 전역 금지 · I.4 정밀한 강타입 인터페이스 · I.11 소유권을 원시 포인터로 넘기지 않음 |
+| F | 함수 | F.2 함수 하나에 동작 하나 · F.6 던지지 않으면 `noexcept` · F.16 작은 입력은 값, 큰 입력은 `const&` · F.20 출력은 반환값으로 |
+| C | 클래스 | C.20 Rule of Zero · C.21 Rule of Five · C.35 베이스 소멸자 규칙 · C.46 단일 인자 생성자 `explicit` |
+| R | 자원 | R.1 RAII로 자원 관리 · R.11 `new`/`delete` 직접 호출 금지 · R.20 소유는 `unique_ptr` 기본 · R.21 공유가 필요할 때만 `shared_ptr` |
+| ES | 표현식·문장 | ES.20 선언 즉시 초기화 · ES.45 매직 넘버 금지 · ES.47 `nullptr` · ES.48 캐스트 회피 |
+| E | 에러 처리 | E.2 실패는 예외로 알림(핫패스는 D03 에러 값) · E.6 RAII로 누수 방지 · E.15 값으로 던지고 참조로 받음 |
+| Con | 상수·불변 | Con.1 기본은 `const` · Con.2 멤버 함수는 기본 `const` · Con.5 컴파일 타임 값은 `constexpr` |
+| CP | 동시성 | CP.2 데이터 경쟁 금지 · CP.20 락은 RAII · CP.22 락 잡고 미지의 코드 호출 금지 · CP.44 lock guard에 이름 부여 |
+
+아래 예시는 하우스 스타일(함수 PascalCase, 멤버 `m_snake_case`)로 여러 ID를 한 번에 보여 준다.
+
+```cpp
+class OrderCache {
+public:
+    explicit OrderCache(std::size_t capacity);                 // C.46
+
+    [[nodiscard]] std::optional<Order> FindOrder(OrderId order_id) const;  // F.20, Con.2
+    void InsertOrder(const Order& order);                      // F.16
+
+private:
+    mutable std::mutex                  m_mutex;               // CP.50: 데이터와 함께
+    std::unordered_map<OrderId, Order>  m_orders;              // R.1: 소유는 값으로
+};
+
+std::optional<Order> OrderCache::FindOrder(OrderId order_id) const
+{
+    std::lock_guard<std::mutex> lock(m_mutex);                 // CP.20, CP.44
+    const auto iter = m_orders.find(order_id);                 // ES.20, Con.1
+    if (iter == m_orders.end()) {
+        return std::nullopt;
+    }
+    return iter->second;
+}
+```
 
 ## 인터페이스·함수 (I.*, F.*)
 
@@ -93,18 +135,18 @@ struct Employee {
 class Buffer {
 public:
     explicit Buffer(std::size_t size)
-        : data_(std::make_unique<char[]>(size)), size_(size) {}
+        : m_data(std::make_unique<char[]>(size)), m_size(size) {}
     ~Buffer() = default;
     Buffer(const Buffer& other)
-        : data_(std::make_unique<char[]>(other.size_)), size_(other.size_) {
-        std::copy_n(other.data_.get(), size_, data_.get());
+        : m_data(std::make_unique<char[]>(other.m_size)), m_size(other.m_size) {
+        std::copy_n(other.m_data.get(), m_size, m_data.get());
     }
     Buffer& operator=(const Buffer& other) {
         if (this != &other) {
-            auto new_data = std::make_unique<char[]>(other.size_);  // R.13: 예외 안전
-            std::copy_n(other.data_.get(), other.size_, new_data.get());
-            data_ = std::move(new_data);
-            size_ = other.size_;
+            auto new_data = std::make_unique<char[]>(other.m_size);  // R.13: 예외 안전
+            std::copy_n(other.m_data.get(), other.m_size, new_data.get());
+            m_data = std::move(new_data);
+            m_size = other.m_size;
         }
         return *this;
     }
@@ -112,8 +154,8 @@ public:
     Buffer& operator=(Buffer&&) noexcept = default;
 
 private:
-    std::unique_ptr<char[]> data_;
-    std::size_t             size_;
+    std::unique_ptr<char[]> m_data;
+    std::size_t             m_size;
 };
 
 // C.35 + C.128: 가상 소멸자 + override
@@ -125,11 +167,11 @@ public:
 
 class Circle : public Shape {
 public:
-    explicit Circle(double rr) : radius_(rr) {}
-    double Area() const override { return 3.14159 * radius_ * radius_; }
+    explicit Circle(double rr) : m_radius(rr) {}
+    double Area() const override { return 3.14159 * m_radius * m_radius; }
 
 private:
-    double radius_;
+    double m_radius;
 };
 ```
 
@@ -161,24 +203,24 @@ Render(widget.get());
 class FileHandle {
 public:
     explicit FileHandle(const std::string& path)
-        : handle_(std::fopen(path.c_str(), "r")) {
-        if (!handle_) throw std::runtime_error("open 실패: " + path);
+        : m_handle(std::fopen(path.c_str(), "r")) {
+        if (!m_handle) throw std::runtime_error("open 실패: " + path);
     }
-    ~FileHandle() { if (handle_) std::fclose(handle_); }
+    ~FileHandle() { if (m_handle) std::fclose(m_handle); }
     FileHandle(const FileHandle&)            = delete;
     FileHandle& operator=(const FileHandle&) = delete;
     FileHandle(FileHandle&& other) noexcept
-        : handle_(std::exchange(other.handle_, nullptr)) {}
+        : m_handle(std::exchange(other.m_handle, nullptr)) {}
     FileHandle& operator=(FileHandle&& other) noexcept {
         if (this != &other) {
-            if (handle_) std::fclose(handle_);
-            handle_ = std::exchange(other.handle_, nullptr);
+            if (m_handle) std::fclose(m_handle);
+            m_handle = std::exchange(other.m_handle, nullptr);
         }
         return *this;
     }
 
 private:
-    std::FILE* handle_;
+    std::FILE* m_handle;
 };
 ```
 
@@ -234,7 +276,7 @@ try {
 
 ## 동시성 (CP.*)
 
-- **CP.20 + CP.44**: 락은 RAII로, 반드시 **이름 있는** guard — `std::lock_guard<std::mutex>(m_);`은 즉시 소멸하는 버그
+- **CP.20 + CP.44**: 락은 RAII로, 반드시 **이름 있는** guard — `std::lock_guard<std::mutex>(m_mutex);`은 즉시 소멸하는 버그
 - **CP.21**: 다중 뮤텍스는 `std::scoped_lock` (데드락 프리)
 - **CP.22**: 락 잡은 채 미지의 코드(콜백) 호출 금지
 - **CP.42**: 조건 없는 `wait` 금지 — predicate와 함께
@@ -245,22 +287,22 @@ try {
 class ThreadSafeQueue {
 public:
     void Push(int value) {
-        std::lock_guard<std::mutex> lock(mutex_);           // CP.44: 이름 필수
-        queue_.push(value);
-        cv_.notify_one();
+        std::lock_guard<std::mutex> lock(m_mutex);           // CP.44: 이름 필수
+        m_queue.push(value);
+        m_cv.notify_one();
     }
     int Pop() {
-        std::unique_lock<std::mutex> lock(mutex_);
-        cv_.wait(lock, [this] { return !queue_.empty(); }); // CP.42: 조건과 함께
-        const int value = queue_.front();
-        queue_.pop();
+        std::unique_lock<std::mutex> lock(m_mutex);
+        m_cv.wait(lock, [this] { return !m_queue.empty(); }); // CP.42: 조건과 함께
+        const int value = m_queue.front();
+        m_queue.pop();
         return value;
     }
 
 private:
-    std::mutex              mutex_;     // CP.50: 뮤텍스는 데이터와 함께
-    std::condition_variable cv_;
-    std::queue<int>         queue_;
+    std::mutex              m_mutex;     // CP.50: 뮤텍스는 데이터와 함께
+    std::condition_variable m_cv;
+    std::queue<int>         m_queue;
 };
 ```
 
