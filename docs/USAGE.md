@@ -145,13 +145,13 @@ description: >-                    # 자동 발견 매칭 기준 — 경로·키
 ### 분류
 | 카테고리 | 스킬 |
 |---|---|
-| 시스템 프로그래밍 | `latency-critical-systems` `linux-system-network-programming` `trading-systems` `performance-profiling` `build-debug` `memory-check` `cpp-testing` `error-handling` |
+| 시스템 프로그래밍 | `latency-critical-systems` `linux-system-network-programming` `trading-systems` `performance-profiling` `build-debug` `memory-check` `cpp-testing` `error-handling` `c-server-patterns` `c-to-rust-migration` `operational-logging` |
 | 언어별 패턴·테스팅 | `cpp-patterns` `c-testing` `rust-patterns` `rust-testing` `rust-library-crate` `golang-patterns` `golang-testing` `go-http-patterns` `python-patterns` `python-testing` |
 | 백엔드·웹 | `backend-patterns` `frontend-patterns` `frontend-design-direction` `frontend-a11y` `design-system` `api-design` `fastapi-patterns` `make-interfaces-feel-better` `react-testing` `vite-patterns` |
-| 데이터·DB | `json-contracts` `database-migrations` `postgres-patterns` `redis-patterns` `embedded-sql` `sql-schema-versioning` |
+| 데이터·DB | `json-contracts` `database-migrations` `postgres-patterns` `redis-patterns` `embedded-sql` `sql-schema-versioning` `oracle-patterns` `c-data-structures` `shm-db-patterns` `api-contracts` |
 | 제품·기획·아키텍처 | `product-lens` `product-capability` `plan-orchestrate` `architecture-decision-records` `hexagonal-architecture` `agent-architecture-audit` |
 | 워크플로·보안·기타 | `tdd-workflow` `verification-loop` `research-routing` `security-review` `security-scan` `sensitive-data-handling` `naming-dictionary` `docker-patterns` `deployment-patterns` `agentic-engineering` |
-| 네트워크 | `network-interface-health` `data-throughput-accelerator` |
+| 네트워크·처리량 | `network-interface-health` `data-throughput-accelerator` `stream-pipeline-patterns` `load-testing` |
 
 ### 새 스킬 추가
 `skills/새스킬/SKILL.md` 생성 → `name`(디렉터리명 일치)·`description` frontmatter를 달고

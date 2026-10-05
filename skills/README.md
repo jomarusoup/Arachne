@@ -1,6 +1,6 @@
 # Skills
 
-Claude Code 세션에서 호출 가능한 워크플로·도메인 스킬 모음 (52개 현역 + archive/ 보관 9개).
+Claude Code 세션에서 호출 가능한 워크플로·도메인 스킬 모음 (61개 현역 + archive/ 보관 9개).
 
 ---
 
@@ -16,6 +16,9 @@ Claude Code 세션에서 호출 가능한 워크플로·도메인 스킬 모음 
 | `trading-systems` | FIX 프로토콜, 오더북, 마켓 데이터, rdtsc 측정 |
 | `performance-profiling` | pprof·perf·flamegraph 병목 분석 워크플로 |
 | `linux-system-network-programming` | POSIX·socket·epoll·signal·thread·fd 수명 체크리스트 |
+| `c-server-patterns` | C 서버 골격 — epoll 루프·모듈 수명(ops 테이블·역순 해제)·signalfd·마스터/워커 fork 후 정리·설정 재적재·graceful shutdown |
+| `c-to-rust-migration` | C→Rust 이식 판단·대응표·임베디드 SQL 대책(C 유지 + FFI)·점진 이식·FFI 안전 체크리스트 |
+| `operational-logging` | 운영 로그 — 레벨 기준·key=value 형식·거래 ID 추적(`logtrace.sh`)·비동기 링버퍼·폭주 억제·logrotate 재오픈 |
 | `naming-dictionary` | 프로젝트 네이밍 사전(`.arachne/naming-dict.tsv`) — 약어 원칙·식별자 구성 순서·신규 약어 등록·`naming-check` 보고 |
 
 ## 언어별 패턴·테스팅
@@ -52,9 +55,13 @@ Claude Code 세션에서 호출 가능한 워크플로·도메인 스킬 모음 
 
 | 스킬 | 설명 |
 |---|---|
-| `json-contracts` | Python(Pydantic v2)·TypeScript 간 JSON wire contract — datetime·Decimal·missing/null·schema versioning |
+| `json-contracts` | Python(Pydantic v2)·C 서버·TypeScript 간 JSON wire contract — datetime·Decimal·int64 문자열·char[N]·missing/null·schema versioning |
+| `api-contracts` | 계약 우선 설계 — 경계별 정본 하나(OpenAPI·C 헤더), 변경 절차·호환성 판정, 레이아웃 드리프트 검출, 스트림 계약(공유 테스트 벡터) |
 | `database-migrations` | Alembic migration 안전 운영 — expand-contract·CONCURRENTLY·backfill·forward-fix |
-| `postgres-patterns` | PostgreSQL 설계·운영 — 타입·제약·인덱스 선택·EXPLAIN 증거·pool/timeout·RLS |
+| `postgres-patterns` | PostgreSQL 설계·운영 — 타입·제약·인덱스 선택·EXPLAIN 증거·pool/timeout·대량 적재(COPY·파티셔닝)·RLS |
+| `oracle-patterns` | Oracle 설계·운영 — 실행 계획 증거·바인드 피킹·''=NULL·C 타입 매핑·시퀀스/IDENTITY·DRCP·대량 경로 |
+| `c-data-structures` | C 수신 저장소 자료구조 — 접근 패턴별 선택표(해시·정렬 배열 + bsearch·링버퍼·보조 인덱스)·고정 크기 레코드·CheckSorted |
+| `shm-db-patterns` | 공유메모리 ⇄ DB — 세그먼트 헤더 검증·robust 뮤텍스/시퀀스 락·호스트 배열 적재·write-back·정합성·복구 런북 |
 | `redis-patterns` | Redis 운영 — namespace·TTL jitter·stampede·negative cache·Lua/MULTI·lock token·Streams·fallback |
 | `embedded-sql` | Pro*C(Oracle)·ecpg(PostgreSQL) 임베디드 SQL — 호스트/인디케이터 변수·SQLCA·커서·프리컴파일 빌드 |
 | `sql-schema-versioning` | 도구 없는 `.sql` 스키마 버전 규약 — `V<번호>__`·`R__` 명명, 방언 디렉터리, `SCHEMA_HISTORY`, 적용 스크립트, 전진 수정 |
@@ -98,7 +105,9 @@ Claude Code 세션에서 호출 가능한 워크플로·도메인 스킬 모음 
 | 스킬 | 설명 |
 |---|---|
 | `network-interface-health` | 인터페이스 오류·CRC·플래핑 진단 |
-| `data-throughput-accelerator` | queue·batch·DB write·network I/O 처리량 병목 개선 |
+| `data-throughput-accelerator` | 처리량 원칙 허브 — 처리량 모델·버스트 버퍼 산정·흐름 제어·채널별 손실 정책·순서/갭/재동기화·배치·파티셔닝·관측성 |
+| `stream-pipeline-patterns` | 서버 파이프라인 구현(C 우선·Rust 대응) — SPSC 링버퍼·I/O 묶음·버퍼 풀·길이 prefix 프레이밍·팬아웃·스레드 고정 |
+| `load-testing` | 요청형(k6)·스트림형(전용 송신기) 부하 측정, coordinated omission 회피, 결과 표 양식, 처리량 PoC |
 
 ## 메타·하네스
 

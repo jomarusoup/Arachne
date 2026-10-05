@@ -80,7 +80,7 @@ let (tx, rx) = crossbeam::channel::bounded(4096);
 ```
 
 - 단일 생산자-소비자 전용 큐가 필요하면 SPSC 전용 크레이트 또는 직접 구현을 검토한다
-  (P3에서 `rules/systems/philosophy.md` 동시성 절로 연결 예정)
+  (조건: 단일 작성자·acquire/release·캐시라인 패딩·loom 검증 — [systems/philosophy.md 11절](../../rules/systems/philosophy.md#11-동시성))
 
 - `Mutex<T>` 대신 채널 또는 `Atomic*` 우선
 - 공유 상태가 불가피하면 `parking_lot::RwLock` (표준보다 빠름)

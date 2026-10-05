@@ -117,6 +117,14 @@ model: sonnet
   0건 갱신을 성공으로 처리하면 데이터 누락이 조용히 지나간다.
 - **트랜잭션 경계 불명확** — `COMMIT`·`ROLLBACK` 위치가 여러 함수에 흩어진다. 오류 경로에서
   `ROLLBACK` 없이 반환하거나, ecpg의 `autocommit` 설정을 모른 채 커밋을 가정한다.
+- **배열 FETCH 마지막 부분 배치 유실** — 배열 `FETCH` 루프에 `WHENEVER NOT FOUND DO break`를 쓰거나
+  NOT FOUND에서 바로 빠져나와, 마지막 FETCH가 채운 행을 처리하지 않는다. Pro*C `sqlca.sqlerrd[2]`는
+  누적 건수이므로 직전 값과의 차이로 배치 건수를 구하는지도 본다(ecpg는 이번 FETCH 건수).
+- **배열 DML 건수·부분 실패 미처리** — Pro*C 배열 `INSERT`·`UPDATE`에 `FOR :n`이 없어 배열 전체(쓰레기 행 포함)를
+  실행하거나, 오류 시 `sqlca.sqlerrd[2]`(실패 전 처리 행 수)로 롤백·불량 행 격리 중 하나를 하지 않는다.
+- **스레드 간 연결·컨텍스트 공유** — Pro*C를 `threads=yes` 없이 멀티스레드로 쓰거나, `sql_context` 하나를
+  여러 스레드가 동시에 쓰거나, SQL을 실행하는 함수에 `CONTEXT USE`·지역 `sqlca`가 없다.
+  ecpg는 스레드마다 고유 연결명과 `AT`를 쓰는지 확인한다.
 
 ### MEDIUM
 

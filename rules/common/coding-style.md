@@ -48,7 +48,7 @@ RETURNED    : 반환값 설명 (void·None이면 생략)
 위 표는 C/C++ 하우스 스타일이다. Rust는 Rust API Guidelines를, 기존 파일은 기존 관례를 따른다.
 
 공통 규칙:
-- 최대 30자. 약어는 프로젝트 사전 등록분만 (→ `naming-dictionary`)
+- 최대 30자. 약어는 프로젝트 사전 등록분만(→ `naming-dictionary`)
 - 길이는 스코프에 비례 — 루프 인덱스 `i`·`j`는 허용, 넓은 스코프의 `a`·`b` 같은 이름은 금지
 
 ## 변수 선언
@@ -70,4 +70,4 @@ RETURNED    : 반환값 설명 (void·None이면 생략)
 | prefix | 용도 |
 | --- | --- |
 | `[DEBUG]` | 임시 디버그 — 배포 전 반드시 제거 |
-| `[프로젝트명]` | 운영 경고·알림 — 유지 가능 |
+| `[프로젝트명]` | 운영 로그(→ `operational-logging`) |

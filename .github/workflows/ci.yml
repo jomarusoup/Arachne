@@ -46,6 +46,20 @@ jobs:
       - name: 숨은 유니코드 (지시 파일)
         run: bash tests/check_unicode_safety.sh
 
+      - name: Node (TS 디코더·클라이언트 예제용 타입 제거 실행)
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+
+      - name: C 시스템 템플릿 빌드·테스트 (Linux — robust 뮤텍스 등 리눅스 전용 경로 포함)
+        run: |
+          for dir in shm log pipeline contract; do
+            make -C "templates/project/c-system/src/${dir}" test
+          done
+          make -C templates/project/c-system/src/contract ts-test layout
+          make -C templates/project/c-system/examples/ffi-rust test
+          make -C templates/project/throughput-poc
+
   # 데이터 계약 게이트 — uv 가용 환경에서 alembic·pytest 실행 검증까지 수행
   # (다른 job 의 bats 는 uv 가 없어 정적 계약 검사만 수행)
   verify-data-contract:
