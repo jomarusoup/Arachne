@@ -175,3 +175,19 @@ EOF
     [ "$status" -eq 1 ]
     [[ "$output" == *"적용 이력 출처 필요"* ]]
 }
+
+@test "apply-schema: PostgreSQL 은 스키마 변경과 이력 INSERT 를 한 트랜잭션(BEGIN…COMMIT)으로 묶음" {
+    make_sql postgres V1__one.sql "CREATE TABLE a (id int);"
+    export SQL_CLIENT="cat >> ${TMP_DIR}/stream.log"
+    run bash "${SCRIPT}" --dialect postgres --dir "${SQL_DIR}" --empty-db
+    [ "$status" -eq 0 ]
+    local begin_line ddl_line insert_line commit_line
+    begin_line=$(grep -n '^BEGIN;' "${TMP_DIR}/stream.log" | head -1 | cut -d: -f1)
+    ddl_line=$(grep -n 'CREATE TABLE a' "${TMP_DIR}/stream.log" | head -1 | cut -d: -f1)
+    insert_line=$(grep -n 'INSERT INTO SCHEMA_HISTORY' "${TMP_DIR}/stream.log" | head -1 | cut -d: -f1)
+    commit_line=$(grep -n '^COMMIT;' "${TMP_DIR}/stream.log" | head -1 | cut -d: -f1)
+    [ -n "${begin_line}" ]
+    [ "${begin_line}" -lt "${ddl_line}" ]
+    [ "${ddl_line}" -lt "${insert_line}" ]
+    [ "${insert_line}" -lt "${commit_line}" ]
+}

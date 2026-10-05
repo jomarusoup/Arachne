@@ -69,12 +69,12 @@ run_check() {
 }
 
 @test "naming: 30자 초과 식별자 보고, 30자 이하는 통과" {
-    # 31자, 30자
-    printf 'int OrdQtyPrcTsSeqRecAddrPtrSegA;\nint OrdQtyPrcTsSeqRecAddrPtrSeg1;\n' > "${PROJ}/src/a.c"
+    # 31자, 30자 (bash 3.2 는 [[ ]] 실패로 테스트를 멈추지 않으므로 grep 으로 단정한다)
+    printf 'int OrdQtyPrcTsSeqRecAddrPtrSegCntA;\nint OrdQtyPrcTsSeqRecAddrPtrSegCnt;\n' > "${PROJ}/src/a.c"
     run_check --all
     [ "$status" -eq 0 ]
-    [[ "$output" == *"길이초과"*"OrdQtyPrcTsSeqRecAddrPtrSegA"*"31자"* ]]
-    [[ "$output" != *"OrdQtyPrcTsSeqRecAddrPtrSeg1 —"* ]]
+    printf '%s\n' "$output" | grep -q '길이초과.*OrdQtyPrcTsSeqRecAddrPtrSegCntA.*31자'
+    [ "$(printf '%s\n' "$output" | grep -c '길이초과')" -eq 1 ]
 }
 
 @test "naming: --strict 는 경고가 있으면 1, 없으면 0" {
@@ -145,4 +145,20 @@ EOF
     [ "$status" -eq 0 ]
     [[ "$output" == *"추출=ctags"* ]]
     [[ "$output" == *"미등록약어"*"GetUsrName"* ]]
+}
+
+@test "naming: C 관용 짧은 이름(ret·env·fp·cb·sig·fd)은 미등록 약어로 보지 않음" {
+    printf 'int RunTask(int fd, int sig)\n{\n    int ret = 0;\n    char *env = 0;\n    void *fp = 0;\n    void *cb = 0;\n    return ret;\n}\n' > "${PROJ}/src/a.c"
+    run_check --all
+    [ "$status" -eq 0 ]
+    [[ "$output" != *"'ret'"* ]]
+    [[ "$output" != *"'env'"* ]]
+    [[ "$output" != *"'sig'"* ]]
+}
+
+@test "naming: 여러 파일을 한 번에 검사해도 파일·줄 위치가 정확함" {
+    printf 'int Ok(void);\n' > "${PROJ}/src/a.c"
+    printf '\n\nint GetUsrName(void);\n' > "${PROJ}/src/b.c"
+    run_check --all
+    [[ "$output" == *"src/b.c:3"* ]]
 }

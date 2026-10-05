@@ -283,6 +283,11 @@ HistoryInsertSql() {
 # DESCRIPTION : 파일 하나와 이력 기록을 한 입력 스트림으로 SQL_CLIENT 에 보낸다.
 #               방언별 머리말이 첫 오류에서 클라이언트를 비정상 종료시키므로
 #               실패하면 이력 INSERT 는 실행되지 않는다.
+#               PostgreSQL 은 DDL 도 트랜잭션에 들어가므로 BEGIN 으로 스키마 변경과
+#               이력 INSERT 를 한 트랜잭션에 묶는다(둘 중 하나가 실패하면 함께 롤백).
+#               Oracle 은 DDL 이 자동 커밋되는 DB 자체의 한계로 이렇게 묶을 수 없다.
+#               DDL 성공 뒤 이력 INSERT 가 실패하면 스키마는 반영됐는데 이력만 빠진
+#               상태가 되므로, 오류 메시지를 보고 SCHEMA_HISTORY 를 수동으로 맞춘다.
 # PARAMETERS  : string kind - V 또는 R
 #               string key  - 버전 번호 또는 R__<설명>
 #               string base - 파일명
@@ -296,7 +301,7 @@ ApplyOne() {
         if [ "${DIALECT}" = "oracle" ]; then
             printf 'WHENEVER SQLERROR EXIT FAILURE ROLLBACK\nWHENEVER OSERROR EXIT FAILURE ROLLBACK\n'
         else
-            printf '\\set ON_ERROR_STOP on\n'
+            printf '\\set ON_ERROR_STOP on\nBEGIN;\n'
         fi
         cat "${path}"
         printf '\n'
