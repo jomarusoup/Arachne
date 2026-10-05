@@ -239,7 +239,7 @@ try {
 - **CP.22**: 락 잡은 채 미지의 코드(콜백) 호출 금지
 - **CP.42**: 조건 없는 `wait` 금지 — predicate와 함께
 - **CP.8**: `volatile`은 동기화 수단이 아니다 (하드웨어 I/O 전용)
-- **CP.100**: lock-free는 최후 수단 (P3에서 `rules/systems/philosophy.md` 동시성 절로 연결 예정)
+- **CP.100**: lock-free는 최후 수단 — 허용 범위·검증 조건은 [systems/philosophy.md 11절](../../rules/systems/philosophy.md#11-동시성)
 
 ```cpp
 class ThreadSafeQueue {

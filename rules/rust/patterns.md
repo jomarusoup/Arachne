@@ -13,8 +13,9 @@ paths:
 
 ## 소유권·빌림
 
-- 함수는 소유권이 필요할 때만 값으로 받고, 읽기만 하면 `&T`, 변경은 `&mut T`
-- 불필요한 `.clone()` 금지 — 빌림으로 해결 가능한지 먼저 검토
+- 소유권은 시그니처로 말한다: 소유 이전은 `T`, 읽기 대여는 `&T`, 쓰기 대여는 `&mut T`
+- `.clone()`으로 컴파일 에러를 피했다면 설계 신호로 본다 — 소유 구조부터 재검토하고, 핫패스에서는 사유 없는 복제를 두지 않는다
+- borrow checker와 반복해 충돌하면 문법으로 우회하지 말고 소유 구조를 재설계한다
 - 라이프타임은 명시가 가독성을 높일 때만 표기, 나머지는 생략(elision) 활용
 
 ```rust
@@ -39,7 +40,14 @@ async fn run(mut feed: MarketFeed, cancel: CancellationToken) -> Result<()> {
 ```
 
 - 모든 태스크에 취소 토큰·셧다운 경로 명시 (좀비 태스크 방지)
-- 핫패스에서 `.await` 지점 최소화 — CPU 바운드 연산은 `spawn_blocking` 분리
+- async 코드에서 블로킹 호출(동기 I/O·`std::thread::sleep`·긴 CPU 연산·`std::sync::Mutex`를 잡은 채 `.await`)을 하지 않는다 — `spawn_blocking` 또는 전용 스레드로 분리
+- Tokio는 관리·수집·I/O 주변부에 쓰고, 핫패스는 전용 스레드로 둔다(D13)
+
+## 공유 상태
+
+- `Send`/`Sync` 경계는 설계 단계에서 정한다. `unsafe impl Send/Sync`는 `// SAFETY:` 논증이 있을 때만
+- `Arc<Mutex<T>>`가 코드 전반에 퍼지면 소유 구조 재설계 신호다 — 채널로 소유권을 넘기거나 단일 작성자 스레드로 모은다
+- 원칙은 [systems/philosophy.md](../systems/philosophy.md) 11절
 
 ## 에러 처리 (thiserror / anyhow)
 
