@@ -1,12 +1,16 @@
 # 테스팅 규칙
 
-## 최소 커버리지: 80%
+## 테스트 강제 기준
+
+- 기능과 테스트는 같은 변경에 작성한다.
+- 버그 수정은 버그를 재현하는 실패 테스트로 시작한다.
+- 커버리지 80%는 신규 모듈의 게이트다. 레거시 수정은 변경한 라인을 테스트로 덮는다.
 
 ## 테스트 유형 (모두 필요)
 
 단위 · 통합 · E2E · **메모리**(누수·오염·레이스 — 시스템 프로그래밍에서 필수).
 
-## TDD 워크플로 (필수)
+## TDD 워크플로
 
 ```
 1. 실패하는 테스트 작성 (RED)
@@ -14,7 +18,7 @@
 3. 최소 구현으로 통과 (GREEN)
 4. 테스트 실행 → 통과 확인
 5. 리팩터링 (REFACTOR)
-6. 커버리지 80%+ 확인
+6. 커버리지 확인 (신규 모듈 80%+)
 ```
 
 ## AAA 패턴
@@ -34,14 +38,9 @@
 시스템 프로그래밍 코드에서 필수:
 
 ```bash
-# valgrind — 메모리 누수·오염
-valgrind --leak-check=full --error-exitcode=1 ./test_binary
-
-# AddressSanitizer — 컴파일 타임 메모리 검사
-gcc -fsanitize=address -o test_binary test.c && ./test_binary
-
-# ThreadSanitizer — 레이스 컨디션
-gcc -fsanitize=thread -o test_binary test.c && ./test_binary
+valgrind --leak-check=full --error-exitcode=1 ./test_bin  # 누수·오염
+gcc -fsanitize=address -o test_bin test.c && ./test_bin   # ASan
+gcc -fsanitize=thread -o test_bin test.c && ./test_bin    # TSan 레이스
 ```
 
 ## 테스트 실패 대응

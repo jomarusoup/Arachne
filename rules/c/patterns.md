@@ -40,13 +40,13 @@ cleanup:
 
 ```c
 /* header: conn.h */
-typedef struct Conn_t Conn_t;
-Conn_t *ConnCreate(const char *host, int port);
-void    ConnDestroy(Conn_t *conn);
-int     ConnSend(Conn_t *conn, const void *data, size_t len);
+typedef struct Conn Conn;
+Conn *ConnCreate(const char *host, int port);
+void  ConnDestroy(Conn *conn);
+int   ConnSend(Conn *conn, const void *data, size_t len);
 
 /* source: conn.c */
-struct Conn_t {
+struct Conn {
     int    fd;
     char   host[256];
     int    port;
@@ -63,9 +63,9 @@ typedef enum
     ERR_NULL_PTR  = -1,
     ERR_NO_MEM    = -2,
     ERR_IO        = -3,
-} ErrCode_t;
+} ErrCode;
 
-ErrCode_t ParseData(const char *input, Data_t *out)
+ErrCode ParseData(const char *input, Data *out)
 {
     if (!input || !out) { return ERR_NULL_PTR; }
     /* ... */
@@ -78,24 +78,24 @@ ErrCode_t ParseData(const char *input, Data_t *out)
 함수 포인터로 동작 주입:
 
 ```c
-typedef void (*EventHandler_t)(int event, void *ctx);
+typedef void (*EventHandler)(int event, void *ctx);
 
 typedef struct
 {
-    EventHandler_t  on_connect;
-    EventHandler_t  on_disconnect;
-    void           *ctx;
-} EventLoop_t;
+    EventHandler   on_connect;
+    EventHandler   on_disconnect;
+    void          *ctx;
+} EventLoop;
 ```
 
 ## 싱글톤 (프로세스 전역 상태)
 
 ```c
 /* 모듈 내부에서만 접근 가능한 전역 상태 */
-static ServerState_t g_State = {0};
-static bool          g_Initialized = false;
+static ServerState g_State = {0};
+static bool        g_Initialized = false;
 
-int ServerInit(const Config_t *cfg)
+int ServerInit(const Config *cfg)
 {
     if (g_Initialized) { return -1; }
     /* ... 초기화 ... */

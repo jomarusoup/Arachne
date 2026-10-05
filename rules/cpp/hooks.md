@@ -17,7 +17,7 @@ paths:
 clang-format --dry-run --Werror src/*.cpp src/*.hpp
 
 # 정적 분석
-clang-tidy src/*.cpp -- -std=c++17
+clang-tidy src/*.cpp -- -std=c++20
 cppcheck --enable=all src/
 
 # 빌드

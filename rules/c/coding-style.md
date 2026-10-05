@@ -9,12 +9,13 @@ paths:
 
 ## 헤더 형식
 
+파일 헤더에는 날짜 필드를 두지 않는다(이력은 git이 정본). 함수 헤더는 공개 API와
+동작이 자명하지 않은 함수에만 둔다.
+
 ```c
 /*#############################################################################
 FILE NAME   : 파일명.c
 DESCRIPTION : 파일 역할 한 줄 요약
-DATA        : YYYY-MM-DD
-Modification: YYYY-MM-DD
 #############################################################################*/
 
 /*=============================================================================
@@ -51,7 +52,7 @@ void ProcessData(int value)
 - 함수명: `PascalCase` (`OpenConnection`, `ParseHeader`)
 - 전역 변수: `g_SnakeCase` (`g_ServerFd`, `g_IsRunning`)
 - 상수·매크로: `SCREAMING_SNAKE_CASE` (`MAX_BUF_SIZE`, `SOCK_PATH`)
-- 구조체 타입: `PascalCase` + `_t` 접미사 (`ConnInfo_t`, `MsgHeader_t`)
+- 구조체·typedef 타입: `PascalCase`, 접미사 없음 (`ConnInfo`, `MsgHeader`). `_t` 접미사는 POSIX 예약이라 쓰지 않는다
 - 열거형: `SCREAMING_SNAKE_CASE` (`STATE_IDLE`, `STATE_RUNNING`)
 
 ## 변수 선언
@@ -98,7 +99,8 @@ int OpenFile(const char *path, int *out_fd)
 ## 포인터
 
 - 포인터 선언 시 `*`는 변수명 쪽에 붙임: `int *ptr` (타입 쪽 금지: `int* ptr`)
-- 함수 인자로 포인터 전달 시 NULL 체크 필수
+- 외부 경계(공개 API·외부 입력)로 들어온 포인터는 NULL을 검사해 에러를 반환한다
+- 내부 함수의 포인터 전제는 불변식이므로 `assert()`로 표현한다
 - 포인터 해제 후 `NULL` 대입
 
 ```c

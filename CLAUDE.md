@@ -60,7 +60,7 @@ Claude Code가 이를 네이티브로 자동 로드한다:
 │   ├── common/                      # 언어 무관 공통 규칙 (10개 — 9개 매 세션 로드, hooks.md는 paths 지연 — 최소 유지)
 │   │   ├── workflow.md              # 전역 행동 규칙 — Claude 단독 운용 (다이제스트)
 │   │   ├── coding-style.md          # 헤더 구조·네이밍·포매팅 공통 원칙
-│   │   ├── patterns.md              # SRP·불변성·에러 처리
+│   │   ├── patterns.md              # SRP·가변 상태·파일 정리
 │   │   ├── agents.md                # 에이전트 목록·활성화 기준
 │   │   ├── development-workflow.md  # 조사→설계→TDD→리뷰→커밋
 │   │   ├── git-workflow.md          # 커밋 형식·브랜치·PR

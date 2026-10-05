@@ -1,12 +1,9 @@
 # 공통 패턴
 
-## 불변성 (매우 중요)
-항상 새로운 객체를 생성하고, 기존 객체를 절대 변경하지 마십시오.
+## 가변 상태
 
-// Pseudocode
-WRONG:  modify(original, field, value) → changes original in-place
-CORRECT: update(original, field, value) → returns new copy with change
-근거: 불변 데이터는 숨겨진 부작용을 방지하고, 디버깅을 용이하게 하며, 안전한 동시성을 가능하게 합니다.
+공유 가변 상태는 최소화한다. 가변 상태에는 소유자를 하나만 두고, 변경 범위를 명확히 한다.
+언어별 세부(JS·Python 불변 갱신 등)는 `rules/<언어>/patterns.md`를 따른다.
 
 ## 파일 정리
 

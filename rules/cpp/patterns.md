@@ -46,9 +46,12 @@ private:
 /* 선택적 값 */
 std::optional<Config> LoadConfig(const std::string &path);
 
-/* 예상된 실패 (C++23) */
+/* 예상된 실패 — std::expected 는 C++23, C++20 에서는 tl::expected 로 대체 */
 std::expected<Data, Error> ParseData(std::string_view input);
 ```
+
+- 비핫패스는 예외를 쓸 수 있다.
+- 핫패스 함수는 `noexcept`로 선언하고 실패를 에러 값(`expected`·에러 코드)으로 반환한다.
 
 ## 의존성 주입
 
@@ -58,10 +61,10 @@ class Server
 public:
     explicit Server(std::unique_ptr<ITransport> transport,
                     std::shared_ptr<ILogger>    logger)
-        : transport_(std::move(transport))
-        , logger_(std::move(logger)) {}
+        : m_transport(std::move(transport))
+        , m_logger(std::move(logger)) {}
 private:
-    std::unique_ptr<ITransport> transport_;
-    std::shared_ptr<ILogger>    logger_;
+    std::unique_ptr<ITransport> m_transport;
+    std::shared_ptr<ILogger>    m_logger;
 };
 ```

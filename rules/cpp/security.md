@@ -20,7 +20,8 @@ paths:
 ## 버퍼 오버플로
 
 - `char *` 대신 `std::string`
-- 경계 검사가 필요한 경우 `.at()` 사용
+- 경계 검사: 핫패스가 아니면 `.at()`을 허용한다
+- 핫패스는 인덱스를 사전 검증한 뒤 `operator[]` 또는 `std::span`을 쓰고, 전제는 `assert`로 표현한다
 - `strcpy`, `strcat`, `sprintf` 금지 → `std::string` 또는 `fmt::format`
 
 ## 미정의 동작 방지
