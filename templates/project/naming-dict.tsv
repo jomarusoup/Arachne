@@ -1,0 +1,30 @@
+표준 단어	허용 약어	의미	금지 동의어	분류
+# 공통 기본 약어 — 프로젝트 사전은 .arachne/naming-dict.tsv 로 복사해 소유한다.
+# 열은 탭으로 구분한다. 허용 약어·금지 동의어는 쉼표로 여러 개 적을 수 있다.
+# 규약 정본: skills/naming-dictionary/SKILL.md
+count	Cnt	개수	cnts	공통
+length	Len	바이트·문자 길이	lngth	공통
+index	Idx	배열·목록 위치	indx	공통
+buffer	Buf	임시 저장 메모리	buff,bfr	공통
+message	Msg	주고받는 메시지	mesg,mssg	통신
+request	Req	요청	rqst	통신
+response	Rsp	응답	resp,res	통신
+sequence	Seq	순번	sqn,sequ	공통
+account	Acct	계좌·계정	acc,accnt	업무
+order	Ord	주문	ordr	업무
+price	Prc	가격	prce	업무
+quantity	Qty	수량	quan,qnty	업무
+timestamp	Ts	시각(에포크·일시)	tstamp,tmstmp	공통
+config	Cfg	설정	conf,cnf	공통
+connection	Conn	연결	cnx,cnct	통신
+error	Err	오류	erro	공통
+temporary	Tmp	임시 값	temp	공통
+initialize	Init	초기화	initialise	공통
+maximum	Max	최댓값	mx	공통
+minimum	Min	최솟값	mn	공통
+number	Num	번호	nbr,numb	공통
+address	Addr	주소	adr,adrs	공통
+pointer	Ptr	포인터	pntr	공통
+segment	Seg	공유메모리 세그먼트	sgmt	시스템
+record	Rec	레코드	rcd	데이터
+# ---- 프로젝트 영역 (아래에 프로젝트 고유 단어를 추가한다) ----

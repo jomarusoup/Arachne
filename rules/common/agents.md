@@ -13,7 +13,8 @@
 | `python-reviewer` | PEP 8·타입 힌트·보안·이디엄 Python 리뷰 | `.py` 코드 변경 직후 |
 | `fastapi-reviewer` | async·DI·스키마·API 보안 리뷰 | FastAPI 엔드포인트 변경 직후 |
 | `react-reviewer` | 렌더·Hooks·a11y·XSS·성능 리뷰 | `.jsx`·`.tsx` 등 웹 코드 변경 직후 |
-| `database-reviewer` | DB schema·쿼리·migration·ORM 리뷰 (read-first) | migration·SQL·ORM 모델·repository 변경 직후 |
+| `typescript-reviewer` | async·타입 설계·Node 보안·바이너리 리뷰 | `.ts`·`.tsx`·Electron 변경 직후 |
+| `database-reviewer` | DB schema·쿼리·migration·ORM·임베디드 SQL 리뷰 | migration·SQL·Pro*C·ecpg·repository 변경 직후 |
 
 ## 즉시 활성화 기준
 
@@ -28,22 +29,13 @@
 | 신규 기능 구현 시작 | **tdd** |
 | `.py` 변경 (FastAPI면 `fastapi-reviewer`) | **python-reviewer** |
 | `.jsx`·`.tsx`·React/Next 변경 | **react-reviewer** |
-| migration·SQL·ORM 모델·repository 변경 | **database-reviewer** |
+| `.ts`·`.tsx`·Node·Electron 변경 | **typescript-reviewer** |
+| migration·SQL·`.pc`·`.pgc`·repository 변경 | **database-reviewer** |
 
 ## 병렬 실행
 
-독립적인 작업은 병렬로 에이전트 실행:
-
-```
-# GOOD: 병렬 실행
-에이전트 3개 동시 실행:
-1. Agent 1 — ipc 모듈 보안 분석
-2. Agent 2 — daemon 모듈 성능 검토
-3. Agent 3 — config 파싱 코드 리뷰
-
-# BAD: 독립 작업을 순차 실행
-Agent 1 완료 후 → Agent 2 → Agent 3
-```
+독립적인 작업(예: ipc 보안 분석·daemon 성능 검토·config 파싱 리뷰)은 에이전트를 한 번에
+병렬로 실행한다. 순차 실행은 앞 결과가 뒤 작업의 입력일 때만 쓴다.
 
 ## 서브에이전트 규칙 도달 범위 (2026-09-13·10-05 실검증)
 

@@ -1,6 +1,6 @@
 # Skills
 
-Claude Code 세션에서 호출 가능한 워크플로·도메인 스킬 모음 (47개 현역 + archive/ 보관 9개).
+Claude Code 세션에서 호출 가능한 워크플로·도메인 스킬 모음 (52개 현역 + archive/ 보관 9개).
 
 ---
 
@@ -16,6 +16,7 @@ Claude Code 세션에서 호출 가능한 워크플로·도메인 스킬 모음 
 | `trading-systems` | FIX 프로토콜, 오더북, 마켓 데이터, rdtsc 측정 |
 | `performance-profiling` | pprof·perf·flamegraph 병목 분석 워크플로 |
 | `linux-system-network-programming` | POSIX·socket·epoll·signal·thread·fd 수명 체크리스트 |
+| `naming-dictionary` | 프로젝트 네이밍 사전(`.arachne/naming-dict.tsv`) — 약어 원칙·식별자 구성 순서·신규 약어 등록·`naming-check` 보고 |
 
 ## 언어별 패턴·테스팅
 
@@ -40,6 +41,8 @@ Claude Code 세션에서 호출 가능한 워크플로·도메인 스킬 모음 
 | `frontend-patterns` | React·Next 합성·상태·가상화·a11y·React 19(서버 컴포넌트·액션·낙관적 UI) |
 | `frontend-design-direction` | UI 구현 전 목적·사용자·톤·밀도·시각 방향 결정 |
 | `frontend-a11y` | 키보드·focus·semantic HTML·label·contrast·motion 접근성 |
+| `react-testing` | RTL 쿼리 우선순위·userEvent·MSW·renderHook·외부 스토어 테스트 |
+| `vite-patterns` | Vite 프록시(`ws: true`)·`VITE_` 공개 값 규칙·빌드·Electron 렌더러 빌드 |
 | `design-system` | spacing·radius·color·typography·component state 토큰 관리 |
 | `api-design` | REST 설계 — 리소스 네이밍·상태 코드·봉투·커서/오프셋 페이지네이션·버전·레이트리밋 |
 | `fastapi-patterns` | FastAPI 프로덕션 — 앱 팩토리·DI·스키마 분리·async·중앙 에러 핸들러·테스트 |
@@ -54,6 +57,7 @@ Claude Code 세션에서 호출 가능한 워크플로·도메인 스킬 모음 
 | `postgres-patterns` | PostgreSQL 설계·운영 — 타입·제약·인덱스 선택·EXPLAIN 증거·pool/timeout·RLS |
 | `redis-patterns` | Redis 운영 — namespace·TTL jitter·stampede·negative cache·Lua/MULTI·lock token·Streams·fallback |
 | `embedded-sql` | Pro*C(Oracle)·ecpg(PostgreSQL) 임베디드 SQL — 호스트/인디케이터 변수·SQLCA·커서·프리컴파일 빌드 |
+| `sql-schema-versioning` | 도구 없는 `.sql` 스키마 버전 규약 — `V<번호>__`·`R__` 명명, 방언 디렉터리, `SCHEMA_HISTORY`, 적용 스크립트, 전진 수정 |
 
 ## TDD·검증
 
@@ -80,6 +84,7 @@ Claude Code 세션에서 호출 가능한 워크플로·도메인 스킬 모음 
 |---|---|
 | `security-review` | 보안 리뷰 체크리스트 |
 | `security-scan` | Claude Code 설정 보안 스캔 |
+| `sensitive-data-handling` | 비밀값·개인정보 기술적 통제 — 최소 수집·파기, 로그·코어 덤프 마스킹, 저장 암호화, argon2id 해시, 합성 테스트 데이터 |
 
 ## 인프라
 

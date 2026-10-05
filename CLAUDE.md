@@ -25,7 +25,8 @@ Claude Code가 이를 네이티브로 자동 로드한다:
 │   ├── python-reviewer.md           # Python 특화 코드 리뷰 (model: sonnet)
 │   ├── fastapi-reviewer.md          # FastAPI async·DI·API 리뷰 (model: sonnet)
 │   ├── react-reviewer.md            # React/Next 렌더·a11y·XSS 리뷰 (model: sonnet)
-│   └── database-reviewer.md         # DB schema·쿼리·migration 리뷰 (model: sonnet)
+│   ├── typescript-reviewer.md       # TS async·타입 설계·Node 보안·바이너리 처리 리뷰 (model: sonnet)
+│   └── database-reviewer.md         # DB schema·쿼리·migration·임베디드 SQL 리뷰 (model: sonnet)
 │
 ├── commands/                        # 슬래시 커맨드 (/명령어)
 │   ├── add.md                       # /add        — 기능 추가
@@ -42,6 +43,7 @@ Claude Code가 이를 네이티브로 자동 로드한다:
 │   ├── python-review.md             # /python-review — Python 코드 리뷰
 │   ├── fastapi-review.md            # /fastapi-review — FastAPI 리뷰
 │   ├── react-review.md              # /react-review — React/Next 리뷰
+│   ├── ts-review.md                 # /ts-review  — TypeScript 리뷰
 │   ├── database-review.md           # /database-review — DB schema·migration 리뷰
 │   ├── tdd.md                       # /tdd        — TDD 사이클
 │   ├── e2e.md                       # /e2e        — E2E 테스트
@@ -77,7 +79,8 @@ Claude Code가 이를 네이티브로 자동 로드한다:
 │   ├── java/       # Java/Spring Boot (coding-style·hooks·patterns·security·testing)
 │   ├── rust/       # Rust (coding-style·hooks·patterns·security·testing)
 │   ├── python/     # Python (coding-style·hooks·patterns·security·testing·fastapi·data-handling)
-│   ├── web/        # 웹 디자인 품질·UI 레이아웃 (design-quality·ui-layout)
+│   ├── web/        # 웹 디자인 품질·UI 레이아웃·보안·성능 (design-quality·ui-layout·security·performance)
+│   ├── react/      # React (coding-style·patterns·testing)
 │   ├── docker/     # Docker/Compose (coding-style·hooks·patterns·security·testing)
 │   ├── javascript/ # JS/TS (coding-style·hooks·patterns·security·testing)
 │   └── bash/       # Bash/Shell (coding-style·hooks·patterns·security·testing)
@@ -86,21 +89,24 @@ Claude Code가 이를 네이티브로 자동 로드한다:
 │   ├── bash_profile                 # → ~/.bash_profile (sgrep 등 유틸 포함)
 │   └── vimrc                        # → ~/.vimrc
 │
-├── skills/                          # 워크플로·도메인 스킬 (47개 현역, README.md 참고 — 비활성 도메인은 archive/)
+├── skills/                          # 워크플로·도메인 스킬 (52개 현역, README.md 참고 — 비활성 도메인은 archive/)
 │   │                                # 각 스킬은 skills/<이름>/SKILL.md (Agent Skills 표준 포맷)
 │   ├── build-debug / memory-check                                   # Harness 전용
 │   ├── cpp-patterns / cpp-testing / c-testing / embedded-sql        # C/C++·임베디드 SQL
+│   ├── naming-dictionary                                            # 네이밍 사전·검사
 │   ├── latency-critical-systems / error-handling
 │   ├── trading-systems / performance-profiling
 │   ├── golang-patterns / golang-testing / go-http-patterns
 │   ├── rust-patterns / rust-testing / rust-library-crate
 │   ├── python-patterns / python-testing                             # Python
 │   ├── backend-patterns / frontend-patterns / make-interfaces-feel-better  # 백엔드·웹
+│   ├── react-testing / vite-patterns                                # React 테스트·Vite
 │   ├── api-design / fastapi-patterns                                  # API·FastAPI
 │   ├── database-migrations / postgres-patterns / json-contracts     # 데이터·DB
+│   ├── sql-schema-versioning                                        # 도구 없는 .sql 버전 규약
 │   ├── agentic-engineering                                          # 메타·하네스
 │   ├── tdd-workflow / verification-loop
-│   ├── security-review / security-scan
+│   ├── security-review / security-scan / sensitive-data-handling
 │   ├── docker-patterns
 │   └── network-interface-health / data-throughput-accelerator
 ├── mcp-configs/                     # MCP 서버 설정 템플릿 (github·filesystem)

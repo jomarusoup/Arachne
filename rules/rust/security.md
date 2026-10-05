@@ -33,14 +33,60 @@ let tick = unsafe { buf.get_unchecked(idx) };
 - **적대적 입력 방어는 퍼징으로** — 파서·역직렬화는 `cargo fuzz` 로 패닉·UB·DoS
   (무한루프·과대 할당) 를 상시 검출 (`rules/rust/testing.md`)
 
+## SQL 바인드 파라미터
+
+쿼리 문자열에 값을 `format!`으로 끼워 넣지 않는다. sqlx는 PostgreSQL의 `$1`, `$2` 자리표시자에 값을 바인드한다.
+`query!` 매크로는 컴파일 시점에 스키마까지 검증한다. 정렬 컬럼처럼 바인드할 수 없는 식별자는 열거형으로 받는다.
+
+```rust
+let user = sqlx::query_as::<_, User>("SELECT id, name FROM users WHERE email = $1")
+    .bind(email.as_str())
+    .fetch_optional(&pool)
+    .await?;
+```
+
+## 검증 대신 파싱 — newtype 경계
+
+외부 입력은 경계에서 한 번 **파싱**해 newtype으로 바꾼다. 안쪽 함수는 그 타입만 받으므로 재검증이 필요 없다.
+개인정보 newtype은 `Debug`·`Display`를 직접 구현해 마스킹한 값만 출력한다.
+
+```rust
+pub struct AccountNo(String);   // 필드 비공개 — 생성 경로는 TryFrom 하나뿐
+
+impl TryFrom<&str> for AccountNo {
+    type Error = InputError;
+    fn try_from(raw: &str) -> Result<Self, Self::Error> {
+        let ok = (10..=14).contains(&raw.len()) && raw.bytes().all(|b| b.is_ascii_digit());
+        if ok { Ok(Self(raw.to_owned())) } else { Err(InputError::InvalidAccountNo) }
+    }
+}
+```
+
+## 외부 에러 응답 일반화
+
+클라이언트에는 일반화한 메시지와 요청 ID만 보내고, 원인과 상세는 내부 `tracing` 로그에 남긴다.
+`sqlx::Error`·파일 경로·스택은 응답에 넣지 않는다. 입력 오류(400)만 어떤 필드가 틀렸는지 알려 준다.
+
+```rust
+impl IntoResponse for AppError {
+    fn into_response(self) -> Response {
+        let request_id = Uuid::new_v4();
+        tracing::error!(%request_id, error = ?self, "요청 처리 실패");   // 상세는 내부 로그로
+        let body = Json(json!({ "error": "internal_error", "requestId": request_id }));
+        (StatusCode::INTERNAL_SERVER_ERROR, body).into_response()
+    }
+}
+```
+
 ## 비밀값 관리
 
 ```rust
 let key = std::env::var("API_KEY")
     .expect("API_KEY 환경변수 필요");   // 시작 시점 검증만 expect 허용
 ```
-
-> 비밀값은 `secrecy::Secret<T>` 로 감싸 로그·`Debug` 출력 노출 차단.
+- 비밀값은 `secrecy::Secret<T>` 로 감싸 로그·`Debug` 출력 노출 차단.
+- 메모리에 남는 키·비밀번호는 `zeroize`(`Zeroizing<T>`, `#[derive(ZeroizeOnDrop)]`)로 사용 후 지운다(`secrecy`도 드롭 시 소거).
+  로그 마스킹·저장 기준은 `skills/sensitive-data-handling/SKILL.md`를 따른다.
 
 ## 공급망 보안
 

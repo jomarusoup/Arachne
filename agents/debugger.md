@@ -180,6 +180,34 @@ node --inspect-brk server.js  # 시작 즉시 브레이크
 node --expose-gc --max-old-space-size=512 server.js
 ```
 
+## 웹 빌드 실패
+
+먼저 오류가 어느 단계에서 났는지 가른다. 단계마다 도구가 다르다.
+
+```bash
+tsc --noEmit 2>&1 | head -30          # 1) 타입 오류 — Vite 개발 서버는 타입 검사를 하지 않는다
+npx vite build --debug 2>&1 | tail -40 # 2) 번들 오류 — 해석·플러그인·청크
+npx vite --force                        # 3) 의존성 사전 번들 캐시(node_modules/.vite) 재생성
+```
+
+| 증상 | 흔한 원인 | 확인 |
+|---|---|---|
+| `Failed to resolve import` | 경로 별칭이 tsconfig에만 있고 Vite 설정에 없음 | `resolve.alias`·`vite-tsconfig-paths` |
+| `Buffer`·`process is not defined` | Node 전용 모듈을 브라우저 번들에서 임포트 | 임포트 체인 추적, 웹 API로 대체 |
+| 개발은 되는데 빌드만 실패 | 순환 임포트, 대소문자 다른 파일명 | 빌드 로그의 첫 오류 파일 |
+| 패키징 후 흰 화면(Electron) | 절대 경로 자산 | renderer `base: "./"` |
+
+**hydration mismatch** (Next·SSR):
+
+- 서버와 클라이언트가 다른 HTML을 만든 것이다. 콘솔 diff에서 처음 다른 노드를 찾는다.
+- 흔한 원인은 렌더 중 `Date.now()`·`Math.random()`·`window`·로캘 포맷, 잘못된 태그 중첩(`<p>` 안 `<div>`)이다.
+- 클라이언트 전용 값은 마운트 뒤(effect)에 설정하거나 해당 컴포넌트를 클라이언트 전용으로 분리한다.
+- `suppressHydrationWarning`은 타임스탬프 같은 한 줄 텍스트에만 쓴다. 증상을 숨기는 용도로 쓰지 않는다.
+
+**중단 조건**: 같은 빌드 오류가 3회 수정 후에도 남거나, 의존성 버전 교체·빌드 도구 교체가
+필요해지면 멈추고 아래 `[DEBUG BLOCKED]` 형식으로 보고한다. `node_modules` 삭제·lockfile 재생성은
+사용자 확인 없이 하지 않는다.
+
 ## 중단 조건
 
 동일 오류가 3회 수정 후에도 지속되거나, 수정이 더 많은 오류를 유발하거나, 아키텍처 변경이 필요한 경우 중단 후 보고:

@@ -29,7 +29,7 @@ Codex는 `~/.codex/AGENTS.md` 마커 병합, Copilot은 저장소 `AGENTS.md`와
 
 | 확장자 | 로드되는 규칙 |
 |---|---|
-| `*.c`, `*.h` | `c/*.md` 전체 |
+| `*.c`, `*.h`, `*.pc`, `*.pgc` | `c/*.md` 전체 |
 | `*.cpp`, `*.hpp` | `cpp/*.md` 전체 |
 | `*.go` | `golang/*.md` 전체 |
 | `*.java`, `pom.xml`, `build.gradle*` | `java/*.md` 전체 |
@@ -37,5 +37,6 @@ Codex는 `~/.codex/AGENTS.md` 마커 병합, Copilot은 저장소 `AGENTS.md`와
 | `*.py` | `python/*.md` 전체 |
 | `*.js`, `*.ts` | `javascript/*.md` 전체 |
 | `Dockerfile`, `*.Dockerfile`, `docker-compose*.yml`, `docker-compose*.yaml`, `compose*.yml`, `compose*.yaml` | `docker/*.md` 전체 |
-| `*.css`, `*.scss`, `*.html`, `*.jsx`, `*.tsx`, `*.vue` | `web/design-quality.md`, `web/ui-layout.md` |
+| `*.css`, `*.scss`, `*.html`, `*.jsx`, `*.tsx`, `*.vue` | `web/*.md` (security·performance는 확장자 일부) |
+| `*.tsx`, `*.jsx` | `react/*.md` 전체 |
 | `*.sh` | `bash/*.md` 전체 |

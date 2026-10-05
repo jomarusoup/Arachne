@@ -33,6 +33,19 @@ make test / go test ./... / npm test / pytest
 
 오류가 있으면 STEP 2 진행하지 않고 즉시 수정.
 
+### 네이밍 검사 (사전이 있는 프로젝트만)
+
+프로젝트에 `.arachne/naming-dict.tsv`가 있으면 변경된 식별자를 사전과 대조한다.
+사전이 없으면 이 단계를 건너뛴다. 규약은 `naming-dictionary` 스킬이 정본이다.
+
+```bash
+[ -f .arachne/naming-dict.tsv ] && bash ~/.claude/lib/naming-check.sh --changed
+```
+
+- 결과는 **경고만** 한다. 경고가 있어도 판정을 실패로 바꾸지 않는다.
+- 보고된 경고(미등록 약어·금지 동의어·동의어 혼용·길이 초과)는 STEP 3 리포트에 그대로 옮긴다.
+- 기존 코드는 대상이 아니다. 새로 쓰거나 바꾼 식별자만 고친다.
+
 ---
 
 ## STEP 2 — 런타임 검증
