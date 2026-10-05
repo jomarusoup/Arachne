@@ -40,6 +40,12 @@ jobs:
       - name: 규약 동기화 (AGENTS.md ↔ rules)
         run: bash tests/check_convention_sync.sh
 
+      - name: 민감 텍스트 (개인 경로·비밀값·개인정보)
+        run: bash tests/check_sensitive_text.sh
+
+      - name: 숨은 유니코드 (지시 파일)
+        run: bash tests/check_unicode_safety.sh
+
   # 데이터 계약 게이트 — uv 가용 환경에서 alembic·pytest 실행 검증까지 수행
   # (다른 job 의 bats 는 uv 가 없어 정적 계약 검사만 수행)
   verify-data-contract:
@@ -90,6 +96,12 @@ jobs:
       - name: 규약 동기화 (AGENTS.md ↔ rules)
         run: bash tests/check_convention_sync.sh
 
+      - name: 민감 텍스트 (개인 경로·비밀값·개인정보)
+        run: bash tests/check_sensitive_text.sh
+
+      - name: 숨은 유니코드 (지시 파일)
+        run: bash tests/check_unicode_safety.sh
+
   verify-windows:
     runs-on: windows-latest
     steps:
@@ -133,3 +145,9 @@ jobs:
 
       - name: 규약 동기화 (AGENTS.md ↔ rules)
         run: bash tests/check_convention_sync.sh
+
+      - name: 민감 텍스트 (개인 경로·비밀값·개인정보)
+        run: bash tests/check_sensitive_text.sh
+
+      - name: 숨은 유니코드 (지시 파일)
+        run: bash tests/check_unicode_safety.sh

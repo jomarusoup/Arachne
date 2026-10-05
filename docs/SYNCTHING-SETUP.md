@@ -485,7 +485,7 @@ Mac GUI 우측 패널에 `Prod` device가 **연결됨(미사용)** 으로 뜨면
 2. **Folder Label**: `Arachne`
 3. **Folder Path**:
    ```
-   /Users/jomarusoup/Desktop/HOME/Life-Hack/100. Project/110. Side-Project/111. Arachne
+   ~/Desktop/HOME/Life-Hack/100. Project/110. Side-Project/111. Arachne
    ```
 4. **Sharing** 탭 → `Prod` 체크
 5. **Advanced** 탭 → **Folder Type**: **Send & Receive** (송수신)
@@ -709,7 +709,7 @@ ST="http://127.0.0.1:8384"
    ```
 3. 수 초 내로 Mac 로컬 폴더에 동일 파일 등장 확인:
    ```bash
-   ls -la "/Users/jomarusoup/Desktop/HOME/Life-Hack/100. Project/110. Side-Project/111. Arachne/docs/sync-test.md"
+   ls -la "$HOME/Desktop/HOME/Life-Hack/100. Project/110. Side-Project/111. Arachne/docs/sync-test.md"
    ```
 4. 반대 방향도 동일하게 검증 (Mac에서 만들고 Prod에서 확인)
 5. 정리:

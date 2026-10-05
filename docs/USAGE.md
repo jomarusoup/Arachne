@@ -156,6 +156,9 @@ description: >-                    # 자동 발견 매칭 기준 — 경로·키
 `skills/새스킬/SKILL.md` 생성 → `name`(디렉터리명 일치)·`description` frontmatter를 달고
 "언제 / 어떻게 / 예시" 3요소로 작성. `skills/README.md`·`docs/USAGE.md` 표에 행 추가.
 
+스킬을 인자와 함께 호출하면 본문의 `$1`·`$2`·`$ARGUMENTS`가 인자로 치환된다. 예시 코드에
+PostgreSQL 자리표시자처럼 `$1`을 그대로 보여야 하면 `\$1`로 쓴다(`tests/agent_command_meta.bats`가 검사).
+
 ---
 
 ## 4. Hooks (`hooks/`)
@@ -166,6 +169,8 @@ description: >-                    # 자동 발견 매칭 기준 — 경로·키
 ### 등록된 훅 (이 레포 기준)
 | 훅 스크립트 | 이벤트 | 동작 |
 |---|---|---|
+| `guard-bash.sh` | `PreToolUse` (`Bash`) | 검사 우회(`--no-verify`·`core.hooksPath`) 거부, DB `DROP`·force push·`reset --hard`·위험 경로 `rm -rf`·`chmod 777`·`ipcrm`·비밀 파일 읽기는 확인 요청 |
+| `guard-secrets.sh` | `PreToolUse` (`Bash`) | `git commit` 직전 추가 줄 검사 — 비밀값·주민번호·카드번호(검증식 일치)는 거부, 데이터 파일·연락처 다수는 확인. 사유에 값은 남기지 않음 |
 | `git-bus-check.sh` | `UserPromptSubmit` | 업스트림 브랜치의 새 커밋 감지 (작성 CLI 판별 없음). fetch는 기본 300초 간격 스로틀 — `GIT_BUS_FETCH_INTERVAL`로 조정 |
 | `doc-drift-check.sh` | `PostToolUse` (`Edit\|Write`) | 기능 파일(스크립트·rules·agents 등) 변경 시 README/docs 갱신 알림 (세션당 1회) |
 | `session-start.sh` | `SessionStart` | 최근 세션 파일 경로 안내 |

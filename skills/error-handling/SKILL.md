@@ -258,7 +258,7 @@ var (
 
 // 컨텍스트로 에러 래핑 — 원본을 절대 잃지 않는다
 func (r *UserRepository) FindByID(ctx context.Context, id string) (*User, error) {
-    user, err := r.db.QueryRow(ctx, "SELECT * FROM users WHERE id = $1", id)
+    user, err := r.db.QueryRow(ctx, "SELECT * FROM users WHERE id = \$1", id)
     if errors.Is(err, sql.ErrNoRows) {
         return nil, fmt.Errorf("user %s: %w", id, ErrNotFound)
     }

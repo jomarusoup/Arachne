@@ -166,7 +166,7 @@ Arachne/
 │                                #   ·python-reviewer·fastapi-reviewer·react-reviewer
 │                                #   ·database-reviewer)
 ├── hooks/                       # 이벤트 훅 (session-start/end · pre-compact · git-bus-check
-│                                #   · doc-drift-check · ua-stale-check)
+│                                #   · doc-drift-check · ua-stale-check · guard-bash · guard-secrets)
 ├── mcp-configs/                 # MCP 서버 설정 템플릿
 ├── dotfiles/                    # bash_profile · vimrc (병합 원본)
 ├── tests/                       # 검증 (bats + shell)
@@ -198,6 +198,9 @@ sequenceDiagram
     CC->>H: git-bus-check.sh
     H->>H: git fetch 후 origin HEAD 비교
     H-->>CC: 업스트림 새 커밋 감지 시 변경 목록 (git-bus)
+    Note over CC: PreToolUse (Bash 실행 전)
+    CC->>H: guard-bash.sh · guard-secrets.sh
+    H-->>CC: deny(검사 우회·비밀값 커밋) / ask(파괴 명령·비밀 파일) / 무응답(통과)
     Note over CC: PostToolUse (Edit/Write 후)
     CC->>H: doc-drift-check.sh
     H-->>CC: 기능 파일 변경 시 README/docs 갱신 알림 (세션당 1회)
@@ -222,6 +225,18 @@ sequenceDiagram
   분석 기준 커밋(`gitCommitHash`)과 HEAD를 비교해 N커밋 이상 뒤처지면 `/understand` 재실행을
   안내한다(임계값 `UA_STALE_THRESHOLD`, 기본 1). UA 산출물이 없는 프로젝트에서는 침묵하며,
   분석을 자동 재실행하지는 않는다 — 재분석 비용은 사람이 판단한다.
+- **`guard-bash.sh` (PreToolUse, Bash)** — Bash 명령이 실행되기 직전마다. 명령을 셸처럼 읽어(따옴표·이스케이프
+  해석) `;`·`&`·`|` 단위로 나눈 뒤 단어를 보고 판정한다. `-nm`처럼 붙여 쓴 짧은 옵션도 풀어서 본다. 검사 우회(`--no-verify`, `core.hooksPath` 변경)는 **거부**하고, 되돌리기
+  어려운 명령(DB 클라이언트의 `DROP`·`TRUNCATE`, force push, `reset --hard`, 위험 경로 `rm -rf`,
+  `chmod 777`, `ipcrm`)과 비밀 파일(`.env`, 키, 자격증명, 덤프)을 여는 명령은 **사용자 확인**을 받는다.
+  커밋 메시지 안의 `DROP` 같은 문자열은 DB 클라이언트 호출이 아니므로 통과한다.
+- **`guard-secrets.sh` (PreToolUse, Bash)** — `git commit` 직전에만 동작한다. 커밋될 추가 줄에서
+  비밀값(액세스 키, API 키, 개인키, 비밀번호 리터럴, DB 접속 문자열)과 검증식이 맞는 주민등록번호·
+  카드번호를 찾으면 커밋을 **거부**하고, 데이터 파일이나 연락처·이메일이 많은 파일은 **확인**을 받는다.
+  사유에는 파일과 줄 번호만 남기고 값은 출력하지 않는다. 테스트 픽스처 경로와
+  `ARACHNE-SYNTHETIC-DATA` 표식이 있는 파일은 합성 데이터로 본다.
+- 두 가드는 실수를 막는 장치다. Claude가 비밀 파일을 읽지 못하게 하는 1차 경계는
+  `settings.json`의 `permissions.deny`이며, Read 거부 규칙은 Bash의 `cat`·`head` 같은 읽기 명령에도 적용된다.
 - **`git-bus-check.sh` (UserPromptSubmit)** — 프롬프트를 넣을 때마다. **git-bus의 핵심**:
   1. `git fetch -q origin` 으로 리모트 최신을 받는다(로컬 `pull` 없이 감지만).
      매 프롬프트 네트워크 왕복을 막기 위해 기본 300초 간격으로 스로틀된다

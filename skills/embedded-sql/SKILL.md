@@ -234,12 +234,12 @@ int main(void)
 
 ```c
 EXEC SQL BEGIN DECLARE SECTION;
-    const char *stmt_text = "UPDATE employees SET salary = $1 WHERE id = $2";
+    const char *stmt_text = "UPDATE employees SET salary = ? WHERE id = ?";
     double      new_salary;
     int         target_id;
 EXEC SQL END DECLARE SECTION;
 
-EXEC SQL PREPARE upd_stmt FROM :stmt_text;      /* $1, $2 플레이스홀더 */
+EXEC SQL PREPARE upd_stmt FROM :stmt_text;      /* ecpg 동적 SQL 은 ? 자리표시자 */
 EXEC SQL EXECUTE upd_stmt USING :new_salary, :target_id;
 EXEC SQL DEALLOCATE PREPARE upd_stmt;
 ```

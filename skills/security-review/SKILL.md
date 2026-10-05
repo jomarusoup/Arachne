@@ -82,7 +82,7 @@ function validateFileUpload(file: File) {
 const query = `SELECT * FROM users WHERE email = '${userEmail}'`
 
 /* 올바름: 파라미터화 쿼리 */
-await db.query('SELECT * FROM users WHERE email = $1', [userEmail])
+await db.query('SELECT * FROM users WHERE email = \$1', [userEmail])
 ```
 
 ### 4. 인증·인가
