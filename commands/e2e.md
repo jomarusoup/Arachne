@@ -94,6 +94,43 @@ npx playwright test --debug tests/failing.spec.ts
 
 ---
 
+## Electron E2E — Playwright `_electron`
+
+`package.json`에 `electron`이 있으면 이 절을 쓴다. 빌드 산출물을 띄워 main과 renderer를 함께 검증한다.
+
+```bash
+npm run build                          # main·preload·renderer 빌드
+npx playwright test tests/electron/    # _electron 시나리오만
+```
+
+```typescript
+import { _electron as electron, expect, test } from "@playwright/test";
+
+test("main·renderer 동작과 IPC 노출 범위", async () => {
+    const app  = await electron.launch({ args: ["dist/main/index.js"] });
+    const page = await app.firstWindow();                       // renderer
+
+    // main 프로세스 검증: 창 보안 설정
+    const prefs = await app.evaluate(({ BrowserWindow }) =>
+        BrowserWindow.getAllWindows()[0].webContents.getLastWebPreferences());
+    expect(prefs?.contextIsolation).toBe(true);
+    expect(prefs?.sandbox).toBe(true);
+
+    // IPC 허용 목록: preload가 노출한 API가 정확히 이 목록이어야 한다
+    expect(await page.evaluate(() => Object.keys((window as any).api).sort()))
+        .toEqual(["SubmitAction", "Subscribe"]);
+    expect(await page.evaluate(() => typeof (window as any).require)).toBe("undefined");
+
+    await app.close();
+});
+```
+
+- 데이터 수신 화면은 송신 시뮬레이터(작은 Node `net` 서버)를 띄우고 포트를 환경변수로 넘긴다.
+- 허용 목록 밖 채널을 부르는 시도가 거부되는지도 확인한다(`skills/desktop-data-client/SKILL.md` 11절).
+- CI의 Linux 러너는 `xvfb-run npx playwright test`로 실행한다. 실패 시 `test-results/`의 트레이스를 본다.
+
+---
+
 ## 판정 기준
 
 | 결과           | 조치                                  |
