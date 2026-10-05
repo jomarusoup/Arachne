@@ -21,6 +21,8 @@ GDB·valgrind·strace·perf 등 저수준 디버깅 도구를 활용하는 디�
 - valgrind로 메모리 누수·레이스 컨디션·힙 프로파일링
 - strace/ltrace로 시스템 콜·라이브러리 콜 추적
 - perf로 CPU 핫스팟·성능 병목 분석
+- TSan·rr로 레이스·비결정 버그 재현
+- 빌드 실패(Make·링커·Pro*C·ecpg·Cargo) 원인 분석
 
 ## 작업 전 언어 규칙 확인
 
@@ -30,13 +32,31 @@ GDB·valgrind·strace·perf 등 저수준 디버깅 도구를 활용하는 디�
 
 ## 진단 절차
 
-증상에 따라 적합한 도구를 순서대로 실행:
+추측하지 않고 관찰한다. 아래 순서를 건너뛰지 않는다(`rules/systems/philosophy.md` §6).
 
 ```
-1. 증상 분류  → 도구 선택
-2. 진단 실행  → 근본 원인 파악
-3. 최소 수정  → 한 번에 하나씩
-4. 검증       → 동일 증상 재현 확인
+1. 재현 확보     → 재현 절차를 먼저 만든다. 안 되면 재현 조건(입력·부하·타이밍)을 좁힌다
+2. 최근 변경 의심 → git log -p --since 로 최근 변경부터 본다. 범위를 모르면 git bisect
+3. 가설·증거 분리 → 가설과 관찰 증거를 따로 기록한다. 증거 없는 결론은 쓰지 않는다
+4. 최소 수정     → 근본 원인 하나만, 한 번에 하나씩 고친다
+5. 재현 테스트   → 같은 증상을 재현하는 테스트를 먼저 실패시키고, 수정 후 통과로 고정한다
+6. 유사 패턴 검색 → 같은 실수를 저장소 전체에서 찾아 보고한다(고칠지는 호출자가 정한다)
+```
+
+```bash
+# 원인 커밋 찾기 — 재현 스크립트가 실패하면 1을 돌려준다
+git bisect start HEAD <정상 커밋>
+git bisect run ./repro.sh
+git bisect reset
+```
+
+익숙한 원인부터 본다: off-by-one, 초기화 누락, 반환값 미검사, 수명이 끝난 포인터, 경계 조건.
+기록 형식은 아래와 같다. 가설을 반증한 증거도 지우지 않고 남긴다.
+
+```
+가설 1: 재접속 경로에서 conn 이중 해제
+증거  : ASan "attempt double-free" — conn.c:212, 재접속 2회째에만 발생
+판정  : 채택 / 기각(사유)
 ```
 
 ## GDB — 런타임 오류·세그폴트
@@ -145,26 +165,54 @@ perf script | stackcollapse-perf.pl | flamegraph.pl > flame.svg
 
 | 증상            | 1차 도구                   | 2차 도구                 |
 | --------------- | -------------------------- | ------------------------ |
-| 세그폴트        | `gdb` backtrace            | `valgrind` memcheck      |
+| 세그폴트        | `gdb` backtrace            | ASan 빌드, `valgrind` memcheck |
 | 메모리 누수     | `valgrind --leak-check`    | `massif`                 |
-| 레이스 컨디션   | `valgrind --tool=helgrind` | `TSan`                   |
+| 레이스 컨디션   | TSan 빌드(`-fsanitize=thread`) | `valgrind --tool=helgrind` |
+| 간헐적 크래시·비결정 버그 | `rr record` 후 `rr replay` | 코어 덤프 + `gdb`   |
+| 미정의 동작     | UBSan 빌드(`-fsanitize=undefined`) | Rust `unsafe`는 Miri |
 | 성능 저하       | `perf stat`                | `perf record + report`   |
 | 시스템 콜 실패  | `strace`                   | `gdb`                    |
 | 라이브러리 오류 | `ltrace`                   | `ldd`, `nm`              |
-| 빌드 오류       | `gcc -Wall -Wextra`        | `cppcheck`, `clang-tidy` |
+| 빌드 오류       | 아래 "빌드 실패" 절        | `cppcheck`, `clang-tidy` |
 
-## 빌드 오류 진단
+TSan이 레이스의 1차 도구다. helgrind보다 빠르고 오탐이 적다. ASan과 한 빌드에 켤 수 없으므로 빌드를 따로 만든다.
 
 ```bash
-# C/C++
-gcc -Wall -Wextra -Wno-unused -o binary src/*.c 2>&1 | head -30
-cppcheck --enable=all src/ 2>&1 | grep -v "^\[" | head -20
-clang-tidy src/*.cpp -- -std=c++17 2>&1 | head -30
-
-# CMake
-cmake --build build 2>&1 | tail -30
-cmake -B build -S . -DCMAKE_VERBOSE_MAKEFILE=ON
+gcc -g -O1 -fsanitize=thread -o binary_tsan src/*.c && ./binary_tsan
+rr record ./binary [args]     # 실패가 재현될 때까지 반복 기록
+rr replay                     # gdb 안에서 reverse-continue·reverse-step으로 거꾸로 추적
 ```
+
+## 빌드 실패
+
+첫 오류부터 본다. 뒤따르는 오류는 대개 첫 오류의 연쇄다.
+
+```bash
+make 2>&1 | grep -m1 -nE 'error|Error'        # 첫 오류 위치
+make -n <타깃>                                  # 실제로 실행될 명령 확인
+gcc -Wall -Wextra -o binary src/*.c 2>&1 | head -30
+cmake --build build 2>&1 | tail -30             # CMake는 -DCMAKE_VERBOSE_MAKEFILE=ON 으로 명령 확인
+```
+
+| 단계 | 증상 | 확인 |
+|---|---|---|
+| Make | `No rule to make target`, 변경이 반영 안 됨 | 의존성 누락(`-MMD -MP`), `make -B`로 강제 재빌드 |
+| 링커 | `undefined reference`, `multiple definition` | `nm -C`로 심볼 확인, 라이브러리 순서(`-l`은 사용처 뒤), 헤더 정의의 `static`·`inline` 누락 |
+| C++ 템플릿 | 수백 줄 오류 | 첫 `required from here`의 사용 위치, concepts 제약 메시지 |
+| Pro*C | `PCC-S-…` 프리컴파일 오류 | `proc` 옵션(`SQLCHECK`·`INCLUDE`·`DEFINE`·`CODE`), `DECLARE SECTION` 안의 타입, 생성된 `.c` |
+| ecpg | `ERROR: …` 프리컴파일 오류 | `ecpg -I` 포함 경로, 호스트 변수 선언 위치, 생성된 `.c` 줄 번호를 `.pgc`로 역추적 |
+| borrow checker | `E0499`·`E0502`·`E0505` | `rustc --explain <코드>`. 반복되면 수명 표기보다 소유 구조를 다시 본다 |
+| Cargo | feature·버전 충돌 | `cargo tree -d`(중복 버전), `cargo tree -e features -i <crate>` |
+| MSRV | 새 문법·API 사용 오류 | `Cargo.toml`의 `rust-version`, `cargo +<MSRV> check` |
+
+**시도 상한**: 같은 빌드 오류에 수정 시도는 3회까지다. 시도마다 가설을 한 줄로 먼저 적는다.
+
+**중단 조건** — 아래 중 하나면 멈추고 `[DEBUG BLOCKED]`로 보고한다.
+
+- 3회 시도 후에도 같은 오류가 남는다.
+- 수정이 새 오류를 더 많이 만든다.
+- 컴파일러·툴체인·Oracle 클라이언트 버전 교체, `Cargo.lock` 대량 갱신, 빌드 시스템 교체가 필요하다.
+- 공개 헤더·ABI·프로토콜을 바꿔야만 빌드가 된다.
 
 ## 웹 / Node.js 디버깅 (보조)
 
