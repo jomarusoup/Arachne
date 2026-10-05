@@ -50,6 +50,9 @@ jobs:
             rust)
               rust=true
               ;;
+            c-system)
+              # gcc·make 는 ubuntu-latest 러너에 사전 설치 — C 스타터 키트 빌드·테스트
+              ;;
             *)
               echo "::error::Unknown Arachne profile: $profile"
               exit 1

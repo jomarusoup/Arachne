@@ -1,0 +1,23 @@
+# C 시스템 profile — Linux C 서버(C++ 사상을 C 문법으로) + Pro*C·ecpg 임베디드 SQL.
+# init-ci 가 복사한 스타터 키트(src/log·src/shm·tools·sql·conf·docs/ops)를 검증한다.
+# 프로젝트 본체 Makefile 이 생기면 아래 "프로젝트 빌드" 줄의 주석을 푼다.
+git diff --check
+
+# 스타터 키트 모듈 테스트 — ASan/UBSan 빌드 (Linux 전용 robust 뮤텍스 경로 포함)
+make -C src/log test
+make -C src/shm test
+make -C tools          # shmctl·shm_view·shm_recover 빌드 (시나리오 테스트는 Arachne CI 가 수행)
+
+# 스키마 버전 계획 점검 — DB 없이 명명·순서·중복만 검사한다
+bash sql/apply-schema.sh --dialect postgres --dir sql --dry-run --empty-db
+bash sql/apply-schema.sh --dialect oracle --dir sql --dry-run --empty-db
+
+# 네이밍 사전 검사 — 보고만 한다. Arachne 가 설치된 머신에서만 돈다(CI 는 건너뜀)
+if [ -f "$HOME/.claude/lib/naming-check.sh" ]; then bash "$HOME/.claude/lib/naming-check.sh" --changed; fi
+
+# 프로젝트 빌드 (본체 Makefile 이 생기면 주석 해제)
+# make CFLAGS="-std=c11 -Wall -Wextra -Werror -g -fsanitize=address,undefined -fno-omit-frame-pointer"
+# make test
+
+# Optional: 레이스 컨디션 — TSan 은 ASan 과 동시 사용 불가라 별도 빌드
+# make -C src/log test-tsan

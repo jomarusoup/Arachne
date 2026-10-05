@@ -246,3 +246,11 @@ run_new() {
     run_new "a/b" "${TMP_DIR}"
     [ "$status" -ne 0 ]
 }
+
+@test "new: c-system profile 은 C 스타터 키트와 함께 스캐폴딩" {
+    run_new csys "${TMP_DIR}" --profile c-system
+    [ "$status" -eq 0 ]
+    [ "$(cat "${TMP_DIR}/csys/.arachne/profile")" = "c-system" ]
+    [ -f "${TMP_DIR}/csys/src/log/log.c" ]
+    [ -f "${TMP_DIR}/csys/tools/logtrace.sh" ]
+}

@@ -3,6 +3,7 @@ name: debugger
 description: 저수준 디버깅 전담 에이전트. GDB·valgrind·strace·perf 활용. 빌드 실패·런타임 오류·메모리 문제·세그폴트 발생 시 PROACTIVELY 활성화. 웹/Node.js 디버깅 보조 지원.
 tools: ["Read", "Write", "Edit", "Bash", "Grep", "Glob"]
 model: sonnet
+skills: ["memory-check"]
 ---
 
 ## 프롬프트 방어 기준선

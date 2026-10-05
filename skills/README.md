@@ -1,6 +1,6 @@
 # Skills
 
-Claude Code 세션에서 호출 가능한 워크플로·도메인 스킬 모음 (61개 현역 + archive/ 보관 9개).
+Claude Code 세션에서 호출 가능한 워크플로·도메인 스킬 모음 (65개 현역 + archive/ 보관 9개).
 
 ---
 
@@ -11,9 +11,12 @@ Claude Code 세션에서 호출 가능한 워크플로·도메인 스킬 모음 
 | `build-debug` | C/C++ 빌드·GDB 디버그 절차 |
 | `memory-check` | valgrind·ASan·TSan 메모리 검사 |
 | `cpp-testing` | GoogleTest/CTest·sanitizer |
-| `latency-critical-systems` | IPC·epoll·소켓 저지연 시스템 |
+| `latency-critical-systems` | 프로세스 내부 핫패스 — 꼬리 지연 측정·거짓 공유·단일 작성자·코어 격리·busy-poll·사전 할당 |
+| `service-latency` | 서비스 경로 구간별 지연 — API·큐·캐시·엣지·스트림·브라우저 렌더, 신선도 지표 |
 | `error-handling` | C/C++·TypeScript·Go 에러 처리 |
-| `trading-systems` | FIX 프로토콜, 오더북, 마켓 데이터, rdtsc 측정 |
+| `trading-systems` | FIX 프로토콜, 오더북, 마켓 데이터, rdtsc 측정, FIX·SBE 스키마 코드 생성, 리스크 게이트 |
+| `remote-linux-analysis` | 원격 Linux 분석 — 온라인(perf·bpftrace·strace)·오프라인(collect.sh 수집 → 회수), 운영 프로파일링 금지, 증상별 도구표 |
+| `distributed-tracing` | 경량 분산 추적 — C 서버는 거래 ID 전파·구조화 로그·logtrace, TS 클라이언트는 OpenTelemetry |
 | `performance-profiling` | pprof·perf·flamegraph 병목 분석 워크플로 |
 | `linux-system-network-programming` | POSIX·socket·epoll·signal·thread·fd 수명 체크리스트 |
 | `c-server-patterns` | C 서버 골격 — epoll 루프·모듈 수명(ops 테이블·역순 해제)·signalfd·마스터/워커 fork 후 정리·설정 재적재·graceful shutdown |
@@ -46,6 +49,7 @@ Claude Code 세션에서 호출 가능한 워크플로·도메인 스킬 모음 
 | `frontend-a11y` | 키보드·focus·semantic HTML·label·contrast·motion 접근성 |
 | `react-testing` | RTL 쿼리 우선순위·userEvent·MSW·renderHook·외부 스토어 테스트 |
 | `vite-patterns` | Vite 프록시(`ws: true`)·`VITE_` 공개 값 규칙·빌드·Electron 렌더러 빌드 |
+| `desktop-data-client` | Electron·웹 클라이언트 대용량 바이너리 수신 — net 백프레셔·프레임 재조립·화면 주기 병합·정수 수치·가상화 그리드 |
 | `design-system` | spacing·radius·color·typography·component state 토큰 관리 |
 | `api-design` | REST 설계 — 리소스 네이밍·상태 코드·봉투·커서/오프셋 페이지네이션·버전·레이트리밋 |
 | `fastapi-patterns` | FastAPI 프로덕션 — 앱 팩토리·DI·스키마 분리·async·중앙 에러 핸들러·테스트 |

@@ -20,7 +20,7 @@ Arachne 저장소 CI와 Arachne 사용 프로젝트 CI는 별개다. 각 프로�
 
 ```text
 .arachne/
-├── profile          # Arachne 관리: minimal|python|web|python-web|cpp|rust
+├── profile          # Arachne 관리: minimal|python|web|python-web|cpp|rust|c-system
 ├── verify.sh        # Arachne 관리: 로컬·CI 공통 runner
 ├── commands         # 프로젝트 소유: 실제 검증 명령
 └── reports/         # 프로젝트 소유: /verify 리포트 (첫 /verify 시 생성, 커밋 대상)
@@ -56,6 +56,25 @@ arachne project-check
 ```
 
 지원 profile과 기본 도구는 [PYTHON-WEB-PROFILE.md](PYTHON-WEB-PROFILE.md)를 따른다.
+
+### c-system profile
+
+Linux C 서버(C++ 사상을 C 문법으로 구현)와 Pro*C·ecpg 임베디드 SQL 프로젝트용이다. `init-ci`는 검증
+명령과 함께 아래 스타터 키트를 프로젝트에 복사한다. 이미 있는 파일은 덮어쓰지 않으므로 기존 프로젝트에
+적용해도 안전하다.
+
+| 복사 위치 | 내용 | 관련 스킬 |
+| --- | --- | --- |
+| `src/log/` | 운영 로거(레벨 매크로·비동기 링버퍼·폭주 억제·마스킹) | `operational-logging` |
+| `src/shm/` | 공유메모리 세그먼트(헤더 검증·robust 뮤텍스)·정렬 테이블 | `shm-db-patterns`, `c-data-structures` |
+| `tools/` | `shmctl.sh`·`shm_view`·`shm_recover`·`logtrace.sh`·`collect.sh` | `shm-db-patterns`, `remote-linux-analysis` |
+| `sql/` | `apply-schema.sh`와 방언별 `SCHEMA_HISTORY` DDL | `sql-schema-versioning` |
+| `conf/` | logrotate 템플릿(SIGHUP 재오픈) | `operational-logging` |
+| `docs/ops/` | 공유메모리 레이아웃 표·복구 런북 템플릿 | `shm-db-patterns` |
+| `.arachne/naming-dict.tsv` | 네이밍 사전 기본 항목 | `naming-dictionary` |
+
+검증 명령은 키트 모듈의 ASan/UBSan 테스트, 도구 빌드, 스키마 버전 계획 점검(DB 없이), 네이밍 검사(보고만)다.
+본체 Makefile이 생기면 `.arachne/commands`의 "프로젝트 빌드" 줄 주석을 푼다.
 
 ## 갱신과 소유권
 

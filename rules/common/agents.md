@@ -2,8 +2,6 @@
 
 ## 사용 가능한 에이전트
 
-`~/.claude/agents/` 에 위치:
-
 | 에이전트 | 목적 | 활성화 시점 |
 |---|---|---|
 | `planner` | 구현 설계·단계 분해 | 복잡한 기능, 대규모 리팩터링, 시스템 레벨 변경 |
@@ -14,6 +12,7 @@
 | `fastapi-reviewer` | async·DI·스키마·API 보안 리뷰 | FastAPI 엔드포인트 변경 직후 |
 | `react-reviewer` | 렌더·Hooks·a11y·XSS·성능 리뷰 | `.jsx`·`.tsx` 등 웹 코드 변경 직후 |
 | `typescript-reviewer` | async·타입 설계·Node 보안·바이너리 리뷰 | `.ts`·`.tsx`·Electron 변경 직후 |
+| `rust-reviewer` | 소유권·unsafe·async·FFI 경계 리뷰 | `.rs`·`Cargo.toml` 변경 직후 |
 | `database-reviewer` | DB schema·쿼리·migration·ORM·임베디드 SQL 리뷰 | migration·SQL·Pro*C·ecpg·repository 변경 직후 |
 
 ## 즉시 활성화 기준
@@ -27,10 +26,8 @@
 | 코드 작성·수정 완료 | **code-reviewer** |
 | 빌드 실패 / 메모리 오류 / 세그폴트 | **debugger** |
 | 신규 기능 구현 시작 | **tdd** |
-| `.py` 변경 (FastAPI면 `fastapi-reviewer`) | **python-reviewer** |
-| `.jsx`·`.tsx`·React/Next 변경 | **react-reviewer** |
-| `.ts`·`.tsx`·Node·Electron 변경 | **typescript-reviewer** |
-| migration·SQL·`.pc`·`.pgc`·repository 변경 | **database-reviewer** |
+
+언어·영역 리뷰어(`*-reviewer`)는 "사용 가능한 에이전트" 표의 활성화 시점에 code-reviewer와 함께 실행한다.
 
 ## 병렬 실행
 
