@@ -1,11 +1,16 @@
 ---
 name: database-migrations
-description: Alembic migration 안전 운영 — schema/data revision 분리, expand-contract, CONCURRENTLY 인덱스, batch backfill, 배포 revision 불변·forward-fix, lock timeout, 빈 DB·기존 DB 이중 검증. 대상 경로 — **/alembic/**, **/migrations/**. 키워드 — migration, Alembic, 스키마 변경, backfill, expand-contract.
+description: Alembic(Python) 전용 migration 안전 운영. 마이그레이션 도구 없이 .sql 파일로 스키마를 관리하는 프로젝트는 sql-schema-versioning 을 쓴다. 내용 — schema/data revision 분리, expand-contract, CONCURRENTLY 인덱스, batch backfill, 배포 revision 불변·forward-fix, lock timeout, 빈 DB·기존 DB 이중 검증. 대상 경로 — **/alembic/**, **/migrations/**. 키워드 — migration, Alembic, 스키마 변경, backfill, expand-contract.
 ---
 
 # Database Migrations — Alembic 안전 운영
 
 운영 DB를 멈추지 않고 schema를 진화시키는 migration 작성·검증 절차.
+
+> **적용 범위**: 이 스킬은 Alembic(Python) 전용이다. 마이그레이션 도구 없이 개별 `.sql`
+> 파일로 스키마를 관리하는 프로젝트(Pro*C·ecpg C 서버 등)는
+> [`sql-schema-versioning`](../sql-schema-versioning/SKILL.md)을 따른다.
+> expand-contract·forward-fix·이중 검증 원칙은 두 스킬이 같다.
 
 ## 언제 활성화하나
 
@@ -129,5 +134,5 @@ alembic check   # autogenerate 차이가 있으면 실패
 ## 참조
 
 - 규칙: `rules/python/data-handling.md`
-- 스킬: `postgres-patterns`, `backend-patterns`
+- 스킬: `postgres-patterns`, `backend-patterns`, `sql-schema-versioning`(도구 없는 `.sql` 프로젝트)
 - 리뷰: 에이전트 `database-reviewer`, 커맨드 `/database-review`
