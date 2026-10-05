@@ -1,0 +1,189 @@
+################################################################################
+# FILE NAME   : compose.yaml
+# DESCRIPTION : 3티어 로컬 통합 환경 — C 서버 빌드·테스트, PostgreSQL + 스키마 적용,
+#               (선택) Oracle Free, (선택) Jaeger. 사용법은 README.md.
+#                 기본          : c-build · postgres · schema-pg
+#                 --profile server  : c-server (src/server 진입점이 생긴 뒤)
+#                 --profile oracle  : oracle · schema-ora (이미지가 크다)
+#                 --profile tracing : jaeger
+#               비밀값은 .env 에서만 받는다(.env.example 참고, .env 는 커밋하지 않는다).
+#               규약: rules/docker/*.md, skills/docker-patterns/SKILL.md
+################################################################################
+
+name: ${COMPOSE_PROJECT_NAME:-app3tier}
+
+x-hardening: &hardening
+  security_opt:
+    - no-new-privileges:true
+  cap_drop:
+    - ALL
+
+services:
+  #-----------------------------------------------------------------------------
+  # C 모듈 테스트 — Linux 에서 빌드하고 단위 테스트를 돈다(일회성)
+  #-----------------------------------------------------------------------------
+  c-build:
+    <<: *hardening
+    build:
+      context: ./c-server
+      additional_contexts:
+        csrc: ${C_SRC_DIR:-../c-system/src}
+      dockerfile: Dockerfile
+      target: test
+    image: ${COMPOSE_PROJECT_NAME:-app3tier}-c-build:local
+    user: "10001:10001"
+    environment:
+      C_MODULES: ${C_MODULES:-log shm pipeline contract}
+    restart: "no"
+
+  #-----------------------------------------------------------------------------
+  # C 서버 실행 — src/${APP_DIR}/Makefile 이 서버 바이너리를 만들 때 쓴다
+  #-----------------------------------------------------------------------------
+  c-server:
+    <<: *hardening
+    profiles: ["server"]
+    build:
+      context: ./c-server
+      additional_contexts:
+        csrc: ${C_SRC_DIR:-../c-system/src}
+      dockerfile: Dockerfile
+      target: runtime
+      args:
+        APP_DIR: ${APP_DIR:-server}
+        APP_NAME: ${APP_NAME:-appd}
+    image: ${COMPOSE_PROJECT_NAME:-app3tier}-c-server:local
+    user: "10001:10001"
+    read_only: true
+    tmpfs:
+      - /tmp
+    environment:
+      APP_PORT: ${APP_PORT:-7000}
+      PGHOST: postgres
+      PGDATABASE: ${POSTGRES_DB:?.env 에 POSTGRES_DB 필요}
+      PGUSER: ${POSTGRES_USER:?.env 에 POSTGRES_USER 필요}
+      PGPASSWORD: ${POSTGRES_PASSWORD:?.env 에 POSTGRES_PASSWORD 필요}
+    ports:
+      - "127.0.0.1:${APP_PORT:-7000}:${APP_PORT:-7000}"
+    depends_on:
+      schema-pg:
+        condition: service_completed_successfully
+    healthcheck:
+      test: ["CMD-SHELL", "bash -c '</dev/tcp/127.0.0.1/$${APP_PORT}' || exit 1"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+      start_period: 5s
+
+  #-----------------------------------------------------------------------------
+  # PostgreSQL — 공식 이미지, 데이터는 named volume, 호스트에는 loopback 만 연다
+  #-----------------------------------------------------------------------------
+  postgres:
+    <<: *hardening
+    image: ${POSTGRES_IMAGE:-postgres:17.6-bookworm}
+    user: postgres
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:?.env 에 POSTGRES_DB 필요}
+      POSTGRES_USER: ${POSTGRES_USER:?.env 에 POSTGRES_USER 필요}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?.env 에 POSTGRES_PASSWORD 필요}
+    volumes:
+      - pg-data:/var/lib/postgresql/data
+    ports:
+      - "127.0.0.1:${PG_HOST_PORT:-5432}:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U \"$${POSTGRES_USER}\" -d \"$${POSTGRES_DB}\""]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+      start_period: 10s
+
+  #-----------------------------------------------------------------------------
+  # PostgreSQL 스키마 적용 — sql/apply-schema.sh 를 읽기 전용으로 붙여 일회성으로 돈다
+  #-----------------------------------------------------------------------------
+  schema-pg:
+    <<: *hardening
+    image: ${POSTGRES_IMAGE:-postgres:17.6-bookworm}
+    user: postgres
+    read_only: true
+    tmpfs:
+      - /tmp
+    entrypoint: ["bash", "/schema/apply.sh", "postgres"]
+    environment:
+      PGHOST: postgres
+      PGDATABASE: ${POSTGRES_DB:?.env 에 POSTGRES_DB 필요}
+      PGUSER: ${POSTGRES_USER:?.env 에 POSTGRES_USER 필요}
+      PGPASSWORD: ${POSTGRES_PASSWORD:?.env 에 POSTGRES_PASSWORD 필요}
+      SQL_DIR: /sql
+    volumes:
+      - ${SQL_DIR:-../sql}:/sql:ro
+      - ./schema:/schema:ro
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: "no"
+
+  #-----------------------------------------------------------------------------
+  # Oracle Free — 이미지가 커서 oracle 프로필로만 띄운다. 이미지 기본 사용자(oracle)로 돈다
+  #-----------------------------------------------------------------------------
+  oracle:
+    profiles: ["oracle"]
+    image: ${ORACLE_IMAGE:-gvenzl/oracle-free:23-slim}
+    security_opt:
+      - no-new-privileges:true
+    environment:
+      ORACLE_PASSWORD: ${ORACLE_PASSWORD:?.env 에 ORACLE_PASSWORD 필요}
+      APP_USER: ${APP_USER:?.env 에 APP_USER 필요}
+      APP_USER_PASSWORD: ${APP_USER_PASSWORD:?.env 에 APP_USER_PASSWORD 필요}
+    volumes:
+      - ora-data:/opt/oracle/oradata
+    ports:
+      - "127.0.0.1:${ORA_HOST_PORT:-1521}:1521"
+    healthcheck:
+      test: ["CMD", "healthcheck.sh"]
+      interval: 10s
+      timeout: 5s
+      retries: 30
+      start_period: 60s
+
+  #-----------------------------------------------------------------------------
+  # Oracle 스키마 적용 — 같은 이미지의 sqlplus 로 apply-schema.sh 를 돈다(일회성)
+  #-----------------------------------------------------------------------------
+  schema-ora:
+    profiles: ["oracle"]
+    image: ${ORACLE_IMAGE:-gvenzl/oracle-free:23-slim}
+    security_opt:
+      - no-new-privileges:true
+    entrypoint: ["bash", "/schema/apply.sh", "oracle"]
+    environment:
+      ORA_CONNECT: oracle:1521/FREEPDB1
+      APP_USER: ${APP_USER:?.env 에 APP_USER 필요}
+      APP_USER_PASSWORD: ${APP_USER_PASSWORD:?.env 에 APP_USER_PASSWORD 필요}
+      SQL_DIR: /sql
+    volumes:
+      - ${SQL_DIR:-../sql}:/sql:ro
+      - ./schema:/schema:ro
+    depends_on:
+      oracle:
+        condition: service_healthy
+    restart: "no"
+
+  #-----------------------------------------------------------------------------
+  # Jaeger — TypeScript 클라이언트의 OTLP 스팬 확인용. UI 16686, OTLP gRPC 4317·HTTP 4318
+  #-----------------------------------------------------------------------------
+  jaeger:
+    <<: *hardening
+    profiles: ["tracing"]
+    image: ${JAEGER_IMAGE:-jaegertracing/jaeger:2.10.0}
+    ports:
+      - "127.0.0.1:16686:16686"
+      - "127.0.0.1:4317:4317"
+      - "127.0.0.1:4318:4318"
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q -O /dev/null http://127.0.0.1:13133/status || exit 1"]
+      interval: 10s
+      timeout: 3s
+      retries: 10
+      start_period: 5s
+
+volumes:
+  pg-data:
+  ora-data:

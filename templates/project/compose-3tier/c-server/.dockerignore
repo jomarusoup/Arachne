@@ -1,0 +1,4 @@
+# 주 컨텍스트(c-server/)에는 Dockerfile 만 보낸다. 소스는 추가 컨텍스트 csrc 로 받고,
+# 그쪽에 섞여 온 호스트 빌드 산출물은 Dockerfile 의 make clean 이 지운다.
+*
+!Dockerfile
