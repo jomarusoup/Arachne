@@ -1,0 +1,19 @@
+[package]
+name = "counter_rs"
+version = "0.1.0"
+# 하네스 기준은 Rust 2024(D16, rustc 1.85 이상)다. 이 예제는 구버전 툴체인에서도
+# 빌드되도록 2021로 둔다. 2024로 올리면 #[no_mangle]을 #[unsafe(no_mangle)]로 바꾼다.
+edition = "2021"
+publish = false
+
+[lib]
+# C 링크용 정적 라이브러리(libcounter_rs.a)와 cargo test용 rlib을 함께 만든다
+crate-type = ["staticlib", "rlib"]
+
+# 의존성 없음 — 오프라인 서버에서도 빌드된다.
+# 실제 모듈은 에러 타입에 thiserror(D04), 레이아웃 검사에 static_assertions를 검토한다.
+[dependencies]
+
+[profile.release]
+# catch_unwind로 panic을 에러 코드로 바꾸려면 unwind가 필요하다(abort면 잡히지 않는다)
+panic = "unwind"
