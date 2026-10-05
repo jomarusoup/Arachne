@@ -1,6 +1,6 @@
 ---
 name: cpp-testing
-description: C++ 테스트 작성·수정·수정, GoogleTest/CTest 설정, 실패·불안정 테스트 진단, 커버리지·sanitizer 추가 시에만 사용. 대상 경로 — **/*.cpp, **/*.hpp. 키워드 — GoogleTest, CTest, sanitizer, C++ 테스트.
+description: C++ 테스트 작성·수정·수정, GoogleTest/CTest 설정, 실패·불안정 테스트 진단, 커버리지·sanitizer·libFuzzer 퍼징·차분 테스트·장애 주입 추가 시에만 사용. 대상 경로 — **/*.cpp, **/*.hpp. 키워드 — GoogleTest, CTest, sanitizer, C++ 테스트.
 ---
 
 # C++ 테스팅 (에이전트 스킬)
@@ -192,6 +192,52 @@ if(ENABLE_TSAN)
     add_link_options(-fsanitize=thread)
 endif()
 ```
+
+## 퍼징·차분·장애 주입
+
+규칙은 `rules/cpp/testing.md`가 정본이다. 이 절은 예시만 둔다.
+
+```cpp
+// libFuzzer 하네스 — 파서가 어떤 입력에도 UB 없이 끝나는지 본다
+extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size)
+{
+    const std::span<const uint8_t> input(data, size);
+    auto result = ParseFrame(input);        // 에러는 값으로 돌아온다(D03)
+    if (result) {
+        // 차분 퍼징: 참조 구현과 결과가 다르면 중단
+        if (*result != ParseFrameReference(input).value()) {
+            std::abort();
+        }
+    }
+    return 0;
+}
+```
+
+```cmake
+# Clang에서만 퍼저 타깃을 만든다
+if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+    add_executable(fuzz_frame tests/fuzz_frame.cpp src/frame_codec.cpp)
+    target_compile_options(fuzz_frame PRIVATE -fsanitize=fuzzer,address,undefined)
+    target_link_options(fuzz_frame PRIVATE -fsanitize=fuzzer,address,undefined)
+endif()
+```
+
+```cpp
+// 장애 주입 — 전송 계층 인터페이스를 gmock으로 바꿔 부분 쓰기·EINTR을 돌려준다
+TEST(WriterTest, RetriesAfterShortWriteAndEintr)
+{
+    MockTransport transport;
+    testing::InSequence seq;
+    EXPECT_CALL(transport, Send(testing::_, 8)).WillOnce(testing::Return(-EINTR));
+    EXPECT_CALL(transport, Send(testing::_, 8)).WillOnce(testing::Return(3));
+    EXPECT_CALL(transport, Send(testing::_, 5)).WillOnce(testing::Return(5));
+
+    EXPECT_EQ(WriteAll(transport, "ABCDEFGH", 8), 0);
+}
+```
+
+- 차분 테스트 벡터는 `TEST_P`와 `INSTANTIATE_TEST_SUITE_P`로 파일마다 한 케이스를 만든다.
+- libc를 직접 부르는 코드의 장애 주입은 `c-testing`의 `--wrap` 예시를 따른다.
 
 ## 불안정 테스트 가드레일
 

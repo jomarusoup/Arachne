@@ -1,6 +1,6 @@
 ---
 name: c-testing
-description: cmocka 기반 C 테스트 전략 — TDD, 링커 --wrap 모킹, 시스템 콜 테스트 더블, valgrind·ASan/TSan 게이팅, Makefile/CMake 통합. C 코드 신규·수정·리팩터링 시 활용. 대상 경로 — **/*.c, **/*.h, **/test_*.c, **/tests/**/*.c. 키워드 — cmocka, C 테스트, --wrap 모킹, 테스트 더블, valgrind 게이팅.
+description: cmocka 기반 C 테스트 전략 — TDD, 링커 --wrap 모킹, 시스템 콜 테스트 더블, valgrind·ASan/TSan 게이팅, libFuzzer 퍼징·차분 테스트·장애 주입(부분 쓰기·EINTR·ENOSPC), Makefile/CMake 통합. C 코드 신규·수정·리팩터링 시 활용. 대상 경로 — **/*.c, **/*.h, **/test_*.c, **/tests/**/*.c. 키워드 — cmocka, C 테스트, --wrap 모킹, 테스트 더블, valgrind 게이팅.
 ---
 
 # C 테스팅 (에이전트 스킬)
@@ -162,6 +162,95 @@ static void test_Cleanup_closes_fd(void **state)
     Cleanup(7);
 }
 ```
+
+## 퍼징·차분·장애 주입
+
+규칙은 `rules/c/testing.md`가 정본이다. 이 절은 예시만 둔다.
+
+### libFuzzer 하네스 — 프레임 디코더
+
+```c
+static int OnFrame(const uint8_t *payload, size_t len, void *ctx)
+{
+    (void)payload;
+    (void)len;
+    (void)ctx;
+    return 0;
+}
+
+/*=============================================================================
+FUNCTION    : LLVMFuzzerTestOneInput
+DESCRIPTION : 임의 바이트를 디코더에 두 조각으로 나눠 넣는다(부분 수신 경로 포함)
+=============================================================================*/
+int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
+{
+    FrameDecoder *dec = NULL;
+    if (FrameDecoderCreate(4096, &dec) != 0) {
+        return 0;
+    }
+    size_t split = (size > 0) ? data[0] % (size + 1) : 0;
+    if (FrameDecoderFeed(dec, data, split, OnFrame, NULL) == 0) {
+        (void)FrameDecoderFeed(dec, data + split, size - split, OnFrame, NULL);
+    }
+    FrameDecoderDestroy(dec);
+    return 0;
+}
+```
+
+- 반환값을 무시하는 이유는 하나다. 잘못된 입력에 에러를 돌려주는 것은 정상 동작이다.
+- 크래시 입력은 `crash-<해시>` 파일로 남는다. `tests/corpus/frame/`에 옮기고 cmocka 회귀 테스트로도 만든다.
+
+### 차분 테스트 — 참조 구현과 비교
+
+```c
+static void test_Checksum_matches_reference(void **state)
+{
+    (void)state;
+    for (size_t ii = 0; ii < g_VectorCount; ii++) {
+        const TestVector *vec = &g_Vectors[ii];
+        assert_int_equal(ChecksumFast(vec->data, vec->len),
+                         ChecksumReference(vec->data, vec->len));
+    }
+}
+```
+
+- 참조 구현은 느려도 명백히 맞는 코드로 쓴다. 최적화 구현이 바뀌어도 참조 구현은 바꾸지 않는다.
+- C → Rust 이식 중이면 같은 벡터 파일을 Rust 테스트도 읽는다(`c-to-rust-migration`).
+
+### 장애 주입 — 부분 쓰기와 EINTR
+
+```c
+ssize_t __real_write(int fd, const void *buf, size_t len);
+
+ssize_t __wrap_write(int fd, const void *buf, size_t len)
+{
+    int mode = mock_type(int);
+    if (mode == FAULT_EINTR) {
+        errno = EINTR;
+        return -1;
+    }
+    if (mode == FAULT_SHORT) {
+        return __real_write(fd, buf, len / 2);   /* 절반만 씀 */
+    }
+    if (mode == FAULT_ENOSPC) {
+        errno = ENOSPC;
+        return -1;
+    }
+    return __real_write(fd, buf, len);
+}
+
+static void test_WriteAll_retries_after_eintr_and_short(void **state)
+{
+    int fd = *(int *)*state;   /* setup이 fd를 담아 둔다 */
+    will_return(__wrap_write, FAULT_EINTR);
+    will_return(__wrap_write, FAULT_SHORT);
+    will_return(__wrap_write, FAULT_NONE);
+    assert_int_equal(WriteAll(fd, "ABCDEFGH", 8), 0);
+}
+```
+
+- `ENOSPC`는 재시도하지 않고 에러를 돌려주는지, 만들던 임시 파일을 지우는지 확인한다.
+- `--wrap`은 다른 오브젝트 파일에서 부른 심볼만 가로챈다. 같은 `.c` 안의 호출은 바뀌지 않는다.
 
 ## 빌드 통합
 
