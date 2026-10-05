@@ -208,6 +208,24 @@ for link_dir in rules skills agents commands docs; do
 done
 
 #-------------------------------------------------------------------------------
+# 검사 8: 크기 경고 (실패 아님) — 길어질수록 로드 비용이 커지고 역할이 섞이기 쉽다.
+#         기준: 에이전트 200줄, 스킬 400줄, 규칙 100줄. 넘으면 분리·압축을 검토한다.
+#-------------------------------------------------------------------------------
+echo "[index] 크기 경고 (에이전트 200 · 스킬 400 · 규칙 100줄)"
+for size_file in "$REPO_DIR"/agents/*.md "$REPO_DIR"/skills/*/SKILL.md "$REPO_DIR"/rules/*/*.md; do
+    case "$size_file" in
+        */skills/archive/*|*/skills/synced/*|*/rules/README.md) continue ;;
+        */agents/*) size_limit=200 ;;
+        */skills/*) size_limit=400 ;;
+        *)          size_limit=100 ;;
+    esac
+    size_lines=$(wc -l < "$size_file" | tr -d ' ')
+    if [ "$size_lines" -gt "$size_limit" ]; then
+        echo "  [WARN] ${size_file#"$REPO_DIR"/} ${size_lines}줄 (기준 ${size_limit})"
+    fi
+done
+
+#-------------------------------------------------------------------------------
 # 결과
 #-------------------------------------------------------------------------------
 if [ "$FAIL" -eq 0 ]; then
