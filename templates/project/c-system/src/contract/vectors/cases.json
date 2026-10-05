@@ -1,0 +1,12 @@
+{
+  "version": 1,
+  "cases": [
+    { "file": "heartbeat.bin", "msgType": 0, "bodyLen": 0, "sequence": "2", "sendTimeNs": "1790000000500000000" },
+    { "file": "quote_basic.bin", "msgType": 1, "bodyLen": 48, "sequence": "1", "sendTimeNs": "1790000000123456789",
+      "quote": { "key": "ALPHA", "price": "1234500", "qty": "10000", "flags": 1 } },
+    { "file": "quote_extreme.bin", "msgType": 1, "bodyLen": 48, "sequence": "18446744073709551615", "sendTimeNs": "9007199254740993",
+      "quote": { "key": "ABCDEFGHIJKLMNOP", "price": "-9223372036854775808", "qty": "9223372036854775807", "flags": 4294967295 } },
+    { "file": "quote_extended.bin", "msgType": 1, "bodyLen": 56, "sequence": "3", "sendTimeNs": "1790000000999999999",
+      "quote": { "key": "BETA-2", "price": "-250000", "qty": "1", "flags": 2 } }
+  ]
+}
