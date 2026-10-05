@@ -369,13 +369,36 @@ export function MessageList({ messages }: { messages: Message[] }) {
 
 ### 데이터 워터폴 제거 (성능)
 
+워터폴은 앞 요청이 끝나야 다음 요청이 시작되는 구조다. 세 곳에서 생긴다.
+
+| 위치 | 증상 | 해결 |
+|---|---|---|
+| 한 함수 안 | 독립 `await` 직렬 호출 | `Promise.all`로 동시에 시작 |
+| 부모 → 자식 | 부모 데이터가 와야 자식이 마운트되어 요청 | 데이터를 경로(페이지) 단위에서 한 번에 시작하고 아래로 전달 |
+| 코드 → 데이터 | 지연 로딩 청크가 받아진 뒤에 요청 시작 | 라우트 로더·프리페치로 청크와 데이터를 동시에 요청 |
+
 ```tsx
 const a = await getA(); const b = await getB();          // BAD — 직렬 대기
 const [a, b] = await Promise.all([getA(), getB()]);      // GOOD — 병렬
+
+// RSC: 요청은 먼저 시작하고, await는 필요한 컴포넌트에서 한다
+const ordersPromise = getOrders();                        // 시작만
+return <Suspense fallback={<Skeleton />}><Orders data={ordersPromise} /></Suspense>;
 ```
 
 > 서버에서 같은 요청이 반복되면 `React.cache()`로 중복 제거. 배럴 임포트(`index.ts` 재노출)는
 > 트리셰이킹을 저해하므로 직접 임포트를 선호.
+
+### 리렌더 최적화 우선순위
+
+메모이제이션은 마지막 수단이다. 측정(React DevTools Profiler)으로 병목을 확인한 뒤 위에서부터 적용한다.
+
+1. **상태를 내린다** — 자주 바뀌는 state를 그것을 쓰는 가장 작은 컴포넌트로 옮긴다.
+2. **children으로 넘긴다** — 바뀌는 래퍼가 무거운 자식을 `children`으로 받으면 자식은 리렌더되지 않는다.
+3. **구독 범위를 줄인다** — Context를 값별로 나누고, 외부 스토어는 선택자로 필요한 조각만 구독한다.
+4. **갱신 빈도를 줄인다** — 스트림 데이터는 프레임당 1회로 묶고, 급하지 않은 갱신은 `startTransition`으로 미룬다.
+5. **그리는 양을 줄인다** — 긴 목록은 가상화한다.
+6. **메모이제이션** — 위 방법으로 부족할 때 `memo`·`useMemo`·`useCallback`을 쓴다. React Compiler를 쓰면 수동 메모는 대부분 불필요하다.
 
 ## 에러 바운더리 — UI 격리
 

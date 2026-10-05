@@ -119,6 +119,33 @@ function parse(input: unknown): string {
 }
 ```
 
+### 공개 API — 반환 타입 명시
+
+export하는 함수·메서드에는 반환 타입을 적는다.
+추론에 맡기면 구현 변경이 호출부 계약을 조용히 바꾼다.
+모듈 내부 함수는 추론에 맡겨도 된다.
+
+```typescript
+/* BAD: 반환 타입이 구현에 따라 바뀐다 */
+export function ParseHeader(view: DataView) { ... }
+
+/* GOOD: 계약이 시그니처에 고정된다 */
+export function ParseHeader(view: DataView): FrameHeader { ... }
+```
+
+### 읽기 전용 인자 — `Readonly<T>`
+
+함수가 바꾸지 않는 객체·배열 인자는 `Readonly<T>`·`readonly T[]`로 받는다.
+호출자는 인자가 변하지 않는다는 보장을 타입으로 얻는다.
+
+```typescript
+export function TotalQty(orders: readonly Order[]): Quantity { ... }
+export function Render(config: Readonly<ViewConfig>): string { ... }
+```
+
+`Readonly<T>`는 얕은 보장이다. 중첩 객체까지 막아야 하면 별도 `DeepReadonly` 타입을 쓴다.
+핫패스에서 재사용하는 버퍼는 이 규칙의 예외다. 기준은 [patterns.md](patterns.md)의 핫패스 예외를 따른다.
+
 ### 입력 검증 — Zod
 
 외부 입력(API 응답, 폼 데이터)은 Zod로 스키마 검증:
