@@ -52,7 +52,23 @@ export function useDebounce<T>(value: T, delay: number): T {
 }
 ```
 
-## 불변 상태 업데이트
+## 불변성 (매우 중요)
+
+항상 새로운 객체를 생성하고, 기존 객체를 절대 변경하지 마십시오.
+
+```
+// Pseudocode
+WRONG:  modify(original, field, value) → changes original in-place
+CORRECT: update(original, field, value) → returns new copy with change
+```
+
+근거: 불변 데이터는 숨겨진 부작용을 방지하고, 디버깅을 용이하게 하며, 안전한 동시성을 가능하게 합니다.
+
+**핫패스 예외**: UI·도메인 상태는 불변으로 다룬다. 다만 대용량 수신·변환 핫패스에서
+링버퍼·TypedArray·객체 풀을 재사용하는 것은 의도된 변이로 허용한다. 이때 변이는 해당
+모듈 안에 가두고, 바깥으로는 복사본이나 읽기 전용 뷰만 내보낸다.
+
+### 불변 상태 업데이트
 
 ```typescript
 /* BAD: 변이 */

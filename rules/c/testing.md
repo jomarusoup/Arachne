@@ -42,7 +42,7 @@ DESCRIPTION : NULL 호스트 입력 시 NULL 반환 검증
 static void test_ConnCreate_NullHost(void **state)
 {
     (void)state;
-    Conn_t *conn = ConnCreate(NULL, 8080);
+    Conn *conn = ConnCreate(NULL, 8080);
     assert_null(conn);
 }
 
@@ -52,7 +52,7 @@ DESCRIPTION : 유효한 데이터 전송 시 성공 반환 검증
 =============================================================================*/
 static void test_ConnSend_ValidData(void **state)
 {
-    Conn_t *conn = (Conn_t *)*state;
+    Conn *conn = (Conn *)*state;
     const char msg[] = "hello";
     int ret = ConnSend(conn, msg, sizeof(msg));
     assert_int_equal(ret, 0);

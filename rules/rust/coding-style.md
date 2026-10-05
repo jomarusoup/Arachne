@@ -8,27 +8,29 @@ paths:
 
 > [common/coding-style.md](../common/coding-style.md) 를 확장한다.
 
-## 헤더 형식
+## 헤더 형식 — 문서 주석
 
-Rust는 `/* */` 블록 주석 지원 → C 스타일 그대로 사용.
+Rust는 `/*###*/`·`/*===*/` 헤더 블록 대신 rustdoc 문서 주석을 쓴다. 날짜 필드는 두지 않는다(이력은 git이 정본).
 
 ```rust
-/*#############################################################################
-FILE NAME   : 파일명.rs
-DESCRIPTION : 파일 역할 한 줄 요약
-DATA        : YYYY-MM-DD
-Modification: YYYY-MM-DD
-#############################################################################*/
+//! 파일(모듈) 역할 한 줄 요약.
+//!
+//! 필요하면 설계 의도·불변식을 문단으로 덧붙인다.
 
-/*=============================================================================
-FUNCTION    : function_name
-DESCRIPTION : 역할 설명
-PARAMETERS  : type 인자명 - 설명
-RETURNED    : 반환값 설명
-=============================================================================*/
+/// 호가 틱을 검증해 주문을 만든다.
+///
+/// # Errors
+/// 가격이 0이면 `OrderError::ZeroPrice`를 반환한다.
+pub fn process_tick(price: u64) -> Result<Order, OrderError> {
+    if price == 0 {
+        return Err(OrderError::ZeroPrice);
+    }
+    Ok(Order::new(price))
+}
 ```
 
-> 공개 API에는 `///` 문서 주석 병행 — `cargo doc` 으로 추출된다.
+- 모듈·파일 헤더는 `//!`, 공개 항목은 `///`로 작성한다. `cargo doc`으로 추출된다.
+- 함수 문서는 공개 API와 동작이 자명하지 않은 함수에만 둔다.
 
 ## 포매팅
 
@@ -71,10 +73,12 @@ fn process_tick(price: u64) -> Result<Order, OrderError> {
 
 ## 네이밍 (Rust 전용)
 
+C/C++ 하우스 스타일(PascalCase 함수·`g_` 전역)을 적용하지 않는다. Rust API Guidelines를 따른다.
+
 - 함수·메서드·변수·모듈: `snake_case` (`parse_header`, `order_book`)
 - 타입·트레이트·열거형: `CamelCase` (`OrderBook`, `MarketEvent`)
 - 상수·static: `SCREAMING_SNAKE_CASE` (`MAX_DEPTH`, `TICK_SIZE`)
-- 단일 문자 금지 — `i` → `ii`, 임시값은 `tmp`, `len` 허용
+- 이름 길이는 스코프에 비례한다. 짧은 루프 인덱스 `i`·`j`는 허용한다.
 
 ## 에러 처리
 
