@@ -172,3 +172,10 @@ int ServerInit(const Config *cfg)
     return 0;
 }
 ```
+
+## 로그
+
+- 운영 로그는 레벨 매크로(`LOG_ERROR(...)` 등)로만 남긴다. 비활성 레벨은 인자를 평가하지 않으므로 인자에 부작용을 두지 않는다.
+- `/* HOTPATH */` 경로는 비동기 모드(사전 할당 링버퍼 + 로거 스레드)로 쓰고, 건별 INFO 대신 주기 통계를 남긴다.
+- DB 오류는 `sqlca.sqlcode`·오류 메시지·SQL 식별자(`stmt=ORD_INS_01`)로 남긴다. 바인드 값은 남기지 않는다.
+- 형식·폭주 억제·회전·거래 ID 추적은 `skills/operational-logging/SKILL.md`, 골격은 `templates/project/c-system/src/log/`를 따른다.
