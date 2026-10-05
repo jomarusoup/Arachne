@@ -1,0 +1,31 @@
+{
+  "schema": "stream_msg",
+  "version": 1,
+  "endian": "little",
+  "maxBody": 4096,
+  "priceScale": 10000,
+  "qtyScale": 1000,
+  "msgTypes": { "heartbeat": 0, "quote": 1 },
+  "structs": {
+    "StreamMsgHeader": {
+      "size": 24,
+      "fields": [
+        { "name": "version", "offset": 0, "size": 2, "type": "u16" },
+        { "name": "msgType", "offset": 2, "size": 2, "type": "u16" },
+        { "name": "bodyLen", "offset": 4, "size": 4, "type": "u32" },
+        { "name": "sequence", "offset": 8, "size": 8, "type": "u64" },
+        { "name": "sendTimeNs", "offset": 16, "size": 8, "type": "i64" }
+      ]
+    },
+    "StreamQuote": {
+      "size": 48,
+      "fields": [
+        { "name": "key", "offset": 0, "size": 16, "type": "ascii-nul-padded" },
+        { "name": "price", "offset": 16, "size": 8, "type": "i64" },
+        { "name": "qty", "offset": 24, "size": 8, "type": "i64" },
+        { "name": "flags", "offset": 32, "size": 4, "type": "u32" },
+        { "name": "reserved", "offset": 36, "size": 12, "type": "reserved" }
+      ]
+    }
+  }
+}
