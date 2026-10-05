@@ -62,16 +62,21 @@ let cfg = load_config(path).context("설정 로드 실패")?;
 소유권 기반 자동 해제 — `Drop` 으로 정리 보장:
 
 ```rust
-struct FeedGuard { fd: RawFd }
+use std::os::fd::OwnedFd;
 
-impl Drop for FeedGuard {
-    fn drop(&mut self) { unsafe { libc::close(self.fd); } }
+/* OwnedFd 가 Drop 시 close 를 보장 — 직접 unsafe close 불필요 */
+struct FeedGuard { fd: OwnedFd }
+
+impl FeedGuard {
+    fn new(fd: OwnedFd) -> Self { Self { fd } }
 }
 ```
+
+수동 `Drop`에서 `unsafe`가 불가피하면 `// SAFETY:` 주석으로 fd 단일 소유·중복 close 없음을 논증한다.
 
 ## 저지연 패턴
 
 - **Zero-copy** — `bytes::Bytes` / 슬라이스 파싱으로 역직렬화 시 복사 제거
 - **Arena / 사전 할당** — 핫패스에서 동적 할당 금지, `bumpalo` 또는 풀(pool) 재사용
-- **Lock-free** — 단일 생산자-소비자 큐는 `crossbeam` 링버퍼 사용, `Mutex` 회피
-- **분기 예측** — 핫패스 조건문에 `likely`/`unlikely` 힌트, 에러 경로는 `#[cold]`
+- **Lock-free** — `Mutex` 회피. `crossbeam::channel::bounded`·`ArrayQueue`는 MPMC — 단일 생산자-소비자 전용이 필요하면 SPSC 전용 크레이트 또는 직접 구현
+- **분기 예측** — 콜드 경로(에러 처리 등)를 `#[cold]` 함수로 분리. 분기 힌트(`likely`/`unlikely`, nightly)는 측정 근거가 있을 때만
