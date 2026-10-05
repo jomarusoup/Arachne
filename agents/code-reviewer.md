@@ -99,10 +99,19 @@ LLM 리뷰어가 자주 오탐하는 패턴. 해당 코드베이스에 특정한
 char buf[64];
 strcpy(buf, user_input);   /* 입력이 63바이트 초과 시 오버플로 */
 
-/* GOOD: 경계 제한 복사 */
-strncpy(buf, user_input, sizeof(buf) - 1);
-buf[sizeof(buf) - 1] = '\0';
+/* GOOD: 경계 제한 복사 — 항상 NUL 종료 */
+snprintf(buf, sizeof(buf), "%s", user_input);
+
+/* GOOD: 길이 검사 후 memcpy + 명시적 NUL 종료 */
+size_t len = strlen(user_input);
+if (len >= sizeof(buf))
+    return -1;                    /* 또는 정책에 따라 절단 */
+memcpy(buf, user_input, len);
+buf[len] = '\0';
 ```
+
+> `strncpy`는 권장 대체가 아니다 — 원본이 길면 NUL 종료를 보장하지 않고,
+> 짧으면 버퍼 끝까지 0으로 채워 비용이 든다 (레거시 코드에서만 수동 종료와 함께 허용).
 
 ### 메모리 및 리소스 안전성 (CRITICAL — 시스템 프로그래밍)
 

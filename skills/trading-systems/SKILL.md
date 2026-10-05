@@ -154,7 +154,7 @@ numactl --cpunodebind=0 --membind=0 ./trading_engine
 | 금지 | 대안 |
 |---|---|
 | 동적 할당 (`malloc`/`Box`) | 사전 할당 풀, arena |
-| 시스템 콜 (lock, condvar) | lock-free 큐, 스핀락 |
+| 시스템 콜 (lock, condvar) | 단일 작성자 설계·SPSC 큐 우선 (유저스페이스 스핀락은 보유 스레드 선점 시 지연 폭증 — 코어 격리 없이는 금지) |
 | 블로킹 I/O | 비동기 (tokio, epoll, io_uring) |
 | 예외·패닉 | Result, 에러 코드 |
 | 로그 출력 | 비동기 로그 버퍼, 후처리 |

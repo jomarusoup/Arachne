@@ -17,14 +17,14 @@ class FileHandle
 {
 public:
     explicit FileHandle(const std::string &path)
-        : file_(std::fopen(path.c_str(), "r")) {}
-    ~FileHandle() { if (file_) std::fclose(file_); }
+        : m_file(std::fopen(path.c_str(), "r")) {}
+    ~FileHandle() { if (m_file) std::fclose(m_file); }
 
     FileHandle(const FileHandle &)            = delete;
     FileHandle &operator=(const FileHandle &) = delete;
 
 private:
-    std::FILE *file_;
+    std::FILE *m_file;
 };
 ```
 

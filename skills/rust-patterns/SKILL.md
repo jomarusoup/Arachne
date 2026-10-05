@@ -72,12 +72,15 @@ let feed = connect(addr).await.context("마켓 피드 연결 실패")?;
 ## Lock-free 패턴
 
 ```rust
-use crossbeam::queue::SegQueue;      // 멀티 생산자-소비자
-use crossbeam::queue::ArrayQueue;    // 고정 크기, 핫패스용
+use crossbeam::queue::SegQueue;      // MPMC, 무제한 크기
+use crossbeam::queue::ArrayQueue;    // MPMC, 고정 크기, 핫패스용
 
-/* 단일 생산자-소비자 링버퍼 (최고 성능) */
+/* 고정 용량 MPMC 채널 — 단일 생산자-소비자 전용 큐가 아니다 */
 let (tx, rx) = crossbeam::channel::bounded(4096);
 ```
+
+- 단일 생산자-소비자 전용 큐가 필요하면 SPSC 전용 크레이트 또는 직접 구현을 검토한다
+  (P3에서 `rules/systems/philosophy.md` 동시성 절로 연결 예정)
 
 - `Mutex<T>` 대신 채널 또는 `Atomic*` 우선
 - 공유 상태가 불가피하면 `parking_lot::RwLock` (표준보다 빠름)
@@ -98,7 +101,7 @@ fn parse(data: &Bytes) -> impl Iterator<Item = &[u8]> { ... }
 
 - 동적 할당(`Box`, `Vec::push`) — 핫패스 진입 전 사전 할당 완료
 - `#[inline]` — 소규모 핫패스 함수에 명시
-- `#[cold]` — 에러 경로에 명시 (컴파일러 분기 예측 힌트)
+- `#[cold]` — 에러 등 콜드 경로 함수에 명시 (안정 채널의 분기 배치 힌트). `likely`/`unlikely`류 분기 힌트는 측정 근거가 있을 때만
 - `black_box` — 벤치마크에서 최적화 방지
 
 ```rust

@@ -14,10 +14,13 @@ paths:
 strcpy(buf, user_input);
 sprintf(buf, user_input);
 
-/* GOOD: 경계 제한 */
+/* GOOD: 경계 제한 — 1순위, 항상 NUL 종료 */
+snprintf(buf, sizeof(buf), "%s", user_input);
+
+/* 레거시 호환: strncpy는 NUL 종료를 보장하지 않고 남는 공간을 0으로 채운다.
+   기존 코드 유지 시에만, 반드시 수동 종료와 함께 */
 strncpy(buf, user_input, sizeof(buf) - 1);
 buf[sizeof(buf) - 1] = '\0';
-snprintf(buf, sizeof(buf), "%s", user_input);
 ```
 
 - `gets()` 절대 사용 금지 → `fgets()` 사용

@@ -29,7 +29,7 @@ fi
 
 저수준 코드에서 추가 확인:
 
-- **버퍼 오버플로** — 경계 검사 없는 메모리 쓰기 금지 (`strcpy` → `strncpy`)
+- **버퍼 오버플로** — 무경계 쓰기 금지 (`strcpy`→`snprintf`/검사+`memcpy`+NUL)
 - **포맷 스트링** — `printf(user_input)` 형태 금지 → `printf("%s", user_input)`
 - **정수 오버플로** — 부호 있는 정수 연산 전 범위 검증
 - **POSIX 권한** — 파일·소켓 권한 최소화 원칙 (`chmod 600`, `umask`)

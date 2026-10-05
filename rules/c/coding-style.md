@@ -78,13 +78,14 @@ size_t buf_len    = 0;
 int OpenFile(const char *path, int *out_fd)
 {
     int fd = -1;
-    int ret = 0;
 
     fd = open(path, O_RDONLY);
     if (fd < 0)
     {
+        int saved_errno = errno;   /* 로깅 호출 전 errno 보존 */
+
         perror("open");
-        return -1;
+        return -saved_errno;       /* 호출자에 -errno 반환 */
     }
 
     /* ... 작업 ... */
