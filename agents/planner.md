@@ -50,6 +50,7 @@ model: opus
     생성된 knowledge graph 또는 `/understand-explain`) 그래프 정보를 먼저 참고해 아키텍처
     레이어와 의존 방향을 빠르게 잡는다. 미설치면 Grep/Glob 으로 직접 구조를 훑는다.
 - Systems Philosophy: C/C++/Rust 설계면 `~/.claude/rules/systems/philosophy.md`(결정은 같은 폴더 `decisions.md`)를 먼저 Read한다. paths 규칙은 서브에이전트에 로드되지 않는다.
+- Data Throughput: 대용량 데이터 경로(초당 수만 건 이상 수신·변환·저장·송출)면 `~/.claude/skills/data-throughput-accelerator/SKILL.md`를 Read하고, 설계에 채널별 손실 정책(전량 보존·최신값 병합·샘플링), 백프레셔 경로(어느 큐가 차면 누가 기다리는지), 배치 크기·커밋 주기를 수치로 적는다. 셋 중 하나라도 없으면 계획 미완료다.
 - Technical Changes: 수정할 함수/클래스, 추가할 로직, 데이터 구조 변경점을 찾음
 - Reuse Patterns: 프로젝트 내 기존 패턴과 재사용 가능한 공통 로직을 검토
 
