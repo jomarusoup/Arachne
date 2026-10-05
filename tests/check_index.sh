@@ -47,7 +47,8 @@ CheckReferenced() {
 #===============================================================================
 # FUNCTION    : CheckSkillReferenced
 # DESCRIPTION : skills/<이름>/ 각 스킬 디렉터리명이 index_file 에 등장하는지 검사
-#               (스킬은 Agent Skills 표준 포맷 skills/<이름>/SKILL.md — archive/ 제외)
+#               (스킬은 Agent Skills 표준 포맷 skills/<이름>/SKILL.md — archive/ 제외,
+#                synced/ 는 Claude 앱 스킬 동기화 산출물이라 제외)
 # PARAMETERS  : string index_file - 스킬명이 나열돼야 할 인덱스 문서
 # RETURNED    : 0(모두 참조됨) / 1(누락 있음)
 #===============================================================================
@@ -61,6 +62,7 @@ CheckSkillReferenced() {
         local name
         name=$(basename "$dir")
         [ "$name" = "archive" ] && continue
+        [ "$name" = "synced" ] && continue
         if ! grep -qwF "$name" "$REPO_DIR/$index_file"; then
             echo "  [DRIFT] skills/$name/ 가 $index_file 에 없음"
             missing=1
