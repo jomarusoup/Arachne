@@ -82,11 +82,8 @@ WriteStoppedPidfile() {
     [ -f "${WORK}/audit.log" ]
     grep -q "action=unmask segment=${SEG} query=key:30 reason=\"INC-1234 tester check\"" "${WORK}/audit.log"
     grep -q "user=$(id -un) uid=$(id -u)" "${WORK}/audit.log"
-    if [ "$(uname -s)" = "Linux" ]; then
-        perm=$(stat -c '%a' "${WORK}/audit.log")
-    else
-        perm=$(stat -f '%Lp' "${WORK}/audit.log")
-    fi
+    # GNU stat(-c) 우선, BSD stat(-f) 폴백 — macOS 러너는 GNU coreutils 가 PATH 앞에 올 수 있다
+    perm=$(stat -c '%a' "${WORK}/audit.log" 2>/dev/null || stat -f '%Lp' "${WORK}/audit.log")
     [ "${perm}" = "600" ]
 }
 

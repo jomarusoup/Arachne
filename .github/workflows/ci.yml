@@ -60,7 +60,7 @@ jobs:
           make -C templates/project/c-system/tools test
           make -C templates/project/c-system/examples/ffi-rust test
           make -C templates/project/throughput-poc
-          node --test templates/project/desktop-data-client/
+          node --test templates/project/desktop-data-client/*.test.mjs
 
       - name: 3티어 compose 스모크 (C 빌드 테스트 · PostgreSQL · 스키마 적용)
         working-directory: templates/project/compose-3tier
