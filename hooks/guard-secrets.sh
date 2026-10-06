@@ -201,12 +201,33 @@ command_text=$(GuardJsonString "${payload}" "command")
 [ -z "${command_text}" ] && exit 0
 
 #===============================================================================
-# FUNCTION    : FindCommit
-# DESCRIPTION : 명령의 한 부분이 git commit 인지 보고, 맞으면 옵션을 해석해
-#               g_IsCommit·g_CommitAll 을 갱신한다.
+# FUNCTION    : ResolveDir
+# DESCRIPTION : 경로를 현재 추적 중인 디렉터리 기준 절대 경로로 바꾼다(~ 펼침 포함).
+# PARAMETERS  : string base   - 기준 디렉터리
+#               string target - cd·git -C 인자
+# RETURNED    : 절대 경로를 stdout 으로
+#===============================================================================
+ResolveDir() {
+    local base="$1"
+    local target="$2"
+    # 글자 그대로의 ~ 를 비교한다(셸 펼침 전 문자열)
+    # shellcheck disable=SC2088
+    case "${target}" in
+        "~")   printf '%s' "${HOME}" ;;
+        "~/"*) printf '%s/%s' "${HOME}" "${target#\~/}" ;;
+        /*)    printf '%s' "${target}" ;;
+        *)     printf '%s/%s' "${base}" "${target}" ;;
+    esac
+}
+
+#===============================================================================
+# FUNCTION    : ScanSegment
+# DESCRIPTION : 명령의 한 부분을 본다. cd·pushd 면 추적 디렉터리를 옮기고,
+#               git commit 이면 옵션을 해석해 커밋이 일어날 디렉터리를 기록한다.
+#               (git -C <경로> 가 있으면 그 경로를 쓴다)
 # PARAMETERS  : string... words - 부분을 이루는 단어들(따옴표 해석 완료)
 #===============================================================================
-FindCommit() {
+ScanSegment() {
     local -a words=("$@")
     local ii=0
     while [ "${ii}" -lt "${#words[@]}" ]; do
@@ -216,40 +237,59 @@ FindCommit() {
         esac
     done
     [ "${ii}" -ge "${#words[@]}" ] && return 0
-    [ "${words[${ii}]##*/}" = "git" ] || return 0
+
+    case "${words[${ii}]##*/}" in
+        cd|pushd)
+            g_CurDir=$(ResolveDir "${g_CurDir}" "${words[$((ii + 1))]:-~}")
+            return 0 ;;
+        git) ;;
+        *) return 0 ;;
+    esac
 
     local -a git_args=("${words[@]:$((ii + 1))}")
     local sub_idx
+    local commit_dir="${g_CurDir}"
+    local jj
     sub_idx=$(GuardGitSubcommand "${git_args[@]+"${git_args[@]}"}")
     [ "${sub_idx}" -ge 0 ] || return 0
     [ "${git_args[${sub_idx}]}" = "commit" ] || return 0
 
+    for ((jj = 0; jj < sub_idx; jj++)); do
+        if [ "${git_args[${jj}]}" = "-C" ] && [ $((jj + 1)) -lt "${sub_idx}" ]; then
+            commit_dir=$(ResolveDir "${commit_dir}" "${git_args[$((jj + 1))]}")
+        fi
+    done
+
     g_IsCommit=1
+    g_CommitDir="${commit_dir}"
     GuardParseCommitArgs "${git_args[@]:$((sub_idx + 1))}"
     [ "${g_CommitAll}" -eq 1 ] && g_IsCommitAll=1
     return 0
 }
 
 #-------------------------------------------------------------------------------
-# git commit 이 아니면 관여하지 않는다 (따옴표 해석 후 단어 단위로 판정)
+# git commit 이 아니면 관여하지 않는다 (따옴표 해석 후 단어 단위로 판정).
+# 명령 안의 cd 를 따라가며 커밋이 일어날 저장소를 정한다.
 #-------------------------------------------------------------------------------
 g_IsCommit=0
 g_IsCommitAll=0
+g_CurDir=$(GuardJsonString "${payload}" "cwd")
+[ -n "${g_CurDir}" ] || g_CurDir="${PWD}"
+g_CommitDir="${g_CurDir}"
 GuardTokenize "${command_text}"
 segment_words=()
 for token in "${g_Tokens[@]+"${g_Tokens[@]}"}"; do
     if [ "${token}" = "${GUARD_SEGMENT_MARK}" ]; then
-        FindCommit "${segment_words[@]+"${segment_words[@]}"}"
+        ScanSegment "${segment_words[@]+"${segment_words[@]}"}"
         segment_words=()
     else
         segment_words+=("${token}")
     fi
 done
-FindCommit "${segment_words[@]+"${segment_words[@]}"}"
+ScanSegment "${segment_words[@]+"${segment_words[@]}"}"
 [ "${g_IsCommit}" -eq 1 ] || exit 0
 
-work_dir=$(GuardJsonString "${payload}" "cwd")
-if [ -n "${work_dir}" ]; then cd "${work_dir}" 2>/dev/null || exit 0; fi
+cd "${g_CommitDir}" 2>/dev/null || exit 0
 git rev-parse --is-inside-work-tree >/dev/null 2>&1 || exit 0
 
 #-------------------------------------------------------------------------------

@@ -215,7 +215,7 @@ card 4111 1111 1111 1111')" ]
 }
 
 @test "guard-secrets: git commit 이 아니면 관여하지 않음" {
-    printf 'k="AKIAABCDEFGHIJKLMNOP"\n' > "${REPO}/k.c"
+    printf 'k="AKIAABCDEFGHIJKLMNOP"\n' > "${REPO}/k.c"  # ARACHNE-ALLOW-SECRET (테스트용 가짜 키)
     git -C "${REPO}" add k.c
     run bash -c "printf '{\"tool_name\":\"Bash\",\"tool_input\":{\"command\":\"git status\"},\"cwd\":\"${REPO}\"}' | bash '${GUARD_SECRETS}'"
     [ -z "$output" ]
@@ -230,4 +230,25 @@ card 4111 1111 1111 1111')" ]
     [ "$(BashDecision 'psql -c "DROP TABLE t"')" = "ask" ]
     [ -z "$(BashDecision 'git commit -m "DROP TABLE 문서화"')" ]
     [ "$(SecretsDecision a.c 'const char *k = "AKIAABCDEFGHIJKLMNOP";')" = "deny" ]
+}
+
+#-------------------------------------------------------------------------------
+# 명령 안에서 cd·git -C 로 다른 저장소에 커밋하는 경우 (2026-10-06 W5 실측에서 발견)
+#-------------------------------------------------------------------------------
+@test "guard-secrets: cd <저장소> && git commit 은 그 저장소의 스테이징을 검사" {
+    printf 'k="AKIAABCDEFGHIJKLMNOP"\n' > "${REPO}/k.c"  # ARACHNE-ALLOW-SECRET (테스트용 가짜 키)
+    git -C "${REPO}" add k.c
+    other=$(mktemp -d)
+    out=$(printf '{"tool_name":"Bash","tool_input":{"command":"cd %s && git commit -m x"},"cwd":"%s"}' "${REPO}" "${other}" \
+        | bash "${GUARD_SECRETS}")
+    rm -rf "${other}"
+    printf '%s' "${out}" | grep -q '"deny"'
+}
+
+@test "guard-secrets: git -C <저장소> commit 도 그 저장소를 검사" {
+    printf 'k="AKIAABCDEFGHIJKLMNOP"\n' > "${REPO}/k.c"  # ARACHNE-ALLOW-SECRET (테스트용 가짜 키)
+    git -C "${REPO}" add k.c
+    out=$(printf '{"tool_name":"Bash","tool_input":{"command":"git -C %s commit -m x"},"cwd":"/"}' "${REPO}" \
+        | bash "${GUARD_SECRETS}")
+    printf '%s' "${out}" | grep -q '"deny"'
 }
