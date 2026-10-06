@@ -26,6 +26,7 @@ Claude Code가 이를 네이티브로 자동 로드한다:
 │   ├── fastapi-reviewer.md          # FastAPI async·DI·API 리뷰 (model: sonnet)
 │   ├── react-reviewer.md            # React/Next 렌더·a11y·XSS 리뷰 (model: sonnet)
 │   ├── typescript-reviewer.md       # TS async·타입 설계·Node 보안·바이너리 처리 리뷰 (model: sonnet)
+│   ├── rust-reviewer.md             # Rust 소유권·unsafe·async·FFI 경계 리뷰 (model: sonnet)
 │   └── database-reviewer.md         # DB schema·쿼리·migration·임베디드 SQL 리뷰 (model: sonnet)
 │
 ├── commands/                        # 슬래시 커맨드 (/명령어)
@@ -44,6 +45,7 @@ Claude Code가 이를 네이티브로 자동 로드한다:
 │   ├── fastapi-review.md            # /fastapi-review — FastAPI 리뷰
 │   ├── react-review.md              # /react-review — React/Next 리뷰
 │   ├── ts-review.md                 # /ts-review  — TypeScript 리뷰
+│   ├── rust-review.md               # /rust-review — Rust 리뷰
 │   ├── database-review.md           # /database-review — DB schema·migration 리뷰
 │   ├── tdd.md                       # /tdd        — TDD 사이클
 │   ├── e2e.md                       # /e2e        — E2E 테스트
@@ -81,6 +83,7 @@ Claude Code가 이를 네이티브로 자동 로드한다:
 │   ├── python/     # Python (coding-style·hooks·patterns·security·testing·fastapi·data-handling)
 │   ├── web/        # 웹 디자인 품질·UI 레이아웃·보안·성능 (design-quality·ui-layout·security·performance)
 │   ├── react/      # React (coding-style·patterns·testing)
+│   ├── electron/   # Electron (security·patterns) — main·preload·electron* 파일 편집 시 로드
 │   ├── docker/     # Docker/Compose (coding-style·hooks·patterns·security·testing)
 │   ├── javascript/ # JS/TS (coding-style·hooks·patterns·security·testing)
 │   ├── bash/       # Bash/Shell (coding-style·hooks·patterns·security·testing)
@@ -90,19 +93,20 @@ Claude Code가 이를 네이티브로 자동 로드한다:
 │   ├── bash_profile                 # → ~/.bash_profile (sgrep 등 유틸 포함)
 │   └── vimrc                        # → ~/.vimrc
 │
-├── skills/                          # 워크플로·도메인 스킬 (61개 현역, README.md 참고 — 비활성 도메인은 archive/)
+├── skills/                          # 워크플로·도메인 스킬 (65개 현역, README.md 참고 — 비활성 도메인은 archive/)
 │   │                                # 각 스킬은 skills/<이름>/SKILL.md (Agent Skills 표준 포맷)
 │   ├── build-debug / memory-check                                   # Harness 전용
 │   ├── cpp-patterns / cpp-testing / c-testing / embedded-sql        # C/C++·임베디드 SQL
 │   ├── c-server-patterns / c-to-rust-migration / operational-logging # C 서버·Rust 이식·운영 로그
+│   ├── remote-linux-analysis / distributed-tracing                  # 원격·오프라인 분석·분산 추적
 │   ├── naming-dictionary                                            # 네이밍 사전·검사
-│   ├── latency-critical-systems / error-handling
+│   ├── latency-critical-systems / service-latency / error-handling
 │   ├── trading-systems / performance-profiling
 │   ├── golang-patterns / golang-testing / go-http-patterns
 │   ├── rust-patterns / rust-testing / rust-library-crate
 │   ├── python-patterns / python-testing                             # Python
 │   ├── backend-patterns / frontend-patterns / make-interfaces-feel-better  # 백엔드·웹
-│   ├── react-testing / vite-patterns                                # React 테스트·Vite
+│   ├── react-testing / vite-patterns / desktop-data-client          # React 테스트·Vite·클라이언트 대용량 수신
 │   ├── api-design / fastapi-patterns                                  # API·FastAPI
 │   ├── database-migrations / postgres-patterns / json-contracts     # 데이터·DB
 │   ├── sql-schema-versioning / oracle-patterns / api-contracts      # .sql 버전 규약·Oracle·계약 우선

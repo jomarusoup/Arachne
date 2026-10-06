@@ -12,16 +12,16 @@
 #===============================================================================
 # FUNCTION    : ValidateProjectProfile
 # DESCRIPTION : 프로젝트 CI profile 이름 검증
-# PARAMETERS  : string profile - minimal|python|web|python-web|cpp|rust
+# PARAMETERS  : string profile - minimal|python|web|python-web|cpp|rust|c-system
 # RETURNED    : 유효하면 0, 아니면 1
 #===============================================================================
 ValidateProjectProfile() {
     local profile="$1"
 
     case "$profile" in
-        minimal|python|web|python-web|cpp|rust) return 0 ;;
+        minimal|python|web|python-web|cpp|rust|c-system) return 0 ;;
         *)
-            ArachneLog "ERROR" "알 수 없는 profile: '$profile' (minimal|python|web|python-web|cpp|rust)"
+            ArachneLog "ERROR" "알 수 없는 profile: '$profile' (minimal|python|web|python-web|cpp|rust|c-system)"
             return 1
             ;;
     esac
@@ -88,6 +88,70 @@ InstallProjectDesignDocs() {
         -e "s/Title: \"Project design\"/Title: \"${project_safe} design\"/" \
         "$design_tmpl" > "$design_file"
     echo "  생성: docs/design/DESIGN.md"
+}
+
+#===============================================================================
+# FUNCTION    : ScaffoldCSystemKit
+# DESCRIPTION : c-system profile 스타터 키트를 프로젝트에 복사한다. 이미 있는 파일은
+#               덮어쓰지 않는다. git 이 추적하는 파일만 복사해 빌드 산출물이 섞이지
+#               않게 하고, git 정보가 없으면 build/·*.dSYM 등을 빼고 복사한다.
+#               배치: src/log·src/shm·tools·conf → 같은 이름, docs → docs/ops,
+#                     sql → sql, naming-dict.tsv → .arachne/naming-dict.tsv
+# PARAMETERS  : string project_abs - 프로젝트 절대 경로
+# RETURNED    : 0(성공) / 1(템플릿 없음)
+#===============================================================================
+ScaffoldCSystemKit() {
+    local project_abs="$1"
+    local kit="$REPO_DIR/templates/project/c-system"
+    local copied=0
+    local kept=0
+    local pair
+    local src_rel
+    local dst_rel
+    local file
+    local rel
+    local dst
+
+    [ -d "$kit" ] || { ArachneLog "ERROR" "c-system 템플릿이 없습니다: $kit"; return 1; }
+
+    for pair in \
+        "templates/project/c-system/src/log:src/log" \
+        "templates/project/c-system/src/shm:src/shm" \
+        "templates/project/c-system/tools:tools" \
+        "templates/project/c-system/conf:conf" \
+        "templates/project/c-system/docs:docs/ops" \
+        "templates/project/sql:sql"; do
+        src_rel="${pair%%:*}"
+        dst_rel="${pair#*:}"
+        while IFS= read -r file; do
+            [ -n "$file" ] || continue
+            rel="${file#"$src_rel"/}"
+            dst="$project_abs/$dst_rel/$rel"
+            if [ -e "$dst" ]; then
+                kept=$((kept + 1))
+                continue
+            fi
+            mkdir -p "$(dirname "$dst")"
+            cp -p "$REPO_DIR/$file" "$dst"
+            copied=$((copied + 1))
+        done < <(
+            if git -C "$REPO_DIR" rev-parse --is-inside-work-tree >/dev/null 2>&1; then
+                git -C "$REPO_DIR" ls-files -- "$src_rel"
+            else
+                (cd "$REPO_DIR" && find "$src_rel" -type f \
+                    ! -path '*/build/*' ! -path '*.dSYM/*' ! -name '*.o')
+            fi
+        )
+    done
+
+    if [ ! -e "$project_abs/.arachne/naming-dict.tsv" ]; then
+        cp "$REPO_DIR/templates/project/naming-dict.tsv" "$project_abs/.arachne/naming-dict.tsv"
+        copied=$((copied + 1))
+    else
+        kept=$((kept + 1))
+    fi
+    echo "  c-system 스타터 키트: 생성 ${copied}개, 보존 ${kept}개"
+    return 0
 }
 
 #===============================================================================
@@ -166,6 +230,9 @@ InitProjectCi() {
     else
         echo "  보존: .arachne/commands"
     fi
+    if [ "$profile" = "c-system" ]; then
+        ScaffoldCSystemKit "$project_abs" || return 1
+    fi
 
     ArachneSection "프로젝트 CI 초기화 완료: $project_abs"
     echo "  profile: $profile"
@@ -211,7 +278,7 @@ CheckProject() {
 # DESCRIPTION : 신규 프로젝트를 기록 가능한 문서 구조로 스캐폴딩.
 #               문서 종류별 frontmatter 는 docs/template/*.md 에서 파생.
 # PARAMETERS  : 위치인자 project_name [parent_dir] + 플래그 --no-git
-#               --profile minimal|python|web|python-web|cpp|rust
+#               --profile minimal|python|web|python-web|cpp|rust|c-system
 #               parent_dir 생략 시 현재 디렉터리. 대상 존재 시 거부.
 #===============================================================================
 NewProject() {

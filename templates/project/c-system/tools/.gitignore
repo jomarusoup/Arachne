@@ -1,0 +1,7 @@
+shm_view
+shm_recover
+shm_admin
+test_shm_fixture
+*.dSYM
+shmctl.log
+shm_view_audit.log

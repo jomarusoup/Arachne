@@ -1,0 +1,4 @@
+test_log
+test_log_tsan
+*.dSYM/
+*.o

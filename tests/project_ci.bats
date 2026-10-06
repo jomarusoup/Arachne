@@ -181,3 +181,22 @@ teardown() {
     [ "$status" -ne 0 ]
     [[ "$output" == *"init-ci"* ]]
 }
+
+@test "project ci: c-system profile 은 스타터 키트를 복사하고 기존 파일은 보존" {
+    mkdir -p "${PROJECT_DIR}/src/log"
+    printf 'keep\n' > "${PROJECT_DIR}/src/log/log.h"
+    run bash "${REPO_DIR}/install.sh" init-ci "${PROJECT_DIR}" --profile c-system
+    [ "$status" -eq 0 ]
+    [ "$(cat "${PROJECT_DIR}/.arachne/profile")" = "c-system" ]
+    grep -qF "c-system)" "${PROJECT_DIR}/.github/workflows/arachne.yml"
+    grep -qF "make -C src/shm test" "${PROJECT_DIR}/.arachne/commands"
+    [ -f "${PROJECT_DIR}/src/shm/shm_segment.c" ]
+    [ -f "${PROJECT_DIR}/tools/shmctl.sh" ]
+    [ -f "${PROJECT_DIR}/sql/apply-schema.sh" ]
+    [ -f "${PROJECT_DIR}/docs/ops/recovery-runbook.md" ]
+    [ -f "${PROJECT_DIR}/.arachne/naming-dict.tsv" ]
+    # 이미 있던 파일은 덮어쓰지 않는다
+    [ "$(cat "${PROJECT_DIR}/src/log/log.h")" = "keep" ]
+    # 빌드 산출물은 복사하지 않는다
+    [ -z "$(find "${PROJECT_DIR}" -name '*.dSYM' -o -name '*.o' | head -1)" ]
+}

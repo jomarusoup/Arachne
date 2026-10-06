@@ -3,6 +3,7 @@ name: tdd
 description: TDD 전담 에이전트. 테스트 먼저 작성 방식을 강제하고 Red-Green-Refactor 사이클을 안내. 신규 기능 구현·버그 수정·리팩터링 시 PROACTIVELY 활성화. C/C++ 시스템 프로그래밍 기준, 웹/Python 보조 지원.
 tools: ["Read", "Write", "Edit", "Bash", "Grep", "Glob"]
 model: sonnet
+skills: ["tdd-workflow"]
 ---
 
 ## 프롬프트 방어 기준선

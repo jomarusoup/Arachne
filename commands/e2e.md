@@ -94,6 +94,75 @@ npx playwright test --debug tests/failing.spec.ts
 
 ---
 
+## Electron E2E — Playwright `_electron`
+
+`package.json`에 `electron`이 있으면 이 절을 쓴다. 빌드 산출물을 띄워 main과 renderer를 함께 검증한다.
+
+```bash
+npm run build                          # main·preload·renderer 빌드
+npx playwright test tests/electron/    # _electron 시나리오만
+```
+
+```typescript
+import { _electron as electron, expect, test } from "@playwright/test";
+
+test("main·renderer 동작과 IPC 노출 범위", async () => {
+    const app  = await electron.launch({ args: ["dist/main/index.js"] });
+    const page = await app.firstWindow();                       // renderer
+
+    // main 프로세스 검증: 창 보안 설정
+    const prefs = await app.evaluate(({ BrowserWindow }) =>
+        BrowserWindow.getAllWindows()[0].webContents.getLastWebPreferences());
+    expect(prefs?.contextIsolation).toBe(true);
+    expect(prefs?.sandbox).toBe(true);
+
+    // IPC 허용 목록: preload가 노출한 API가 정확히 이 목록이어야 한다
+    expect(await page.evaluate(() => Object.keys((window as any).api).sort()))
+        .toEqual(["SubmitAction", "Subscribe"]);
+    expect(await page.evaluate(() => typeof (window as any).require)).toBe("undefined");
+
+    await app.close();
+});
+```
+
+- 데이터 수신 화면은 송신 시뮬레이터(작은 Node `net` 서버)를 띄우고 포트를 환경변수로 넘긴다.
+- 허용 목록 밖 채널을 부르는 시도가 거부되는지도 확인한다(`skills/desktop-data-client/SKILL.md` 11절).
+- CI의 Linux 러너는 `xvfb-run npx playwright test`로 실행한다. 실패 시 `test-results/`의 트레이스를 본다.
+
+## 3티어 시나리오 — 클라이언트 → C 서버 → DB
+
+클라이언트(웹·Electron), C 서버, DB를 한 번에 검증한다.
+환경은 `templates/project/compose-3tier`를 쓴다. 거래 ID 하나로 모든 구간을 확인하는 것이 핵심이다.
+
+```bash
+# 1. 기동 — .env 는 .env.example 에서 만들고 값은 로컬 전용으로 바꾼다
+docker compose config --quiet
+docker compose up c-build                       # C 모듈 테스트(Linux)
+docker compose up -d postgres                   # Oracle 도 보려면 --profile oracle
+
+# 2. 스키마 적용 — 미적용 버전만 적용, 실패하면 여기서 멈춘다 (sql-schema-versioning)
+docker compose run --rm schema-pg
+docker compose --profile server --profile tracing up -d c-server jaeger
+
+# 3. Playwright — 테스트가 요청마다 고정 거래 ID 를 X-Request-Id 로 보낸다
+E2E_TXN_PREFIX=T99-E2E npx playwright test                  # 웹
+npx playwright test --config playwright.electron.config.ts  # Electron(_electron.launch)
+
+# 4. 거래 ID 로 로그·추적 확인
+docker compose logs --no-color c-server > e2e-server.log
+tools/logtrace.sh T99-E2E-0001 e2e-server.log   # 서버 구간이 시각순으로 이어지는지
+# Jaeger UI(127.0.0.1:16686)에서 app.txn_id=T99-E2E-0001 스팬을 찾는다
+
+# 5. 정리 — 볼륨은 남긴다 (초기화가 필요할 때만 down -v)
+docker compose --profile server --profile tracing down
+```
+
+- 실패한 테스트의 거래 ID를 보고서에 남긴다. 그 ID로 `logtrace.sh`를 돌리면 어느 구간에서 끊겼는지 보인다.
+- 테스트 데이터는 합성 데이터만 쓴다. 운영 덤프를 넣지 않는다.
+- 추적 규약은 `distributed-tracing` 스킬, 로그 형식은 `operational-logging` 스킬이 정본이다.
+
+---
+
 ## 판정 기준
 
 | 결과           | 조치                                  |

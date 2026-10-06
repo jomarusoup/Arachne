@@ -492,7 +492,7 @@ E-2b (W3, I-2와 같은 PR) — 대량·동시성 (= D-3)
 | 금지 사항 | 공유메모리에 포인터 저장, 헤더 검증 없는 attach, 락 없는 다중 작성, 개인정보 불필요 필드 적재 |
 | 수명 | 생성·attach·detach·삭제 소유 프로세스 명시, 권한 최소(0600·0640), 재기동 시 재사용 vs 재생성 규칙 |
 
-**I-3. 메모리 컨트롤·복구 도구** (W4) — 골격은 `templates/project/profiles/c-system/tools/`
+**I-3. 메모리 컨트롤·복구 도구** (W4) — 골격은 `templates/project/c-system/tools/` (c-system 프로필이 `tools/`로 복사)
 
 | 도구 | 기능 |
 |---|---|
@@ -500,7 +500,7 @@ E-2b (W3, I-2와 같은 PR) — 대량·동시성 (= D-3)
 | `shm_recover` (C) | 헤더 검증 → 손상 판정(매직·버전·체크섬·상태 플래그) → **DB에서 재적재**(I-2 적재 경로 재사용) → 정합성 검증 → 상태 플래그 정상 전환. `--dry-run`·`--verify-only`. 운영 사용 시 확인 절차 |
 | `skills/shm-db-patterns` 운영 절 | 복구 런북 템플릿(증상 → 판정 → 조치 → 검증 → 기록), 도구 사용 예 |
 
-**I-4. 메모리 조회 도구** (W4) — `templates/project/profiles/c-system/tools/`
+**I-4. 메모리 조회 도구** (W4) — `templates/project/c-system/tools/`
 
 | 도구 | 기능 |
 |---|---|

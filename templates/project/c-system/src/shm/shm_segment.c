@@ -282,7 +282,8 @@ int ShmSegAttach(const char *name, const ShmLayout *layout, uint32_t flags, ShmS
     {
         goto cleanup;
     }
-    ret = ShmHdrCheck(seg->hdr, layout, seg->map_size, flags);
+    ret = ((flags & SHM_ATTACH_NO_CHECK) != 0) ? 0 :
+          ShmHdrCheck(seg->hdr, layout, seg->map_size, flags);
     if (ret != 0)
     {
         ShmSegDetach(seg);      /* 검증 실패한 매핑은 쓰지 않는다 */
@@ -293,6 +294,80 @@ int ShmSegAttach(const char *name, const ShmLayout *layout, uint32_t flags, ShmS
 cleanup:
     close(fd);
     return ret;
+}
+
+int ShmSegPeekHdr(const char *name, ShmHdr *out)
+{
+    int         ret  = 0;
+    int         fd   = -1;
+    void       *addr = MAP_FAILED;
+    struct stat st;
+
+    if (name == NULL || out == NULL || strlen(name) >= SHM_NAME_MAX_LEN)
+    {
+        return -EINVAL;
+    }
+    fd = shm_open(name, O_RDONLY, 0);
+    if (fd < 0)
+    {
+        return -errno;
+    }
+    if (fstat(fd, &st) != 0)
+    {
+        ret = -errno;
+    }
+    else if ((size_t)st.st_size < SHM_HDR_SIZE)
+    {
+        ret = -EAGAIN;
+    }
+    else
+    {
+        addr = mmap(NULL, SHM_HDR_SIZE, PROT_READ, MAP_SHARED, fd, 0);
+        if (addr == MAP_FAILED)
+        {
+            ret = -errno;
+        }
+        else
+        {
+            memcpy(out, addr, SHM_HDR_SIZE);
+            munmap(addr, SHM_HDR_SIZE);
+        }
+    }
+    close(fd);
+    return ret;
+}
+
+int ShmSegResetHdr(ShmSeg *seg, const ShmLayout *layout)
+{
+    ShmHdr *hdr = NULL;
+    int     ret = 0;
+
+    if (seg == NULL || layout == NULL || seg->is_rdonly ||
+        ShmSegCalcSize(layout) != seg->map_size)
+    {
+        return -EINVAL;
+    }
+    hdr = seg->hdr;
+    /* 매직을 먼저 0 으로 — 그 사이 attach 하는 쪽은 "초기화 중"으로 본다 */
+    atomic_store_explicit(&hdr->magic, 0, memory_order_release);
+    hdr->layout_ver = layout->layout_ver;
+    hdr->rec_size   = layout->rec_size;
+    hdr->rec_cap    = layout->rec_cap;
+    hdr->rec_cnt    = 0;
+    hdr->checksum   = 0;
+    memset(hdr->reserved, 0, sizeof(hdr->reserved));
+    atomic_store(&hdr->state, SHM_STATE_RECOVERING);
+    memset(&hdr->lock, 0, sizeof(hdr->lock));
+    ret = ShmLockInit(&hdr->lock.mutex);
+    if (ret != 0)
+    {
+        /* 매직을 0 으로 두면 "초기화 중"으로 오인된다 — 매직을 되돌리고 CORRUPT 로 남긴다 */
+        atomic_store(&hdr->state, SHM_STATE_CORRUPT);
+        atomic_store_explicit(&hdr->magic, SHM_MAGIC, memory_order_release);
+        return ret;
+    }
+    atomic_store_explicit(&hdr->magic, SHM_MAGIC, memory_order_release);
+    return 0;
 }
 
 void ShmSegDetach(ShmSeg *seg)
@@ -317,6 +392,11 @@ int ShmSegRemove(const char *name)
 ShmHdr *ShmSegHdr(ShmSeg *seg)
 {
     return seg->hdr;
+}
+
+size_t ShmSegMapSize(const ShmSeg *seg)
+{
+    return seg->map_size;
 }
 
 void *ShmSegData(ShmSeg *seg)

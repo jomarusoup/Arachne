@@ -142,10 +142,10 @@ Arachne/
 │   ├── ...                      # 언어별 규칙 (c, cpp, golang, rust, python, js, bash)
 │   └── web/                     # 웹 디자인 품질 (design-quality)
 │
-├── skills/                      # 워크플로·도메인 스킬 (61개 현역 + archive)
-├── commands/                    # 슬래시 커맨드 (20개)
-├── agents/                      # 서브에이전트 9개 (planner · code-reviewer · tdd · debugger
-│                                #   · python-reviewer · fastapi-reviewer · react-reviewer · typescript-reviewer
+├── skills/                      # 워크플로·도메인 스킬 (65개 현역 + archive)
+├── commands/                    # 슬래시 커맨드 (21개)
+├── agents/                      # 서브에이전트 10개 (planner · code-reviewer · tdd · debugger
+│                                #   · python-reviewer · fastapi-reviewer · react-reviewer · typescript-reviewer · rust-reviewer
 │                                #   · database-reviewer)
 ├── hooks/                       # 이벤트 훅 (session-start/end, pre-compact, git-bus-check,
 │                                #   doc-drift-check, ua-stale-check, 보안 가드 guard-bash·guard-secrets)

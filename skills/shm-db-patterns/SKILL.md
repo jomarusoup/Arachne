@@ -42,7 +42,7 @@ description: 실시간 데이터를 공유메모리에 두고 Oracle·PostgreSQL
 | attach 수 | 직접 알 수 없다(`/proc/<pid>/maps`·`lsof`) | `shm_nattch`로 바로 안다 |
 | huge page | hugetlbfs에 만든 파일을 `mmap` | `SHM_HUGETLB` 플래그 |
 
-- 운영 도구(`shmctl.sh`·`shm_view`)는 두 방식을 모두 다룬다.
+- 운영 도구는 POSIX를 기본으로, SysV는 `shmctl.sh`의 `sysv:<shmid>` 대상으로 다룬다.
 - macOS는 POSIX 이름이 31자 이하이고 `fstat` 크기를 페이지 단위로 올려 보고한다. 예제는 이를 감안한다.
 
 ### 크기 산정
@@ -309,32 +309,50 @@ EXEC SQL CLOSE item_cur;
 | `INIT`·`RECOVERING`으로 남음 | 이전 적재가 중간에 죽었다. 삭제하고 다시 만든다 |
 | `CORRUPT`·체크섬 불일치 | 재적재 전에 더티 레코드를 확인한다. 반영할 수 없으면 손실 범위를 기록한다 |
 
-## 운영 — 복구 런북 템플릿
+## 운영 — 도구와 복구 런북
 
-장애 대응은 **증상 → 판정 → 조치 → 검증 → 기록** 순서로 쓴다. 프로젝트는 세그먼트마다 이 표를 채운다.
-운영 도구 `shmctl.sh`·`shm_recover`·`shm_view`는 W4에서 `templates/project/profiles/c-system/tools/`에 들어온다.
-도구가 들어오기 전에는 `ipcs -m`·`ls -l /dev/shm`·예제의 검증 함수로 같은 판단을 한다.
+운영 도구는 `templates/project/c-system/tools/`에 있다(`make`로 빌드, `src/shm`·`src/log` 코드를 그대로 링크).
+런북·레이아웃 문서 양식은 같은 프로필의 `docs/recovery-runbook.md`·`docs/shm-layout.md`다.
 
-| 단계 | 할 일 | 도구 예 |
+| 도구 | 하는 일 | 안전 기본값 |
+|---|---|---|
+| `shmctl.sh list` | `/dev/shm`(리눅스)과 `ipcs -m`(SysV) 목록. macOS는 POSIX 목록이 없다고 알린다 | 읽기만 |
+| `shmctl.sh status <대상>` | 헤더 요약(`shm_view --header`)·attach 프로세스 수·소유 프로세스 상태 | 레코드 내용은 출력하지 않는다 |
+| `shmctl.sh create /<이름> <건수>` | `ShmSegCreate`로 생성(상태 `INIT`). 기존 세그먼트 위면 삭제 후 재생성 | 기존 위 재생성은 dry-run, `--apply` 필요 |
+| `shmctl.sh remove <대상>` | POSIX `shm_unlink` 또는 SysV `ipcrm -m`(`sysv:<shmid>`) | dry-run 기본. `--apply` + 이름 재입력(또는 `--yes`) |
+| `shm_recover` | 판정 → 원천 임시 적재·검증 → `RECOVERING` → 복사·검증 → `READY` | 기본 `--dry-run`(읽기 전용 매핑). `--apply`는 확인 필요 |
+| `shm_view` | 읽기 전용 attach(`O_RDONLY`·`PROT_READ`), 헤더·목록·키(`bsearch`)·범위 조회, 표·CSV | 개인정보 필드 기본 마스킹 |
+
+- `remove`는 소유 프로세스가 살아 있거나(`--pidfile`) attach 프로세스가 있으면 거부한다. 리눅스는 `/proc/<pid>/maps`로 센다. 셀 수 없는 환경(macOS)에서 `--pidfile`도 없으면 거부한다.
+- 모든 `shmctl.sh` 동작은 실행 로그(`--log`, 기본 `./shmctl.log`)에 시각·사용자·동작·대상·결과를 한 줄씩 남긴다. 기록할 수 없으면 실행하지 않는다.
+- `shm_recover` 판정 항목은 매직·레이아웃 버전·레코드 크기·용량·상태 플래그(`ShmHdrCheck`), 체크섬, 정렬 불변식(`CheckSorted`)이다. 헤더가 틀리면 레코드 검사는 생략하고 헤더부터 다시 쓴다(`ShmSegResetHdr`, 리눅스는 attach 프로세스가 있으면 거부).
+- 원천은 `Open`·`FetchBatch`·`Close` ops 테이블 뒤에 숨긴다. `file:<경로>`(CSV·고정 크기 바이너리)는 테스트·DB 장애 시 덤프 복구용이고, `db:<별칭>`은 프로젝트가 Pro*C 호스트 배열 fetch로 채운다(`rec_loader_db.c`의 골격 주석).
+- 원천 적재·정렬·중복·체크섬 검사가 끝나기 전에는 세그먼트를 바꾸지 않는다. 복사 뒤 검증이 실패하면 `CORRUPT`로 둔다. 단계마다 운영 로그(`--log`)에 남긴다.
+- `shm_view`의 필드 출력은 레코드 헤더의 `ITEM_FIELD_LIST` X-매크로(D14 예외)로 만든 표를 따른다. 필드 목록이 레코드 바이트를 다 덮지 않으면 컴파일이 실패한다. 마스킹은 `LogMaskAll`·`LogMaskDigits`를 재사용한다.
+- 원문 보기는 `--unmask "<사유>"`만 허용한다. 감사 로그(`--audit-log`, 0600, `O_APPEND`)에 사용자·시각·세그먼트·조회 범위·사유를 먼저 쓰고, 쓰지 못하면 거부한다.
+- 종료 코드는 도구 공통이다: 0 정상, 1 오류, 2 손상 판정, 3 안전 조건으로 거부.
+
+복구 절차는 **증상 → 판정 → 조치 → 검증 → 기록** 순서다.
+
+| 단계 | 할 일 | 명령 |
 |---|---|---|
 | 증상 | 조회 실패(`-EIO`·`-EAGAIN`), `ENOTRECOVERABLE` 로그, 대조 불일치, 시퀀스 멈춤 | 서비스 로그 |
-| 판정 | 헤더 요약(매직·버전·상태·건수·`load_seq`)과 attach 프로세스 수를 본다 | `shmctl.sh status <이름>`, `shm_view --header` |
-| 판정 | 손상 여부를 확정한다(매직·버전·체크섬·상태 플래그·정렬 불변식) | `shm_recover --verify-only` |
-| 조치 | 먼저 영향 없이 확인한다. 그다음 DB에서 재적재한다 | `shm_recover --dry-run` → `shm_recover` |
-| 조치 | 다시 만들어야 하면 소유 프로세스를 멈춘 뒤 삭제한다 | `shmctl.sh remove <이름>`(확인 프롬프트) |
-| 검증 | 상태 `READY`, 건수·체크섬·표본 대조 통과, 서비스 조회 정상 | `shm_view`, 정합성 대조 |
-| 기록 | 시각·증상·판정 근거·조치 명령·결과·손실 범위(미반영 더티 건수) | 장애 기록 |
+| 판정 | 헤더 요약과 attach 프로세스 수를 본다 | `shmctl.sh status /<이름> --pidfile <경로>` |
+| 판정 | 손상 여부를 확정한다. 체크섬 불일치는 10초 뒤 한 번 더 본다 | `shm_recover --name /<이름> --verify-only` |
+| 조치 | 계획과 원천을 영향 없이 확인한 뒤 재적재한다 | `shm_recover … --source db:<별칭>` → 같은 명령 `--apply` |
+| 조치 | 다시 만들어야 하면 소유 프로세스를 멈춘 뒤 삭제한다 | `shmctl.sh remove /<이름> --pidfile <경로>` → `--apply` |
+| 검증 | `verdict=OK`, 상태 `READY`, 건수·표본이 DB와 같다 | `--verify-only`, `shm_view --header`, `shm_view --range` |
+| 기록 | 시각·증상·판정 근거·실행 명령·결과·손실 범위(미반영 더티 건수) | 런북 기록 표 |
 
 예: 워커가 락을 쥔 채 죽은 경우.
 
 1. 증상 — 다른 워커 로그에 `EOWNERDEAD` 복구 실패와 `ENOTRECOVERABLE`이 찍힌다.
-2. 판정 — 헤더 상태가 `CORRUPT`다. `--verify-only`가 정렬 불변식 위반을 보고한다.
-3. 조치 — 미반영 더티 건수를 기록하고, `shm_recover`로 `CORRUPT → RECOVERING → READY` 재적재를 한다.
-4. 검증 — 건수와 체크섬이 DB와 맞고, 워커 조회가 정상으로 돌아온다.
+2. 판정 — `--verify-only`가 `check.state=CORRUPT`·`check.sorted=violation`을 보고한다.
+3. 조치 — 미반영 더티 건수를 기록하고 `--dry-run`으로 계획을 본 뒤 `--apply`로 `CORRUPT → RECOVERING → READY` 재적재를 한다.
+4. 검증 — 건수와 체크섬이 맞고, 워커 조회가 정상으로 돌아온다.
 5. 기록 — 손실된 변경 건수와 원인 프로세스를 남긴다. 재현 테스트를 추가한다.
 
 - 운영 서버에서는 읽기 전용 조회부터 한다. 쓰기 조치 전에는 영향 범위를 확인받는다.
-- 출력에서 개인정보 필드는 기본 마스킹한다(`shm_view` 기본값).
 
 ## 점검 목록
 
@@ -351,6 +369,7 @@ EXEC SQL CLOSE item_cur;
 ## 참조
 
 - 예제: `templates/project/c-system/src/shm/shm_segment.h`·`shm_segment.c`·`test_shm_segment.c`, `make test`
+- 운영 도구: `templates/project/c-system/tools/`(`shmctl.sh`·`shm_recover`·`shm_view`), 테스트 `tests/shm_tools.bats`
 - 레코드·정렬·조회: `c-data-structures`
 - 철학: `rules/systems/philosophy.md` 11절 "공유 가변 상태 허용 조건", `rules/systems/decisions.md` D12
 - 임베디드 SQL: `embedded-sql` · 개인정보: `sensitive-data-handling` · 메모리 검사: `memory-check`

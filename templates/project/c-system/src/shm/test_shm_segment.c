@@ -163,6 +163,43 @@ static void TestLoadIntoSegmentThenVerifyChecksum(void)
     assert(ShmSegRemove(g_TestShmName) == 0);
 }
 
+
+/* 복구·조회 도구 경로: 매직이 깨져도 헤더를 엿보고, 검증 없이 매핑하고, 헤더를 다시 쓴다 */
+static void TestPeekNoCheckAttachAndResetHdr(void)
+{
+    ShmLayout layout = MakeLayout();
+    ShmSeg   *owner  = CreateFresh();
+    ShmSeg   *raw    = NULL;
+    ShmSeg   *reader = NULL;
+    ShmHdr    peek;
+
+    assert(ShmSegPeekHdr(g_TestShmName, &peek) == 0);
+    assert(peek.rec_cap == TEST_REC_CAP && peek.magic == SHM_MAGIC);
+    atomic_store(&ShmSegHdr(owner)->magic, 0xdeadbeefu);       /* 매직 손상 */
+    assert(ShmSegAttach(g_TestShmName, &layout, 0, &reader) == -EBADMSG);
+    assert(ShmSegAttach(g_TestShmName, &layout, SHM_ATTACH_NO_CHECK | SHM_ATTACH_RDONLY,
+                        &raw) == 0);
+    assert(ShmSegResetHdr(raw, &layout) == -EINVAL);           /* 읽기 전용은 거부 */
+    ShmSegDetach(raw);
+    raw = NULL;
+
+    assert(ShmSegAttach(g_TestShmName, &layout, SHM_ATTACH_NO_CHECK, &raw) == 0);
+    assert(ShmSegResetHdr(raw, &layout) == 0);
+    assert(ShmSegHdr(raw)->magic == SHM_MAGIC);
+    assert(ShmSegHdr(raw)->state == SHM_STATE_RECOVERING);
+    assert(ShmSegHdr(raw)->rec_cnt == 0);
+    assert(ShmSegLock(raw, NULL, NULL) == 0);                   /* 뮤텍스 재초기화 확인 */
+    assert(ShmSegUnlock(raw) == 0);
+    assert(ShmSegSetState(raw, SHM_STATE_RECOVERING, SHM_STATE_READY) == 0);
+    assert(ShmSegAttach(g_TestShmName, &layout, SHM_ATTACH_RDONLY, &reader) == 0);
+    assert(ShmSegPeekHdr("/arachne_none_x", &peek) == -ENOENT);
+
+    ShmSegDetach(reader);
+    ShmSegDetach(raw);
+    ShmSegDetach(owner);
+    assert(ShmSegRemove(g_TestShmName) == 0);
+}
+
 #ifdef __linux__
 static int RepairFail(ShmSeg *seg, void *ctx)
 {
@@ -227,7 +264,7 @@ static void TestOwnerDeadRepairFailMarksCorrupt(void)
 
 int main(void)
 {
-    int test_cnt = 5;
+    int test_cnt = 6;
 
     snprintf(g_TestShmName, sizeof(g_TestShmName), "/arachne_t%ld", (long)getpid());
     TestCreateThenAttachValidatesHeader();
@@ -235,6 +272,7 @@ int main(void)
     TestHdrCheckDetectsBadMagicAndCorrupt();
     TestStateTransitionsFollowTable();
     TestLoadIntoSegmentThenVerifyChecksum();
+    TestPeekNoCheckAttachAndResetHdr();
 #ifdef __linux__
     TestOwnerDeadRepairedThenConsistent();
     TestOwnerDeadRepairFailMarksCorrupt();

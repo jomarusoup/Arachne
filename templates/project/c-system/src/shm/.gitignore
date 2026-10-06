@@ -1,0 +1,4 @@
+test_sorted_table
+test_shm_segment
+*.dSYM/
+*.o
