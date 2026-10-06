@@ -269,6 +269,9 @@ docs-sync push arachne --dry-run  # 올리기 미리보기
 docs-sync push arachne            # 로컬 → 원격 프로젝트
 ```
 
+모든 하위 명령(`pull`·`push`·`list`·`init`)은 `--config <경로>`로 기본 설정 파일
+(`~/.config/arachne/docs-sync.conf`) 대신 다른 설정 파일을 쓸 수 있다.
+
 삭제 반영은 기본 꺼져 있다. 원본에서 사라진 파일을 대상에서도 지우려면 명시한다.
 
 ```bash

@@ -13,12 +13,13 @@ paths:
 
 `/* */` 미지원 → `#` 문자로 동일한 박스 구조 구성.
 
+파일 헤더에는 날짜 필드를 두지 않는다(이력은 git이 정본). 함수 헤더는 공개 API와
+동작이 자명하지 않은 함수에만 둔다.
+
 ```python
 ################################################################################
 # FILE NAME   : 파일명.py
 # DESCRIPTION : 파일 역할 한 줄 요약
-# DATA        : YYYY-MM-DD
-# Modification: YYYY-MM-DD
 ################################################################################
 
 #===============================================================================
@@ -58,13 +59,11 @@ def connect(host: str, port: int) -> bool:
 from dataclasses import dataclass
 from typing import NamedTuple
 
-# 불변 클래스
 @dataclass(frozen=True)
 class ServerConfig:
     host: str
     port: int
 
-# 불변 튜플 기반 구조체
 class Point(NamedTuple):
     x: float
     y: float
@@ -80,10 +79,9 @@ class Point(NamedTuple):
 
 ## 에러 처리
 
+예외를 바꿔 던질 때는 `raise ... from err`로 원인 컨텍스트를 남긴다.
+
 ```python
-#-----------------------------------------------------------------------
-# 에러 컨텍스트 추가 — raise from
-#-----------------------------------------------------------------------
 try:
     result = parse_config(path)
 except FileNotFoundError as err:

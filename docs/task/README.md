@@ -1,7 +1,7 @@
 ---
 Title: "Task 작성 규약"
 creation: 2026-06-07
-modification: 2026-07-17
+modification: 2026-10-06
 status: "done"
 tags:
  - "arachne"
@@ -15,20 +15,45 @@ FROM:: [[empty]]
 
 # Task 작성 규약
 
-`docs/task/`는 **실행하기로 결정한 작업과 진행 상태**를 기록하는 곳이다.
-전체 기획 정본은 `docs/plan/PLAN.md`, 문제 발견과 원인 분석은 `docs/issue/`,
-구현 후보 아이디어는 `docs/idea/`, 실제로 수행할 작업 계획과 결과는 `docs/task/`에 둔다.
+`docs/task/`는 Arachne 저장소에서 **실행하기로 정한 작업과 그 진행 상태**를 기록하는 곳이다.
+작업을 시작하거나 이어받는 사람과 에이전트는 먼저 아래 [task 인덱스](#task-인덱스)에서 같은 범위의
+열린 task가 있는지 확인한다. 이 저장소에서는 여러 task를 묶는 `[plan]` 문서도 이 폴더에 함께 둔다.
 
-수명주기: `docs/plan/`(전체 기획) → 항목 분해 → `docs/idea/`(미정) 또는
-`docs/task/`(확정, `FROM::` 링크) → task 단위로 worktree 분기·구현. plan 은 살아있는
-정본 1개로 유지하고(버전별 사본 금지 — git 이력이 버전), 병렬 세션에서는 읽기 전용
-상류 문서로 취급한다.
+## 문서 위치
+
+이 저장소는 문서를 성격에 따라 네 폴더로 나눈다.
+
+| 성격 | 위치 |
+| --- | --- |
+| 여러 task를 묶는 기획·로드맵(`[plan]`)과 입력 시트(`[input]`) | `docs/task/` |
+| 실행하기로 정한 작업(`[task]`) | `docs/task/` |
+| 문제의 증상·재현·원인 분석, 감사 기록 | `docs/issue/` |
+| 실행 여부가 정해지지 않은 후보와 입력 원문 | `docs/idea/` |
+| 바꾸기 어려운 설계 결정(ADR) | `docs/decisions/` |
+
+이 저장소에는 `docs/plan/` 폴더가 없다. `[plan]` 문서는 `docs/task/`에 평면으로 두고,
+제목 접두어 `[plan]`과 태그 `plan`으로 task와 구분한다(ADR-0006 D-15).
+
+하네스가 만들어 주는 사용 프로젝트는 구조가 다르다. `arachne -n`으로 만든 프로젝트에는
+`lib/project-ci.sh`가 `docs/plan/PLAN.md`를 전체 기획 정본으로 만든다. 그 프로젝트에서는
+`docs/plan/`이 기획을, `docs/task/`가 개별 작업을 맡는다.
+
+## 수명주기
+
+1. 기획이나 감사가 작업 후보를 만든다.
+2. 실행 여부가 정해지지 않은 후보는 `docs/idea/`에 둔다.
+3. 실행하기로 정한 작업은 `docs/task/`에 task로 만들고 `FROM::`에 출처 문서를 링크한다.
+4. task 단위로 브랜치나 worktree를 분기해 구현한다.
+5. 검증을 마치면 task 상태를 `done`으로 바꾸고 진행 기록에 커밋이나 PR을 남긴다.
+
+`[plan]` 문서는 살아있는 정본 1개로 유지한다. 버전별 사본은 만들지 않고 git 이력을 버전으로 쓴다.
+병렬 세션에서는 `[plan]` 문서를 읽기 전용 상류 문서로 다룬다.
 
 ## 생성 기준
 
-- 구현·수정·문서화·조사 등 후속 행동이 합의되면 task를 만든다.
+- 구현·수정·문서화·조사 같은 후속 행동이 합의되면 task를 만든다.
 - 단순 메모나 구현 여부가 정해지지 않은 제안은 `docs/idea/`에 둔다.
-- 프로젝트 전체 목표·범위·로드맵은 개별 task가 아니라 `docs/plan/PLAN.md`에서 관리한다.
+- 여러 task에 걸친 목표·범위·순서는 개별 task가 아니라 `[plan]` 문서에서 관리한다.
 - 결함의 증상·재현·원인 추적은 `docs/issue/`에 남기고 task에서 해당 issue를 링크한다.
 - 여러 issue를 하나의 변경으로 처리할 수 있으면 task 하나에서 의존 관계와 범위를 명시한다.
 
@@ -38,9 +63,9 @@ FROM:: [[empty]]
 YYYY-MM-DD-<짧은-kebab-case-작업명>.md
 ```
 
-- 날짜는 task를 최초 생성한 날짜다.
-- 작업명은 결과물이 드러나게 작성한다.
-- 동일 작업의 진행 기록은 새 파일로 분산하지 않고 기존 task를 갱신한다.
+- 날짜는 task를 처음 만든 날짜다.
+- 작업명은 결과물이 드러나게 쓴다.
+- 같은 작업의 진행 기록은 새 파일로 나누지 않고 기존 task를 갱신한다.
 
 ## 필수 항목
 
@@ -59,49 +84,102 @@ YYYY-MM-DD-<짧은-kebab-case-작업명>.md
 | 완료 조건 | 제3자가 판정할 수 있는 종료 조건 |
 | 진행 기록 | 날짜별 결정·실행·실패·차단 사유 |
 
+frontmatter의 `status:`와 본문의 `- **상태**:` 줄은 항상 같은 값을 가진다.
+
 ## 상태 전이
 
 ```text
 to do -> in progress -> done
 ```
 
-- 착수 시 `in progress`로 바꾸고 담당을 기록한다.
-- 외부 입력이나 선행 작업 없이는 진행할 수 없을 때도 상태는 `to do`로 유지하고 진행 기록에 차단 조건을 적는다.
+- 착수할 때 `in progress`로 바꾸고 담당을 기록한다.
+- 외부 입력이나 선행 작업 없이 진행할 수 없으면 상태를 `to do`로 두고 진행 기록에 차단 조건을 적는다.
 - 코드·문서 변경과 검증이 모두 끝난 뒤에만 `done`으로 바꾼다.
-- 범위가 불필요해졌다면 이유를 진행 기록에 남기고 별도 취소 상태 대신 해당 결정을 명시한다.
+- 범위가 불필요해지면 별도 취소 상태를 만들지 않는다. 진행 기록에 그 결정과 근거를 남기고,
+  남은 범위가 없으면 `done`으로 닫는다(예: `2026-08-25-metrics-baseline.md`의 조기 종결).
 
 ## 작업 목록 작성법
 
-- 한 항목은 하나의 검증 가능한 결과만 포함한다.
-- “확인”, “처리”처럼 종료 여부가 불명확한 표현 대신 대상과 기대 결과를 쓴다.
+- 한 항목에는 검증 가능한 결과 하나만 넣는다.
+- "확인", "처리"처럼 끝났는지 판정하기 어려운 표현 대신 대상과 기대 결과를 쓴다.
 - 구현 항목과 검증 항목을 분리한다.
-- 발견된 추가 작업이 현재 목표에 필수면 같은 task에 추가하고, 독립적이면 새 task로 분리한다.
-- 완료한 항목만 `[x]`로 바꾸며 미실행 항목을 완료 처리하지 않는다.
+- 새로 발견한 작업이 현재 목표에 필수면 같은 task에 추가하고, 독립적이면 새 task로 분리한다.
+- 완료한 항목만 `[x]`로 바꾸고, 실행하지 않은 항목을 완료로 표시하지 않는다.
 
-## 현재 인벤토리 (2026-08-29)
+## task 인덱스
 
-현재 `docs/task/`에는 README를 제외하고 26개 task가 있다.
+2026-10-06 기준으로 이 폴더에는 README를 제외하고 37개 문서가 있다. 상태는 각 문서의 frontmatter와
+git 이력을 대조해 확인했다. 완료된 task의 상세 근거는 각 문서의 진행 기록과 검증 결과가 정본이다.
 
-| 상태 | 개수 | 의미 |
-| --- | ---: | --- |
-| `done` | 23 | 구현·문서화·검증 기록이 완료된 항목 |
-| `in progress` | 0 | 일부 체크박스 또는 후속 검증 설계가 남은 항목 |
-| `to do` | 3 | 아직 구현에 착수하지 않았거나 트리거를 기다리는 항목 |
+| 상태 | 개수 |
+| --- | ---: |
+| `done` | 29 |
+| `in progress` | 3 |
+| `to do` | 5 |
 
-### 열린 task
+### 열린 문서
 
 | 우선순위 | 상태 | 문서 | 남은 범위 |
 | --- | --- | --- | --- |
-| high | `to do` | [현행 결함 수리 B-04·05·11](2026-08-25-pc-defect-repair.md) | git-bus 폴백·rebase 미탐, 스냅샷 덮어쓰기 — atask 계열은 ADR-0004로 소멸 |
-| medium | `to do` | [PC-8 훅-서브에이전트 발화 실험](2026-08-25-hook-subagent-experiment.md) | 실험 1회 + 감사 Q2 [추정] 확정, C-08 구조 이관 설계의 선행 |
-| medium | `to do` | [아키텍처 감사 후속](2026-06-11-audit-followup.md) | uninstall/recovery, statusline macOS, 릴리스 정책, 훅 로그, 구조 단순화 트리거 |
+| — | `in progress` | [Arachne 보강 로드맵 2026 Q4 (plan)](2026-10-05-arachne-roadmap.md) | W6 최종 정리와 W7 최종 검증이 남았다 |
+| — | `in progress` | [프로그래밍 철학 하네스 이식 (plan)](2026-09-29-programming-philosophy-integration.md) | 실행은 로드맵 웨이브를 따르며, W6·W7이 끝나면 닫는다 |
+| medium | `in progress` | [로드맵 W6 최종 정리](2026-10-05-roadmap-w6.md) | 문서·스크립트·지시 파일 정리를 진행 중이다 |
+| medium | `to do` | [로드맵 W7 최종 검증](2026-10-05-roadmap-w7.md) | W6 완료 후 착수한다 |
+| — | `to do` | [로드맵 착수 전 입력 시트 (input)](2026-10-05-roadmap-input-sheet.md) | 결정은 권장안으로 적용됐고, 사용자 기입 항목이 남아 있다 |
+| high | `to do` | [현행 결함 수리 B-04·05·11](2026-08-25-pc-defect-repair.md) | git-bus의 업스트림 미설정 폴백과 rebase 미탐, 세션 스냅샷 덮어쓰기를 고친다 |
+| medium | `to do` | [PC-8 훅-서브에이전트 발화 실험](2026-08-25-hook-subagent-experiment.md) | 실험 1회로 감사 Q2의 [추정]을 확정한다 |
+| medium | `to do` | [아키텍처 감사 후속](2026-06-11-audit-followup.md) | uninstall과 복구 가이드, 릴리스 정책, 훅 로그, 언어 자산 pack화가 트리거를 기다린다 |
 
-완료 task는 각 문서의 진행 기록과 검증 결과가 정본이다. 새 작업을 시작할 때는 위 열린 task 중
-동일 범위가 있는지 먼저 확인하고, 있으면 새 파일을 만들지 않고 기존 task를 갱신한다.
+새 작업을 시작할 때 위 열린 문서와 범위가 겹치면 새 파일을 만들지 않고 기존 문서를 갱신한다.
+
+### 전체 목록
+
+| 날짜 | 상태 | 문서 |
+| --- | --- | --- |
+| 2026-06-07 | `done` | [atask 정확성 하드닝](2026-06-07-atask-correctness-hardening.md) |
+| 2026-06-07 | `done` | [.claude 상태 파일 안정화](2026-06-07-claude-state-and-session.md) |
+| 2026-06-07 | `done` | [하네스 역할·플랫폼 설명 정확화 검증](2026-06-07-docs-accuracy-verify-close.md) |
+| 2026-06-07 | `done` | [기능 문서화 커버리지 보강](2026-06-07-documentation-coverage-hardening.md) |
+| 2026-06-07 | `done` | [드리프트 검출 강화](2026-06-07-drift-detection-content-sync.md) |
+| 2026-06-07 | `done` | [/git 커맨드 가드레일](2026-06-07-git-command-guardrails.md) |
+| 2026-06-07 | `done` | [설치·업데이트 안전성](2026-06-07-install-update-safety.md) |
+| 2026-06-07 | `done` | [사용 프로젝트 피드백 경로](2026-06-07-project-feedback-channel.md) |
+| 2026-06-07 | `done` | [Windows Copilot 통합](2026-06-07-windows-copilot-integration.md) |
+| 2026-06-07 | `done` | [Windows 런타임 검증](2026-06-07-windows-runtime-verification.md) |
+| 2026-06-07 | `done` | [위임 래퍼 입력 경계](2026-06-07-wrapper-injection-defense.md) |
+| 2026-06-08 | `done` | [CI 플랫폼 분기](2026-06-08-ci-platform-split.md) |
+| 2026-06-08 | `done` | [main CI와 문서 드리프트 검수](2026-06-08-main-ci-docs-audit.md) |
+| 2026-06-09 | `done` | [DB·JSON 데이터 처리 하드닝](2026-06-09-data-handling-hardening.md) |
+| 2026-06-09 | `done` | [macOS sed CI 호환성](2026-06-09-macos-sed-ci-fix.md) |
+| 2026-06-09 | `done` | [사용 프로젝트 CI 스캐폴딩](2026-06-09-project-ci-scaffold.md) |
+| 2026-06-09 | `done` | [사용 프로젝트 디자인 문서 계약](2026-06-09-project-design-docs-contract.md) |
+| 2026-06-09 | `done` | [Python·Web profile 기반](2026-06-09-python-web-profile-foundation.md) |
+| 2026-06-11 | `to do` | [아키텍처 감사 후속](2026-06-11-audit-followup.md) |
+| 2026-06-20 | `done` | [역량 보강과 학습 가이드](2026-06-20-capability-port.md) |
+| 2026-07-01 | `done` | [docs 구조 분리](2026-07-01-docs-structure-separation.md) |
+| 2026-07-01 | `done` | [Understand-Anything 설치 연동](2026-07-01-understand-anything-install-workflow.md) |
+| 2026-07-01 | `done` | [worktree 병렬 커맨드](2026-07-01-worktree-parallel-command.md) |
+| 2026-08-25 | `to do` | [PC-8 훅-서브에이전트 발화 실험](2026-08-25-hook-subagent-experiment.md) |
+| 2026-08-25 | `done` | [계측 기준선 (조기 종결)](2026-08-25-metrics-baseline.md) |
+| 2026-08-25 | `to do` | [현행 결함 수리 B-04·05·11](2026-08-25-pc-defect-repair.md) |
+| 2026-09-29 | done | [철학 이식 착수 프롬프트](2026-09-29-philosophy-kickoff-prompts.md) — 참고 자료다. 실행 순서는 로드맵 웨이브로 대체됐다 |
+| 2026-09-29 | `in progress` | [프로그래밍 철학 하네스 이식 (plan)](2026-09-29-programming-philosophy-integration.md) |
+| 2026-10-05 | `in progress` | [Arachne 보강 로드맵 2026 Q4 (plan)](2026-10-05-arachne-roadmap.md) |
+| 2026-10-05 | `to do` | [로드맵 착수 전 입력 시트 (input)](2026-10-05-roadmap-input-sheet.md) |
+| 2026-10-05 | `done` | [로드맵 W1 보안 강제와 기반 정비](2026-10-05-roadmap-w1.md) |
+| 2026-10-05 | `done` | [로드맵 W2 C·임베디드 SQL 기반](2026-10-05-roadmap-w2.md) |
+| 2026-10-05 | `done` | [로드맵 W3 데이터 계층과 대용량 처리](2026-10-05-roadmap-w3.md) |
+| 2026-10-05 | `done` | [로드맵 W4 운영 도구·클라이언트·리뷰](2026-10-05-roadmap-w4.md) |
+| 2026-10-05 | `done` | [로드맵 W5 통합 행동 검증](2026-10-05-roadmap-w5.md) |
+| 2026-10-05 | `in progress` | [로드맵 W6 최종 정리](2026-10-05-roadmap-w6.md) |
+| 2026-10-05 | `to do` | [로드맵 W7 최종 검증](2026-10-05-roadmap-w7.md) |
+
+`docs/task/20261005/`는 로드맵에 통합된 이전 초안을 임시로 두는 폴더다. 입력 시트 8-1에서
+삭제나 보관을 정하기 전까지 인덱스 대상에서 뺀다.
 
 ## 진행 기록 원칙
 
 - 중요한 설계 결정, 실패한 검증, 범위 변경, 차단 사유를 날짜와 함께 기록한다.
 - 명령을 실행했다면 명령과 실제 결과를 요약한다.
-- task 완료 시 최종 검증 결과와 관련 커밋 또는 PR을 기록한다.
-- task 문서는 현재 상태를 나타내야 하며, 과거 기록을 지워 상태를 미화하지 않는다.
+- task를 완료하면 최종 검증 결과와 관련 커밋 또는 PR을 기록한다.
+- task 문서는 현재 상태를 나타낸다. 과거 기록을 지워 상태를 좋게 보이게 하지 않는다.

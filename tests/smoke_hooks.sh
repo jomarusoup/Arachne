@@ -57,6 +57,30 @@ out=$(UA_STALE_REPO="$TMP/s5" bash "$REPO_DIR/hooks/ua-stale-check.sh") || rc=$?
 Expect "ua-stale-check (no meta)" 0 "$rc"
 [ -z "$out" ] || { echo "  [FAIL] ua-stale-check 가 meta 없는데 출력함"; FAIL=1; }
 
+#-------------------------------------------------------------------------------
+# 4. guard-bash·guard-secrets — 거부·통과 판정 (Windows 에서는 jq 없는 폴백 경로)
+#-------------------------------------------------------------------------------
+rc=0
+out=$(printf '%s' '{"tool_name":"Bash","tool_input":{"command":"git commit --no-verify -m x"}}' \
+    | bash "$REPO_DIR/hooks/guard-bash.sh") || rc=$?
+Expect "guard-bash (--no-verify 거부)" 0 "$rc"
+case "$out" in
+    *'"permissionDecision":"deny"'*) ;;
+    *) echo "  [FAIL] guard-bash 가 --no-verify 를 거부하지 않음"; FAIL=1 ;;
+esac
+
+rc=0
+out=$(printf '%s' '{"tool_name":"Bash","tool_input":{"command":"ls -la"}}' \
+    | bash "$REPO_DIR/hooks/guard-bash.sh") || rc=$?
+Expect "guard-bash (일반 명령 통과)" 0 "$rc"
+[ -z "$out" ] || { echo "  [FAIL] guard-bash 가 일반 명령에 응답함"; FAIL=1; }
+
+rc=0
+out=$(printf '%s' '{"tool_name":"Bash","tool_input":{"command":"ls -la"}}' \
+    | bash "$REPO_DIR/hooks/guard-secrets.sh") || rc=$?
+Expect "guard-secrets (커밋 아닌 명령 통과)" 0 "$rc"
+[ -z "$out" ] || { echo "  [FAIL] guard-secrets 가 커밋 아닌 명령에 응답함"; FAIL=1; }
+
 if [ "$FAIL" -eq 0 ]; then
     echo "[PASS] 훅 런타임 스모크 통과"
 else

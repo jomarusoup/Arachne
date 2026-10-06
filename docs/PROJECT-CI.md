@@ -1,7 +1,7 @@
 ---
 Title: "Arachne 사용 프로젝트 CI"
 creation: 2026-06-09
-modification: 2026-06-09
+modification: 2026-10-06
 tags:
  - "arachne"
  - "ci"
@@ -13,6 +13,9 @@ MOC:: [[Arachne]]
 FROM:: [[0001-python-web-profile]]
 
 # Arachne 사용 프로젝트 CI
+
+이 문서는 Arachne를 쓰는 프로젝트에 설치되는 검증 계약(`.arachne/`와 `arachne.yml` workflow)을 설명한다.
+프로젝트에 CI를 처음 붙이거나, profile을 고르거나, 프로젝트 CI 실패를 해석할 때 읽는다.
 
 ## 계약
 
@@ -55,7 +58,10 @@ arachne new app /work --profile web
 arachne project-check
 ```
 
-지원 profile과 기본 도구는 [PYTHON-WEB-PROFILE.md](PYTHON-WEB-PROFILE.md)를 따른다.
+지원 profile은 `minimal`·`python`·`web`·`python-web`·`cpp`·`rust`·`c-system` 7개다.
+Python·Web profile의 기본 도구는 [PYTHON-WEB-PROFILE.md](PYTHON-WEB-PROFILE.md)가,
+`cpp`·`rust`는 아래 "시스템 프로필" 절이, `c-system`은 바로 다음 절이 설명한다.
+각 profile의 기본 명령 정본은 `templates/project/profiles/<profile>/commands`다.
 
 ### c-system profile
 
@@ -74,7 +80,14 @@ Linux C 서버(C++ 사상을 C 문법으로 구현)와 Pro*C·ecpg 임베디드 
 | `.arachne/naming-dict.tsv` | 네이밍 사전 기본 항목 | `naming-dictionary` |
 
 검증 명령은 키트 모듈의 ASan/UBSan 테스트, 도구 빌드, 스키마 버전 계획 점검(DB 없이), 네이밍 검사(보고만)다.
+네이밍 검사(`lib/naming-check.sh --changed`)는 Arachne가 설치된 머신에서만 돌고, 프로젝트 CI에서는 건너뛴다.
 본체 Makefile이 생기면 `.arachne/commands`의 "프로젝트 빌드" 줄 주석을 푼다.
+
+`templates/project/c-system/` 아래의 `src/pipeline/`(수신 파이프라인)·`src/contract/`(바이너리 스트림 계약과
+TS 디코더)·`examples/ffi-rust/`(Rust FFI 예제)는 복사되지 않는 참고 구현이다. 필요한 프로젝트가 직접 가져다 쓴다.
+같은 성격의 참고 템플릿으로 `templates/project/throughput-poc`(처리량 PoC), `templates/project/desktop-data-client`
+(대용량 수신 클라이언트), `templates/project/compose-3tier`(C 서버·PostgreSQL 3티어 compose)가 있다.
+이 참고 템플릿들의 빌드·테스트는 Arachne 저장소 CI가 검증한다([CI.md](CI.md)).
 
 ## 갱신과 소유권
 
@@ -111,6 +124,7 @@ workflow는 profile을 읽고 필요한 런타임만 준비한다.
 - `web`, `python-web`: Node.js 22와 Corepack
 - `rust`: stable 툴체인 + rustfmt·clippy (dtolnay/rust-toolchain)
 - `cpp`: 추가 셋업 없음 — gcc·cmake·ctest는 ubuntu-latest 러너에 사전 설치
+- `c-system`: 추가 셋업 없음 — gcc·make는 ubuntu-latest 러너에 사전 설치
 - `minimal`: 추가 런타임 없음
 
 > **minimal의 의도**: `minimal`은 `git diff --check`(공백 오류)만 실행하는 **의도적 최소

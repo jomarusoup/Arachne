@@ -35,7 +35,7 @@ FROM:: [[empty]]
 | 플랫폼 호환성 | 80 | Ubuntu·Rocky9·macOS·Windows 4-job CI는 동급 도구 대비 강점. statusline `date -d`는 GNU 전용(매OS 미동작, 문서화됨) |
 | 보안 | 65 | 래퍼 인젝션 방어·테스트 존재. 단 dotfile 병합 손상 버그(수정), /tmp 고정 임시파일(수정), CI 최소권한 누락(수정), git-bus 커밋 메시지 무필터 주입 잔존 |
 
-자동 수정 10건은 [CHANGELOG-AUDIT.md](../../CHANGELOG-AUDIT.md) (A-01~A-10).
+자동 수정 10건은 [CHANGELOG-AUDIT.md](CHANGELOG-AUDIT.md) (A-01~A-10).
 
 ## Findings (자동 수정 외 잔존 항목)
 

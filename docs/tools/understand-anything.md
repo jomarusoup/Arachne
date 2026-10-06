@@ -1,7 +1,7 @@
 ---
 Title: "Understand-Anything 사용법"
 creation: 2026-06-14
-modification: 2026-07-01
+modification: 2026-10-06
 tags:
  - "arachne"
  - "tools"
@@ -16,9 +16,11 @@ FROM:: [[arachne-tools]]
 
 # Understand-Anything
 
-LLM 기반 코드베이스 분석 플러그인. 대화형 지식 그래프, 가이드 투어, 심층 설명을 생성한다.
-Claude Code에서는 `/understand*` 슬래시 커맨드로, Codex에서는 스킬명 또는 자연어 요청으로
-사용한다.
+이 문서는 Understand-Anything(UA) 플러그인의 설치와 사용법이다. 처음 보는 코드베이스의 구조를 빠르게
+파악하거나 변경의 영향 범위를 볼 때 읽는다.
+
+UA는 LLM 기반 코드베이스 분석 플러그인이다. 대화형 지식 그래프, 가이드 투어, 심층 설명을 생성한다.
+Claude Code에서는 `/understand*` 슬래시 커맨드로, Codex에서는 스킬명 또는 자연어 요청으로 사용한다.
 
 - 저장소: <https://github.com/Egonex-AI/Understand-Anything>
 - 통합: 로컬 마켓플레이스 `understand-anything@understand-anything` ([extras-setup.md](extras-setup.md))
@@ -224,9 +226,12 @@ http://127.0.0.1:15173/?token=<dashboard-token>
 - 구조가 크게 바뀜, ignore 정책 변경, 그래프가 이상함: `understand --full`
 - 그래프가 이미 있고 화면만 다시 보고 싶음: `understand-dashboard`
 
+SessionStart 훅 `hooks/ua-stale-check.sh`는 그래프가 만들어진 커밋이 HEAD보다 뒤처지면 재분석을 안내한다.
+훅은 안내만 하고 재분석을 직접 실행하지 않는다. 임계값은 `UA_STALE_THRESHOLD`(기본 1커밋)로 조정한다.
+
 ## Arachne 워크플로와의 접점
 
-`development-workflow §0 조사·재사용`, `issue-workflow 범위 파악` 단계에서 코드베이스
+`development-workflow §0 조사·재사용`과 `/issue` 커맨드의 "범위 파악" 단계에서 코드베이스
 구조·도메인을 빠르게 파악할 때 사용한다. 변경 영향 분석은 `/understand-diff`가,
 심볼 단위 정밀 추적은 [codegraph](codegraph.md)가 보완한다.
 

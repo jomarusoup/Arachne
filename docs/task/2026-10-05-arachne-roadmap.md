@@ -11,7 +11,7 @@ aliases:
  - "arachne-roadmap"
 ---
 MOC:: [[Arachne]]
-FROM:: [[ARACHNE_AUDIT_2026-09-13]]
+FROM:: [[2026-09-13-arachne-audit]]
 
 # [plan] Arachne 보강 로드맵 (2026 Q4)
 
@@ -28,9 +28,9 @@ FROM:: [[ARACHNE_AUDIT_2026-09-13]]
 > (약어 사전 항목, 공유메모리 레이아웃·키, 테이블 매핑, 운영 절차 세부)은 **프로젝트가 소유**하며
 > `c-system` 프로필(§5.I-6)이 그 자리를 만들어 준다.
 
-- **상태**: in progress — W0 진행 중 (2026-10-05 착수)
+- **상태**: in progress — W0~W5 완료(PR #54까지), W6 최종 정리 진행 중 (2026-10-06)
 - **기준 커밋**: `d6e260d` (2026-09-13)
-- **입력 문서**: [[ARACHNE_AUDIT_2026-09-13]], [[2026-09-29-programming-philosophy-integration]], [[programming-philosophy]], [[2026-10-05-roadmap-input-sheet]]
+- **입력 문서**: [[2026-09-13-arachne-audit]], [[2026-09-29-programming-philosophy-integration]], [[2026-09-29-programming-philosophy]], [[2026-10-05-roadmap-input-sheet]]
 
 ---
 
@@ -134,7 +134,7 @@ FROM:: [[ARACHNE_AUDIT_2026-09-13]]
   미달 시 C# 트랙(§5.E-5) 활성화. 입력 시트 1.2 중 하나라도 "예"면 재검토.
 - [ ] C#(Avalonia) 병행
 - 결정일: 2026-10-05 / 근거: 사용자 "바로 진행" 지시에 따라 권장안 적용(입력 시트 §2 미체크). 변경 시 ADR-0006을 supersede
-- 확정: 2026-10-05 W3 PoC — Node 수신기가 초당 1만·10만·100만 건에서 목표 100%·유실 0·p99 ≤ 242µs, 포화는 초당 1,000만~2,000만 건 사이([결과](../../issue/2026-10-05-throughput-poc-result.md)). 재개 조건: 실제 두 호스트 네트워크에서 요구 레이트의 2배 미달, Windows 대상 하드웨어에서 p99 > 10ms, 실제 디코딩·상태 갱신을 포함한 utility process가 요구 레이트에서 CPU 100%
+- 확정: 2026-10-05 W3 PoC — Node 수신기가 초당 1만·10만·100만 건에서 목표 100%·유실 0·p99 ≤ 242µs, 포화는 초당 1,000만~2,000만 건 사이([결과](../issue/2026-10-05-throughput-poc-result.md)). 재개 조건: 실제 두 호스트 네트워크에서 요구 레이트의 2배 미달, Windows 대상 하드웨어에서 p99 > 10ms, 실제 디코딩·상태 갱신을 포함한 utility process가 요구 레이트에서 CPU 100%
 **D-03. 서버 ↔ 클라이언트 프로토콜**
 - [x] (권장) **요청·응답은 REST/JSON, 대용량 스트림은 바이너리 프레이밍(TCP)**, gRPC는 필요 시만 —
   C 서버 주력이므로 gRPC 의존을 기본값으로 두지 않는다.
@@ -257,12 +257,12 @@ FROM:: [[ARACHNE_AUDIT_2026-09-13]]
 
 웨이브 안은 병렬 가능(`/worktree`), 웨이브 사이는 선행 PR 머지가 조건. **웨이브 하나씩 확인받고 진행.**
 
-웨이브별 task 문서: [W1](../2026-10-05-roadmap-w1.md) · [W2](../2026-10-05-roadmap-w2.md) ·
-[W3](../2026-10-05-roadmap-w3.md) · [W4](../2026-10-05-roadmap-w4.md) · [W5](../2026-10-05-roadmap-w5.md) ·
-[W6](../2026-10-05-roadmap-w6.md) · [W7](../2026-10-05-roadmap-w7.md)
+웨이브별 task 문서: [W1](2026-10-05-roadmap-w1.md) · [W2](2026-10-05-roadmap-w2.md) ·
+[W3](2026-10-05-roadmap-w3.md) · [W4](2026-10-05-roadmap-w4.md) · [W5](2026-10-05-roadmap-w5.md) ·
+[W6](2026-10-05-roadmap-w6.md) · [W7](2026-10-05-roadmap-w7.md)
 
-**W0 결과 (2026-10-05)**: 결정 D-01~D-24 확정([ADR-0006](../../decisions/0006-roadmap-2026q4.md)), 철학 결정
-D01~D23 확정([ADR-0005](../../decisions/0005-programming-philosophy.md)), 철학 계획 §6 연동 개정, 웨이브 task
+**W0 결과 (2026-10-05)**: 결정 D-01~D-24 확정([ADR-0006](../decisions/0006-roadmap-2026q4.md)), 철학 결정
+D01~D23 확정([ADR-0005](../decisions/0005-programming-philosophy.md)), 철학 계획 §6 연동 개정, 웨이브 task
 분해, H-1 위생(`skills/synced/`는 Claude 앱 스킬 동기화 산출물로 확인 → `.gitignore` 등록).
 
 | 웨이브 | 항목 | 비고 |

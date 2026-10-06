@@ -28,7 +28,7 @@ Python·Web과 C/C++·Go·Rust 시스템 개발에 공통 규약, 역할 분담,
 
 | 알고 싶은 것 | 문서 |
 |---|---|
-| 하네스 구조 다이어그램·설치 배선·3-레인 협업 | [ARCHITECTURE](docs/ARCHITECTURE.md) |
+| 하네스 구조 다이어그램 — 설치 배선·훅·보안 계층·규칙 로딩·프로젝트 키트·3티어 지원 지도 | [ARCHITECTURE](docs/ARCHITECTURE.md) |
 | 일상 사용법(skills·agents·커맨드·hooks) · 약어 풀이 | [USAGE](docs/USAGE.md) · [GLOSSARY](docs/GLOSSARY.md) |
 | 멀티 CLI(Claude·Codex·Gemini·Copilot) 역할·위임 | [MULTI-CLI](docs/MULTI-CLI.md) |
 | 프로젝트 적용 — CI 계약·profile·데이터·디자인 문서 | [PROJECT-CI](docs/PROJECT-CI.md) · [PYTHON-WEB-PROFILE](docs/PYTHON-WEB-PROFILE.md) · [DATA-HANDLING](docs/DATA-HANDLING.md) · [DESIGN-DOCS.md](docs/DESIGN-DOCS.md) |
@@ -130,7 +130,7 @@ Arachne/
 ├── .github/copilot-instructions.md # Copilot 저장소 어댑터
 ├── settings.template.json       # ~/.claude/settings.json 템플릿
 ├── install.sh / install.ps1     # Unix / Windows 통합 관리 도구 (CLI: arachne)
-├── lib/                         # install.sh 도메인 라이브러리 (project-ci · feedback)
+├── lib/                         # install.sh 도메인 라이브러리 (project-ci · feedback · naming-check)
 ├── install-copilot.ps1          # Windows PowerShell용 Copilot 설치기
 ├── tmux.sh                      # tmux 워크스페이스 매니저 (CLI: tws)
 ├── archive/                     # 제거된 현역 외 자산 (multi-cli 런타임 — ADR-0004)
@@ -139,8 +139,10 @@ Arachne/
 │
 ├── rules/                       # Claude 전역 행동 규칙
 │   ├── common/                  # 언어 공통 (workflow, coding-style, patterns 등 10개)
-│   ├── ...                      # 언어별 규칙 (c, cpp, golang, rust, python, js, bash)
-│   └── web/                     # 웹 디자인 품질 (design-quality)
+│   ├── ...                      # 언어별 규칙 (c, cpp, golang, rust, java, python, javascript, bash, docker)
+│   ├── systems/                 # C·C++·Rust 공통 설계 철학·결정 기준
+│   ├── react/ · electron/       # TypeScript 클라이언트 (React·Electron)
+│   └── web/                     # 웹 디자인 품질·UI 배치·보안·성능
 │
 ├── skills/                      # 워크플로·도메인 스킬 (65개 현역 + archive)
 ├── commands/                    # 슬래시 커맨드 (21개)
@@ -158,11 +160,12 @@ Arachne/
 ├── docs/ui-ux/                  # UI/UX 예시와 기준
 ├── docs/PYTHON-WEB-PROFILE.md   # Python·Web profile 기술 기준
 ├── docs/COMPATIBILITY.md        # 기능별 플랫폼 지원표
+├── docs/ARCHITECTURE.md         # 하네스 구조 다이어그램 (설치·훅·보안 계층·규칙 로딩·프로젝트 키트·3티어 지도)
 ├── docs/decisions/              # Architecture Decision Record
 ├── docs/task/                   # 승인된 실행 작업과 진행 상태 기록
 ├── docs/template/               # idea · issue · task · audit · feedback 기록 템플릿
 ├── tests/                       # 검증 스크립트 (bats + shell)
-├── templates/project/           # profile별 프로젝트 CI 템플릿
+├── templates/project/           # 사용 프로젝트 키트 — profile별 CI·검증 명령, c-system 골격, sql 적용기, 예제
 └── dotfiles/                    # bash_profile, vimrc (병합 원본)
 ```
 

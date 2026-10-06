@@ -23,8 +23,8 @@ cd bats-core && sudo ./install.sh /usr/local
 ## 실행 방법
 
 ```bash
-# 전체 테스트
-bats tests/
+# 전체 테스트 (macOS — 한글 테스트 이름 때문에 로캘 변수를 비우고 실행)
+env LC_ALL= LANG= LC_CTYPE= bats tests/*.bats
 
 # 개별 실행
 bats tests/install.bats
@@ -34,6 +34,10 @@ bash tests/validate_settings.sh
 # Windows (PowerShell)
 pwsh -File tests/install_windows.ps1
 ```
+
+macOS 기본 bash 3.2에서는 마지막 줄이 아닌 `[[ ]]` 단언이 실패해도 테스트가 통과할 수 있고, `!` 부정은
+어느 bash 버전에서도 `set -e`에 잡히지 않는다. 그래서 로컬 통과가 CI 실패를 숨길 수 있으며 판정 정본은 CI다.
+작성 규칙은 [rules/bash/testing.md](../rules/bash/testing.md), 자세한 설명은 [docs/CI.md](../docs/CI.md)에 있다.
 
 ## 테스트 목록
 
@@ -52,12 +56,23 @@ pwsh -File tests/install_windows.ps1
 | `smoke.bats` | 훅 런타임 스모크 | bats |
 | `data_contract.bats` | `fixtures/python-db` — 데이터 계약 정적 검사 + alembic·pytest 실행 게이트 (uv 필요) | bats |
 | `sgrep.bats` | `dotfiles/bash_profile` — sgrep/lgrep 확장자 커버리지·제외 디렉터리·rg/find 폴백 | bats |
+| `agent_command_meta.bats` | `agents/*.md`·`commands/*.md` frontmatter·프롬프트 방어 기준선·리뷰어 읽기 전용 계약 | bats |
+| `guard_hooks.bats` | `hooks/guard-bash.sh`·`guard-secrets.sh` — 거부·확인·통과 판정, 우회 시도, jq 없는 폴백 | bats |
+| `naming_check.bats` | `lib/naming-check.sh` — 네이밍 사전 대조·신규 식별자 보고 | bats |
+| `sql_schema_versioning.bats` | `templates/project/sql/apply-schema.sh` — 버전 순서·체크섬·dry-run | bats |
+| `shm_tools.bats` | c-system `tools/` — 공유메모리 조회 마스킹·원문 보기 감사 로그·제어·복구 시나리오 | bats |
+| `collect.bats` | c-system `tools/collect.sh` — dry-run·운영 서버 프로파일링 거부·반출 전 개인정보 마스킹 | bats |
+| `logtrace.bats` | c-system `tools/logtrace.sh` — 거래 ID 추적·회전 로그 | bats |
+| `feedback.bats` | `arachne feedback` — 프로젝트 피드백 채널 | bats |
+| `worktree_command.bats` | `/worktree` 커맨드 문서 계약 | bats |
 | `ua_stale.bats` | `hooks/ua-stale-check.sh` — UA 지식그래프 stale 감지 (최신/뒤처짐/해시 유실/임계값) | bats |
 | `check_index.sh` | 인덱스 ↔ 실제 파일 일치 + 문서 "(N개)" 개수 표기 + 상대 .md 링크 해소 검증 (skills·commands·agents·rules·docs) | bash |
+| `check_sensitive_text.sh` | 추적 파일의 개인 경로·비밀값·개인정보 (값은 출력하지 않음) | bash |
+| `check_unicode_safety.sh` | 지시 파일의 숨은 유니코드(폭 없는 문자·양방향 제어 문자) | bash |
 | `check_convention_sync.sh` | `AGENTS.md` ↔ `rules/common/*` 핵심 토큰 동기화 | bash |
 | `check_ps_syntax.ps1` | 저장소 전체 `.ps1` 구문 파싱 — Linux pwsh 에서 Windows 러너 전 조기 차단 | PowerShell |
 | `validate_settings.sh` | `settings.template.json` — JSON 유효성·필수 키 | bash + jq |
-| `smoke_hooks.sh` | Windows Git Bash와 Ubuntu smoke job 공용 런타임 스모크 | bash |
+| `smoke_hooks.sh` | Windows Git Bash와 Ubuntu smoke job 공용 런타임 스모크 — 알림 훅 3종과 가드 훅 기본 판정 | bash |
 | `install_windows.ps1` | `install.ps1` — 링크·경로 치환·Gemini/Codex·CMD 래퍼 | PowerShell |
 
 ## validate_settings.sh

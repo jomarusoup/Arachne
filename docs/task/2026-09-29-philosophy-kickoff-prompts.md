@@ -1,3 +1,20 @@
+---
+Title: "[reference] 프로그래밍 철학 이식 착수 프롬프트"
+creation: 2026-09-29
+modification: 2026-10-06
+status: "done"
+tags:
+ - "arachne"
+ - "task"
+ - "philosophy"
+aliases:
+ - "philosophy-kickoff-prompts"
+---
+FROM:: [[2026-09-29-programming-philosophy-integration]]
+
+> 이 문서는 철학 이식(P0~P4)을 단계별로 시작할 때 붙여 넣던 프롬프트 기록이다. 실행 순서는 이후
+> [로드맵](2026-10-05-arachne-roadmap.md)의 웨이브(W0~W7)로 대체됐고, 철학 이식은 W4까지 반영을 마쳤다.
+
 # Claude Code 착수 프롬프트 — 프로그래밍 철학 이식 (Arachne)
 
 집에서 Arachne 저장소를 연 Claude Code에 단계별로 붙여 넣는 프롬프트 모음.
@@ -9,7 +26,7 @@
 
 1. 받은 두 파일을 저장소에 둔다.
    - `programming-philosophy.md` → `docs/idea/2026-09-29-programming-philosophy.md`
-   - `2026-09-29-programming-philosophy-integration.md` → `docs/idea/2026-09-29-programming-philosophy-integration.md`
+   - `2026-09-29-programming-philosophy-integration.md` → `docs/task/2026-09-29-programming-philosophy-integration.md`
 2. `git pull`로 main 최신화. 기준 커밋이 `d6e260d`보다 앞서 있으면 P0 프롬프트가 줄 번호 재확인을 먼저 한다.
 
 ---
@@ -17,7 +34,7 @@
 ## P0. 결정 확정 + 계획 정합성 확인
 
 ```
-docs/idea/2026-09-29-programming-philosophy-integration.md(이하 "계획")와
+docs/task/2026-09-29-programming-philosophy-integration.md(이하 "계획")와
 docs/idea/2026-09-29-programming-philosophy.md(이하 "철학")를 읽어라.
 
 이번 세션 목표: 결정 확정과 계획 검증만 한다. 규칙 파일은 수정하지 않는다.

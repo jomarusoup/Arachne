@@ -1,7 +1,7 @@
 ---
 Title: "데이터 분류·처리 기준"
 creation: 2026-06-11
-modification: 2026-06-11
+modification: 2026-10-06
 tags:
  - "arachne"
  - "database"
@@ -15,10 +15,14 @@ FROM:: [[2026-06-09-data-handling-hardening]]
 
 # 데이터 분류·처리 기준
 
-DB·JSON 데이터를 다루는 프로젝트가 따르는 **분류표와 운영 기준의 정본**.
-항상 적용되는 짧은 경계 규칙은 `rules/python/data-handling.md`, 상세 패턴은
-스킬 `json-contracts` · `database-migrations` · `postgres-patterns` · `redis-patterns`,
-독립 검토는 `agents/database-reviewer.md`(`/database-review`)가 담당한다.
+이 문서는 DB·JSON 데이터를 다루는 프로젝트가 따르는 **분류표와 운영 기준의 정본**이다.
+새 schema 필드를 설계하거나 데이터를 응답·로그·캐시로 내보내는 경로를 검토할 때 읽는다.
+
+항상 적용되는 짧은 경계 규칙은 `rules/python/data-handling.md`에 있다. 상세 패턴은 스킬
+`json-contracts`·`database-migrations`·`sql-schema-versioning`·`postgres-patterns`·`oracle-patterns`·
+`redis-patterns`가 다룬다. 비밀값과 개인정보의 기술 통제(로그·코어 덤프 마스킹, 저장 암호화,
+합성 테스트 데이터)는 스킬 `sensitive-data-handling`이 언어 공통으로 다룬다. 독립 검토는
+`agents/database-reviewer.md`(`/database-review`)가 맡는다.
 
 ## 데이터 분류표
 
@@ -56,6 +60,7 @@ DB·JSON 데이터를 다루는 프로젝트가 따르는 **분류표와 운영 
 | 전송 구간인가? | — | TLS (필드 암호화의 대체재 아님) |
 
 비밀번호를 암호화(복호 가능)하거나 PII를 해싱(복원 불가)하는 혼동이 흔한 결함이다.
+DB 저장 암호화(TDE·pgcrypto)와 C 서버·클라이언트 쪽 저장 기준은 스킬 `sensitive-data-handling`을 따른다.
 경계를 바꾸는 변경은 `/database-review` security 단계에서 CRITICAL로 본다.
 
 ## 보존·삭제·감사
@@ -94,8 +99,8 @@ DB·JSON 데이터를 다루는 프로젝트가 따르는 **분류표와 운영 
 
 ## 프로젝트 연결 — 선택적 DB 게이트
 
-DB를 쓰는 프로젝트는 `.arachne/commands`(python profile)에 DB 게이트를 추가한다.
-DB 없는 프로젝트는 기존 profile을 그대로 사용한다 — 추가 service 불필요.
+Alembic을 쓰는 Python 프로젝트는 `.arachne/commands`(python·python-web profile)에 DB 게이트를 추가한다.
+DB가 없는 프로젝트는 기존 profile을 그대로 쓰며, 추가 service가 필요 없다.
 
 ```bash
 # .arachne/commands 에 추가 (SQLite 기반 — 별도 service 불필요)
@@ -122,6 +127,14 @@ PostgreSQL 고유 기능(CONCURRENTLY, JSONB 인덱스, RLS) 검증은 기본 wo
 
 `DATABASE_URL=postgresql+psycopg://postgres:postgres@localhost:5432/postgres`를
 검증 명령 환경변수로 주입한다. SQLite로 검증 가능한 게이트는 SQLite를 유지한다 (빠르고 이식성 높음).
+
+### 마이그레이션 도구 없이 .sql 파일로 관리하는 프로젝트
+
+Oracle·PostgreSQL 스키마를 개별 `.sql` 파일로 관리하는 프로젝트(주로 c-system profile)는
+Alembic 대신 스킬 `sql-schema-versioning`의 버전 규약을 따른다. 적용 스크립트는
+`templates/project/sql/apply-schema.sh`이고, 방언별 첫 버전 파일은 `templates/project/sql/oracle/`과
+`templates/project/sql/postgres/`에 있다. `--empty-db --dry-run`으로 빈 DB 적용 계획을 먼저 확인한다.
+PostgreSQL 실제 적용 예는 `templates/project/compose-3tier`의 `schema-pg` 서비스가 보여 준다.
 
 ## Redis 운영 기준
 
@@ -163,7 +176,9 @@ Redis 작업은 DB transaction 안에 넣지 않는다. DB commit 후 invalidati
 
 ## 참조
 
-- 경계 규칙(자동 로드): `rules/python/data-handling.md`
-- 직렬화 계약: 스킬 `json-contracts` / migration: `database-migrations` / schema·인덱스: `postgres-patterns` / Redis: `redis-patterns`
+- 경계 규칙(자동 로드): `rules/python/data-handling.md`, 커밋 전 보안 체크리스트: `rules/common/security.md`
+- 직렬화 계약: 스킬 `json-contracts` / migration: `database-migrations`(Alembic)·`sql-schema-versioning`(.sql 파일)
+- schema·인덱스: `postgres-patterns`·`oracle-patterns` / 임베디드 SQL: `embedded-sql` / Redis: `redis-patterns`
+- 비밀값·개인정보 기술 통제: `sensitive-data-handling`
 - 독립 리뷰: `agents/database-reviewer.md` · `/database-review`
-- 추진 경위: [[2026-06-09-data-handling-hardening]], [[2026-06-09-ecc-data-handling-gap]]
+- 추진 경위: [[2026-06-09-data-handling-hardening]], [[2026-06-09-data-handling-gap]]

@@ -1,7 +1,7 @@
 ---
 Title: "프로젝트 디자인 문서 계약"
 creation: 2026-07-01
-modification: 2026-07-01
+modification: 2026-10-06
 status: "done"
 tags:
  - "arachne"
@@ -14,6 +14,9 @@ MOC:: [[Arachne]]
 FROM:: [[2026-06-09-project-design-docs-contract]]
 
 # 프로젝트 디자인 문서 계약
+
+이 문서는 Arachne를 쓰는 Web 프로젝트가 디자인 문서를 어디에 두고 어떻게 만드는지 정한 계약이다.
+Web 프로젝트를 새로 만들거나 `/design`이 읽는 문서를 확인할 때 읽는다.
 
 Arachne 자체의 디자인 품질 규칙은 `rules/web/design-quality.md`와 `skills/frontend-design-direction/SKILL.md`가
 담당한다. Arachne를 사용하는 개별 Web 프로젝트의 제품 디자인 정본은 `docs/design/DESIGN.md`다.
@@ -36,7 +39,8 @@ Markdown은 token 값을 중복 관리하지 않는다. `DESIGN.md`에는 값의
   `docs/design/decisions/.gitkeep`을 생성한다.
 - `arachne init-ci --profile web|python-web`은 기존 프로젝트에 디자인 문서가 없을 때만 최소
   구조를 생성한다.
-- `minimal`과 `python` profile에는 디자인 문서를 만들지 않는다.
+- 그 밖의 profile(`minimal`·`python`·`cpp`·`rust`·`c-system`)에는 디자인 문서를 만들지 않는다.
+- 템플릿 원본은 `templates/project/design/DESIGN.md`다.
 - 기존 `docs/design/DESIGN.md`, `docs/design/README.md`, 루트 `DESIGN.md`는 덮어쓰지 않는다.
 - `docs/design`, `docs/design/DESIGN.md`, `docs/design/decisions`, 루트 `DESIGN.md`가 심볼릭
   링크면 쓰기를 거부한다.

@@ -29,57 +29,11 @@ gcc -fsanitize=address -o test_binary tests/*.c && ./test_binary
 gcc -fsanitize=thread -o test_binary tests/*.c && ./test_binary
 ```
 
-## cmocka 예시
+## cmocka·커버리지
 
-```c
-#include <stdarg.h>
-#include <stddef.h>
-#include <setjmp.h>
-#include <cmocka.h>
-
-/*=============================================================================
-FUNCTION    : test_ConnCreate_NullHost
-DESCRIPTION : NULL 호스트 입력 시 NULL 반환 검증
-=============================================================================*/
-static void test_ConnCreate_NullHost(void **state)
-{
-    (void)state;
-    Conn *conn = ConnCreate(NULL, 8080);
-    assert_null(conn);
-}
-
-/*=============================================================================
-FUNCTION    : test_ConnSend_ValidData
-DESCRIPTION : 유효한 데이터 전송 시 성공 반환 검증
-=============================================================================*/
-static void test_ConnSend_ValidData(void **state)
-{
-    Conn *conn = (Conn *)*state;
-    const char msg[] = "hello";
-    int ret = ConnSend(conn, msg, sizeof(msg));
-    assert_int_equal(ret, 0);
-}
-
-int main(void)
-{
-    const struct CMUnitTest tests[] = {
-        cmocka_unit_test(test_ConnCreate_NullHost),
-        cmocka_unit_test_setup_teardown(
-            test_ConnSend_ValidData, setup, teardown),
-    };
-    return cmocka_run_group_tests(tests, NULL, NULL);
-}
-```
-
-## 커버리지
-
-```bash
-gcc --coverage -o test_binary tests/*.c src/*.c
-./test_binary
-gcov src/*.c
-lcov --capture --directory . --output-file coverage.info
-genhtml coverage.info --output-directory coverage_html
-```
+- 테스트 함수는 `test_<대상>_<조건>` 이름으로 짓고, 픽스처는 `cmocka_unit_test_setup_teardown`으로 건다.
+- 커버리지는 `gcc --coverage` 빌드 후 `gcov`·`lcov`로 측정한다.
+- 예시 코드(픽스처·`--wrap` 모킹·커버리지 명령)는 `c-testing` 스킬의 "cmocka 기본"·"커버리지" 절에 있다.
 
 ## 퍼징 (libFuzzer)
 

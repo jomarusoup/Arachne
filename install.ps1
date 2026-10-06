@@ -125,7 +125,7 @@ function ShowUsage {
     Write-Output "  -h, -Help             show help"
     Write-Output "  -v, -Version          show version"
     Write-Output ""
-    Write-Output "Git for Windows bash.exe is required for hooks and delegated commands."
+    Write-Output "Git for Windows bash.exe is required for hooks and the bash-based commands (tws, docs-sync)."
     Write-Output "Tmux (tws) is only available inside WSL or another tmux environment."
 }
 
@@ -391,7 +391,7 @@ function RegisterCommands {
 function InvokePreflightCheck {
     $tools = @(
         @{ Cmd = "git";    Impact = "extras clone and -Update unavailable" },
-        @{ Cmd = "bash";   Impact = "hooks and delegated commands unavailable (install Git for Windows)" },
+        @{ Cmd = "bash";   Impact = "hooks and bash-based commands unavailable (install Git for Windows)" },
         @{ Cmd = "gh";     Impact = "feedback submit / issue / PR flows unavailable" },
         @{ Cmd = "npm";    Impact = "codegraph install and update unavailable" },
         @{ Cmd = "claude"; Impact = "UA / taste-skill plugin install unavailable" }

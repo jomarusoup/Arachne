@@ -1,7 +1,7 @@
 ---
 Title: "codegraph 사용법"
 creation: 2026-06-14
-modification: 2026-06-14
+modification: 2026-10-06
 tags:
  - "arachne"
  - "tools"
@@ -86,13 +86,14 @@ MCP는 양립하며, 팀 선호에 따라 선택한다.
 
 ## Arachne 워크플로와의 접점
 
-`development-workflow §0 조사·재사용`, `issue-workflow 범위 파악·의존성 확인` 단계에서
+`development-workflow §0 조사·재사용`, `/issue`의 "범위 파악" 단계에서
 **심볼 단위 영향 분석**의 정본 도구다. 구조·도메인 개관은 [Understand-Anything](understand-anything.md)이,
-대규모 입력 요약은 `gemini-task`가 보완한다. 대용량 출력은 컨텍스트에 통째로 끌어오지 말고
-필요한 범위만 요약해 토큰을 아낀다(`rules/common/performance.md`).
+여러 파일·디렉터리를 넓게 훑어야 하는 탐색은 Explore 서브에이전트에 맡긴다. Explore는 읽기 전용으로
+병렬 검색을 수행하고 결론만 돌려주므로, 원문 덤프가 주 컨텍스트에 쌓이지 않는다. 대용량 출력은
+컨텍스트에 통째로 끌어오지 말고 필요한 범위만 요약해 토큰을 아낀다(`rules/common/performance.md`).
 
 **행동 배선** — 설치돼 있으면 AI가 알아서 우선 사용하도록 전역 규칙에 박혀 있다:
-`rules/common/performance.md`의 "조사 라우팅" 표(심볼·영향분석=codegraph, 텍스트=sgrep)와
+`skills/research-routing/SKILL.md`의 "조사 라우팅" 표(심볼·영향 분석은 codegraph, 텍스트는 sgrep)와
 `rules/common/workflow.md`·`AGENTS.md`의 탐색 규칙(`command -v codegraph` 가드). 미설치 환경은
 자동으로 `sgrep` 폴백하므로 옵트인 성격은 유지된다.
 
