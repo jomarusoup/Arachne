@@ -77,16 +77,16 @@ Arachne의 도구·검증 층(sanitizer, clippy, miri, 퍼징)은 시스템 프�
 
 ## 결과
 
-- 실행은 [Arachne 보강 로드맵](../task/20261005/2026-10-05-arachne-roadmap.md)의 트랙 A로 진행한다.
+- 실행은 [Arachne 보강 로드맵](../task/2026-10-05-arachne-roadmap.md)의 트랙 A로 진행한다.
   철학 계획 P1~P5는 로드맵 웨이브 W1~W5에 대응한다.
 - 철학 계획 문서의 결정 체크와 로드맵 연동 개정(R1~R8)은
-  [통합 계획](../task/20261005/2026-09-29-programming-philosophy-integration.md) §6에 있다.
+  [통합 계획](../task/2026-09-29-programming-philosophy-integration.md) §6에 있다.
 - 입력되지 않은 전제(C++ 표준, 회사·개인 코드 구분)는 가정으로 진행하며, 입력되면 이 ADR을
   supersede하는 새 ADR로 바꾼다.
 
 ## 검증
 
 ```bash
-grep -c '결정일: 2026-10-05' docs/task/20261005/programming-philosophy.md   # 17
+grep -c '결정일: 2026-10-05' docs/idea/2026-09-29-programming-philosophy.md   # 17
 bash tests/check_index.sh && bash tests/check_convention_sync.sh
 ```

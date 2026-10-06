@@ -17,12 +17,12 @@ paths:
 ```bash
 cargo test                       # 표준 테스트
 cargo nextest run                # 병렬 러너 (권장)
-cargo test --doc                 # 문서 주석 예제 검증 (nextest 는 doc 미실행 — 별도 필수)
+cargo test --doc                 # 문서 주석 예제 검증
 cargo test -- --nocapture        # 출력 표시
 ```
 
-> **doc 테스트는 별도로 반드시 실행** — 공개 API 의 `///` 예제가 컴파일·통과해야
-> 문서가 거짓말을 하지 않는다. `cargo nextest run` 은 doc 테스트를 돌리지 않는다.
+**doc 테스트는 별도로 반드시 실행한다.** `cargo nextest run`은 doc 테스트를 돌리지 않는다.
+공개 API의 `///` 예제가 컴파일·통과해야 문서가 거짓말을 하지 않는다.
 
 ## 단위 테스트 — 같은 파일 내 모듈
 
@@ -62,13 +62,9 @@ proptest! {
 임의 바이트 입력을 다루는 코드는 proptest 만으로 부족하다 — **cargo-fuzz** 로
 패닉·UB·무한루프를 잡는다. proptest 는 구조적 불변식, 퍼징은 적대적 임의 입력 담당.
 
-```bash
-cargo install cargo-fuzz
-cargo fuzz run fuzz_parse -- -max_total_time=60   # 크래시까지 실행
-```
-
 ```rust
 // fuzz/fuzz_targets/fuzz_parse.rs — 패닉·크래시가 없어야 한다
+// 실행: cargo fuzz run fuzz_parse -- -max_total_time=60   (설치: cargo install cargo-fuzz)
 #![no_main]
 libfuzzer_sys::fuzz_target!(|data: &[u8]| { let _ = mycrate::parse(data); });
 ```
@@ -99,8 +95,5 @@ fn bench_match(c: &mut Criterion) {
 }
 ```
 
-```bash
-cargo bench                      # p50/p99 레이턴시 측정
-```
-
-> 핫패스 변경 시 벤치 결과 비교 — p99 레이턴시 회귀 시 머지 금지.
+`cargo bench`로 p50/p99 레이턴시를 측정한다. 핫패스를 바꾸면 벤치 결과를 비교하고,
+p99 레이턴시가 회귀하면 머지하지 않는다.

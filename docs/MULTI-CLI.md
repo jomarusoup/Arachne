@@ -1,13 +1,16 @@
 ---
 Title: MULTI-CLI
 creation: 2026-06-05
-modification: 2026-08-29
+modification: 2026-10-06
 Description: 공통 규약(AGENTS.md) 다중 CLI 배포 가이드 — Claude·Gemini·Codex·Copilot 어댑터
 tags:
 aliases:
 ---
 
 # Multi-CLI Guide — 공통 규약(AGENTS.md) 배포
+
+이 문서는 Arachne의 공통 규약(`AGENTS.md`)을 Claude Code 밖의 CLI(Gemini CLI·Codex CLI·GitHub Copilot)에
+배포하는 방법이다. Claude Code와 함께 다른 CLI를 쓰거나, 다른 CLI에서 규약이 보이지 않을 때 읽는다.
 
 > **운용 형태**: 현재 하네스는 **Claude Code 단독 운용**이다. 과거의 3-레인 협업 런타임
 > (위임 래퍼 `gtask`/`ctask`·가용성 폴백 `atask`)은
@@ -43,6 +46,10 @@ aliases:
 
 어느 CLI를 단독으로 띄우든 읽는 공통 규약은 동일하다. 훅·에이전트·커맨드는 Claude 전용이며,
 어느 CLI가 작성했든 **최종 게이트는 프로젝트 CI**(`.arachne/verify.sh`·GitHub Actions)다.
+
+보안 계층도 마찬가지다. 비밀 파일 읽기를 막는 `permissions.deny`와 PreToolUse 가드 훅은 Claude Code에만 적용된다.
+다른 CLI로 작업한 변경은 CI의 민감 텍스트 검사가 비밀값을 다시 잡는다. 이 차이는
+[ARCHITECTURE 7절](ARCHITECTURE.md)의 네 겹 보안 계층에서 ①·② 겹이 빠진 상태라는 뜻이다.
 
 ```bash
 gemini            # 대화형 — ~/.gemini/GEMINI.md(→AGENTS.md) 자동 로드

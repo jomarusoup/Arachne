@@ -67,6 +67,12 @@ run_install() {
     [ -L "${TMP_DIR}/.claude/skills" ]
 }
 
+@test "install: lib/ 심볼릭 링크 생성 (커맨드·스킬이 ~/.claude/lib/naming-check.sh 를 호출)" {
+    run_install
+    [ -L "${TMP_DIR}/.claude/lib" ]
+    [ -f "${TMP_DIR}/.claude/lib/naming-check.sh" ]
+}
+
 @test "install: 현역 CLI(arachne·tws·docs-sync)만 등록, 3-레인 래퍼는 미등록(ADR-0004)" {
     run_install
 

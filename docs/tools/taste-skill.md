@@ -1,7 +1,7 @@
 ---
 Title: "taste-skill 사용법"
 creation: 2026-06-14
-modification: 2026-06-14
+modification: 2026-10-06
 tags:
  - "arachne"
  - "tools"
@@ -16,7 +16,9 @@ FROM:: [[arachne-tools]]
 
 # taste-skill
 
-AI가 만든 프론트엔드의 품질을 끌어올리는 **안티-슬롭(anti-slop) 디자인 스킬** 모음.
+이 문서는 taste-skill 플러그인의 설치와 사용법이다. 웹 화면을 새로 만들거나 기존 UI를 고칠 때 읽는다.
+
+taste-skill은 AI가 만든 프론트엔드의 품질을 끌어올리는 **안티-슬롭(anti-slop) 디자인 스킬** 모음이다.
 보일러플레이트 느낌의 UI 대신 레이아웃·타이포그래피·모션·여백을 강화한다.
 참조 이미지 보드를 만드는 이미지 생성 스킬도 포함한다.
 
@@ -71,7 +73,7 @@ arachne --extras --taste       # 또는: bash ~/Arachne/setup-extras.sh --taste
 ## Arachne 워크플로와의 접점
 
 `rules/web/design-quality.md`(안티-템플릿 정책)와 `skills/frontend-patterns/SKILL.md`·
-`make-interfaces-feel-better.md`를 보완한다. 웹/프론트엔드 작업 시 디자인 품질 게이트로
+`skills/make-interfaces-feel-better/SKILL.md`를 보완한다. 웹/프론트엔드 작업 시 디자인 품질 게이트로
 함께 사용한다.
 
 **행동 배선** — `rules/web/design-quality.md`의 "프론트엔드 코드 작성 전" 6번에서, 설치돼 있으면

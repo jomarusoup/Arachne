@@ -810,6 +810,39 @@ brew install coreutils
 Syncthing 자체 동작과 Arachne 기여자 테스트의 플랫폼 요구사항은 별개다. 세부 범위는
 [COMPATIBILITY.md](COMPATIBILITY.md)를 따른다.
 
+### 클라우드 동기화 폴더의 git 저장소 — `bad object refs/heads/... 2`
+
+**결론**: git 저장소는 클라우드 동기화 폴더 밖에 둔다. Syncthing으로 저장소 폴더를 공유할 때는
+`.git`과 충돌 사본을 `.stignore`로 제외한다.
+
+macOS iCloud의 "데스크탑 및 문서 폴더" 같은 클라우드 동기화 폴더 안에 저장소가 있으면, 동기화
+클라이언트가 같은 파일의 두 버전을 `<이름> 2` 형태의 충돌 사본으로 남길 수 있다. 이 사본이
+`.git/refs` 안에 생기면 git은 공백이 든 이름을 브랜치 참조로 읽으려다 실패하고, `git pull`이
+`fatal: bad object refs/heads/<브랜치> 2` 같은 오류로 멈춘다. 2026-10-06에 이 저장소에서 실제로 일어났다.
+
+복구 절차는 다음과 같다.
+
+```bash
+# 1) 충돌 사본을 찾는다 — refs 외에 .git 최상위(index·HEAD 등)도 함께 본다
+find .git -name '* 2*'
+
+# 2) 사본의 내용(커밋 해시)을 원본과 비교해, 원본에 없는 커밋을 가리키는지 확인한다
+cat ".git/refs/heads/main 2"; git rev-parse main
+
+# 3) 확인이 끝난 " 2" 사본만 지운다
+find .git/refs -name '* 2' -delete
+
+# 4) 원격 참조를 다시 받아 정리한다
+git fetch --prune
+```
+
+사본이 원본에 없는 커밋을 가리키면 지우기 전에 `git branch rescue-<이름> <해시>`로 살려 둔다.
+
+예방책은 두 가지다.
+- 저장소를 iCloud·Dropbox 같은 클라우드 동기화 폴더 밖(예: `~/work`)에 둔다. 기기 간 공유는 git 원격으로 한다.
+- Syncthing으로 저장소 폴더를 공유해야 한다면 `.stignore`에 `.git`과 충돌 사본 패턴
+  (`*.sync-conflict-*`, `* 2`, `* 2.*`)을 무시 대상으로 넣는다. §5.1의 화이트리스트 패턴은 `.git`을 이미 제외한다.
+
 ---
 
 ## 자동 시작
@@ -832,6 +865,7 @@ sudo systemctl is-enabled syncthing@<user>.service
 - 큰 파일 일괄 추가 시 LAN/공인망 대역 소모 주의 → `.stignore`로 좁히기
 - 양쪽 시계가 크게 어긋나면 충돌 판정이 어색해진다 → NTP 동기화 확인
 - v2는 기본 폴더를 자동 생성하지 않는다 — 예전 버전에서 올라왔다면 남아 있는 `Default Folder`(`~/Sync`)를 GUI에서 삭제
+- git 저장소의 `.git` 디렉터리는 동기화하지 않는다. 충돌 사본이 참조를 깨뜨린다(트러블슈팅 "클라우드 동기화 폴더의 git 저장소" 참고).
 - Syncthing은 **삭제도 동기화**한다. 한쪽에서 지운 파일은 다른 쪽도 사라진다.
   버전 관리가 필요하면 GUI에서 **File Versioning** 활성화 (Staggered, Trash Can 등)
 

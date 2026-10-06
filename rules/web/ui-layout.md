@@ -12,9 +12,6 @@ paths:
 웹 UI 수정 시 기본값으로 삼는 범용 레이아웃 원칙.
 프로젝트별 구체적인 클래스명·수치는 각 프로젝트의 `CLAUDE.md`에서 정의한다.
 
-> 웹 파일 편집 시에만 자동 로드된다(paths 매칭). 과거 rules/common/ 소속으로
-> 모든 세션에 상시 로드되던 것을 웹 도메인 규칙으로 이동 (세션 토큰 절감).
-
 ## 참고 예시 위치
 
 UI/UX 예시는 프로젝트 문서의 `docs/ui-ux/examples/`에 둔다.
@@ -67,11 +64,7 @@ SaaS·운영 도구는 marketing hero보다 반복 작업의 스캔성과 조작
 - `table-layout:auto` 기본 — 내용에 따라 유동적으로 결정
 - `table-layout:fixed` + 하드코딩 px 조합 **금지**
 - **greedy 열 패턴** — 주된 텍스트 열 하나에 `width:100%` 또는 `flex:1` 부여해 나머지 열이 content 크기로 수축하게 함
-
-```css
-/* 두 번째 열을 greedy로 */
-.my-table th:nth-child(2) { width: 100%; }
-```
+  (예: `.my-table th:nth-child(2) { width: 100%; }`)
 
 - 액션 열(버튼 전용): `width:32px` 이하, 내용 기준 최소화
 - 텍스트 열 헤더에 `min-width:80px` — 빈 열이 너무 좁아지지 않게
@@ -88,11 +81,7 @@ SaaS·운영 도구는 marketing hero보다 반복 작업의 스캔성과 조작
 - flex gap: 버튼 그룹 `gap:8px`, 인라인 아이콘 버튼 `gap:2~4px`
 - 최소 히트 영역: 40×40px, 터치 중심 화면은 44×44px 이상
 - **호버 시 표시 패턴** — 행·열 컨트롤은 `:hover`에서만 노출
-
-```css
-.ctrl { display:none; }
-.row:hover .ctrl { display:inline-flex; }
-```
+  (예: `.ctrl { display:none; }` + `.row:hover .ctrl { display:inline-flex; }`)
 
 ## 패딩
 

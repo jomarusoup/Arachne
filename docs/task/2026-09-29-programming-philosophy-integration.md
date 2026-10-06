@@ -14,7 +14,7 @@ aliases:
  - "philosophy-integration"
 ---
 MOC:: [[Arachne]]
-FROM:: [[programming-philosophy]]
+FROM:: [[2026-09-29-programming-philosophy]]
 
 # [plan] 프로그래밍 철학(TPOP 기반) 하네스 이식 및 규칙 충돌 정리
 
@@ -24,7 +24,7 @@ FROM:: [[programming-philosophy]]
 
 - **상태**: in progress — 결정 확정(2026-10-05), 실행 순서는 `2026-10-05-arachne-roadmap.md` §4 웨이브를 따른다
 - **기준 커밋**: `d6e260d` (2026-09-13)
-- **관련 문서**: [[programming-philosophy]], [[ARACHNE_AUDIT_2026-09-13]], [[0002-systems-profiles]]
+- **관련 문서**: [[2026-09-29-programming-philosophy]], [[2026-09-13-arachne-audit]], [[0002-systems-profiles]]
 
 ---
 

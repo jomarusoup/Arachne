@@ -46,7 +46,7 @@ ProfileHasDesignDocs() {
 # FUNCTION    : InstallProjectDesignDocs
 # DESCRIPTION : Web profile 프로젝트에 docs/design/DESIGN.md 최소 템플릿 생성
 # PARAMETERS  : string project_abs - 프로젝트 절대 경로
-#               string profile     - minimal|python|web|python-web
+#               string profile     - minimal|python|python-web|web|cpp|rust|c-system
 #===============================================================================
 InstallProjectDesignDocs() {
     local project_abs="$1"
@@ -157,7 +157,7 @@ ScaffoldCSystemKit() {
 #===============================================================================
 # FUNCTION    : InitProjectCi
 # DESCRIPTION : 프로젝트에 로컬·GitHub CI 공통 검증 자산 설치 또는 갱신
-# PARAMETERS  : 위치인자 project_dir + --profile minimal|python|web|python-web
+# PARAMETERS  : 위치인자 project_dir + --profile minimal|python|python-web|web|cpp|rust|c-system
 #===============================================================================
 InitProjectCi() {
     local profile="minimal"
@@ -326,7 +326,7 @@ NewProject() {
     local audit_tmpl="$REPO_DIR/docs/template/audit.md"
     local task_tmpl="$REPO_DIR/docs/template/task.md"
     local feedback_tmpl="$REPO_DIR/docs/template/feedback.md"
-    local task_rules="$REPO_DIR/docs/task/README.md"
+    local task_rules="$REPO_DIR/docs/template/task-README.md"
     local agents_tmpl="$REPO_DIR/templates/project/AGENTS.md"
     local claude_tmpl="$REPO_DIR/templates/project/CLAUDE.md"
     if [ ! -f "$tmpl" ] || [ ! -f "$plan_tmpl" ] || [ ! -f "$idea_tmpl" ] || [ ! -f "$issue_tmpl" ] \

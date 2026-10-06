@@ -1,7 +1,7 @@
 ---
 Title: "Arachne 확장 도구"
 creation: 2026-06-14
-modification: 2026-07-01
+modification: 2026-10-06
 tags:
  - "arachne"
  - "tools"
@@ -15,9 +15,11 @@ FROM:: [[arachne-docs]]
 
 # Arachne 확장 도구 (Extras)
 
-Arachne 핵심(agents·commands·rules·hooks·skills)에 더해, **외부 저장소로 배포되는
-선택형 도구**를 Arachne와 충돌 없이 함께 설치·사용하기 위한 통합 계층이다.
-모두 Linux·macOS·Windows에서 동일하게 동작한다.
+이 문서는 Arachne 핵심(agents·commands·rules·hooks·skills)에 더해 쓰는 **외부 저장소의 선택형 도구**와
+그 설치 계층을 소개한다. 코드 구조 분석이나 프론트엔드 디자인 보강 도구가 필요할 때 읽는다.
+
+Linux·macOS는 `setup-extras.sh`, Windows는 `setup-extras.ps1`이 같은 동작을 제공한다.
+CI는 Linux·macOS에서 설치기 연동(`tests/install.bats`)을 검사하고, Windows 스크립트는 구문만 검사한다.
 
 ## 무엇이 포함되나
 

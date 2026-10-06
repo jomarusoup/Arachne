@@ -67,7 +67,7 @@ flowchart TD
 | [루트 README](../README.md) | 5분 온보딩, 핵심 명령, 전체 소개 |
 | [USAGE](USAGE.md) | 일상 사용법 — commands·agents·skills, 설치·동기화 |
 | [GLOSSARY](GLOSSARY.md) | 약어와 기술 용어 사전 |
-| [HARNESS-LEARNING-GUIDE](HARNESS-LEARNING-GUIDE.md) | 학습 순서 — 공통 규율→TDD→제품→아키텍처→도메인 트랙 |
+| [HARNESS-LEARNING-GUIDE](HARNESS-LEARNING-GUIDE.md) | 학습 순서 — 공통 규율, TDD, 보안 계층, 제품, 아키텍처, 프로젝트 키트, 도메인 트랙, 하네스 운영 |
 | [CAPABILITY-MAP](CAPABILITY-MAP.md) | 역량 지도 — 제품·아키텍처·Java·Docker·시스템/네트워크 자산 연결 |
 
 ## 2. Operations — 설치, CI, 플랫폼
@@ -99,7 +99,7 @@ Arachne를 특정 프로젝트 유형에 적용할 때의 기준 문서다.
 
 | 문서 | 정본 범위 |
 | --- | --- |
-| [ARCHITECTURE](ARCHITECTURE.md) | SSOT, 링크·병합 구조, 3-레인 구조 |
+| [ARCHITECTURE](ARCHITECTURE.md) | 설치 배선, 훅 흐름, 보안 계층, 규칙 로딩, 개발 파이프라인, 프로젝트 키트, 3티어 지원 지도 |
 | [MULTI-CLI](MULTI-CLI.md) | Claude·Codex·Gemini·Copilot 역할 분담·연계 |
 | [AI-ENGINEERING-NOTES](AI-ENGINEERING-NOTES.md) | 에이전틱 엔지니어링 설계 노트 |
 | [decisions/README](decisions/README.md) | ADR 작성 기준과 현재 결정 목록 |

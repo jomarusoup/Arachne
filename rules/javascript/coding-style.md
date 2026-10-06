@@ -14,12 +14,13 @@ paths:
 
 `/* */` 블록 주석 지원 → C 스타일 그대로 사용.
 
+파일 헤더에는 날짜 필드를 두지 않는다(이력은 git이 정본). 함수 헤더는 공개 API와
+동작이 자명하지 않은 함수에만 둔다.
+
 ```javascript
 /*#############################################################################
 FILE NAME   : 파일명.js
 DESCRIPTION : 파일 역할 한 줄 요약
-DATA        : YYYY-MM-DD
-Modification: YYYY-MM-DD
 #############################################################################*/
 
 /*=============================================================================
@@ -32,16 +33,10 @@ RETURNED    : 반환값 설명
 
 ## 중괄호 스타일 — K&R (Allman 금지)
 
-ASI(Automatic Semicolon Insertion) 문제로 Allman 스타일 **금지**:
+Allman 스타일은 **금지**한다. `return` 다음 줄에 `{`를 두면 ASI(Automatic Semicolon
+Insertion)가 `return;`으로 끊어 `undefined`를 반환하기 때문이다. 여는 중괄호는 같은 줄에 둔다.
 
 ```javascript
-/* BAD: return 뒤 ASI → undefined 반환 */
-return
-{
-    data: "success"
-};
-
-/* GOOD */
 return {
     data: "success"
 };
@@ -60,28 +55,17 @@ let g_EditingId = null;
 
 ## 불변성
 
-```javascript
-/* BAD: 직접 변이 */
-tasks.push(newTask);
-task.done = true;
-
-/* GOOD: 불변 연산 */
-const tasks   = [...g_Tasks, newTask];
-const updated = { ...task, done: true };
-```
+배열·객체를 직접 변이하지 않고 스프레드로 새 값을 만든다. 규칙과 핫패스 예외는
+[patterns.md](patterns.md)의 "불변성" 절이 정본이다.
 
 ## 에러 처리
 
 ```typescript
-async function loadData(id: string): Promise<Data> {
-    try {
-        return await fetchData(id);
-    } catch (error: unknown) {
-        if (error instanceof Error) {
-            throw new Error(`loadData 실패: ${error.message}`);
-        }
-        throw new Error("loadData: 알 수 없는 에러");
-    }
+try {
+    return await fetchData(id);
+} catch (error: unknown) {
+    if (error instanceof Error) { throw new Error(`loadData 실패: ${error.message}`); }
+    throw new Error("loadData: 알 수 없는 에러");
 }
 ```
 
@@ -92,26 +76,19 @@ async function loadData(id: string): Promise<Data> {
 
 ### interface vs type
 
-```typescript
-/* 확장·구현 가능한 객체 형태 → interface */
-interface User {
-    id:    string;
-    email: string;
-}
+확장·구현할 객체 형태는 `interface`로, 유니온·교차·유틸리티 타입은 `type`으로 정의한다.
 
-/* 유니온·교차·유틸리티 타입 → type */
-type UserRole    = "admin" | "member";
-type AdminUser   = User & { role: UserRole };
+```typescript
+interface User { id: string; email: string; }
+type AdminUser = User & { role: "admin" | "member" };
 ```
 
 ### `any` 금지
 
-```typescript
-/* BAD */
-function parse(input: any) { return input.value; }
+타입을 모르는 값은 `any` 대신 `unknown`으로 받고, 타입 가드로 좁힌 뒤 쓴다.
 
-/* GOOD: unknown으로 수신 후 타입 가드 */
-function parse(input: unknown): string {
+```typescript
+function parse(input: unknown): string {              /* `input: any` 금지 */
     if (typeof input === "object" && input !== null && "value" in input) {
         return String((input as { value: unknown }).value);
     }
@@ -126,11 +103,7 @@ export하는 함수·메서드에는 반환 타입을 적는다.
 모듈 내부 함수는 추론에 맡겨도 된다.
 
 ```typescript
-/* BAD: 반환 타입이 구현에 따라 바뀐다 */
-export function ParseHeader(view: DataView) { ... }
-
-/* GOOD: 계약이 시그니처에 고정된다 */
-export function ParseHeader(view: DataView): FrameHeader { ... }
+export function ParseHeader(view: DataView): FrameHeader { ... }   /* `: FrameHeader` 생략 금지 */
 ```
 
 ### 읽기 전용 인자 — `Readonly<T>`
@@ -148,20 +121,8 @@ export function Render(config: Readonly<ViewConfig>): string { ... }
 
 ### 입력 검증 — Zod
 
-외부 입력(API 응답, 폼 데이터)은 Zod로 스키마 검증:
-
-```typescript
-import { z } from "zod";
-
-const UserSchema = z.object({
-    email: z.string().email(),
-    age:   z.number().int().min(0).max(150),
-});
-
-type User = z.infer<typeof UserSchema>;
-
-const user: User = UserSchema.parse(rawInput);
-```
+외부 입력(API 응답, 폼 데이터)은 Zod 스키마로 검증하고, 타입은 `z.infer<typeof Schema>`로 스키마에서 얻는다.
+예시는 [security.md](security.md)의 "입력 검증 (Zod)" 절에 있다.
 
 ## 디버그 출력
 

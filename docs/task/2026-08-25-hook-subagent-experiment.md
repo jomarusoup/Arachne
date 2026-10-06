@@ -1,7 +1,7 @@
 ---
 Title: "[task] PC-8 실험 — PreToolUse·PostToolUse의 서브에이전트 발화 확정"
 creation: 2026-08-25
-modification: 2026-08-25
+modification: 2026-10-06
 status: "to do"
 tags:
  - "arachne"
@@ -55,6 +55,11 @@ ls -la ~/.claude/.docdrift-seen-* 2>/dev/null   # 실험 전후 마커 비교
 - 감사 보고서 Q2의 [추정] 표기가 실험 근거를 갖춘 확정 판정으로 갱신된다.
 
 ## 진행 기록
+
+### 2026-10-06
+
+- 상태 점검(로드맵 W6): `to do`를 유지한다. W1 G-1(`7ce1877`)은 서브에이전트의 규칙 로드(Q1)만 실측했고,
+  훅 발화(Q2)는 아직 실험하지 않았다. W1에서 PreToolUse 가드 훅(`guard-bash.sh` 등)이 생겨 이 실험의 필요성은 커졌다.
 
 ### 2026-08-25
 

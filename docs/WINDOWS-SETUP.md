@@ -1,8 +1,12 @@
 # Windows Setup — Claude Code · Codex CLI · Gemini CLI · GitHub Copilot
 
-Windows에서 CLI 도구와 Arachne를 처음 설치하는 절차를 정리한다. 이 문서는 **Windows 11 +
-PowerShell 7 또는 Windows PowerShell 5.1**을 기준으로 하며, Windows 10에서는 지원되는 최신
-빌드가 필요하다.
+이 문서는 Windows에서 CLI 도구와 Arachne를 처음 설치하는 절차다. Windows 머신에 하네스를 새로 깔거나,
+Windows에서 훅이 돌지 않을 때 읽는다. 기준 환경은 **Windows 11 + PowerShell 7 또는 Windows PowerShell 5.1**이다.
+Windows 10에서는 지원되는 최신 빌드가 필요하다.
+
+하네스를 실행하는 도구는 Claude Code다. Codex CLI·Gemini CLI·GitHub Copilot은 공통 규약(`AGENTS.md`)만 받는다.
+그래서 4·5절의 Codex·Gemini 설치는 그 도구를 함께 쓸 때만 필요하다. 기능별 플랫폼 검증 범위는
+[COMPATIBILITY](COMPATIBILITY.md)에 있다.
 
 ## 1. 설치 방식 선택
 
@@ -54,7 +58,7 @@ Get-Command bash
 Test-Path "C:\Program Files\Git\bin\bash.exe"
 ```
 
-Arachne의 Claude 훅과 위임 래퍼는 `bash.exe`를 사용한다. Git이 다른 위치에 설치되었다면 해당
+Arachne의 Claude 훅과 Bash 명령 래퍼(`docs-sync.cmd`, `tws.cmd`)는 `bash.exe`를 사용한다. Git이 다른 위치에 설치되었다면 해당
 Git `bin` 디렉터리를 사용자 PATH에 추가한다.
 
 ### 2.2 PowerShell 실행 정책
@@ -302,7 +306,7 @@ arachne -Install -Target gemini
 arachne -Install -Target copilot
 ```
 
-위임 래퍼의 등록 여부:
+명령 래퍼의 등록 여부:
 
 ```powershell
 Get-Command arachne, docs-sync
@@ -325,6 +329,24 @@ arachne -Extras -Codegraph       # 개별 (-Taste / -Ua 동일)
 > `claude plugin` CLI(UA·taste-skill 플러그인 등록)와 `git`이 PATH에 있어야 한다. codegraph는
 > `~/codegraph` 클론의 installer를 우선 쓰고 없으면 npm 으로 폴백한다. 상세·GitHub 링크는
 > [docs/tools/extras-setup.md](tools/extras-setup.md).
+
+### 6.2 보안 가드와 프로젝트 키트
+
+`install.ps1`은 Linux·macOS와 같은 `settings.template.json`으로 `~\.claude\settings.json`을 만든다.
+따라서 비밀 파일 읽기를 막는 `permissions.deny` 규칙과 PreToolUse 가드 훅(`guard-bash.sh`·`guard-secrets.sh`)이
+Windows에도 똑같이 등록된다. 가드 훅은 다른 훅처럼 Git Bash의 `bash.exe`로 실행된다.
+
+검증 범위는 플랫폼마다 다르다.
+
+- Windows CI는 생성된 `settings.json`이 올바른 JSON인지 확인한다.
+- Windows CI의 Git Bash 스모크(`tests/smoke_hooks.sh`)는 가드 훅이 Git Bash에서 실행되는지와 기본 판정
+  (`--no-verify` 거부, 일반 명령 통과)만 확인한다.
+- 우회 시도와 비밀값 패턴까지 보는 전체 판정 테스트(`tests/guard_hooks.bats`)는 Linux·macOS CI에서만 돈다.
+
+Windows의 `arachne` 명령은 `install.ps1`을 부르며, 프로젝트 키트 명령(`--init-ci`, `-n`)은 `install.ps1`에 없다.
+프로젝트 키트는 Git Bash나 WSL에서 `bash ~/Arachne/install.sh --init-ci <디렉터리> --profile <이름>`으로 실행한다.
+`c-system` 프로필이 까는 C 서버 골격은 Linux 서버용이며, robust 뮤텍스처럼 Linux에서만 빌드되는 경로가 있다.
+C 코드 빌드·테스트와 3티어 compose 스모크는 Ubuntu CI에서만 검증한다. Windows에서 이 코드를 다루려면 WSL2(7절)를 쓴다.
 
 ## 7. WSL2로 설치하는 대안
 

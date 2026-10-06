@@ -273,20 +273,22 @@ Claude Code 상태표시줄은 `settings.template.json`의 `statusLine.command`�
 
 | 확장자 | 자동 로드되는 규칙 |
 |---|---|
-| `*.c` `*.h` `*.pc` `*.pgc` | `rules/c/*` |
-| `*.cpp` `*.hpp` | `rules/cpp/*` |
+| `*.c` `*.h` `*.pc` `*.pgc` | `rules/c/*` + `rules/systems/*` |
+| `*.cpp` `*.hpp` | `rules/cpp/*` + `rules/systems/*` |
 | `*.go` | `rules/golang/*` |
 | `*.java` `pom.xml` `build.gradle*` | `rules/java/*` |
-| `*.rs` `Cargo.toml` | `rules/rust/*` |
+| `*.rs` `Cargo.toml` | `rules/rust/*` + `rules/systems/*` |
 | `*.py` | `rules/python/*` |
 | `*.js` `*.ts` | `rules/javascript/*` |
 | `Dockerfile` `*.Dockerfile` `docker-compose*.yml` `compose*.yml` | `rules/docker/*` |
 | `*.css` `*.scss` `*.html` `*.jsx` `*.tsx` `*.vue` | `rules/web/*` (design-quality·ui-layout·security·performance) |
 | `*.tsx` `*.jsx` | `rules/react/*` |
+| `main/**` `preload/**` `electron*.ts` | `rules/electron/*` |
 | `*.sh` | `rules/bash/*` |
 
 각 언어 폴더는 `coding-style · hooks · patterns · security · testing` 5개 파일을 기본으로 한다
 (Python은 `fastapi`·`data-handling` 추가, web은 `design-quality`·`ui-layout`·`security`·`performance`, react는 3개 파일).
+`systems/`(설계 철학·결정 기준)와 `electron/`(보안·패턴)은 언어 폴더가 아니라 관심사 폴더라 2개 파일만 둔다.
 
 ---
 

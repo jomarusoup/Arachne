@@ -160,8 +160,12 @@ run_new() {
 
 @test "new: task 규약과 템플릿은 원본과 동일" {
     run_new myproj "${TMP_DIR}"
-    run diff "${REPO_DIR}/docs/task/README.md" "${TMP_DIR}/myproj/docs/task/README.md"
+    run diff "${REPO_DIR}/docs/template/task-README.md" "${TMP_DIR}/myproj/docs/task/README.md"
     [ "$status" -eq 0 ]
+    # 하네스 저장소 전용 인덱스·문구가 새 프로젝트로 새지 않는다
+    grep -qF 'docs/plan/PLAN.md' "${TMP_DIR}/myproj/docs/task/README.md"
+    run grep -qE 'task 인덱스|ADR-0006|폴더가 없다' "${TMP_DIR}/myproj/docs/task/README.md"
+    [ "$status" -ne 0 ]
     run diff "${REPO_DIR}/docs/template/idea.md" "${TMP_DIR}/myproj/docs/template/idea.md"
     [ "$status" -eq 0 ]
     run diff "${REPO_DIR}/docs/template/issue.md" "${TMP_DIR}/myproj/docs/template/issue.md"

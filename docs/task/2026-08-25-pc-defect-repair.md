@@ -1,7 +1,7 @@
 ---
 Title: "[task] 현행 결함 수리 — git-bus 오탐/미탐·스냅샷 덮어쓰기 (B-04·05·11)"
 creation: 2026-08-25
-modification: 2026-08-29
+modification: 2026-10-06
 status: "to do"
 tags:
  - "arachne"
@@ -56,6 +56,11 @@ shellcheck -S warning hooks/git-bus-check.sh hooks/session-end.sh
 - B-04·B-05·B-11 각각 "테스트 존재 + 통과" 판정을 만족한다.
 
 ## 진행 기록
+
+### 2026-10-06
+
+- 상태 점검(로드맵 W6): `to do`를 유지한다. `hooks/git-bus-check.sh`와 `hooks/session-end.sh`는
+  `bca6d26`(2026-07-14) 이후 바뀌지 않았고 B-04·05·11은 그대로 남아 있다. 두 훅은 현역이라 ADR-0004로 소멸하지 않는다.
 
 ### 2026-08-29
 

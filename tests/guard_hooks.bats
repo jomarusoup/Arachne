@@ -3,8 +3,6 @@
 # FILE NAME   : guard_hooks.bats
 # DESCRIPTION : 보안 가드 훅(guard-bash.sh·guard-secrets.sh)의 차단·확인·허용
 #               판정을 고정한다. 차단돼야 할 것과 통과해야 할 것을 쌍으로 둔다.
-# DATA        : 2026-10-05
-# Modification: 2026-10-05
 ################################################################################
 
 REPO_DIR="$(cd "$(dirname "$BATS_TEST_FILENAME")/.." && pwd)"

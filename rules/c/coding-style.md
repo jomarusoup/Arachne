@@ -103,30 +103,10 @@ int OpenFile(const char *path, int *out_fd)
 - 포인터 선언 시 `*`는 변수명 쪽에 붙임: `int *ptr` (타입 쪽 금지: `int* ptr`)
 - 외부 경계(공개 API·외부 입력)로 들어온 포인터는 NULL을 검사해 에러를 반환한다
 - 내부 함수의 포인터 전제는 불변식이므로 `assert()`로 표현한다
-- 포인터 해제 후 `NULL` 대입
-
-```c
-free(ptr);
-ptr = NULL;
-```
+- 포인터 해제 후 `NULL`을 대입한다: `free(ptr); ptr = NULL;`
 
 ## 인클루드 순서
 
-```c
-/* 1. 표준 라이브러리 */
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-
-/* 2. POSIX / 시스템 헤더 */
-#include <unistd.h>
-#include <sys/socket.h>
-#include <sys/epoll.h>
-
-/* 3. 서드파티 라이브러리 */
-#include <openssl/ssl.h>
-
-/* 4. 프로젝트 내부 헤더 */
-#include "config.h"
-#include "ipc.h"
-```
+그룹 순서는 1) 표준 라이브러리(`<stdio.h>`) → 2) POSIX·시스템 헤더(`<unistd.h>`, `<sys/epoll.h>`)
+→ 3) 서드파티 라이브러리(`<openssl/ssl.h>`) → 4) 프로젝트 내부 헤더(`"config.h"`)다.
+그룹 사이는 빈 줄로 구분한다.

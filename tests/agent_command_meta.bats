@@ -6,8 +6,6 @@
 #                 - 에이전트: name·description·tools·model 필수, name = 파일명,
 #                   방어 기준선 절 존재, 리뷰어(-reviewer)는 쓰기 도구 금지
 #                 - 커맨드: description 필수
-# DATA        : 2026-10-05
-# Modification: 2026-10-05
 ################################################################################
 
 REPO_DIR="$(cd "$(dirname "$BATS_TEST_FILENAME")/.." && pwd)"

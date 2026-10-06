@@ -91,6 +91,7 @@ SYMLINK_TARGETS=(
     "rules"
     "hooks"
     "skills"
+    "lib"
 )
 
 # 권장 의존성 목록 — "명령어:없을 때 영향" 형식. 경고만 하고 설치는 차단하지 않는다.

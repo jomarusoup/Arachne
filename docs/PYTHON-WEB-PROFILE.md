@@ -1,7 +1,7 @@
 ---
 Title: "Python·Web profile"
 creation: 2026-06-09
-modification: 2026-06-09
+modification: 2026-10-06
 tags:
  - "arachne"
  - "python"
@@ -15,10 +15,14 @@ FROM:: [[0001-python-web-profile]]
 
 # Python·Web Profile
 
+이 문서는 프로젝트 CI profile 중 `minimal`·`python`·`web`·`python-web` 4개의 기본 도구와 명령을 설명한다.
+Python 백엔드나 웹 프론트엔드 프로젝트에 CI를 붙이기 전에 읽는다. 시스템 profile(`cpp`·`rust`·`c-system`)과
+`.arachne/` 파일 소유권은 [PROJECT-CI.md](PROJECT-CI.md)가 정본이다.
+
 ## 목적
 
-profile은 Arachne가 사용 프로젝트에 어떤 검증 계약을 생성할지 결정한다. 현재 단계에서는 전역
-rules 설치량이 아니라 `.arachne/commands`와 GitHub Actions 런타임을 선택한다.
+profile은 Arachne가 사용 프로젝트에 어떤 검증 계약을 생성할지 결정한다. profile은 전역 rules 설치량이
+아니라 `.arachne/commands`의 기본 명령과 GitHub Actions에서 준비할 런타임을 고른다.
 
 ```mermaid
 flowchart LR

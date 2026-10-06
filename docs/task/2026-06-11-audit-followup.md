@@ -1,7 +1,7 @@
 ---
 Title: "[task] 아키텍처 감사 후속 — 잔존 항목 추적"
 creation: 2026-06-11
-modification: 2026-07-01
+modification: 2026-10-06
 status: "to do"
 tags:
  - "arachne"
@@ -16,7 +16,7 @@ FROM:: [[2026-06-11-architecture-audit]]
 
 # [task] 아키텍처 감사 후속 — 잔존 항목 추적
 
-- **상태**: to do (트리거 대기 항목 포함)
+- **상태**: to do — 트리거 대기 항목 포함
 - **우선순위**: medium
 - **담당**: unassigned
 - **관련 문서**: [[2026-06-11-architecture-audit]], CHANGELOG-AUDIT.md
@@ -103,3 +103,9 @@ bash tests/validate_settings.sh && bash tests/check_index.sh && bash tests/check
 
 - task 인벤토리 정리: 규약상 상태 값은 `planned`가 아니라 `to do`로 표준화했다.
 - 잔존 항목은 모두 트리거 대기 또는 별도 승인 대기 상태이며, 이번 정리에서 구현 착수하지 않았다.
+
+### 2026-10-06
+
+- 상태 점검(로드맵 W6): `to do`를 유지한다. F-01·F-07·운영 로그 표준(4)·5a는 트리거가 오지 않았다.
+  5b는 `538e950`(2026-07-02)에서 project-ci·feedback을 `lib/`로 추출해 일부 해소됐다(install.sh 1,088줄).
+  5c는 ADR-0004로 3-레인 문서가 슬림화돼(`5f5da1c`) 대상이 사라졌다.
