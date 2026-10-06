@@ -17,6 +17,8 @@ FROM:: [[2026-09-29-programming-philosophy-integration]]
 
 # Claude Code 착수 프롬프트 — 프로그래밍 철학 이식 (Arachne)
 
+- **상태**: done — 참고 자료다. 실행 순서는 로드맵 웨이브로 대체됐다
+
 집에서 Arachne 저장소를 연 Claude Code에 단계별로 붙여 넣는 프롬프트 모음.
 **한 세션에 한 단계만** 진행한다. 각 단계는 별도 브랜치·별도 PR.
 

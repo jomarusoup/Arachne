@@ -62,7 +62,8 @@ $SCRIPT:LINK_TARGETS = @(
     "agents",
     "rules",
     "hooks",
-    "skills"
+    "skills",
+    "lib"
 )
 
 $SCRIPT:BASH_COMMANDS = [ordered]@{

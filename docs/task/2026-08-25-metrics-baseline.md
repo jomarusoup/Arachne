@@ -15,7 +15,7 @@ FROM:: [[0003-dynamic-workflows-adoption]]
 
 # [task] 계측 기준선 4주 수집·판독 — ADR-0003 재평가 입력
 
-- **상태**: done (조기 종결 — 측정 대상 소멸)
+- **상태**: done — 조기 종결(측정 대상 소멸)
 - **우선순위**: medium
 - **담당**: unassigned
 - **관련 문서**: [[0003-dynamic-workflows-adoption]], [[2026-08-22-harness-runtime-audit]]

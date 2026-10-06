@@ -16,7 +16,7 @@ FROM:: [[2026-06-11-architecture-audit]]
 
 # [task] 아키텍처 감사 후속 — 잔존 항목 추적
 
-- **상태**: to do (트리거 대기 항목 포함)
+- **상태**: to do — 트리거 대기 항목 포함
 - **우선순위**: medium
 - **담당**: unassigned
 - **관련 문서**: [[2026-06-11-architecture-audit]], CHANGELOG-AUDIT.md

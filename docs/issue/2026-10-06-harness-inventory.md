@@ -16,32 +16,37 @@ FROM:: [[2026-10-05-roadmap-w6]]
 # 로드맵 W6 하네스 인벤토리 — 다음 감사 기준선
 
 이 문서는 로드맵 W6(최종 정리)에서 하네스 전체를 훑어 정리한 결과를 기록한다. 다음 감사를 시작하는 사람은
-이 문서를 기준선으로 삼아 그 뒤에 바뀐 것만 보면 된다. 정리 방법은 [로드맵](../task/2026-10-05-arachne-roadmap.md)
-§5 Z-0, 문장 기준은 같은 절의 Z-3을 따랐다.
+이 문서를 기준선으로 삼아 그 뒤에 바뀐 것만 보면 된다. 정리는 [로드맵](../task/2026-10-05-arachne-roadmap.md) §5의
+방법(Z-0: 인벤토리 작성, 역할 분류, 최신화)과 문장 기준(Z-3: 사람이 읽기 쉬운 완결 문장)을 따랐다.
+
+결정 번호는 두 체계가 섞여 나온다. `D20`처럼 하이픈이 없는 번호는 [ADR-0005](../decisions/0005-programming-philosophy.md)
+(프로그래밍 철학)의 결정이고, `D-15`처럼 하이픈이 있는 번호는 [ADR-0006](../decisions/0006-roadmap-2026q4.md)(로드맵)의 결정이다.
 
 ## 1. 요약
 
-- W6에서 고친 것은 크게 다섯 갈래다. 제거된 런타임(3-레인) 서술, 깨진 링크, 문서 상태 불일치, 문서 배치(D-15),
-  구조 문서와 다이어그램의 낡은 내용이다.
-- 정리 후 제거 런타임을 현행처럼 쓴 살아있는 문서는 0건이다. 깨진 상대 링크도 0건이며, task 문서의
+- W6에서 고친 것은 크게 다섯 갈래다. 제거된 런타임(3-레인 위임 구조, ADR-0004) 서술, 깨진 링크, 문서 상태 불일치,
+  문서 배치(ADR-0006 D-15), 구조 문서와 다이어그램의 낡은 내용이다.
+- 정리 중에 문서가 아닌 결함 두 건도 찾아 고쳤다. 설치기가 `lib/`를 `~/.claude/`에 연결하지 않아 네이밍 검사가
+  어디서도 실행되지 않던 문제와, 새 프로젝트에 하네스 전용 task 인덱스가 복사되던 문제다(4.5절).
+- 정리 후 제거된 런타임을 현행처럼 쓴 헌법·지도·상태 문서(3절)는 0건이다. 깨진 상대 링크도 0건이며, task 문서의
   frontmatter 상태와 인덱스 표는 서로 일치한다.
 - 구조 문서는 [ARCHITECTURE](../ARCHITECTURE.md)가 정본이다. 다이어그램 7개는 모두 Mermaid CLI로 렌더링해
   문법 오류가 없음을 확인했다.
 - 원인을 찾은 사고가 한 건 있다. 저장소가 iCloud 동기화 폴더(Desktop)에 있어 `.git/refs` 안에 `* 2` 사본이 생겼고,
   이 때문에 `git pull`이 실패했다. 복구 절차와 예방책은 [SYNCTHING-SETUP](../SYNCTHING-SETUP.md)에 적었다.
 
-## 2. 규모 (2026-10-06, `docs/roadmap-w6-cleanup` 브랜치 기준)
+## 2. 규모 (2026-10-06, W6 머지 커밋 기준 — 정확한 해시는 [로드맵 W6 task](../task/2026-10-05-roadmap-w6.md) 진행 기록에 있다)
 
 | 영역 | 개수 | 비고 |
 |---|---:|---|
 | 서브에이전트 (`agents/`) | 10 | 리뷰어 7종 포함 |
 | 슬래시 커맨드 (`commands/`) | 21 | |
-| 스킬 (`skills/`, 현역) | 65 | 별도로 `archive/` 9개, `synced/` |
-| 규칙 디렉터리 (`rules/`) | 14 | 공통 1 · 언어 9 · 관심사 4(systems·react·electron·web) |
+| 스킬 (`skills/`, 현역) | 65 | 별도로 `archive/`(비활성 보관) 9개, `synced/`(Claude 앱 스킬 동기화 산출물, gitignore) |
+| 규칙 디렉터리 (`rules/`) | 14 | 공통 1 · 언어 9(c·cpp·golang·java·rust·python·javascript·bash·docker) · 관심사 4(systems·react·electron·web) |
 | 훅 스크립트 (`hooks/`) | 9 | settings 등록 8 + 공용 함수 `lib-guard.sh` |
 | 테스트 (`tests/`) | bats 23 · 셸 검사 6 | PowerShell 2개 별도 |
 | 프로젝트 프로필 | 7 | minimal · python · python-web · web · cpp · rust · c-system |
-| ADR | 6 | 다음 번호 0007 |
+| ADR | 7 | 번호 0001~0006, 0002가 두 건이다. 다음 번호는 0007 |
 
 ## 3. 문서 역할
 
@@ -52,7 +57,11 @@ FROM:: [[2026-10-05-roadmap-w6]]
 | 헌법 — 무엇을 지켜야 하는가 | `CLAUDE.md`, `AGENTS.md`, `rules/` | 규약이 바뀔 때 |
 | 지도 — 무엇이 어디 있는가 | `README.md`, `docs/ARCHITECTURE.md`, `docs/CAPABILITY-MAP.md`, `docs/README.md`, 각 폴더 README | 자산이 추가·삭제될 때 |
 | 상태 — 지금 무엇을 하고 있는가 | `docs/task/` (`[plan]` 포함) | 작업이 진행될 때 |
-| 이력 — 무엇이 왜 일어났는가 | `docs/issue/`, `docs/decisions/`, `docs/idea/` | 기록 시점에 한 번. 본문은 고치지 않는다 |
+| 이력 — 무엇이 왜 일어났는가 | `docs/issue/`, `docs/decisions/` | 기록 시점에 한 번. 본문은 고치지 않는다 |
+| 후보 — 아직 실행이 정해지지 않은 것 | `docs/idea/` (입력 원문 포함) | 승격하거나 기각할 때 갱신 |
+
+`docs/task/README.md`는 작성 규약과 task 인덱스를 함께 담는 예외다. 새 프로젝트용 규약은
+`docs/template/task-README.md`로 분리했으므로, 이 파일은 Arachne 저장소에만 쓰인다.
 
 ## 4. 처리 내역
 
@@ -89,16 +98,24 @@ FROM:: [[2026-10-05-roadmap-w6]]
 | `docs/AI-ENGINEERING-NOTES.md`, `docs/tools/codegraph.md` | 제거된 위임 래퍼를 현행처럼 서술 | 단독 운용 기준으로 재작성 |
 | `docs/DATA-HANDLING.md`, `PYTHON-WEB-PROFILE.md`, `PROJECT-CI.md`, `DOCS-SYNC.md`, `SYNCTHING-SETUP.md`, `CI.md` | 7월 이전 상태, 신규 프로필·CI 단계 누락 | 현행 코드와 대조해 갱신 |
 | `docs/task/README.md`, `docs/decisions/README.md`, `docs/issue/README.md`, `docs/idea/README.md` | 없는 `docs/plan/PLAN.md` 참조, ADR 표 끊김, 신규 기록 누락 | 갱신 |
-| `rules/{python,golang,bash,javascript}/coding-style.md` | 헤더 예시에 날짜 필드 (D20 위반) | 날짜 필드 삭제 |
-| W1~W5 신규 스크립트 11개 | 헤더에 날짜 필드 (D20은 신규 파일부터 적용) | 날짜 필드 삭제 |
+| `rules/{python,golang,bash,javascript}/coding-style.md` | 헤더 예시에 날짜 필드 (ADR-0005 D20 위반) | 날짜 필드 삭제 |
+| W1~W5 신규 스크립트 11개 | 헤더에 날짜 필드 (D20은 신규 파일부터 적용, 기존 파일은 유지) | 날짜 필드 삭제 |
 | `rules/bash/testing.md`, `docs/CI.md`, `tests/README.md` | bats 단언이 조용히 통과하는 함정 미기재 | 규칙과 설명 추가 |
 | Obsidian 볼트 경로로 깨진 링크 3건 | `100.%20Project/...` 형태 | 상대 경로로 수정 |
 
 ### 4.4 상태 대조 결과
 
-task 문서 37개(`docs/task/20261005/` 제외)의 상태는 done 29 · in progress 3 · to do 5다. 표류가 의심됐던
+task 문서 37개(`docs/task/20261005/` 제외)의 상태는 done 29 · in progress 3 · to do 5다. 상태 드리프트가 의심됐던
 세 문서(`2026-06-11-audit-followup`, `2026-08-25-pc-defect-repair`, `2026-08-25-hook-subagent-experiment`)는
 커밋 이력과 대조한 결과 실제로 남은 작업이 있어 `to do`를 유지했다. 근거는 각 문서의 2026-10-06 진행 기록에 있다.
+
+### 4.5 문서 외 결함 수정
+
+| 결함 | 영향 | 조치 |
+|---|---|---|
+| `install.sh`·`install.ps1`의 링크 대상에 `lib/`가 없음 | `/verify`·`naming-dictionary` 스킬·c-system 검증 명령이 부르는 `~/.claude/lib/naming-check.sh`가 없어 네이밍 검사가 조용히 건너뛰어졌다 | 링크 대상에 `lib` 추가, `tests/install.bats`에 회귀 테스트. 기존 머신은 `arachne -i` 재실행이 필요하다 |
+| `arachne -n`이 `docs/task/README.md`를 그대로 복사 | 새 프로젝트에 Arachne 전용 문구와 깨지는 task 링크가 들어간다 | 범용 규약을 `docs/template/task-README.md`로 분리, `tests/new_project.bats`에 누출 검사 추가 |
+| Windows CI가 가드 훅을 실행하지 않음 | Windows에서 가드 훅 동작을 자동 검사하지 않았다 | `tests/smoke_hooks.sh`에 거부 1건·통과 2건 추가 |
 
 ## 5. 고아 점검
 
@@ -130,8 +147,9 @@ task 문서 37개(`docs/task/20261005/` 제외)의 상태는 done 29 · in progr
 
 | 항목 | 이유 | 시점 |
 |---|---|---|
-| 서브에이전트 `skills:` 프리로드 크기 측정 (G-2) | 이 세션은 시작 시점의 정의를 캐시하므로 측정할 수 없다. 기준선은 tdd 26530, code-reviewer 31085, debugger 29376 토큰이며 5k 넘게 늘면 되돌린다 | 새 세션 |
+| 서브에이전트 `skills:` 프리로드 크기 측정 (G-2) | 에이전트 정의를 바꾼 세션 안에서는 정의가 캐시돼 측정할 수 없으므로 새 세션에서 잰다. 기준선은 각 서브에이전트를 한 번 호출했을 때의 시작 컨텍스트 토큰(tdd 26,530 · code-reviewer 31,085 · debugger 29,376)이며, 5,000 토큰 넘게 늘면 프리로드를 되돌린다 | 새 세션 |
+| `rules/systems/` 크기 | 계획한 신규 규칙 디렉터리 상한 15KB를 넘는다(18.9KB). C·C++·Rust 파일을 다룰 때마다 함께 로드된다 | 다음 감사에서 압축 검토 |
 | Oracle·Jaeger compose 프로필 실행 | CI는 PostgreSQL 경로만 돈다 | 필요 시 |
 | `docs/task/20261005/` 초안 4개 | 추적되지 않는 초안. 삭제는 사용자 승인 사항이다 | 사용자 결정 |
-| `trading-systems` 스킬의 생성 코드 커밋 예외 | 철학 §10(생성물은 커밋하지 않음)과 충돌 여부를 사용자가 확인해야 한다 | 사용자 결정 |
+| `trading-systems` 스킬의 생성 코드 커밋 예외 | `rules/systems/philosophy.md` §10(생성 코드는 생성기·스키마만 커밋할 것을 권장)과 충돌하는지 사용자가 확인해야 한다 | 사용자 결정 |
 | 저장소 위치 | iCloud 동기화 폴더 밖으로 옮기는 것을 권장한다 | 사용자 결정 |

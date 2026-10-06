@@ -53,7 +53,7 @@ flowchart TB
     W --> W1["pwsh<br/>tests/install_windows.ps1"]
     W1 --> W2["Git Bash<br/>tests/smoke_hooks.sh"]
 
-    M --> M1["brew<br/>shellcheck bats-core jq coreutils"]
+    M --> M1["brew<br/>shellcheck bats-core jq coreutils bash"]
     M1 --> COMMON_M["Unix 공통 검증"]
 
     DC --> DC1["setup-python + setup-uv<br/>bats tests/data_contract.bats"]
@@ -186,8 +186,31 @@ bash tests/check_sensitive_text.sh
 bash tests/check_unicode_safety.sh
 ```
 
-템플릿 빌드·테스트와 compose 스모크는 `.github/workflows/ci.yml`의 해당 step 명령을 그대로 실행해 재현한다.
-compose 스모크는 Docker가 필요하다.
+템플릿 빌드·테스트와 compose 스모크의 로컬 재현에는 Linux, gcc·make, Node 24, Rust 툴체인(`cargo`,
+`examples/ffi-rust` 테스트용), Docker(compose 스모크용)가 필요하다. robust 뮤텍스 같은 Linux 전용 경로가
+있으므로 macOS에서는 재현하지 않는다. 명령은 `.github/workflows/ci.yml`의 해당 step과 같다.
+
+```bash
+# 템플릿 빌드·테스트
+for dir in shm log pipeline contract; do
+    make -C "templates/project/c-system/src/${dir}" test
+done
+make -C templates/project/c-system/src/contract ts-test layout
+make -C templates/project/c-system/tools test
+make -C templates/project/c-system/examples/ffi-rust test
+make -C templates/project/throughput-poc
+node --test templates/project/desktop-data-client/*.test.mjs
+
+# 3티어 compose 스모크
+cd templates/project/compose-3tier
+cp .env.example .env
+docker compose config --quiet
+docker compose up --build --abort-on-container-exit --exit-code-from c-build c-build
+docker compose up -d --wait postgres
+docker compose run --rm schema-pg
+docker compose run --rm schema-pg   # 재실행 — 적용된 버전은 건너뛰어야 한다
+docker compose down -v
+```
 
 ## 5. Red Hat/Rocky Job: `verify-rocky`
 
@@ -202,7 +225,8 @@ flowchart TB
     D --> E["ShellCheck"]
     E --> F["Bats 전체"]
     F --> G["settings / index / convention"]
-    G --> H{"Rocky에서만 실패?"}
+    G --> S["민감 텍스트 / 숨은 유니코드"]
+    S --> H{"Rocky에서만 실패?"}
     H -->|yes| I["패키지명<br/>root 권한<br/>GNU 도구 차이 확인"]
     H -->|no| J["RHEL 계열 호환 통과"]
 ```
@@ -249,8 +273,14 @@ flowchart TB
     I --> J["AGENTS.md 사용자 내용 보존<br/>마커 멱등성 확인"]
     J --> K["arachne.cmd / docs-sync.cmd wrapper 확인"]
     K --> L["bash tests/smoke_hooks.sh"]
-    L --> M["doc drift<br/>git bus<br/>ua stale"]
+    L --> M["doc drift<br/>git bus<br/>ua stale<br/>guard-bash · guard-secrets"]
 ```
+
+`tests/smoke_hooks.sh`는 기록·알림 훅 세 개(doc-drift-check·git-bus-check·ua-stale-check)에 더해 가드 훅도 실행한다.
+가드 훅은 세 경우를 확인한다. `guard-bash.sh`가 `--no-verify` 명령을 거부하는지(deny 1건),
+`guard-bash.sh`가 일반 명령에 아무 응답도 하지 않는지, `guard-secrets.sh`가 커밋이 아닌 명령을 그대로 통과시키는지다.
+`jq`가 없는 Git Bash 환경에서는 가드 훅이 정규식 폴백 경로(`hooks/lib-guard.sh`)로 입력을 해석하므로,
+이 스모크가 그 경로의 판정도 함께 확인한다.
 
 Windows 실패 분리 흐름:
 
@@ -270,6 +300,7 @@ flowchart TB
     B1 -->|bash 없음| B2["Git for Windows PATH 확인"]
     B1 -->|hook 상태 실패| B3["ARACHNE_STATE_DIR<br/>상태 파일 경로 확인"]
     B1 -->|hook 실패| B4["hook 스크립트 문법<br/>Windows 경로 처리 확인"]
+    B1 -->|guard 판정 실패| B5["guard-bash·guard-secrets 판정<br/>lib-guard.sh 입력 파싱 확인"]
 ```
 
 로컬 재현:
@@ -286,7 +317,8 @@ bash tests/smoke_hooks.sh
 
 ## 7. macOS Job: `verify-macos`
 
-macOS는 BSD 기본 도구와 오래된 `/bin/bash` 차이를 조기에 잡는다. 테스트 코드도 GNU 전용
+macOS job은 BSD 기본 도구 차이를 조기에 잡는다. 다만 CI는 Homebrew bash 5를 `PATH` 앞에 두므로,
+macOS 기본 `/bin/bash` 3.2와의 차이는 이 job에서 드러나지 않는다(§8). 테스트 코드는 GNU 전용
 `sed -i` 대신 임시 파일 생성 후 교체처럼 GNU/BSD 양쪽에서 동작하는 방식을 사용해야 한다.
 `tests/check_index.sh`와
 `tests/check_convention_sync.sh`는 `readlink -f`를 사용하므로 CI에서는 Homebrew `coreutils`를 설치하고
@@ -302,8 +334,9 @@ flowchart TB
     E --> F["settings.template.json"]
     F --> G["문서 인덱스"]
     G --> H["AGENTS.md ↔ rules"]
-    H --> I{"macOS에서만 실패?"}
-    I -->|yes| J["BSD/GNU 옵션 차이<br/>bash 버전<br/>경로 대소문자 확인"]
+    H --> S["민감 텍스트 / 숨은 유니코드"]
+    S --> I{"macOS에서만 실패?"}
+    I -->|yes| J["BSD/GNU 옵션 차이<br/>brew bash·coreutils PATH 순서<br/>경로 대소문자 확인"]
     I -->|no| K["macOS 호환 통과"]
 ```
 
@@ -326,8 +359,12 @@ bash tests/check_unicode_safety.sh
 
 ## 8. Bats 작성 함정과 로컬 실행
 
+작성 규칙의 정본은 [rules/bash/testing.md](../rules/bash/testing.md)다. 이 절은 CI와 로컬 결과가 다른 이유만 설명한다.
+
 **결론**: 로컬 macOS에서 bats가 통과해도 CI가 실패할 수 있다. 판정의 정본은 CI다.
 테스트 본문에서 마지막 줄이 아닌 단정은 `[ ]`, `grep -q`, 또는 명시적인 `|| return 1`로 쓴다.
+부정 단정은 `!`를 앞에 붙이지 않는다. bats 1.5 이상에서는 `run ! 명령`으로 쓰고, 그 밖에는
+`if 명령; then return 1; fi`로 쓴다.
 
 ### 8.1 `set -e`가 멈추지 않는 단정
 
@@ -340,7 +377,8 @@ bats는 테스트 본문을 `set -e` 아래에서 실행하므로, 실패한 명
 | `! 명령` | 부정 명령은 모든 bash 버전에서 `set -e` 대상이 아니다. | 로컬과 CI 모두 실패를 놓친다 |
 
 두 형태 모두 테스트의 **마지막 줄**에 있으면 그 종료 상태가 테스트 결과가 되므로 문제가 없다.
-문제는 중간 줄에 있을 때다. 2026-10-05 W2에서 이 차이로 로컬은 통과하고 CI(bash 5)는 실패한 일이 실제로 있었다.
+문제는 중간 줄에 있을 때다. 2026-10-05 로드맵 웨이브 2(W2, [ADR-0006](decisions/0006-roadmap-2026q4.md)) 작업에서
+이 차이로 로컬은 통과하고 CI(bash 5)는 실패한 일이 실제로 있었다.
 
 중간 줄의 단정은 다음처럼 쓴다.
 
@@ -362,8 +400,16 @@ if grep -q "secret" "$out"; then return 1; fi
 CI의 macOS job은 Homebrew bash(5.x)와 `en_US.UTF-8` 로케일로 bats를 실행한다(§7). 로컬 macOS에서
 CI와 같은 결과를 보려면 §7의 로컬 재현 절차대로 Homebrew bash를 `PATH` 앞에 둔다.
 
-기본 bash 3.2를 그대로 쓰면서 셸에 UTF-8 로케일이 설정돼 있으면, bats가 한글 테스트 이름을 찾지 못해
-실행이 깨질 수 있다. 이때는 로케일 변수를 비우고 실행한다.
+기본 bash 3.2를 그대로 쓰면서 셸에 UTF-8 로케일(예: `LANG=ko_KR.UTF-8`)이 설정돼 있으면, bats가 한글 테스트 이름을
+찾지 못해 테스트가 하나도 실행되지 않는다. 이때 출력은 다음과 같은 모양이다. 테스트 이름의 한글 부분은 깨진 바이트로 보인다.
+
+```text
+1..3
+bats: unknown test name `$'test_docs_cli-3a_...'
+# bats warning: Executed 0 instead of expected 3 tests
+```
+
+이때는 로케일 변수를 비우고 실행한다.
 
 ```bash
 env LC_ALL= LANG= LC_CTYPE= bats tests/*.bats
@@ -390,7 +436,11 @@ flowchart TB
     S1 -->|index| D["문서 인덱스와 실제 파일 동기화"]
     S1 -->|convention| E["AGENTS.md와 rules/common 동시 수정"]
     S1 -->|민감 텍스트·유니코드| X["보고된 파일:줄에서<br/>개인 경로·비밀값·숨은 문자 제거"]
-    S1 -->|템플릿 빌드·compose| Y["ci.yml의 해당 step 명령을<br/>Linux·Docker에서 재현"]
+    S1 -->|템플릿 빌드·compose| Y["§4의 템플릿·compose 명령을<br/>Linux·Docker에서 재현"]
+    S1 -->|PowerShell 구문| PS["pwsh tests/check_ps_syntax.ps1<br/>보고된 .ps1 구문 수정"]
+
+    J -->|verify-data-contract| DC["bats tests/data_contract.bats 재실행"]
+    DC --> DC1["uv 설치 여부<br/>python-db fixture의 alembic·pytest 확인"]
 
     W --> W1["install_windows.ps1 assertion 메시지 확인"]
     W1 --> W2["경로 / quoting / wrapper / link 권한 분리"]

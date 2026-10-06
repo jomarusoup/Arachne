@@ -326,7 +326,7 @@ NewProject() {
     local audit_tmpl="$REPO_DIR/docs/template/audit.md"
     local task_tmpl="$REPO_DIR/docs/template/task.md"
     local feedback_tmpl="$REPO_DIR/docs/template/feedback.md"
-    local task_rules="$REPO_DIR/docs/task/README.md"
+    local task_rules="$REPO_DIR/docs/template/task-README.md"
     local agents_tmpl="$REPO_DIR/templates/project/AGENTS.md"
     local claude_tmpl="$REPO_DIR/templates/project/CLAUDE.md"
     if [ ! -f "$tmpl" ] || [ ! -f "$plan_tmpl" ] || [ ! -f "$idea_tmpl" ] || [ ! -f "$issue_tmpl" ] \
