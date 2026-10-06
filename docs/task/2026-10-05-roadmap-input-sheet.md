@@ -1,8 +1,8 @@
 ---
 Title: "[input] 로드맵 착수 전 입력 시트"
 creation: 2026-10-05
-modification: 2026-10-05
-status: "to do"
+modification: 2026-10-06
+status: "done"
 tags:
  - "arachne"
  - "plan"
@@ -15,7 +15,7 @@ FROM:: [[2026-10-05-arachne-roadmap]]
 
 # 로드맵 착수 전 입력 시트
 
-- **상태**: to do — 결정은 권장안으로 반영을 마쳤다. §3의 8-1(이전 초안 4개 삭제·보관)만 사용자 결정으로 남아 있다
+- **상태**: done — 모든 결정을 반영했다. 마지막 남은 8-1(이전 초안 4개)은 2026-10-06 사용자 결정으로 삭제했다
 
 > **이 문서 하나만 채우면 된다.** 채운 내용은 Claude가 로드맵 §3, 철학 계획 §3, ADR로 옮겨 적는다
 > (§4 반영 위치 표 참고).
@@ -165,7 +165,7 @@ DB버전은 최신 스테이블 버전을 사용하며, 대부분 지금 하네�
 
 | # | 질문 | 답 |
 |---|---|---|
-| 8-1 | 로드맵에 통합된 이전 초안 4개 삭제 (`2026-10-05-audit-followup-and-cleanup.md`, `2026-10-05-3tier-stack-support.md`, `2026-10-05-security-ts-hardening.md`, `audit-followup-kickoff-prompts.md`) | [ ] 삭제 [ ] 보관 |
+| 8-1 | 로드맵에 통합된 이전 초안 4개 삭제 (`2026-10-05-audit-followup-and-cleanup.md`, `2026-10-05-3tier-stack-support.md`, `2026-10-05-security-ts-hardening.md`, `audit-followup-kickoff-prompts.md`) | [x] 삭제 [ ] 보관 — 2026-10-06 삭제 |
 | 8-2 | `skills/synced/` 폴더의 출처를 아나? | [ ] 안다: ____ [ ] 모른다(조사 후 보고) |
 | 8-3 | 단계별 착수 프롬프트 파일 작성 | [ ] 작성 [ ] 불필요(로드맵 부록으로 충분) |
 
