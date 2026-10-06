@@ -77,7 +77,7 @@ FROM:: [[2026-10-05-roadmap-w6]]
 | `docs/task/20261005/claude-code-kickoff-prompts.md` | `docs/task/2026-09-29-philosophy-kickoff-prompts.md` | 상태 (내용에 맞게 이름 변경, done) |
 | `docs/task/20261005/programming-philosophy.md` | `docs/idea/2026-09-29-programming-philosophy.md` | 이력 (입력 원문) |
 
-`docs/task/20261005/`에는 추적되지 않는 초안 4개만 남아 있다. 로드맵이 대체한 초안이며, 삭제 여부는 사용자가 정한다.
+`docs/task/20261005/`에 남아 있던 추적되지 않는 초안 4개는 로드맵이 대체한 것이며, 2026-10-06 사용자 결정(입력 시트 8-1)으로 삭제했다.
 
 ### 4.2 삭제
 
@@ -86,6 +86,7 @@ FROM:: [[2026-10-05-roadmap-w6]]
 | `.git/refs/**/'* 2'` 6개 | iCloud 충돌 사본. 원본 ref와 같은 대상을 가리켜 `git pull`을 막았다 |
 | `skills/service-latency/SKILL 2.md` | 같은 iCloud 사본. 원본과 내용이 같다 (추적되지 않음) |
 | `templates/project/c-system/src 2/` | 같은 iCloud 사본. 빈 디렉터리였다 (추적되지 않음) |
+| `docs/task/20261005/` 이전 초안 4개와 빈 폴더 | 로드맵이 대체한 초안. 사용자 결정(입력 시트 8-1)으로 삭제 (추적되지 않음) |
 
 ### 4.3 최신화
 
@@ -150,6 +151,5 @@ task 문서 37개(`docs/task/20261005/` 제외)의 상태는 done 29 · in progr
 | 서브에이전트 `skills:` 프리로드 크기 측정 (G-2) | 에이전트 정의를 바꾼 세션 안에서는 정의가 캐시돼 측정할 수 없으므로 새 세션에서 잰다. 기준선은 각 서브에이전트를 한 번 호출했을 때의 시작 컨텍스트 토큰(tdd 26,530 · code-reviewer 31,085 · debugger 29,376)이며, 5,000 토큰 넘게 늘면 프리로드를 되돌린다 | 새 세션 |
 | `rules/systems/` 크기 | 계획한 신규 규칙 디렉터리 상한 15KB를 넘는다(18.9KB). C·C++·Rust 파일을 다룰 때마다 함께 로드된다 | 다음 감사에서 압축 검토 |
 | Oracle·Jaeger compose 프로필 실행 | CI는 PostgreSQL 경로만 돈다 | 필요 시 |
-| `docs/task/20261005/` 초안 4개 | 추적되지 않는 초안. 삭제는 사용자 승인 사항이다 | 사용자 결정 |
 | `trading-systems` 스킬의 생성 코드 커밋 예외 | `rules/systems/philosophy.md` §10(생성 코드는 생성기·스키마만 커밋할 것을 권장)과 충돌하는지 사용자가 확인해야 한다 | 사용자 결정 |
 | 저장소 위치 | iCloud 동기화 폴더 밖으로 옮기는 것을 권장한다 | 사용자 결정 |

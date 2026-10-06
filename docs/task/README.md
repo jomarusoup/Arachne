@@ -124,7 +124,6 @@ to do -> in progress -> done
 | — | `in progress` | [Arachne 보강 로드맵 2026 Q4 (plan)](2026-10-05-arachne-roadmap.md) | W7의 새 세션 스모크만 남았다 |
 | — | `in progress` | [프로그래밍 철학 하네스 이식 (plan)](2026-09-29-programming-philosophy-integration.md) | 실행은 로드맵 웨이브를 따르며, W7이 끝나면 닫는다 |
 | medium | `in progress` | [로드맵 W7 최종 검증](2026-10-05-roadmap-w7.md) | 자동 검사는 끝났고, 새 세션에서 스모크 4항목을 확인하면 닫는다 |
-| — | `to do` | [로드맵 착수 전 입력 시트 (input)](2026-10-05-roadmap-input-sheet.md) | 결정은 반영을 마쳤고, §3의 8-1(이전 초안 4개 삭제·보관)만 사용자 결정으로 남았다 |
 | high | `to do` | [현행 결함 수리](2026-08-25-pc-defect-repair.md) | 새 커밋 알림 훅(git-bus)이 업스트림 없는 브랜치와 rebase 뒤에 조용히 넘어가는 문제를 고친다. 세션 종료 스냅샷이 git 저장소 밖에서 서로 덮어쓰는 문제도 고친다 |
 | medium | `to do` | [훅의 서브에이전트 발화 실험](2026-08-25-hook-subagent-experiment.md) | 서브에이전트의 도구 호출에도 PreToolUse·PostToolUse 훅이 실행되는지 실험 1회로 확인한다. 런타임 감사에서 추정으로 남은 판단을 확정한다 |
 | medium | `to do` | [아키텍처 감사 후속](2026-06-11-audit-followup.md) | uninstall과 복구 가이드, 릴리스 정책, 훅 로그, 언어별 자산을 묶음 단위로 분리하는 일이 남았다. 모두 착수 조건이 생기기를 기다린다 |
@@ -164,7 +163,7 @@ to do -> in progress -> done
 | 2026-09-29 | `done` | [철학 이식 착수 프롬프트 (참고 자료)](2026-09-29-philosophy-kickoff-prompts.md) |
 | 2026-09-29 | `in progress` | [프로그래밍 철학 하네스 이식 (plan)](2026-09-29-programming-philosophy-integration.md) |
 | 2026-10-05 | `in progress` | [Arachne 보강 로드맵 2026 Q4 (plan)](2026-10-05-arachne-roadmap.md) |
-| 2026-10-05 | `to do` | [로드맵 착수 전 입력 시트 (input)](2026-10-05-roadmap-input-sheet.md) |
+| 2026-10-05 | `done` | [로드맵 착수 전 입력 시트 (input)](2026-10-05-roadmap-input-sheet.md) |
 | 2026-10-05 | `done` | [로드맵 W1 보안 강제와 기반 정비](2026-10-05-roadmap-w1.md) |
 | 2026-10-05 | `done` | [로드맵 W2 C·임베디드 SQL 기반](2026-10-05-roadmap-w2.md) |
 | 2026-10-05 | `done` | [로드맵 W3 데이터 계층과 대용량 처리](2026-10-05-roadmap-w3.md) |
@@ -173,8 +172,7 @@ to do -> in progress -> done
 | 2026-10-05 | `done` | [로드맵 W6 최종 정리](2026-10-05-roadmap-w6.md) |
 | 2026-10-05 | `in progress` | [로드맵 W7 최종 검증](2026-10-05-roadmap-w7.md) |
 
-`docs/task/20261005/`는 로드맵에 통합된 이전 초안 4개를 임시로 두는 폴더다. 이 초안의 삭제나 보관은
-[입력 시트](2026-10-05-roadmap-input-sheet.md) §3의 8-1 항목에서 정한다. 그때까지 이 폴더는 인덱스 대상에서 뺀다.
+로드맵에 통합된 이전 초안 4개는 [입력 시트](2026-10-05-roadmap-input-sheet.md) §3의 8-1 결정에 따라 2026-10-06에 삭제했다.
 철학 이식 착수 프롬프트는 참고 자료로만 남아 있다. 실행 순서는 로드맵 웨이브가 대체했다.
 
 ## 진행 기록 원칙
