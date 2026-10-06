@@ -28,7 +28,7 @@ FROM:: [[2026-09-13-arachne-audit]]
 > (약어 사전 항목, 공유메모리 레이아웃·키, 테이블 매핑, 운영 절차 세부)은 **프로젝트가 소유**하며
 > `c-system` 프로필(§5.I-6)이 그 자리를 만들어 준다.
 
-- **상태**: in progress — W0~W5 완료(PR #54까지), W6 최종 정리 진행 중 (2026-10-06)
+- **상태**: in progress — W0~W6 완료, W7은 새 세션 스모크만 남았다 (2026-10-06)
 - **기준 커밋**: `d6e260d` (2026-09-13)
 - **입력 문서**: [[2026-09-13-arachne-audit]], [[2026-09-29-programming-philosophy-integration]], [[2026-09-29-programming-philosophy]], [[2026-10-05-roadmap-input-sheet]]
 
