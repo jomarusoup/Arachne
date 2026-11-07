@@ -313,6 +313,26 @@ myproject/
 └── Makefile
 ```
 
+### 패키지 네이밍
+
+패키지명은 호출부에서 접두어로 읽힌다(`user.Service`) — 짧은 소문자 한 단어로 짓고, 내용을 반복하지 않는다.
+
+```go
+/* 올바름: 짧은 소문자, 언더스코어·대문자 없음 */
+package user
+package config
+package httpx
+
+/* 잘못됨 */
+package userService   // 대문자 혼용 + 호출부에서 user.Service 와 중복
+package json_parser   // 언더스코어
+package util          // 역할 추측 불가 — 무엇의 유틸인지 이름에 담는다
+```
+
+- 디렉터리명 = 패키지명 (예외: `main`, `_test` 외부 테스트 패키지)
+- `util`·`common`·`helpers` 같은 잡동사니 패키지는 도메인별로 쪼갠다
+- 하네스 네이밍 규칙(PascalCase 함수 등)과 Go 공개 규칙의 관계는 `rules/golang/coding-style.md` 참고
+
 ### 패키지 전역 상태 금지
 
 ```go
@@ -435,6 +455,36 @@ go mod verify
 gofmt -w .
 goimports -w .
 ```
+
+### 린터 권장 설정 (`.golangci.yml`, golangci-lint v2 형식)
+
+```yaml
+version: "2"
+
+linters:
+  default: standard        # errcheck · govet · ineffassign · staticcheck · unused
+  enable:
+    - errorlint            # errors.Is/As 미사용 비교 검출
+    - bodyclose            # http.Response.Body 미닫힘
+    - gosec                # 보안 패턴 (rules/golang/security.md 와 짝)
+    - misspell
+    - unconvert
+    - unparam
+  settings:
+    errcheck:
+      check-type-assertions: true   # v, _ := x.(T) 미검사 단언 검출
+    govet:
+      enable:
+        - shadow                    # 섀도잉된 err 검출
+
+formatters:
+  enable:
+    - gofmt
+    - goimports
+```
+
+- v1 설정(`linters-settings:`, `gosimple`)은 v2에서 구조가 바뀌었다 — `golangci-lint migrate`로 변환
+- `//nolint`는 사유 주석과 함께 줄 단위로만: `//nolint:errcheck // 종료 경로라 close 실패 무시`
 
 ## 빠른 참조: Go 이디엄
 

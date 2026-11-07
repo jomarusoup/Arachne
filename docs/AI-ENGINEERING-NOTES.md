@@ -149,8 +149,8 @@ AI가 쓴 코드는 그대로 믿지 않는다. 여러 검증을 겹치는 다�
 - **Workflow(고정 경로)**: `commands/*.md`의 슬래시 커맨드 21개가 해당한다. 예를 들어 `/fix`는 재현 조건 확인,
   근본 원인 분리, 최소 수정, 회귀 검증이라는 **정해진 절차**를 Claude가 그대로 따른다.
   PreToolUse 가드 훅도 고정 규칙으로 판정하므로 워크플로다.
-- **Agent(동적 판단)**: `agents/*.md`의 서브에이전트 10개(`planner`·`code-reviewer`·`tdd`·`debugger`·
-  언어·영역별 리뷰어 6개)가 해당한다. `rules/common/agents.md`는 상황에 따른 자동 활성화를 정의한다.
+- **Agent(동적 판단)**: `agents/*.md`의 서브에이전트 12개(`planner`·`code-reviewer`·`tdd`·`debugger`·`go-build-resolver`·
+  언어·영역별 리뷰어 7개)가 해당한다. `rules/common/agents.md`는 상황에 따른 자동 활성화를 정의한다.
   예를 들어 파일 3개 이상을 고치면 `planner`가, 코드를 바꾼 직후에는 `code-reviewer`가 활성화된다.
   활성화된 에이전트는 런타임에 도구와 다음 단계를 스스로 고른다.
 - **분리 원칙**: 절차가 명확하면 커맨드(워크플로)를 쓰고, 판단이 필요하면 에이전트를 쓴다. 단순한 쪽을 먼저 쓴다.

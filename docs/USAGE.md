@@ -54,6 +54,7 @@ description: /명령어 설명
 | `/design` `/python-review` | 설계 문서 · Python 코드 리뷰 |
 | `/fastapi-review` `/react-review` `/ts-review` `/rust-review` | FastAPI API 리뷰 · React/Next 웹 리뷰 · TypeScript 리뷰 · Rust 리뷰 |
 | `/database-review` | DB schema·쿼리·migration·데이터 보안 리뷰 |
+| `/go-review` `/go-build` `/go-test` | Go 코드 리뷰 · Go 빌드 오류 해결 · Go TDD 사이클 |
 | `/issue` `/status` | GitHub 이슈 순차 처리 · 프로젝트 현황 |
 | `/git` `/worktree` | 커밋·푸시 · 병렬 세션 worktree 생성/점검/정리 |
 | `/handoff` `/save-session` `/learn` | 전환 저장 · 세션 요약 · 패턴 학습 |
@@ -78,6 +79,7 @@ description: /명령어 설명
 | 코드 작성·수정 완료 직후 | `code-reviewer` |
 | 신규 기능 구현 시작 | `tdd` |
 | 빌드 실패 · 세그폴트 · 메모리 오류 | `debugger` |
+| `.go` 변경 / Go 빌드·vet 실패 | `go-reviewer` / `go-build-resolver` |
 
 ### 동작 원리
 `agents/이름.md`의 YAML frontmatter로 정의된다.
@@ -103,6 +105,8 @@ model: opus               # opus / sonnet / haiku
 | `typescript-reviewer` | sonnet | TS async 정확성·`any`/`as`/`!` 남용·tsconfig·Node 보안·branded 타입·바이너리 처리 리뷰 |
 | `rust-reviewer` | sonnet | Rust 소유권·`clone()` 남용·`unsafe`+SAFETY·async 블로킹·무시된 `Result`·무상한 채널·FFI 경계 리뷰 |
 | `database-reviewer` | sonnet | DB schema·쿼리·migration·ORM 변경 리뷰 (read-first) |
+| `go-reviewer` | sonnet | Go 이디엄·에러 처리·동시성·보안 리뷰 |
+| `go-build-resolver` | sonnet | Go 빌드·vet·lint 오류 최소 수정 |
 
 ### 병렬 실행
 독립적인 작업은 여러 에이전트를 동시에 돌릴 수 있다(예: 모듈 A 보안 분석 + 모듈 B 성능 검토 + 모듈 C 리뷰 → 3개 동시).

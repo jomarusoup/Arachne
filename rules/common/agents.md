@@ -14,6 +14,8 @@
 | `typescript-reviewer` | async·타입 설계·Node 보안·바이너리 리뷰 | `.ts`·`.tsx`·Electron 변경 직후 |
 | `rust-reviewer` | 소유권·unsafe·async·FFI 경계 리뷰 | `.rs`·`Cargo.toml` 변경 직후 |
 | `database-reviewer` | DB schema·쿼리·migration·ORM·임베디드 SQL 리뷰 | migration·SQL·Pro*C·ecpg·repository 변경 직후 |
+| `go-reviewer` | 이디엄·에러 처리·동시성·보안 Go 리뷰 | `.go`·`go.mod` 변경 직후 |
+| `go-build-resolver` | Go 빌드·vet·lint 오류 최소 수정 | `go build`·`go vet` 실패, 모듈 의존성 깨짐 |
 
 ## 즉시 활성화 기준
 
@@ -24,7 +26,7 @@
 | 파일 3개 이상 수정 / 신규 모듈 도입 | **planner** |
 | 시스템 레벨 변경 (IPC, 데몬, 커널 인터페이스) | **planner** |
 | 코드 작성·수정 완료 | **code-reviewer** |
-| 빌드 실패 / 메모리 오류 / 세그폴트 | **debugger** |
+| 빌드 실패 / 메모리 오류 / 세그폴트 | **debugger** (Go 빌드·vet 실패면 **go-build-resolver**) |
 | 신규 기능 구현 시작 | **tdd** |
 
 언어·영역 리뷰어(`*-reviewer`)는 "사용 가능한 에이전트" 표의 활성화 시점에 code-reviewer와 함께 실행한다.

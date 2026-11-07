@@ -27,7 +27,9 @@ Claude Code가 이를 네이티브로 자동 로드한다:
 │   ├── react-reviewer.md            # React/Next 렌더·a11y·XSS 리뷰 (model: sonnet)
 │   ├── typescript-reviewer.md       # TS async·타입 설계·Node 보안·바이너리 처리 리뷰 (model: sonnet)
 │   ├── rust-reviewer.md             # Rust 소유권·unsafe·async·FFI 경계 리뷰 (model: sonnet)
-│   └── database-reviewer.md         # DB schema·쿼리·migration·임베디드 SQL 리뷰 (model: sonnet)
+│   ├── database-reviewer.md         # DB schema·쿼리·migration·임베디드 SQL 리뷰 (model: sonnet)
+│   ├── go-reviewer.md               # Go 이디엄·동시성·에러 처리 리뷰 (model: sonnet)
+│   └── go-build-resolver.md         # Go 빌드·vet·lint 오류 최소 수정 (model: sonnet)
 │
 ├── commands/                        # 슬래시 커맨드 (/명령어)
 │   ├── add.md                       # /add        — 기능 추가
@@ -47,6 +49,9 @@ Claude Code가 이를 네이티브로 자동 로드한다:
 │   ├── ts-review.md                 # /ts-review  — TypeScript 리뷰
 │   ├── rust-review.md               # /rust-review — Rust 리뷰
 │   ├── database-review.md           # /database-review — DB schema·migration 리뷰
+│   ├── go-review.md                 # /go-review  — Go 코드 리뷰
+│   ├── go-build.md                  # /go-build   — Go 빌드 오류 해결
+│   ├── go-test.md                   # /go-test    — Go TDD 사이클
 │   ├── tdd.md                       # /tdd        — TDD 사이클
 │   ├── e2e.md                       # /e2e        — E2E 테스트
 │   ├── refactor.md                  # /refactor   — SRP 리팩터링

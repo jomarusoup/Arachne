@@ -15,6 +15,67 @@ TDD 방법론과 이디엄틱 Go 관행을 따르는 포괄적 Go 테스팅 패�
 - 테스트 커버리지 개선
 - 테스트 리팩터링
 
+## Go TDD 사이클
+
+하네스 공통 TDD(`rules/common/testing.md`)를 Go 도구로 수행하는 흐름. 진입점은 `/go-test`.
+
+```
+RED      → 시그니처만 두고 실패하는 테이블 드리븐 테스트 작성
+GREEN    → 테스트를 통과하는 최소 구현
+REFACTOR → 테스트 녹색 유지하며 정리
+CHECK    → go test -race -cover 로 레이스·커버리지(80%+) 확인
+```
+
+```go
+/* 1단계: 시그니처만 선언 — 본문은 미구현 표시 */
+// ratelimit/bucket.go
+type Bucket struct{}
+
+func NewBucket(capacity int, refill time.Duration) *Bucket {
+    panic("미구현")
+}
+
+func (b *Bucket) Allow(now time.Time) bool {
+    panic("미구현")
+}
+
+/* 2단계: 실패 테스트 작성 (RED) */
+// ratelimit/bucket_test.go
+func TestBucket_Allow(t *testing.T) {
+    base := time.Date(2026, 1, 1, 0, 0, 0, 0, time.UTC)
+    tests := []struct {
+        name     string
+        consumed int
+        elapsed  time.Duration
+        want     bool
+    }{
+        {"용량_남으면_허용", 0, 0, true},
+        {"용량_소진시_거부", 3, 0, false},
+        {"리필_주기_경과시_재허용", 3, time.Second, true},
+    }
+    for _, tt := range tests {
+        t.Run(tt.name, func(t *testing.T) {
+            bucket := NewBucket(3, time.Second)
+            for ii := 0; ii < tt.consumed; ii++ {
+                bucket.Allow(base)
+            }
+            if got := bucket.Allow(base.Add(tt.elapsed)); got != tt.want {
+                t.Errorf("Allow() = %v, want %v", got, tt.want)
+            }
+        })
+    }
+}
+```
+
+```bash
+go test ./ratelimit/...            # 3단계: 실패 확인 — panic "미구현" 이 올바른 실패 이유인지 본다
+# 4단계: 최소 구현 후
+go test -race -cover ./ratelimit/... # 5단계: 통과 + 레이스 + 커버리지
+```
+
+- 시간은 `time.Now()`를 직접 부르지 말고 인자로 주입한다 — `time.Sleep` 없는 결정적 테스트
+- 실패 이유가 컴파일 에러·panic 이 아니라 **단언 실패**로 바뀐 뒤 구현에 들어가면 더 안전하다
+
 ## 핵심 테스팅 원칙
 
 ### 1. 테이블 드리븐 테스트
@@ -102,7 +163,7 @@ func TestParallel(t *testing.T) {
     }
 
     for _, tt := range tests {
-        tt := tt // range 변수 캡처
+        tt := tt // Go 1.21 이하에서만 필요 — 1.22+ 는 반복마다 새 변수 (go.mod 의 go 지시어 기준)
         t.Run(tt.name, func(t *testing.T) {
             t.Parallel() // 서브테스트 병렬 실행
             result := Process(tt.input)
@@ -254,7 +315,101 @@ go tool cover -html=coverage.out
 
 # 함수별 커버리지
 go tool cover -func=coverage.out
+
+# 레이스 디텍터와 함께
+go test -race -coverprofile=coverage.out ./...
 ```
+
+### 커버리지 목표
+
+| 코드 유형 | 목표 |
+|---|---|
+| 핵심 비즈니스 로직 | 100% |
+| 공개 API | 90%+ |
+| 일반 코드 | 80%+ (하네스 최소 기준) |
+| 생성 코드 (mock·protobuf) | 측정 제외 |
+
+### 생성 코드 제외
+
+Go 커버리지는 파일 단위 제외 플래그가 없다 — 프로파일에서 생성 파일 줄을 걸러낸다.
+
+```bash
+go test -coverprofile=coverage.raw ./...
+grep -vE '(_mock\.go|\.pb\.go|_gen\.go):' coverage.raw > coverage.out
+go tool cover -func=coverage.out | tail -1
+```
+
+## 임시 파일·디렉터리
+
+`t.TempDir()`은 테스트 종료 시 자동 삭제된다 — 수동 `os.RemoveAll` 정리가 필요 없다.
+
+```go
+func TestLoadConfig_파일에서_읽기(t *testing.T) {
+    // Arrange
+    tmp_dir := t.TempDir()
+    cfg_path := filepath.Join(tmp_dir, "app.yaml")
+    if err := os.WriteFile(cfg_path, []byte("port: 8080\n"), 0o600); err != nil {
+        t.Fatalf("픽스처 작성 실패: %v", err)
+    }
+
+    // Act
+    cfg, err := LoadConfig(cfg_path)
+
+    // Assert
+    if err != nil {
+        t.Fatalf("LoadConfig() 에러: %v", err)
+    }
+    if cfg.Port != 8080 {
+        t.Errorf("Port = %d, want 8080", cfg.Port)
+    }
+}
+```
+
+- 픽스처 권한은 최소로(`0o600`) — `rules/common/security.md` POSIX 권한 원칙
+- 환경변수는 `t.Setenv()` — 종료 시 원복되며, `t.Parallel()`과 함께 쓰면 panic 으로 막아준다
+
+## HTTP 핸들러 테스트
+
+`net/http/httptest`로 서버 없이 핸들러를 직접 호출한다. 서버 구성 패턴은 스킬 `go-http-patterns` 참고.
+
+```go
+func TestUserHandler(t *testing.T) {
+    tests := []struct {
+        name       string
+        method     string
+        path       string
+        body       string
+        wantStatus int
+    }{
+        {"조회_성공", http.MethodGet, "/users/42", "", http.StatusOK},
+        {"없는_사용자_404", http.MethodGet, "/users/999", "", http.StatusNotFound},
+        {"생성_201", http.MethodPost, "/users", `{"name":"kim"}`, http.StatusCreated},
+        {"잘못된_JSON_400", http.MethodPost, "/users", `{"name":`, http.StatusBadRequest},
+    }
+
+    handler := NewUserHandler(newFakeUserStore()) // 인터페이스 기반 페이크 주입
+
+    for _, tt := range tests {
+        t.Run(tt.name, func(t *testing.T) {
+            // Arrange
+            req := httptest.NewRequest(tt.method, tt.path, strings.NewReader(tt.body))
+            req.Header.Set("Content-Type", "application/json")
+            rec := httptest.NewRecorder()
+
+            // Act
+            handler.ServeHTTP(rec, req)
+
+            // Assert
+            if rec.Code != tt.wantStatus {
+                t.Errorf("status = %d, want %d (body=%s)", rec.Code, tt.wantStatus, rec.Body.String())
+            }
+        })
+    }
+}
+```
+
+- 바디 비교는 문자열 일치보다 `json.Unmarshal` 후 필드 비교가 덜 취약하다
+- 미들웨어·라우터까지 포함한 경로는 `httptest.NewServer`로 실제 HTTP 왕복 테스트
 
 ## 통합 테스트
 
@@ -326,6 +481,29 @@ func requireNoError(t *testing.T, err error) {
 | `go test -bench=.` | 벤치마크 실행 |
 | `go test -fuzz=Fuzz` | 퍼징 실행 |
 | `go test -short` | 긴 테스트 건너뜀 |
+| `go test -run 'TestUser/생성'` | 서브테스트 패턴 실행 |
+| `go test -timeout 30s` | 행(hang) 방지 타임아웃 |
+| `go test -count=10 -run TestX` | 불안정(flaky) 테스트 재현 — 캐시도 우회 |
+| `go test -bench=. -benchmem` | 할당량 포함 벤치마크 |
+| `go test -fuzz=FuzzParse -fuzztime=30s` | 시간 제한 퍼징 |
+
+## CI 통합
+
+커버리지 80% 미만이면 실패시키는 게이트 예시 (GitHub Actions):
+
+```yaml
+- uses: actions/setup-go@v5
+  with:
+    go-version-file: go.mod      # 버전 하드코딩 대신 go.mod 를 단일 출처로
+
+- name: 테스트 (레이스 + 커버리지)
+  run: go test -race -coverprofile=coverage.out ./...
+
+- name: 커버리지 게이트 80%
+  run: |
+    total=$(go tool cover -func=coverage.out | tail -1 | grep -oE '[0-9.]+' | tail -1)
+    awk -v t="$total" 'BEGIN { if (t < 80) { print "[CI] 커버리지 " t "% < 80%"; exit 1 } }'
+```
 
 ## 피해야 할 안티패턴
 
@@ -338,13 +516,17 @@ func checkResult(t *testing.T, got, want int) {
     }
 }
 
-// 잘못됨: 병렬 테스트에서 range 변수 미캡처
+// 잘못됨 (go.mod 가 go 1.21 이하일 때): 병렬 테스트에서 range 변수 미캡처
 for _, tt := range tests {
     t.Run(tt.name, func(t *testing.T) {
         t.Parallel()
-        // tt가 고루틴 간 공유됨!
+        // tt가 고루틴 간 공유됨! — 1.22+ 에서는 반복별 변수라 안전
     })
 }
+
+// 잘못됨: 동기화 대기에 time.Sleep — 느리고 불안정. 채널·sync.WaitGroup·조건 폴링 사용
+// 잘못됨: 에러 경로 미테스트 — 테이블에 wantErr 케이스를 반드시 포함
+// 잘못됨: 비공개 함수 직접 테스트 — 공개 API 로 동작을 검증
 
 // 잘못됨: 동작 대신 구현 테스트
 // 잘못됨: 리팩터링 시 깨지는 취약한 테스트

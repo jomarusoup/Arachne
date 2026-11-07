@@ -173,7 +173,7 @@ Git for Windows의 `bash.exe`로 실행한다.
 
 Claude Code가 조사·설계·구현·검증·커밋을 단독 수행한다.
 
-- **병렬성** — Claude 내장 서브에이전트(`Agent` 도구, `agents/` 10종)로 확보한다.
+- **병렬성** — Claude 내장 서브에이전트(`Agent` 도구, `agents/` 12종)로 확보한다.
   독립 작업은 동시 실행, 파일을 수정하는 병렬 작업은 worktree로 격리한다.
 - **게이트** — 커밋 전 `/verify`(정적+동작) + 프로젝트 CI(`.arachne/verify.sh`·GitHub Actions).
 - **맹점 보정** — 구현과 검증이 같은 모델이므로 `code-reviewer`와 언어별 리뷰어의 리뷰, `/verify`를
@@ -203,9 +203,9 @@ Arachne/
 │   ├── react · electron         # TS 클라이언트
 │   └── web/                     # 디자인 품질·UI 배치·웹 보안·웹 성능
 ├── skills/                      # 워크플로·도메인 스킬 65개 (+ archive: 비활성 보관, synced: 앱 동기화 산출물·gitignore)
-├── commands/                    # 슬래시 커맨드 21개
-├── agents/                      # 서브에이전트 10개 — 설계(planner) · 테스트(tdd) · 디버깅(debugger)
-│                                #   · 리뷰어 7종(code · python · fastapi · react · typescript · rust · database)
+├── commands/                    # 슬래시 커맨드 24개
+├── agents/                      # 서브에이전트 12개 — 설계(planner) · 테스트(tdd) · 디버깅(debugger) · Go 빌드(go-build-resolver)
+│                                #   · 리뷰어 8종(code · python · fastapi · react · typescript · rust · go · database)
 ├── hooks/                       # 이벤트 훅 — 세션(session-start/end · pre-compact · ua-stale-check)
 │                                #   · 알림(git-bus-check · doc-drift-check) · 가드(guard-bash · guard-secrets · lib-guard)
 ├── mcp-configs/ · dotfiles/     # MCP 설정 템플릿 · bash_profile·vimrc 병합 원본

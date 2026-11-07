@@ -145,10 +145,10 @@ Arachne/
 │   └── web/                     # 웹 디자인 품질·UI 배치·보안·성능
 │
 ├── skills/                      # 워크플로·도메인 스킬 (65개 현역 + archive)
-├── commands/                    # 슬래시 커맨드 (21개)
-├── agents/                      # 서브에이전트 10개 (planner · code-reviewer · tdd · debugger
+├── commands/                    # 슬래시 커맨드 (24개)
+├── agents/                      # 서브에이전트 12개 (planner · code-reviewer · tdd · debugger
 │                                #   · python-reviewer · fastapi-reviewer · react-reviewer · typescript-reviewer · rust-reviewer
-│                                #   · database-reviewer)
+│                                #   · database-reviewer · go-reviewer · go-build-resolver)
 ├── hooks/                       # 이벤트 훅 (session-start/end, pre-compact, git-bus-check,
 │                                #   doc-drift-check, ua-stale-check, 보안 가드 guard-bash·guard-secrets)
 ├── mcp-configs/                 # MCP (Model Context Protocol) 서버 설정 템플릿
@@ -184,6 +184,9 @@ Arachne/
 | `/fastapi-review` | FastAPI 리뷰 — async 정확성·DI(Dependency Injection, 의존성 주입)·스키마·OpenAPI |
 | `/react-review` | React/Next 리뷰 — 렌더·Hooks·a11y(accessibility, 접근성)·XSS·성능 |
 | `/database-review` | DB schema·쿼리·migration·ORM 리뷰 (database-reviewer 에이전트) |
+| `/go-review` | Go 코드 리뷰 — 이디엄·에러 처리·동시성·보안 (go-reviewer 에이전트) |
+| `/go-build` | Go 빌드·vet·lint 오류를 하나씩 최소 수정 (go-build-resolver 에이전트) |
+| `/go-test` | Go TDD 사이클 — 테이블 드리븐 테스트 먼저, `-race`·커버리지 80%+ |
 | `/issue` | GitHub 오픈 이슈 확인 후 순차 처리 |
 | `/git` | 커밋·푸시 |
 | `/worktree` | 병렬 세션용 worktree 생성·상태확인·정리 |
