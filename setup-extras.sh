@@ -77,6 +77,8 @@ WANT_CG=-1
 ASSUME_YES=0
 NO_CLONE=0
 DO_UPDATE=0
+# 직전 CloneRepo 가 새로 클론했거나 pull 로 HEAD 가 바뀌었으면 1 — 0 이면 플러그인 갱신 생략
+CLONE_CHANGED=0
 
 #===============================================================================
 # FUNCTION    : LogInfo / LogWarn / LogError
@@ -203,6 +205,10 @@ JsonSetEnabledPlugin() {
     [ -f "$file" ] || return 1
 
     if command -v jq >/dev/null 2>&1; then
+        # 이미 활성이면 다시 쓰지 않는다 — 템플릿 재기록으로 git diff 가 생기는 것 방지
+        if jq -e --arg k "$key" '.enabledPlugins[$k] == true' "$file" >/dev/null 2>&1; then
+            return 0
+        fi
         tmp=$(mktemp)
         if jq --arg k "$key" \
             '.enabledPlugins = ((.enabledPlugins // {}) + {($k): true})' \
@@ -220,6 +226,7 @@ JsonSetEnabledPlugin() {
             const fs = require("fs");
             const [f, k] = process.argv.slice(1);
             const j = JSON.parse(fs.readFileSync(f, "utf8"));
+            if (j.enabledPlugins && j.enabledPlugins[k] === true) process.exit(0);
             j.enabledPlugins = j.enabledPlugins || {};
             j.enabledPlugins[k] = true;
             fs.writeFileSync(f, JSON.stringify(j, null, 2) + "\n");
@@ -262,15 +269,26 @@ CloneRepo() {
     local url="$2"
     local clone="$3"
 
+    CLONE_CHANGED=0
     if [ -d "$clone/.git" ] || [ -f "$clone/.claude-plugin/marketplace.json" ]; then
         if [ "$DO_UPDATE" -eq 1 ] && [ -d "$clone/.git" ] && command -v git >/dev/null 2>&1; then
-            LogInfo "${label}: git pull (업데이트) — $clone"
-            git -C "$clone" pull --ff-only || LogWarn "${label}: git pull 실패 — $clone"
+            local head_before
+            local head_after
+            head_before=$(git -C "$clone" rev-parse HEAD 2>/dev/null || echo none)
+            git -C "$clone" pull --ff-only --quiet || LogWarn "${label}: git pull 실패 — $clone"
+            head_after=$(git -C "$clone" rev-parse HEAD 2>/dev/null || echo none)
+            if [ "$head_before" = "$head_after" ]; then
+                LogInfo "${label}: 클론 최신 (${head_after:0:7}) — $clone"
+            else
+                LogInfo "${label}: 클론 갱신 ${head_before:0:7} → ${head_after:0:7}"
+                CLONE_CHANGED=1
+            fi
         else
             LogInfo "${label}: 클론 이미 존재 — $clone"
         fi
         return 0
     fi
+    CLONE_CHANGED=1
     if [ -e "$clone" ]; then
         LogWarn "${label}: $clone 가 git 클론이 아님 — 수동 확인 필요"
         return 1
@@ -303,7 +321,9 @@ RegisterMarketplace() {
     local market="$2"
 
     if claude plugin marketplace list 2>/dev/null | grep -qiw "$market"; then
-        if [ "$DO_UPDATE" -eq 1 ]; then
+        if [ "$DO_UPDATE" -eq 1 ] && [ "$CLONE_CHANGED" -eq 0 ]; then
+            LogInfo "마켓플레이스 최신 (클론 변화 없음): $market"
+        elif [ "$DO_UPDATE" -eq 1 ]; then
             LogInfo "마켓플레이스 갱신: $market"
             claude plugin marketplace update "$market" || LogWarn "마켓플레이스 갱신 실패: $market"
         else
@@ -326,7 +346,9 @@ InstallPlugin() {
     # plugin list 는 마켓플레이스 가용 목록·enabledPlugins 동기화분까지 보여줘
     # 실제 미설치 상태도 매칭될 수 있다 → update 실패 시 install 로 폴백(자가 치유).
     if claude plugin list 2>/dev/null | grep -qiw "${plugin%@*}"; then
-        if [ "$DO_UPDATE" -eq 1 ]; then
+        if [ "$DO_UPDATE" -eq 1 ] && [ "$CLONE_CHANGED" -eq 0 ]; then
+            LogInfo "플러그인 최신 (클론 변화 없음): $plugin"
+        elif [ "$DO_UPDATE" -eq 1 ]; then
             LogInfo "플러그인 갱신: $plugin"
             if ! claude plugin update "$plugin"; then
                 LogWarn "플러그인 갱신 실패 — 설치로 폴백: $plugin"
@@ -474,9 +496,22 @@ InstallCodegraph() {
     LogSection "codegraph ${action} 시작"
     if command -v codegraph >/dev/null 2>&1; then
         if [ "$DO_UPDATE" -eq 1 ] && command -v npm >/dev/null 2>&1; then
-            LogInfo "codegraph 갱신 (npm install -g @latest → \$HOME/.local)"
-            npm install -g --prefix "$HOME/.local" @colbymchenry/codegraph@latest \
-                || LogWarn "codegraph 갱신 실패"
+            local cg_current
+            local cg_latest
+            cg_current=$(codegraph --version 2>/dev/null | grep -oE '[0-9]+\.[0-9]+\.[0-9]+' | head -1) || cg_current=""
+            # macOS 는 timeout 이 없을 수 있다 — 있을 때만 상한 적용
+            if command -v timeout >/dev/null 2>&1; then
+                cg_latest=$(timeout 20 npm view @colbymchenry/codegraph version 2>/dev/null </dev/null || true)
+            else
+                cg_latest=$(npm view @colbymchenry/codegraph version 2>/dev/null </dev/null || true)
+            fi
+            if [ -n "$cg_latest" ] && [ "$cg_current" = "$cg_latest" ]; then
+                LogInfo "codegraph 최신 ($cg_current) — 재설치 생략"
+            else
+                LogInfo "codegraph 갱신 ${cg_current:-?} → ${cg_latest:-latest} (npm → \$HOME/.local)"
+                npm install -g --prefix "$HOME/.local" @colbymchenry/codegraph@latest \
+                    || LogWarn "codegraph 갱신 실패"
+            fi
         else
             LogInfo "codegraph 이미 설치됨: $(command -v codegraph)"
         fi

@@ -15,7 +15,15 @@ fi
 # COMMON
 ###########################################################################
 
-export LD_LIBRARY_PATH=/lib64:/lib:/usr/local/lib64
+# 기존 값(Oracle Instant Client·CUDA 등)을 덮어쓰지 않고, 빠진 경로만 뒤에 덧붙인다
+for arachne_lib_dir in /lib64 /lib /usr/local/lib64; do
+    case ":${LD_LIBRARY_PATH:-}:" in
+        *":$arachne_lib_dir:"*) ;;
+        *) LD_LIBRARY_PATH="${LD_LIBRARY_PATH:+$LD_LIBRARY_PATH:}$arachne_lib_dir" ;;
+    esac
+done
+unset arachne_lib_dir
+export LD_LIBRARY_PATH
 
 export EXINIT='set ai ts=4 sw=4'
 set -o vi
@@ -167,11 +175,24 @@ fi
 
 #===============================================================================
 # ARACHNE — Go 툴체인 PATH 등록 (arachne -t 가 /usr/local/go · go install 사용)
+# 공식본(/usr/local/go/bin)은 배포판 /usr/bin/go 보다 앞에, go install 도구는 뒤에.
 # 디렉터리가 있을 때만 추가 — Go 미설치 머신에는 영향 없음
 #===============================================================================
-for arachne_go_dir in /usr/local/go/bin "$HOME/go/bin"; do
-    if [ -d "$arachne_go_dir" ] && [[ ":$PATH:" != *":$arachne_go_dir:"* ]]; then
-        export PATH="$PATH:$arachne_go_dir"
+if [ -d /usr/local/go/bin ] && [[ ":$PATH:" != *":/usr/local/go/bin:"* ]]; then
+    export PATH="/usr/local/go/bin:$PATH"
+fi
+if [ -d "$HOME/go/bin" ] && [[ ":$PATH:" != *":$HOME/go/bin:"* ]]; then
+    export PATH="$PATH:$HOME/go/bin"
+fi
+
+#===============================================================================
+# ARACHNE — mise 버전 관리자 연동 (설치된 경우만)
+# 디렉터리에 들어가면 mise.toml·.tool-versions 의 도구 버전으로 자동 전환
+#===============================================================================
+if command -v mise >/dev/null 2>&1; then
+    if [ -n "${ZSH_VERSION:-}" ]; then
+        eval "$(mise activate zsh)"
+    else
+        eval "$(mise activate bash)"
     fi
-done
-unset arachne_go_dir
+fi

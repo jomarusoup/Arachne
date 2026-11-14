@@ -19,12 +19,15 @@ readonly TOOL_CATALOG=(
     "core|jq|jq|jq|jq|pkg"
     "core|curl|curl|curl|curl|pkg"
     "core|python3|python3|python3|python@3|pkg"
-    "core|node|nodejs npm|nodejs npm|node|pkg"
+    "core|node|nodejs|nodejs|node|pkg"
+    "core|npm|npm|npm|-|pkg"
     "core|tmux|tmux|tmux|tmux|pkg"
     "core|bats|bats|bats|bats-core|pkg"
     "core|shellcheck|ShellCheck|shellcheck|shellcheck|pkg"
     "core|rg|ripgrep|ripgrep|ripgrep|pkg"
     "core|gh|-|-|-|manual:https://cli.github.com 의 저장소 등록 안내를 따른다"
+    "core|claude|-|-|-|special:claude"
+    "vm|mise|-|-|mise|special:mise"
     "search|fd/fdfind|fd-find|fd-find|fd|pkg"
     "search|fzf|fzf|fzf|fzf|pkg"
     "search|tree|tree|tree|tree|pkg"
@@ -54,7 +57,7 @@ readonly TOOL_CATALOG=(
 )
 
 # 그룹 처리 순서와 표시 이름 — core 를 먼저 처리해야 jq·curl 을 뒤 그룹이 쓴다
-readonly TOOL_GROUPS=(core search cpp go rust python container db)
+readonly TOOL_GROUPS=(core vm search cpp go rust python container db)
 
 # RHEL 계열에서 EPEL 이 있어야 설치되는 dnf 패키지
 readonly EPEL_PACKAGES=" bats ShellCheck ripgrep fd-find fzf cppcheck "
@@ -76,6 +79,57 @@ TOOLS_SELECTED=""
 TOOLS_FAIL_COUNT=0
 
 #===============================================================================
+# FUNCTION    : RunWithTimeout
+# DESCRIPTION : 외부 명령에 시간 상한 적용 — macOS 는 timeout 이 없고 coreutils 의
+#               gtimeout 만 있을 수 있다. 둘 다 없으면 상한 없이 실행한다.
+#               (외부 명령 전용 — 셸 함수에는 쓰지 않는다)
+# PARAMETERS  : int sec - 초
+#               나머지  - 실행할 명령과 인자
+#===============================================================================
+RunWithTimeout() {
+    local sec="$1"
+
+    shift
+    if command -v timeout >/dev/null 2>&1; then
+        timeout "${sec}" "$@"
+    elif command -v gtimeout >/dev/null 2>&1; then
+        gtimeout "${sec}" "$@"
+    else
+        "$@"
+    fi
+}
+
+#===============================================================================
+# FUNCTION    : DnfQuery
+# DESCRIPTION : 조회 전용 dnf 실행 — 출력 파싱을 위해 로캘을 C 로 고정하고(한국어
+#               로캘은 'Important/Sec.' 를 '중요/보안.' 으로 번역), GPG 키 가져오기
+#               같은 프롬프트는 거절(--assumeno)하며, 메타데이터를 받지 못한 저장소는
+#               건너뛴다. stderr 는 DNF_QUERY_ERR 파일에 남긴다.
+# PARAMETERS  : 나머지 - dnf 하위 명령과 인자
+# RETURNED    : dnf 종료 코드
+#===============================================================================
+DNF_QUERY_ERR=""
+DnfQuery() {
+    [ -n "${DNF_QUERY_ERR}" ] || DNF_QUERY_ERR=$(mktemp)
+    LC_ALL=C RunWithTimeout 300 dnf -q --assumeno --setopt=skip_if_unavailable=True "$@" \
+        2>>"${DNF_QUERY_ERR}" </dev/null
+}
+
+#===============================================================================
+# FUNCTION    : DnfRepoErrors
+# DESCRIPTION : 직전 DnfQuery 들에서 실패한 저장소·거절된 GPG 키 목록 ('; ' 구분)
+#===============================================================================
+DnfRepoErrors() {
+    [ -n "${DNF_QUERY_ERR}" ] && [ -f "${DNF_QUERY_ERR}" ] || return 0
+    {
+        grep -oE "for repo '[^']+'" "${DNF_QUERY_ERR}" 2>/dev/null | grep -oE "'[^']+'" | tr -d "'"
+        # -q + --assumeno 에서는 오류 문구 대신 거절된 GPG 키 가져오기 블록만 남는다
+        awk '/Importing GPG key/ { k = $4 } /Userid/ && k != "" { sub(/^[^:]*: */, ""); print "GPG키 " k " " $0; k = "" }' \
+            "${DNF_QUERY_ERR}" 2>/dev/null
+    } | sort -u | paste -sd ';' - | sed 's/;/; /g' || true
+}
+
+#===============================================================================
 # FUNCTION    : ToolGroupLabel
 # DESCRIPTION : 그룹 키를 사용자 표시 이름으로 변환
 # PARAMETERS  : string group - 그룹 키
@@ -83,6 +137,7 @@ TOOLS_FAIL_COUNT=0
 ToolGroupLabel() {
     case "$1" in
         core)      echo "필수 (하네스 동작)" ;;
+        vm)        echo "버전 관리자 (mise — 프로젝트별 버전 고정)" ;;
         search)    echo "코드 조사" ;;
         cpp)       echo "C/C++ 시스템" ;;
         go)        echo "Go" ;;
@@ -433,19 +488,22 @@ InstallGoOfficial() {
         RunToolCmd curl -fsSL "https://go.dev/VERSION?m=text"
         RunToolCmd curl -fsSLo "/tmp/<최신>.linux-<arch>.tar.gz" "${GO_DL_BASE}/<최신>.linux-<arch>.tar.gz"
         RunToolCmd "sha256 검증 (${GO_DL_BASE}/?mode=json)"
-        RunToolSudo rm -rf /usr/local/go
+        RunToolSudo rm -rf /usr/local/go.prev
+        RunToolSudo mv /usr/local/go /usr/local/go.prev
         RunToolSudo tar -C /usr/local -xzf "/tmp/<최신>.linux-<arch>.tar.gz"
         return 0
     fi
     latest=$(curl -fsSL "https://go.dev/VERSION?m=text" | head -1) || { ArachneLog "ERROR" "tools: Go 최신 버전 조회 실패"; return 1; }
-    if GoBinary >/dev/null; then
-        current=$("$(GoBinary)" env GOVERSION 2>/dev/null || true)
+    current=$(GoOfficialVersion || true)
+    if command -v go >/dev/null 2>&1 && [ "$(command -v go)" != "/usr/local/go/bin/go" ]; then
+        ArachneLog "WARN" "tools: 배포판 go 가 PATH 에 있음 ($(command -v go)) — 공식본(/usr/local/go/bin)이 PATH 앞에 오도록 dotfiles 를 병합하세요"
     fi
     if [ "${current}" = "${latest}" ]; then
         ArachneLog "SKIP" "tools: Go ${current} — 이미 최신"
         return 0
     fi
-    if [ -n "${current}" ] && ! AskTools "Go ${current} → ${latest} 로 업그레이드할까요?"; then
+    if [ -n "${current}" ] && [ "${TOOLS_GO_NO_PROMPT:-0}" -ne 1 ] \
+        && ! AskTools "Go ${current} → ${latest} 로 업그레이드할까요?"; then
         ArachneLog "SKIP" "tools: Go ${current} 유지"
         return 0
     fi
@@ -473,11 +531,47 @@ InstallGoOfficial() {
         return 1
     fi
     ArachneLog "OK" "tools: sha256 검증 통과 (${file_name})"
-    RunToolSudo rm -rf /usr/local/go \
+    #---------------------------------------------------------------------------
+    # 기존 설치본은 /usr/local/go.prev 로 보존 — arachne -t --rollback go 로 복귀
+    #---------------------------------------------------------------------------
+    if [ -d /usr/local/go ]; then
+        RunToolSudo rm -rf /usr/local/go.prev && RunToolSudo mv /usr/local/go /usr/local/go.prev
+    fi \
         && RunToolSudo tar -C /usr/local -xzf "${tmp_dir}/${file_name}"
     local rc=$?
     rm -rf "${tmp_dir}"
-    [ "${rc}" -eq 0 ] && ToolsDone "tools: $(/usr/local/go/bin/go version) — 새 셸에서 PATH 반영 (/usr/local/go/bin)"
+    if [ "${rc}" -eq 0 ]; then
+        RecordToolHistory "go" "${current:-없음}" "${latest}" "special:go"
+        ToolsDone "tools: $(/usr/local/go/bin/go version) — 새 셸에서 PATH 반영 (이전 버전: /usr/local/go.prev)"
+    fi
+    return "${rc}"
+}
+
+#===============================================================================
+# FUNCTION    : InstallMise
+# DESCRIPTION : 버전 관리자 mise 설치 — brew 또는 공식 설치 스크립트(파일로 받아
+#               실행, ~/.local/bin/mise). 셸 연동은 dotfiles 의 ARACHNE 섹션이 한다.
+# RETURNED    : 0(성공) / 1(실패)
+#===============================================================================
+InstallMise() {
+    local tmp_dir
+    local rc
+
+    if [ "${TOOLS_PM}" = "brew" ]; then
+        RunToolCmd brew install mise
+        return $?
+    fi
+    if [ "${TOOLS_DRY_RUN}" -eq 1 ]; then
+        RunToolCmd curl -fsSLo /tmp/mise-install.sh "${MISE_INSTALL_URL}"
+        RunToolCmd sh /tmp/mise-install.sh
+        return 0
+    fi
+    tmp_dir=$(mktemp -d)
+    RunToolCmd curl -fsSLo "${tmp_dir}/mise-install.sh" "${MISE_INSTALL_URL}" \
+        && RunToolCmd sh "${tmp_dir}/mise-install.sh"
+    rc=$?
+    rm -rf "${tmp_dir}"
+    [ "${rc}" -eq 0 ] && ToolsDone "tools: mise 설치 완료 — 새 셸에서 활성화 (프로젝트의 mise.toml·.tool-versions 자동 적용)"
     return "${rc}"
 }
 
@@ -701,6 +795,8 @@ InstallToolGroup() {
             go)     InstallGoOfficial ;;
             rustup) InstallRustup ;;
             docker) InstallDockerOfficial ;;
+            mise)   InstallMise ;;
+            claude) ArachneLog "WARN" "tools: claude 수동 설치 필요 — https://claude.com/claude-code (설치 후 갱신은 arachne -t --update)" ;;
         esac || TOOLS_FAIL_COUNT=$((TOOLS_FAIL_COUNT + 1))
     done
 
@@ -761,7 +857,26 @@ ReportToolGroups() {
             ArachneLog "OK" "$(ToolGroupLabel "${group}"):${present_list}"
         else
             ArachneLog "WARN" "$(ToolGroupLabel "${group}") — 누락:${missing_list}${present_list:+ / 설치됨:${present_list}}"
+            ReportMissingImpact "${missing_list}"
         fi
+    done
+}
+
+#===============================================================================
+# FUNCTION    : ReportMissingImpact
+# DESCRIPTION : 누락 도구가 하네스 기능에 주는 영향 출력 (install.sh 의
+#               PREFLIGHT_TOOLS "명령:영향" 목록을 재사용 — 문구 단일 출처)
+# PARAMETERS  : string missing_list - 누락 도구 이름 (공백 구분)
+#===============================================================================
+ReportMissingImpact() {
+    local name
+    local entry
+
+    for name in $1; do
+        for entry in ${PREFLIGHT_TOOLS[@]+"${PREFLIGHT_TOOLS[@]}"}; do
+            [ "${entry%%:*}" = "${name%%/*}" ] || continue
+            printf '[Arachne][WARN]     └ %s: %s\n' "${name%%/*}" "${entry#*:}" >&2
+        done
     done
 }
 
@@ -783,12 +898,21 @@ IsGroupSelected() {
 #===============================================================================
 ToolsUsage() {
     echo "Usage: arachne -t [--check] [--yes] [--dry-run] [--group G1,G2]"
+    echo "                  [--update [--allow-major] [--all-system] [--project DIR]]"
+    echo "                  [--rollback TOOL]"
     echo ""
     echo "  하네스가 쓰는 개발 도구를 그룹별로 점검하고, 누락 그룹마다 설치 여부를 묻는다."
     echo "  --check      점검만 (필수 그룹 누락 시 종료코드 1)"
     echo "  --yes        묻지 않고 누락 도구 모두 설치 (Docker 충돌 패키지 제거 포함)"
     echo "  --dry-run    실행할 설치 명령만 출력"
     echo "  --group G    대상 그룹 한정: ${TOOL_GROUPS[*]}"
+    echo "  --update     설치된 도구 버전 점검·갱신. 판정: 하네스 필수 미달 Y · 패치 Y ·"
+    echo "               마이너/메이저 N · 프로젝트 고정 범위 유지 · 단일 버전 도구 충돌은 보고만"
+    echo "  --allow-major --yes 와 함께 마이너·메이저 업데이트도 승인"
+    echo "  --all-system --update 와 함께 시스템 전체 패키지 업그레이드 (기본 N)"
+    echo "  --project D  고정 버전을 읽을 프로젝트 (기본: 현재 git 저장소)"
+    echo "               근거: .arachne/toolchain.lock > mise.toml > .tool-versions > go.mod · rust-toolchain.toml"
+    echo "  --rollback T 직전 업데이트 되돌리기 (go: /usr/local/go.prev, go 린터: 이력 버전)"
     echo ""
     echo "  설치 방식: 시스템 도구는 dnf/apt/brew, Go 는 go.dev 공식 tarball(sha256 검증),"
     echo "            Go 린터는 go install, Rust 는 rustup, Docker 는 공식 Docker CE 저장소."
@@ -812,6 +936,11 @@ ToolsCommand() {
     TOOLS_CHECK_ONLY=0
     TOOLS_SELECTED=""
     TOOLS_FAIL_COUNT=0
+    TOOLS_UPDATE_MODE=0
+    TOOLS_ALLOW_MAJOR=0
+    TOOLS_ALL_SYSTEM=0
+    TOOLS_PROJECT_DIR=""
+    TOOLS_ROLLBACK=""
 
     while [ $# -gt 0 ]; do
         case "$1" in
@@ -820,6 +949,13 @@ ToolsCommand() {
             --dry-run)  TOOLS_DRY_RUN=1 ;;
             --group=*)  TOOLS_SELECTED="${1#--group=}" ;;
             --group)    shift || true; TOOLS_SELECTED="${1:-}" ;;
+            --update)      TOOLS_UPDATE_MODE=1 ;;
+            --allow-major) TOOLS_ALLOW_MAJOR=1 ;;
+            --all-system)  TOOLS_ALL_SYSTEM=1 ;;
+            --project=*)   TOOLS_PROJECT_DIR="${1#--project=}" ;;
+            --project)     shift || true; TOOLS_PROJECT_DIR="${1:-}" ;;
+            --rollback=*)  TOOLS_ROLLBACK="${1#--rollback=}" ;;
+            --rollback)    shift || true; TOOLS_ROLLBACK="${1:-}" ;;
             -h|--help)  ToolsUsage; return 0 ;;
             *)          ArachneLog "ERROR" "tools: 알 수 없는 인자 '$1'"; ToolsUsage >&2; return 1 ;;
         esac
@@ -835,21 +971,38 @@ ToolsCommand() {
     done
 
     DetectToolsPlatform
+    if [ -n "${TOOLS_ROLLBACK}" ]; then
+        RunToolsRollback "${TOOLS_ROLLBACK}"
+        return $?
+    fi
+    if [ -z "${TOOLS_PROJECT_DIR}" ]; then
+        TOOLS_PROJECT_DIR=$(git rev-parse --show-toplevel 2>/dev/null || true)
+    fi
+    if [ -n "${TOOLS_PROJECT_DIR}" ] && [ ! -d "${TOOLS_PROJECT_DIR}" ]; then
+        ArachneLog "ERROR" "tools: 프로젝트 디렉터리 없음 — ${TOOLS_PROJECT_DIR}"
+        return 1
+    fi
+
     ArachneSection "개발 도구 점검 (${TOOLS_OS_ID} · 패키지 관리자 ${TOOLS_PM})"
     ReportToolGroups
 
     if [ "${TOOLS_MISSING_TOTAL}" -eq 0 ]; then
         ArachneLog "OK" "tools: 대상 도구 모두 설치됨"
-        return 0
+        [ "${TOOLS_UPDATE_MODE}" -eq 1 ] && RunToolsUpdateStep
+        return "$(ToolsExitCode)"
     fi
     if [ "${TOOLS_CHECK_ONLY}" -eq 1 ]; then
         ArachneLog "WARN" "tools: 누락 ${TOOLS_MISSING_TOTAL}건 — 설치: arachne -t"
-        IsGroupSelected core && [ -n "${MISSING_core:-}" ] && return 1
+        [ "${TOOLS_UPDATE_MODE}" -eq 1 ] && RunToolsUpdateStep
+        if IsGroupSelected core && [ -n "${MISSING_core:-}" ]; then
+            return 1
+        fi
         return 0
     fi
     if [ "${TOOLS_ASSUME_YES}" -eq 0 ] && [ ! -t 0 ]; then
         ArachneLog "WARN" "tools: 비대화형 실행 — 누락 ${TOOLS_MISSING_TOTAL}건 설치 생략 (arachne -t --yes 로 설치)"
-        return 0
+        [ "${TOOLS_UPDATE_MODE}" -eq 1 ] && RunToolsUpdateStep
+        return "$(ToolsExitCode)"
     fi
 
     #---------------------------------------------------------------------------
@@ -874,12 +1027,31 @@ ToolsCommand() {
         ArachneSection "설치 후 재점검"
         ReportToolGroups
     fi
-    if [ "${TOOLS_FAIL_COUNT}" -gt 0 ]; then
-        ArachneLog "ERROR" "tools: 설치 실패 ${TOOLS_FAIL_COUNT}건 — 위 로그 확인"
-        return 1
-    fi
-    ArachneLog "DONE" "tools: 완료"
+    [ "${TOOLS_UPDATE_MODE}" -eq 1 ] && RunToolsUpdateStep
+    return "$(ToolsExitCode)"
+}
+
+#===============================================================================
+# FUNCTION    : RunToolsUpdateStep
+# DESCRIPTION : --update 단계 실행 (toolchain-update.sh) — 실패해도 흐름 유지
+#===============================================================================
+RunToolsUpdateStep() {
+    RunToolsUpdate || TOOLS_FAIL_COUNT=$((TOOLS_FAIL_COUNT + 1))
     return 0
+}
+
+#===============================================================================
+# FUNCTION    : ToolsExitCode
+# DESCRIPTION : 누적 실패 수로 최종 종료 코드 결정·요약 출력 (stdout 은 코드만)
+#===============================================================================
+ToolsExitCode() {
+    if [ "${TOOLS_FAIL_COUNT}" -gt 0 ]; then
+        ArachneLog "ERROR" "tools: 실패 ${TOOLS_FAIL_COUNT}건 — 위 로그 확인" >&2
+        echo 1
+        return 0
+    fi
+    printf '[Arachne][DONE] tools: 완료\n' >&2
+    echo 0
 }
 
 #===============================================================================

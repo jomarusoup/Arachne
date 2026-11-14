@@ -513,7 +513,40 @@ arachne -d
 - `-i` 끝에도 실행된다. 대화형이면 그룹별로 묻고, 비대화형(CI·파이프)이면 점검 결과만 출력한다.
 - `-u` 대화형 메뉴의 `4) 개발 도구 점검·설치`로도 실행한다.
 - `--yes`는 Docker 충돌 패키지 제거·docker 그룹 추가까지 승인한다. 먼저 `--dry-run`으로 명령을 확인한다.
-- Go 경로(`/usr/local/go/bin`, `~/go/bin`)는 dotfiles 의 ARACHNE 섹션이 PATH 에 넣는다 — 새 셸에서 반영.
+- Go 경로는 dotfiles 의 ARACHNE 섹션이 PATH 에 넣는다 — 공식본 `/usr/local/go/bin` 은 배포판 `/usr/bin/go` 보다 앞, `~/go/bin` 은 뒤. 새 셸에서 반영.
+
+#### 버전 갱신 — `arachne -t --update`
+
+설치된 도구의 현재·최신 버전과 **프로젝트 고정 버전**을 비교해 판정한다. 판정만 보려면 `--check`.
+
+| 상황 | 판정 | 기본 |
+|---|---|---|
+| 하네스 필수 조건 미달 (예: golangci-lint v1 — 스킬 설정은 v2) | 필수 업데이트 | Y |
+| 패치 차이 (1.27.3 → 1.27.4) | 권장 | Y |
+| 마이너·메이저 차이 | 주의 — 동작 변경 가능 (`--yes` 여도 건너뜀, `--allow-major` 로 승인) | N |
+| Go 보안 지원 종료 라인 (최신 두 마이너 밖) | 권장 | Y |
+| 프로젝트 고정 범위 안, 최신은 범위 밖 | 고정 유지 | — |
+| 머신당 한 버전 도구(valgrind 등)의 고정 ≠ 설치 | 충돌 보고만 — 컨테이너·mise 고정 권장 | — |
+
+**2계층**: 전역(머신)은 위 기준선 규칙만 따르고 한 프로젝트 때문에 내리지 않는다.
+프로젝트별 버전은 버전 관리자가 디렉터리 단위로 맞춘다 — Go 는 `go.mod` 의 `toolchain`(자동 다운로드)과
+`tool` 지시어(`go tool golangci-lint`), Rust 는 `rust-toolchain.toml`(rustup), cmake·node·python 등은
+`mise.toml`·`.tool-versions`(mise). 고정 근거 우선순위: `.arachne/toolchain.lock` > `mise.toml` >
+`.tool-versions` > `go.mod`·`rust-toolchain.toml`. 프로젝트는 `--project DIR`, 기본은 현재 git 저장소.
+
+```ini
+# .arachne/toolchain.lock — 버전 관리자가 없는 머신 단일 버전 도구의 고정
+cmake=3.26.x
+golangci-lint=2.10
+valgrind=>=3.21
+```
+
+- 시스템 패키지는 실제 명령을 소유한 패키지(`rpm -qf`)로 조회하고, `dnf versionlock`·`apt-mark hold` 는 패키지 관리자가 제외한다.
+- Docker CE 패키지·Claude Code(`claude update`)·mise·rustup·pipx 도구도 같은 판정을 거친다.
+- `--all-system` 은 커널 포함 시스템 전체 업그레이드를 추가로 묻는다 (기본 N).
+- 이력: `~/.claude/arachne/toolchain-history.log`. Go 는 이전 설치본을 `/usr/local/go.prev` 로 보존 —
+  `arachne -t --rollback go`, go 린터는 `arachne -t --rollback staticcheck` 처럼 이력 버전으로 재설치.
+- dotfile ARACHNE 섹션이 저장소와 다르면 재병합을 묻는다 (`arachne -c` 도 경고).
 
 ### 왜 어느 위치에서 실행해도 동작하나
 

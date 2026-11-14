@@ -133,7 +133,9 @@ Usage() {
     echo "  -t, --tools [OPT]      개발 도구(git·jq·rg·C/C++·Go·Rust·Docker 등) 그룹별 점검,"
     echo "                         누락 그룹마다 설치 여부 확인 후 설치 (-i 끝에도 자동 실행)"
     echo "                         --check 점검만 · --yes 묻지 않고 설치 · --dry-run 명령만 출력"
-    echo "                         --group core,search,cpp,go,rust,python,container,db"
+    echo "                         --group core,vm,search,cpp,go,rust,python,container,db"
+    echo "                         --update 버전 점검·갱신 (패치 Y · 마이너/메이저 N · 프로젝트 고정 존중)"
+    echo "                         --rollback go|<도구> 직전 업데이트 되돌리기 (자세히: arachne -t --help)"
     echo "  -c, --check            CLI 연결 상태 점검 (심볼릭 댕글링·병합본 stale 탐지)"
     echo "  -n, --new P [DIR]      신규 프로젝트 스캐폴딩 (README + AGENTS/CLAUDE 지침 스텁"
     echo "                         + docs/{plan,issue,idea,task,template})"
@@ -260,7 +262,7 @@ UpdateInteractiveMenu() {
         printf '  [%s] 1) Arachne 최신 소스 업데이트 + 재설치\n' "$(UpdateMark "$want_core")"
         printf '  [%s] 2) Understand-Anything 플러그인 갱신\n' "$(UpdateMark "$want_ua")"
         printf '  [%s] 3) codegraph CLI 갱신\n' "$(UpdateMark "$want_cg")"
-        printf '  [%s] 4) 개발 도구 점검·설치 (Go·Docker·C/C++ 등 — 그룹별 확인)\n' "$(UpdateMark "$want_tools")"
+        printf '  [%s] 4) 개발 도구 점검·설치·버전 갱신 (프로젝트 고정 존중 — 그룹별 확인)\n' "$(UpdateMark "$want_tools")"
         printf '\n'
         read -r -p "[Arachne] 번호로 토글, Enter=선택 실행, a=전체 선택, n=전체 해제, q=취소: " reply || true
 
@@ -306,7 +308,7 @@ UpdateInteractiveMenu() {
     [ "$want_core" -eq 1 ] && UpdateArachneCore
     [ "$want_ua" -eq 1 ] && RunUpdateUnderstand
     [ "$want_cg" -eq 1 ] && RunUpdateCodegraph
-    [ "$want_tools" -eq 1 ] && { ToolsCommand || true; }
+    [ "$want_tools" -eq 1 ] && { ToolsCommand --update || true; }
     return 0
 }
 
@@ -352,6 +354,11 @@ BackupAndLink() {
     local src="$1"
     local dst="$2"
 
+    if [ -L "$dst" ] && [ "$(readlink "$dst")" = "$src" ]; then
+        echo "  유지: $dst (이미 올바른 링크)"
+        return 0
+    fi
+
     if [ -e "$dst" ] && [ ! -L "$dst" ]; then
         # 기존 .bak 이 디렉터리면 mv 가 그 안으로 중첩 이동한다 — 1세대 백업
         # 정책(직전 것만 보존)에 맞게 이전 백업을 지우고 교체한다.
@@ -387,7 +394,12 @@ RegisterBin() {
             continue
         fi
 
-        chmod +x "$src"
+        [ -x "$src" ] || chmod +x "$src"
+
+        if [ -L "$dst" ] && [ "$(readlink "$dst")" = "$src" ]; then
+            echo "  유지: $cmd (이미 등록됨)"
+            continue
+        fi
 
         if [ -L "$dst" ]; then
             rm "$dst"
@@ -447,6 +459,13 @@ InstallClaude() {
             '. + {model: ($cur[0].model // .model), theme: ($cur[0].theme // .theme)}
              | with_entries(select(.value != null))' 2>/dev/null) \
             && [ -n "$merged" ] && new_settings="$merged"
+    fi
+
+    if [ -f "$settings_dst" ] && [ ! -L "$settings_dst" ] \
+        && printf '%s\n' "$new_settings" | cmp -s - "$settings_dst"; then
+        echo "  최신: $settings_dst (변경 없음 — 백업 유지)"
+        ArachneSection "Claude 설치 완료"
+        return 0
     fi
 
     if [ -e "$settings_dst" ] && [ ! -L "$settings_dst" ]; then
@@ -525,9 +544,13 @@ InstallCopilot() {
         cat "$REPO_DIR/AGENTS.md"
         printf '%s\n' "<!-- === ${ARACHNE_TAG} END === -->"
     } > "$tmp"
-    mv "$tmp" "$vscode_file"
-
-    echo "  생성: $vscode_file"
+    if [ -f "$vscode_file" ] && cmp -s "$tmp" "$vscode_file"; then
+        rm -f "$tmp"
+        echo "  최신: $vscode_file"
+    else
+        mv "$tmp" "$vscode_file"
+        echo "  생성: $vscode_file"
+    fi
     ArachneSection "GitHub Copilot 설치 완료"
 }
 
@@ -613,7 +636,10 @@ InstallShared() {
 Install() {
     local target="${ARACHNE_TARGET:-all}"
     ArachneSection "설치/재설치 시작 (target=$target)"
-    PreflightCheck
+    # -i 는 끝에 arachne -t 점검이 같은 도구를 영향 문구와 함께 보므로 여기선 생략
+    if [ "${ARACHNE_TOOLS_PENDING:-0}" -ne 1 ]; then
+        PreflightCheck
+    fi
     case "$target" in
         claude) InstallClaude ;;
         gemini) InstallGemini ;;
@@ -798,6 +824,7 @@ MergeDotfile() {
     done < "${tmp_filtered}"
 
     # 기존 ARACHNE 섹션 처리
+    local merge_msg=""
     local action="추가"
     if grep -qF "${begin}" "${dst}" 2>/dev/null; then
         awk -v b="${begin}" -v e="${end}" \
@@ -810,26 +837,45 @@ MergeDotfile() {
         cp "${dst}" "${tmp}"
     fi
 
+    #---------------------------------------------------------------------------
+    # 섹션 앞 꼬리 빈 줄 정리 — 재병합마다 빈 줄이 하나씩 늘어 "변경 없음"
+    # 판정이 깨지던 문제 방지 (섹션은 빈 줄 하나를 두고 붙인다)
+    #---------------------------------------------------------------------------
+    local tmp_trim
+    tmp_trim=$(mktemp)
+    awk '{ line[NR] = $0 } END { n = NR; while (n > 0 && line[n] ~ /^[[:space:]]*$/) n--; for (ii = 1; ii <= n; ii++) print line[ii] }' \
+        "${tmp}" > "${tmp_trim}"
+    mv "${tmp_trim}" "${tmp}"
+
     if [ "${has_content}" -gt 0 ]; then
+        local section_gap=""
+        [ -s "${tmp}" ] && section_gap=$'\n'
         {
-            printf '\n%s\n' "${begin}"
+            printf '%s' "${section_gap}"
+            printf '%s\n' "${begin}"
             cat "${tmp_filtered}"
             printf '%s\n' "${end}"
         } >> "${tmp}"
         if [ "${skipped}" -gt 0 ]; then
-            echo "  ${action}: ${dst} (${skipped}줄 중복 제외)"
+            merge_msg="  ${action}: ${dst} (${skipped}줄 중복 제외)"
         else
-            echo "  ${action}: ${dst}"
+            merge_msg="  ${action}: ${dst}"
         fi
     else
         if [ "${skipped}" -gt 0 ]; then
-            echo "  스킵: ${dst} (${skipped}줄 — 모두 이미 존재)"
+            merge_msg="  스킵: ${dst} (${skipped}줄 — 모두 이미 존재)"
         else
-            echo "  ${action}: ${dst}"
+            merge_msg="  ${action}: ${dst}"
         fi
     fi
 
     rm -f "${tmp_filtered}"
+    if cmp -s "${tmp}" "${dst}"; then
+        rm -f "${tmp}"
+        echo "  최신: ${dst} (변경 없음)"
+        return 0
+    fi
+    echo "${merge_msg}"
     mv "${tmp}" "${dst}"
 }
 
@@ -1056,6 +1102,17 @@ CheckArachne() {
         echo "  [SKIP] Copilot: 미감지"
     fi
 
+    #---------------------------------------------------------------------------
+    # dotfiles — 홈 파일의 ARACHNE 섹션이 저장소 원본과 같은가 (경고만)
+    #---------------------------------------------------------------------------
+    local stale_dotfiles
+    stale_dotfiles=$(DotfilesStale)
+    if [ -z "$stale_dotfiles" ]; then
+        echo "  [OK]   Dotfile: ARACHNE 섹션 최신"
+    else
+        echo "  [WARN] Dotfile: 저장소와 다름 — $stale_dotfiles (arachne -i 또는 arachne -t --update)"
+    fi
+
     if [ "$fail" -eq 0 ]; then
         ArachneSection "연결 상태 점검 완료: 모든 연결 정상"
     else
@@ -1076,6 +1133,8 @@ source "$REPO_DIR/lib/project-ci.sh"
 source "$REPO_DIR/lib/feedback.sh"
 # shellcheck source=lib/toolchain.sh
 source "$REPO_DIR/lib/toolchain.sh"
+# shellcheck source=lib/toolchain-update.sh
+source "$REPO_DIR/lib/toolchain-update.sh"
 
 case "${1:-}" in
     "")
@@ -1086,7 +1145,11 @@ case "${1:-}" in
         fi
         ;;
     "-h"|--help|help)                         Usage ;;
-    -i|--install|install)                     shift; ParseTarget "$@"; Install; MaybeRunExtras; MaybeRunTools ;;
+    -i|--install|install)
+        shift; ParseTarget "$@"
+        [ "${ARACHNE_SKIP_TOOLS:-0}" -eq 1 ] || export ARACHNE_TOOLS_PENDING=1
+        Install; MaybeRunExtras; MaybeRunTools
+        ;;
     -u|--update|update)                       shift; ParseTarget "$@"; UpdateArachne ;;
     --extras|extras)                          shift; RunExtras "$@" ;;
     -t|--tools|tools)                         shift; ToolsCommand "$@" ;;
