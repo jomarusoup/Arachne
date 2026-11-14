@@ -96,3 +96,22 @@ gcc -fsanitize=address,undefined -o binary src/*.c && ./binary
 # Valgrind
 valgrind --leak-check=full --error-exitcode=1 ./binary
 ```
+
+## 빌드 하드닝 플래그
+
+메모리 오류가 남아 있어도 악용을 어렵게 만드는 마지막 방어층이다. 배포·운영용 빌드에는 항상 켠다.
+
+```make
+HARDEN_CFLAGS  = -O2 -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=2 -fstack-protector-strong -fstack-clash-protection \
+                 -fcf-protection=full -Wformat -Wformat-security -Werror=format-security -fPIE
+HARDEN_LDFLAGS = -pie -Wl,-z,relro -Wl,-z,now -Wl,-z,noexecstack
+```
+
+- 기준은 x86-64 Linux(gcc 11+, Rocky 9 기본 툴체인). `_FORTIFY_SOURCE` 는 최적화(`-O1` 이상)가 있어야 동작하고,
+  `-U` 로 배포판 기본 정의와의 재정의 경고를 막는다. gcc 12+·glibc 2.35+ 이면 `=3` 으로 올린다
+  (gcc 11 에서 `=3` 은 경고와 함께 `=2` 로 처리됨).
+- aarch64 는 `-fcf-protection=full` 대신 `-mbranch-protection=standard`. macOS(clang·ld64)는
+  `-fcf-protection`·`-z relro/now/noexecstack` 이 해당 없다.
+- ASan 빌드(`-fsanitize=address`)와는 분리한다 — 테스트용·배포용 빌드 타깃을 나눈다.
+- 결과물 검증: `annocheck <바이너리>` 또는 `arachne --audit --binary <바이너리>` (RHEL 계열 `annobin-annocheck`).
+  FAIL 이 나오면 커밋 전 수정한다.

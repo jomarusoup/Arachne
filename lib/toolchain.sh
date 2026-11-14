@@ -54,13 +54,17 @@ readonly TOOL_CATALOG=(
     "container|docker-compose|-|-|-|special:docker"
     "db|psql|postgresql|postgresql-client|libpq|pkg"
     "db|sqlite3|sqlite|sqlite3|sqlite|pkg"
+    "security|needs-restarting|dnf-utils|-|-|pkg"
+    "security|annocheck|annobin-annocheck|-|-|pkg"
+    "security|lynis|lynis|lynis|lynis|pkg"
+    "security|trivy|-|-|trivy|manual:https://trivy.dev 공식 저장소(rpm·deb) 안내를 따른다 — 번들 라이브러리·컨테이너가 있을 때만 필요"
 )
 
 # 그룹 처리 순서와 표시 이름 — core 를 먼저 처리해야 jq·curl 을 뒤 그룹이 쓴다
-readonly TOOL_GROUPS=(core vm search cpp go rust python container db)
+readonly TOOL_GROUPS=(core vm search cpp go rust python container db security)
 
 # RHEL 계열에서 EPEL 이 있어야 설치되는 dnf 패키지
-readonly EPEL_PACKAGES=" bats ShellCheck ripgrep fd-find fzf cppcheck "
+readonly EPEL_PACKAGES=" bats ShellCheck ripgrep fd-find fzf cppcheck lynis "
 
 # 공식 배포처
 readonly GO_DL_BASE="https://go.dev/dl"
@@ -145,6 +149,7 @@ ToolGroupLabel() {
         python)    echo "Python 린터" ;;
         container) echo "컨테이너 (Docker)" ;;
         db)        echo "DB 클라이언트" ;;
+        security)  echo "보안 점검 (arachne --audit)" ;;
         *)         echo "$1" ;;
     esac
 }

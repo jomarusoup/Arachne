@@ -133,9 +133,12 @@ Usage() {
     echo "  -t, --tools [OPT]      개발 도구(git·jq·rg·C/C++·Go·Rust·Docker 등) 그룹별 점검,"
     echo "                         누락 그룹마다 설치 여부 확인 후 설치 (-i 끝에도 자동 실행)"
     echo "                         --check 점검만 · --yes 묻지 않고 설치 · --dry-run 명령만 출력"
-    echo "                         --group core,vm,search,cpp,go,rust,python,container,db"
+    echo "                         --group core,vm,search,cpp,go,rust,python,container,db,security"
     echo "                         --update 버전 점검·갱신 (패치 Y · 마이너/메이저 N · 프로젝트 고정 존중)"
     echo "                         --rollback go|<도구> 직전 업데이트 되돌리기 (자세히: arachne -t --help)"
+    echo "  -a, --audit [OPT]      읽기 전용 보안 점검 — OS 보안 공지·재부팅 필요·CPU 취약점·"
+    echo "                         sysctl 하드닝·SELinux·리스닝 포트 (수정 없음, 조치 명령 안내)"
+    echo "                         --full Lynis·의존성 · --binary FILE annocheck 하드닝 검증"
     echo "  -c, --check            CLI 연결 상태 점검 (심볼릭 댕글링·병합본 stale 탐지)"
     echo "  -n, --new P [DIR]      신규 프로젝트 스캐폴딩 (README + AGENTS/CLAUDE 지침 스텁"
     echo "                         + docs/{plan,issue,idea,task,template})"
@@ -1135,6 +1138,8 @@ source "$REPO_DIR/lib/feedback.sh"
 source "$REPO_DIR/lib/toolchain.sh"
 # shellcheck source=lib/toolchain-update.sh
 source "$REPO_DIR/lib/toolchain-update.sh"
+# shellcheck source=lib/audit.sh
+source "$REPO_DIR/lib/audit.sh"
 
 case "${1:-}" in
     "")
@@ -1153,6 +1158,7 @@ case "${1:-}" in
     -u|--update|update)                       shift; ParseTarget "$@"; UpdateArachne ;;
     --extras|extras)                          shift; RunExtras "$@" ;;
     -t|--tools|tools)                         shift; ToolsCommand "$@" ;;
+    -a|--audit|audit)                         shift; AuditCommand "$@" ;;
     -c|--check|check)                         CheckArachne ;;
     -n|--new|new)                             shift; NewProject "$@" ;;
     --init-ci|init-ci)                        shift; InitProjectCi "$@" ;;

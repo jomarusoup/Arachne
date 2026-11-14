@@ -94,6 +94,7 @@ Bash에서는 `./install.sh -i --target copilot`을 사용합니다. 모든 경�
 | `arachne -u` (`--update`) | 대화형 선택: Arachne 업데이트/재설치, Understand-Anything 갱신, codegraph 갱신, 개발 도구 점검·설치 |
 | `arachne -u --with-ua` | 업데이트와 함께 Understand-Anything 갱신 |
 | `arachne -t` (`--tools`) | 개발 도구(필수·mise·조사·C/C++·Go·Rust·Python·Docker·DB) 그룹별 점검 → 누락 그룹마다 확인 후 설치. `--update` 는 프로젝트 고정을 존중하는 버전 갱신(패치 Y·마이너/메이저 N), `--rollback` 되돌리기 |
+| `arachne -a` (`--audit`) | 읽기 전용 보안 점검 — OS 보안 공지·저장소 서명·재부팅 필요·CPU 취약점·커널 하드닝·SELinux·포트, `--full` Lynis, `--binary` annocheck |
 | `arachne -c` (`--check`) | Claude·Gemini·Codex·Copilot 연결 상태 점검 |
 | `arachne -n <P> [DIR] --profile <P>` | 신규 프로젝트 스캐폴딩. profile 기본값은 `minimal` |
 | `arachne init-ci [DIR] --profile <P>` | 기존 프로젝트에 profile 기반 검증과 GitHub Actions 생성/갱신 |

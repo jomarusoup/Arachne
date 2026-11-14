@@ -271,6 +271,8 @@ sequenceDiagram
 
 - **`session-start.sh` (SessionStart)** — 세션이 열릴 때 1회. `~/.claude/sessions/`에서 가장 최근 스냅샷
   파일을 찾아 "이어받기" 안내(경로)를 출력한다. 직전 세션 맥락을 빠르게 복구하기 위함.
+  또한 `arachne --audit`이 남긴 요약(`~/.claude/arachne/audit/summary`)을 읽어 CRITICAL·HIGH가
+  있거나 7일 넘게 점검하지 않았으면 한 줄 안내한다 — 점검을 새로 실행하지 않아 지연이 없다.
 - **`ua-stale-check.sh` (SessionStart)** — 세션이 열릴 때 1회. `.understand-anything/meta.json`의
   분석 기준 커밋(`gitCommitHash`)과 HEAD를 비교해 N커밋 이상 뒤처지면 `/understand` 재실행을
   안내한다(임계값 `UA_STALE_THRESHOLD`, 기본 1). UA 산출물이 없는 프로젝트에서는 침묵하며,

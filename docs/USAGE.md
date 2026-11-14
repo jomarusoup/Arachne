@@ -548,6 +548,27 @@ valgrind=>=3.21
   `arachne -t --rollback go`, go 린터는 `arachne -t --rollback staticcheck` 처럼 이력 버전으로 재설치.
 - dotfile ARACHNE 섹션이 저장소와 다르면 재병합을 묻는다 (`arachne -c` 도 경고).
 
+### `arachne --audit` 보안 점검 (읽기 전용)
+
+수정은 하지 않고 발견과 조치 명령만 보여 준다. 종료코드 1 = CRITICAL·HIGH 존재.
+
+| 영역 | 내용 | 실행 |
+|---|---|---|
+| OS 보안 공지 | 미적용 보안 공지를 공지 ID 단위·심각도별 집계 (Rocky RLSA·EPEL) | 기본 |
+| 저장소 신뢰 | 메타데이터·GPG 서명 검증 실패 저장소 (조회에서 제외됐음을 표시) | 기본 |
+| 재부팅·재시작 | 패치 후 재부팅·서비스 재시작이 안 돼 옛 커널·라이브러리가 실행 중인지 | 기본 |
+| CPU 취약점 | Spectre·Meltdown·MDS 등 완화 상태 (`/sys/.../cpu/vulnerabilities`) | 기본 |
+| 커널 하드닝 | ASLR·kptr/dmesg 제한·ptrace_scope·비특권 BPF·suid_dumpable 기준 비교 | 기본 |
+| SELinux · 포트 | 강제 모드 여부, 루프백 밖 리스닝 포트 | 기본 |
+| 시스템 하드닝 | Lynis 감사(경고 수·하드닝 지수, 날짜별 보존) | `--full` |
+| 프로젝트 의존성 | trivy·govulncheck (설치돼 있을 때만) | `--full` |
+| 바이너리 하드닝 | FORTIFY·stack-protector·PIE·RELRO/BIND_NOW·CET 누락 (annocheck) | `--binary FILE...` |
+
+- 결과는 `~/.claude/arachne/audit/latest.tsv` 에 저장되고, 직전에 없던 항목은 `[NEW]` 로 표시한다.
+- 세션 시작 훅이 저장된 요약을 읽어 HIGH 이상이 있거나 7일 넘게 점검하지 않았으면 한 줄 안내한다 (점검을 새로 실행하지 않음).
+- dnf 조회는 로캘을 C 로 고정하고 GPG 키 가져오기 프롬프트는 거절한다 — 한국어 로캘 번역·프롬프트 대기로 결과가 왜곡되지 않게.
+- 도구: `arachne -t --group security` (needs-restarting · annocheck · lynis, trivy 는 안내). C 빌드 하드닝 플래그 기준은 `rules/c/security.md`.
+
 ### 왜 어느 위치에서 실행해도 동작하나
 
 `arachne`는 `~/.local/bin/arachne → install.sh` 심볼릭 링크다. `install.sh`는 POSIX 호환
