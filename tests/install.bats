@@ -22,6 +22,8 @@ setup() {
 printf '%s\n' "\$*" > "${TMP_DIR}/extras.args"
 EOF
     export ARACHNE_EXTRAS_SCRIPT="${FAKE_EXTRAS}"
+    # -i 끝의 개발 도구 점검은 머신 상태에 좌우되므로 격리 (toolchain.bats 가 별도 검증)
+    export ARACHNE_SKIP_TOOLS=1
 }
 
 teardown() {

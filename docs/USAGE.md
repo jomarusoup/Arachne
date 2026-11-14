@@ -356,13 +356,14 @@ powershell -ExecutionPolicy Bypass -File .\install.ps1 -Install
 | 명령 | 동작 |
 | ---- | ---- |
 | `arachne`, `arachne -h`, `--help` | 도움말 출력 |
-| `arachne -i`, `--install` | 의존성 사전 점검(경고만) + `~/.claude/` 심볼릭 링크 + `settings.json` 생성 + dotfiles 병합 + bin 등록 (재설치) + 확장 도구(UA·taste-skill·codegraph) 자동 설치·최신 갱신 |
+| `arachne -i`, `--install` | 의존성 사전 점검(경고만) + `~/.claude/` 심볼릭 링크 + `settings.json` 생성 + dotfiles 병합 + bin 등록 (재설치) + 확장 도구(UA·taste-skill·codegraph) 자동 설치·최신 갱신 + 개발 도구 점검(대화형이면 그룹별 설치 확인, 비대화형은 점검만 — `ARACHNE_SKIP_TOOLS=1`로 생략) |
 | `arachne -i --with-ua` | 위 설치 + 확장 도구를 Understand-Anything 만으로 한정 |
 | `arachne -i --with-extras` | (하위 호환) 기본 동작과 동일 |
-| `arachne -u`, `--update` | 대화형 선택: Arachne 업데이트/재설치, Understand-Anything 갱신, codegraph 갱신 (비대화형은 전체 갱신) |
+| `arachne -u`, `--update` | 대화형 선택: Arachne 업데이트/재설치, Understand-Anything 갱신, codegraph 갱신, 개발 도구 점검·설치 (비대화형은 전체 갱신, 개발 도구 제외) |
 | `arachne -u --with-ua` | 업데이트 + Understand-Anything 플러그인만 갱신 |
 | `arachne -u --with-extras` | (하위 호환) 업데이트 + 확장 도구 전체 동기화 |
 | `arachne --extras [--all\|--ua\|--taste\|--codegraph]` | 확장 도구만 단독 설치(무인자=대화형 항목별 선택) |
+| `arachne -t`, `--tools` | 개발 도구 그룹별 점검 후 누락 그룹마다 `[y/N]` 확인을 받아 설치. `--check`(점검만, 필수 누락 시 exit 1) · `--yes`(묻지 않고 설치) · `--dry-run`(명령만 출력) · `--group core,search,cpp,go,rust,python,container,db` |
 | `arachne -c`, `--check` | Claude·Gemini·Codex·Copilot 연결 상태 점검 — 심볼릭 댕글링·병합본 stale 탐지 |
 | `arachne -n <P> [DIR] --profile <PROFILE>`, `--new` | 신규 프로젝트 스캐폴딩. `--no-git`, `minimal|python|web|python-web|cpp|rust` 지원 |
 | `arachne init-ci [DIR] --profile <PROFILE>`, `--init-ci` | 기존 프로젝트에 profile 기반 검증 runner와 workflow 생성/갱신 |
@@ -409,6 +410,9 @@ arachne -i                       # 설치 + 확장 도구 전체 자동 설치·
 arachne -i --with-ua             # 설치 + 확장 도구는 Understand-Anything 만
 arachne -u                       # 대화형: Arachne / Understand-Anything / codegraph 선택 갱신
 arachne -u --with-ua             # 업데이트 + Understand-Anything 만
+arachne -t                       # 개발 도구 점검 → 누락 그룹마다 설치 여부 확인
+arachne -t --check               # 점검만 (CI·스크립트용 — 필수 그룹 누락 시 exit 1)
+arachne -t --group go,container --dry-run   # Go·Docker 설치 명령만 미리 보기
 arachne --extras                 # 확장 도구만 단독: 대화형 항목별 [Y/n]
 arachne --extras --all           # 확장 도구만 셋 다 (비대화형)
 arachne --extras --codegraph     # 개별 (--taste / --ua 동일)
@@ -489,6 +493,27 @@ arachne -d
 > - `settings.json`은 매번 템플릿에서 **재생성**된다. 직접 수정한 값이 있으면 먼저 `arachne -e`로 템플릿에 반영해야 유실되지 않는다 (직전 값은 `settings.json.bak`에 보존).
 > - dotfiles는 `# === ARACHNE BEGIN/END ===` 마커 **안쪽만** 갱신하므로 마커 밖 사용자 설정은 안전하다.
 > - 셸에 즉시 반영하려면 `source ~/.bash_profile`.
+
+### `arachne -t` 개발 도구 점검·설치
+
+하네스의 커맨드·스킬·훅이 호출하는 도구를 그룹별로 점검하고, 누락이 있는 그룹마다 `[y/N]`으로
+설치 여부를 묻는다. 그룹은 `core`부터 순서대로 처리한다(뒤 그룹이 `curl`·`jq`를 쓴다).
+
+| 그룹 | 도구 | 설치 방식 |
+|---|---|---|
+| `core` 필수 | git · jq · curl · python3 · node/npm · tmux · bats · shellcheck · rg · gh | dnf/apt/brew (RHEL 계열은 EPEL 자동 활성화), gh 는 수동 안내 |
+| `search` 조사 | fd · fzf · tree | 패키지 관리자 |
+| `cpp` C/C++ | gcc · g++ · make · cmake · gdb · valgrind · strace · ltrace · perf · cppcheck · clang-format | 패키지 관리자 |
+| `go` Go | go · goimports · staticcheck · golangci-lint · govulncheck | go 는 go.dev 공식 tarball(sha256 검증, 구버전이면 업그레이드 확인), 린터는 `go install` |
+| `rust` Rust | cargo (rustup) | rustup 공식 스크립트를 파일로 받아 실행 |
+| `python` 린터 | ruff · mypy | pipx 우선, 없으면 `pip --user` |
+| `container` | docker · docker compose | 공식 Docker CE 저장소. podman-docker·docker.io 충돌 시 제거 여부를 따로 묻고, docker 그룹 추가도 따로 묻는다 |
+| `db` 클라이언트 | psql · sqlite3 | 패키지 관리자 |
+
+- `-i` 끝에도 실행된다. 대화형이면 그룹별로 묻고, 비대화형(CI·파이프)이면 점검 결과만 출력한다.
+- `-u` 대화형 메뉴의 `4) 개발 도구 점검·설치`로도 실행한다.
+- `--yes`는 Docker 충돌 패키지 제거·docker 그룹 추가까지 승인한다. 먼저 `--dry-run`으로 명령을 확인한다.
+- Go 경로(`/usr/local/go/bin`, `~/go/bin`)는 dotfiles 의 ARACHNE 섹션이 PATH 에 넣는다 — 새 셸에서 반영.
 
 ### 왜 어느 위치에서 실행해도 동작하나
 

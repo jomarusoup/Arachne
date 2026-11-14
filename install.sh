@@ -124,12 +124,16 @@ Usage() {
     echo "Options:"
     echo "  -i, --install          설치/재설치 수행 + 확장 도구(UA·taste-skill·codegraph)"
     echo "                          자동 설치·최신 갱신 (미설치는 설치, 기설치는 갱신)"
-    echo "  -u, --update           대화형: Arachne/Understand/codegraph 중 선택 갱신"
+    echo "  -u, --update           대화형: Arachne/Understand/codegraph/개발 도구 중 선택 갱신"
     echo "      --target T          설치 대상 CLI: claude|gemini|codex|copilot|all (기본 all)"
     echo "                          (-i/-u 와 함께 사용. 미감지 CLI는 자동 스킵)"
     echo "      --with-ua           -i/-u 와 함께: 확장 도구를 Understand-Anything 만으로 한정"
     echo "      --with-extras       (하위 호환) 기본 동작과 동일 — 전체 확장 도구 멱등 설정"
     echo "      --extras            확장 도구 통합 설치만 단독 실행 (대화형 선택 메뉴)"
+    echo "  -t, --tools [OPT]      개발 도구(git·jq·rg·C/C++·Go·Rust·Docker 등) 그룹별 점검,"
+    echo "                         누락 그룹마다 설치 여부 확인 후 설치 (-i 끝에도 자동 실행)"
+    echo "                         --check 점검만 · --yes 묻지 않고 설치 · --dry-run 명령만 출력"
+    echo "                         --group core,search,cpp,go,rust,python,container,db"
     echo "  -c, --check            CLI 연결 상태 점검 (심볼릭 댕글링·병합본 stale 탐지)"
     echo "  -n, --new P [DIR]      신규 프로젝트 스캐폴딩 (README + AGENTS/CLAUDE 지침 스텁"
     echo "                         + docs/{plan,issue,idea,task,template})"
@@ -247,6 +251,7 @@ UpdateInteractiveMenu() {
     local want_core=1
     local want_ua=0
     local want_cg=0
+    local want_tools=0
     local reply
     local item
 
@@ -255,6 +260,7 @@ UpdateInteractiveMenu() {
         printf '  [%s] 1) Arachne 최신 소스 업데이트 + 재설치\n' "$(UpdateMark "$want_core")"
         printf '  [%s] 2) Understand-Anything 플러그인 갱신\n' "$(UpdateMark "$want_ua")"
         printf '  [%s] 3) codegraph CLI 갱신\n' "$(UpdateMark "$want_cg")"
+        printf '  [%s] 4) 개발 도구 점검·설치 (Go·Docker·C/C++ 등 — 그룹별 확인)\n' "$(UpdateMark "$want_tools")"
         printf '\n'
         read -r -p "[Arachne] 번호로 토글, Enter=선택 실행, a=전체 선택, n=전체 해제, q=취소: " reply || true
 
@@ -266,11 +272,13 @@ UpdateInteractiveMenu() {
                 want_core=1
                 want_ua=1
                 want_cg=1
+                want_tools=1
                 ;;
             n|N)
                 want_core=0
                 want_ua=0
                 want_cg=0
+                want_tools=0
                 ;;
             q|Q)
                 ArachneLog "SKIP" "update: 사용자가 취소함"
@@ -282,6 +290,7 @@ UpdateInteractiveMenu() {
                         1) [ "$want_core" -eq 1 ] && want_core=0 || want_core=1 ;;
                         2) [ "$want_ua" -eq 1 ] && want_ua=0 || want_ua=1 ;;
                         3) [ "$want_cg" -eq 1 ] && want_cg=0 || want_cg=1 ;;
+                        4) [ "$want_tools" -eq 1 ] && want_tools=0 || want_tools=1 ;;
                         *) ArachneLog "WARN" "update: 알 수 없는 선택 '$item' 무시" ;;
                     esac
                 done
@@ -289,7 +298,7 @@ UpdateInteractiveMenu() {
         esac
     done
 
-    if [ "$want_core" -eq 0 ] && [ "$want_ua" -eq 0 ] && [ "$want_cg" -eq 0 ]; then
+    if [ "$want_core" -eq 0 ] && [ "$want_ua" -eq 0 ] && [ "$want_cg" -eq 0 ] && [ "$want_tools" -eq 0 ]; then
         ArachneLog "SKIP" "update: 선택된 항목 없음"
         return 0
     fi
@@ -297,6 +306,8 @@ UpdateInteractiveMenu() {
     [ "$want_core" -eq 1 ] && UpdateArachneCore
     [ "$want_ua" -eq 1 ] && RunUpdateUnderstand
     [ "$want_cg" -eq 1 ] && RunUpdateCodegraph
+    [ "$want_tools" -eq 1 ] && { ToolsCommand || true; }
+    return 0
 }
 
 #===============================================================================
@@ -1063,6 +1074,8 @@ CheckArachne() {
 source "$REPO_DIR/lib/project-ci.sh"
 # shellcheck source=lib/feedback.sh
 source "$REPO_DIR/lib/feedback.sh"
+# shellcheck source=lib/toolchain.sh
+source "$REPO_DIR/lib/toolchain.sh"
 
 case "${1:-}" in
     "")
@@ -1073,9 +1086,10 @@ case "${1:-}" in
         fi
         ;;
     "-h"|--help|help)                         Usage ;;
-    -i|--install|install)                     shift; ParseTarget "$@"; Install; MaybeRunExtras ;;
+    -i|--install|install)                     shift; ParseTarget "$@"; Install; MaybeRunExtras; MaybeRunTools ;;
     -u|--update|update)                       shift; ParseTarget "$@"; UpdateArachne ;;
     --extras|extras)                          shift; RunExtras "$@" ;;
+    -t|--tools|tools)                         shift; ToolsCommand "$@" ;;
     -c|--check|check)                         CheckArachne ;;
     -n|--new|new)                             shift; NewProject "$@" ;;
     --init-ci|init-ci)                        shift; InitProjectCi "$@" ;;

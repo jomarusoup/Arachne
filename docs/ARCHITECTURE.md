@@ -192,7 +192,7 @@ Arachne/
 ├── README.md · VERSION · LICENSE
 ├── settings.template.json       # ~/.claude/settings.json 생성 원본 (훅 등록·permissions.deny)
 ├── install.sh · install.ps1     # 통합 관리 도구 (CLI: arachne)
-├── lib/                         # install.sh 도메인 라이브러리 (project-ci · feedback · naming-check)
+├── lib/                         # install.sh 도메인 라이브러리 (project-ci · feedback · toolchain · naming-check)
 ├── tmux.sh · docs-sync.sh · statusline-command.sh · setup-extras.*
 │
 ├── rules/                       # 항상 적용되는 규칙 (~/.claude/rules)

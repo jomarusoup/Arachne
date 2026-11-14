@@ -164,3 +164,14 @@ mgrep()
 if [[ ":$PATH:" != *":$HOME/.local/bin:"* ]]; then
     export PATH="$HOME/.local/bin:$PATH"
 fi
+
+#===============================================================================
+# ARACHNE — Go 툴체인 PATH 등록 (arachne -t 가 /usr/local/go · go install 사용)
+# 디렉터리가 있을 때만 추가 — Go 미설치 머신에는 영향 없음
+#===============================================================================
+for arachne_go_dir in /usr/local/go/bin "$HOME/go/bin"; do
+    if [ -d "$arachne_go_dir" ] && [[ ":$PATH:" != *":$arachne_go_dir:"* ]]; then
+        export PATH="$PATH:$arachne_go_dir"
+    fi
+done
+unset arachne_go_dir

@@ -91,8 +91,9 @@ Bash에서는 `./install.sh -i --target copilot`을 사용합니다. 모든 경�
 | `arachne`, `arachne -h` | 도움말 출력 |
 | `arachne -i` (`--install`) | 재설치 및 설정 동기화 |
 | `arachne -i --with-ua` | 설치와 함께 Understand-Anything 플러그인 세팅 |
-| `arachne -u` (`--update`) | 대화형 선택: Arachne 업데이트/재설치, Understand-Anything 갱신, codegraph 갱신 |
+| `arachne -u` (`--update`) | 대화형 선택: Arachne 업데이트/재설치, Understand-Anything 갱신, codegraph 갱신, 개발 도구 점검·설치 |
 | `arachne -u --with-ua` | 업데이트와 함께 Understand-Anything 갱신 |
+| `arachne -t` (`--tools`) | 개발 도구(필수·조사·C/C++·Go·Rust·Python·Docker·DB) 그룹별 점검 → 누락 그룹마다 확인 후 설치. `--check` · `--yes` · `--dry-run` · `--group` |
 | `arachne -c` (`--check`) | Claude·Gemini·Codex·Copilot 연결 상태 점검 |
 | `arachne -n <P> [DIR] --profile <P>` | 신규 프로젝트 스캐폴딩. profile 기본값은 `minimal` |
 | `arachne init-ci [DIR] --profile <P>` | 기존 프로젝트에 profile 기반 검증과 GitHub Actions 생성/갱신 |
@@ -130,7 +131,7 @@ Arachne/
 ├── .github/copilot-instructions.md # Copilot 저장소 어댑터
 ├── settings.template.json       # ~/.claude/settings.json 템플릿
 ├── install.sh / install.ps1     # Unix / Windows 통합 관리 도구 (CLI: arachne)
-├── lib/                         # install.sh 도메인 라이브러리 (project-ci · feedback · naming-check)
+├── lib/                         # install.sh 도메인 라이브러리 (project-ci · feedback · toolchain · naming-check)
 ├── install-copilot.ps1          # Windows PowerShell용 Copilot 설치기
 ├── tmux.sh                      # tmux 워크스페이스 매니저 (CLI: tws)
 ├── archive/                     # 제거된 현역 외 자산 (multi-cli 런타임 — ADR-0004)
