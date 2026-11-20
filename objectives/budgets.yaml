@@ -1,0 +1,140 @@
+# FILE NAME   : budgets.yaml
+# DESCRIPTION : 하네스·파이프라인 예산 정본. 목표 문서는 docs/OBJECTIVES.md.
+#               rules·eval·CI 는 이 파일을 참조만 한다 (수치 복사 금지).
+#
+# 항목 규약 (tests/objectives.bats 가 검사):
+#   - 모든 항목은 id·unit·value·status·source 를 가진다.
+#   - status: 실측 대기 | 확정 | 실측
+#   - status 가 "실측 대기"면 value: null, source: null.
+#   - 확정·실측 값은 source 에 근거(결정 문서·측정 명령·커밋)를 적는다.
+#   - 수치 출처는 홈랩 기준 장비 실측 또는 사람이 정한 요구뿐이다 (회사 수치·공개 벤치 수치 반입 금지).
+
+environment:
+  # 홈랩 기준 장비 — 결정 D-05 후 기록
+  host: null
+  cpu: null
+  kernel: null
+  cpu_governor: null
+  isolcpus: null
+  status: 실측 대기
+
+budgets:
+  # --- 하네스 ---
+  - id: context.always_loaded_tokens
+    layer: harness
+    unit: tokens
+    value: 8000
+    status: 확정
+    source: "docs/OBJECTIVES.md — 상시 로드 8k 이하 목표 (측정 범위는 결정 D-04)"
+  - id: context.always_loaded_tokens.measured
+    layer: harness
+    unit: tokens
+    value: null
+    status: 실측 대기
+    source: null
+
+  # --- 서버 메인 (C 수신기·공유메모리 갱신) ---
+  - id: server.main.ingest_rate
+    layer: server-main
+    unit: msgs/s
+    value: null
+    status: 실측 대기
+    source: null
+  - id: server.main.loss
+    layer: server-main
+    unit: count
+    value: 0
+    status: 확정
+    source: "docs/OBJECTIVES.md 우선순위 — 정확성 불변식 (유실·갭 0)"
+  - id: server.main.recv_to_publish.p99
+    layer: server-main
+    unit: us
+    value: null
+    status: 실측 대기
+    source: null
+  - id: server.main.recv_to_publish.p999
+    layer: server-main
+    unit: us
+    value: null
+    status: 실측 대기
+    source: null
+  - id: server.main.rss_drift_1h
+    layer: server-main
+    unit: MB
+    value: null
+    status: 실측 대기
+    source: null
+
+  # --- 서버 보조 (Go exporter) ---
+  - id: server.aux.exporter_cpu
+    layer: server-aux
+    unit: percent
+    value: null
+    status: 실측 대기
+    source: null
+  - id: server.aux.main_latency_delta_under_fault
+    layer: server-aux
+    unit: us
+    value: null
+    status: 실측 대기
+    source: null
+
+  # --- 클라이언트 메인 (네이티브) ---
+  - id: client.main.frame_time.p99
+    layer: client-main
+    unit: ms
+    value: null
+    status: 실측 대기
+    source: null
+  - id: client.main.staleness.p99
+    layer: client-main
+    unit: ms
+    value: null
+    status: 실측 대기
+    source: null
+  - id: client.main.rss_drift_1h
+    layer: client-main
+    unit: MB
+    value: null
+    status: 실측 대기
+    source: null
+
+  # --- eval ---
+  - id: eval.noise_band.pass_rate
+    layer: eval
+    unit: percent-point
+    value: null
+    status: 실측 대기
+    source: null
+  - id: eval.cost_per_run
+    layer: eval
+    unit: usd
+    value: null
+    status: 실측 대기
+    source: null
+
+  # --- 개선 루프 (결정 D-12) ---
+  - id: loop.weekly_spend_cap
+    layer: loop
+    unit: usd
+    value: null
+    status: 실측 대기
+    source: null
+  - id: loop.max_turns
+    layer: loop
+    unit: turns
+    value: null
+    status: 실측 대기
+    source: null
+  - id: loop.timeout
+    layer: loop
+    unit: s
+    value: null
+    status: 실측 대기
+    source: null
+  - id: loop.consecutive_reject_stop
+    layer: loop
+    unit: count
+    value: null
+    status: 실측 대기
+    source: null
