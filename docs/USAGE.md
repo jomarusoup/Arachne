@@ -236,40 +236,30 @@ PostgreSQL 자리표시자처럼 `$1`을 그대로 보여야 하면 `\$1`로 쓴
 Claude Code 상태표시줄은 `settings.template.json`의 `statusLine.command`로 자동 등록된다.
 직접 실행하는 사용자 명령이 아니라 Claude Code가 상태 JSON을 stdin으로 전달할 때 렌더링된다.
 
-표시 정보:
-
-- 현재 모델과 git 브랜치
-- 컨텍스트 사용률과 입력·출력 token 합계
-- 현재 세션 비용
-- 최근 5시간 비용 예산 잔여율
-- 주간 비용 예산 잔여율과 다음 토요일 정오까지 남은 시간
-
-상태 파일:
-
-| 파일 | 역할 |
-| --- | --- |
-| `~/.claude/usage_limits.json` | 선택적 사용자 예산 설정 |
-| `~/.claude/usage_track.json` | 최근 7일 비용 증가분 기록 |
-| `~/.claude/usage_last.json` | 직전 렌더의 세션 비용 저장 |
-
-예산을 바꾸려면 다음 파일을 만든다.
-
-```json
-{
-  "limit_5h": 5.0,
-  "limit_weekly": 35.0
-}
+```text
+Opus 5.5 | main | [██░░░░░░░░] 23% | 46K/200K tokens | session $0.5000 | 5h 76% left (reset 2h 15m) | weekly 59% left (reset 3d 4h)
 ```
 
-파일이 없으면 기본값은 5시간 `$5.00`, 주간 `$35.00`이다. 이 값은 서비스 제공자의 실제 사용
-한도나 청구 정책을 조회하는 기능이 아니라 **로컬 비용 추적용 사용자 기준값**이다.
+모든 수치는 Claude Code가 넘기는 공식 필드에서만 읽는다
+([공식 문서](https://code.claude.com/docs/en/statusline)). 로컬 추정·상태 파일은 없다.
+
+| 표시 | stdin 필드 |
+| --- | --- |
+| 모델 | `model.display_name` |
+| 브랜치 | `workspace.current_dir`(없으면 `cwd`)에서 `git rev-parse` |
+| 컨텍스트 막대·% | `context_window.used_percentage` (없으면 사용 토큰 ÷ 창 크기) |
+| 토큰 | `context_window.current_usage`의 입력 + 캐시 생성 + 캐시 읽기 / `context_window_size` |
+| 세션 비용 | `cost.total_cost_usd` (정가 기준 클라이언트 추정, 실제 청구와 다를 수 있음) |
+| 5h·weekly 잔여율 | `100 - rate_limits.{five_hour,seven_day}.used_percentage` |
+| 초기화까지 | `rate_limits.*.resets_at`(epoch 초) − 현재 시각 |
 
 주의:
 
-- `jq`, `awk`, GNU `date -d`가 필요하다.
-- 상태표시줄은 `usage_track.json`과 `usage_last.json`을 갱신하므로 순수 표시 전용 함수가 아니다.
-- macOS 기본 BSD `date`와 Windows 네이티브 셸에서는 시간 계산이 호환되지 않을 수 있다.
-- 추적값은 Claude Code가 stdin으로 제공한 세션 비용의 렌더 간 증가분을 누적한 근사치다.
+- `rate_limits`는 claude.ai Pro·Max·Ultra 구독 계정에서, 세션 첫 응답 이후에만 온다.
+  없거나 창이 빠지면 `5h --`처럼 표시한다(API 키 계정은 항상 `--`).
+- `jq`가 필요하다.
+- 과거 버전이 쓰던 `~/.claude/usage_limits.json`·`usage_track.json`·`usage_last.json`은
+  더 이상 읽거나 쓰지 않는다. 남아 있으면 지워도 된다.
 
 ---
 

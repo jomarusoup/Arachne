@@ -63,6 +63,7 @@ macOS 기본 bash 3.2에서는 마지막 줄이 아닌 `[[ ]]` 단언이 실패�
 | `shm_tools.bats` | c-system `tools/` — 공유메모리 조회 마스킹·원문 보기 감사 로그·제어·복구 시나리오 | bats |
 | `collect.bats` | c-system `tools/collect.sh` — dry-run·운영 서버 프로파일링 거부·반출 전 개인정보 마스킹 | bats |
 | `logtrace.bats` | c-system `tools/logtrace.sh` — 거래 ID 추적·회전 로그 | bats |
+| `statusline.bats` | `statusline-command.sh` — 공식 `context_window`·`rate_limits` 표시, 미제공·지난 초기화·빈 입력, 상태 파일 미생성 | bats |
 | `feedback.bats` | `arachne feedback` — 프로젝트 피드백 채널 | bats |
 | `worktree_command.bats` | `/worktree` 커맨드 문서 계약 | bats |
 | `objectives.bats` | `docs/OBJECTIVES.md`·`objectives/budgets.yaml` — 예산 항목 필수 필드·"실측 대기" null 규칙 | bats |
