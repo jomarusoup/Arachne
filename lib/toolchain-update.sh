@@ -15,14 +15,18 @@
 # shellcheck shell=bash
 
 readonly TOOLCHAIN_HISTORY_FILE="${HOME}/.claude/arachne/toolchain-history.log"
+# shellcheck disable=SC2034  # lib/toolchain.sh 의 mise 설치에서 사용 (source 공유)
 readonly MISE_INSTALL_URL="https://mise.run"
 readonly MISE_RELEASE_API="https://api.github.com/repos/jdx/mise/releases/latest"
 readonly PYPI_JSON_BASE="https://pypi.org/pypi"
 
+# 아래 옵션 상태는 lib/toolchain.sh 의 인자 파싱·실행 흐름과 공유한다 (source 공유)
+# shellcheck disable=SC2034
 TOOLS_UPDATE_MODE=0
 TOOLS_ALLOW_MAJOR=0
 TOOLS_ALL_SYSTEM=0
 TOOLS_PROJECT_DIR=""
+# shellcheck disable=SC2034
 TOOLS_ROLLBACK=""
 
 #===============================================================================

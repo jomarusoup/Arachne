@@ -65,6 +65,10 @@ jobs:
       - name: 3티어 compose 스모크 (C 빌드 테스트 · PostgreSQL · 스키마 적용)
         working-directory: templates/project/compose-3tier
         run: |
+          # 러너 커널(mmap_rnd_bits=32)과 컨테이너 gcc 12 ASan 의 섀도 메모리 충돌로
+          # 테스트가 무작위로 AddressSanitizer:DEADLYSIGNAL 을 낸다. 컨테이너는 호스트 커널을
+          # 공유하므로 러너에서 ASan 이 감당하는 28 로 낮춘다.
+          sudo sysctl -w vm.mmap_rnd_bits=28
           cp .env.example .env
           docker compose config --quiet
           docker compose up --build --abort-on-container-exit --exit-code-from c-build c-build

@@ -122,10 +122,15 @@ teardown() {
 }
 
 @test "tools --rollback: go 린터는 이력의 이전 버전으로 재설치 (dry-run)" {
+    # 러너에 go 가 없어도 dry-run 되돌리기 경로를 검사하도록 가짜 go 를 둔다
+    mkdir -p "${TMP_DIR}/gobin"
+    printf '#!/bin/bash\nexit 0\n' > "${TMP_DIR}/gobin/go"
+    chmod +x "${TMP_DIR}/gobin/go"
     mkdir -p "${HOME}/.claude/arachne"
     printf '2026-11-14 10:00:00\tstaticcheck\tv0.7.0\tv0.8.2\tgo:honnef.co/go/tools/cmd/staticcheck@latest\n' \
         > "${HOME}/.claude/arachne/toolchain-history.log"
-    ARACHNE_TOOLS_DRYRUN=1 run bash "${REPO_DIR}/install.sh" -t --rollback staticcheck
+    PATH="${TMP_DIR}/gobin:${PATH}" ARACHNE_TOOLS_DRYRUN=1 \
+        run bash "${REPO_DIR}/install.sh" -t --rollback staticcheck
     [ "$status" -eq 0 ]
     [[ "$output" == *"install honnef.co/go/tools/cmd/staticcheck@v0.7.0"* ]] || false
 }
@@ -173,7 +178,9 @@ teardown() {
     printf '#!/bin/bash\nexit 0\n' > "${ARACHNE_EXTRAS_SCRIPT}"
     export ARACHNE_SKIP_TOOLS=1
     bash "${REPO_DIR}/install.sh" -i >/dev/null 2>&1
-    sed -i 's/^alias df=.*/alias df=CHANGED/' "${HOME}/.bash_profile"
+    # BSD sed(macOS) 호환 — -i 에 접미사를 주고 백업을 지운다
+    sed -i.bak 's/^alias df=.*/alias df=CHANGED/' "${HOME}/.bash_profile"
+    rm -f "${HOME}/.bash_profile.bak"
     run bash "${REPO_DIR}/install.sh" -c
     [[ "$output" == *"[WARN] Dotfile: 저장소와 다름"* ]] || false
 }
