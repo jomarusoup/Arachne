@@ -510,9 +510,9 @@ arachne -d
 |---|---|---|
 | `core` 필수 | git · jq · curl · python3 · node/npm · tmux · bats · shellcheck · rg · gh | dnf/apt/brew (RHEL 계열은 EPEL 자동 활성화), gh 는 수동 안내 |
 | `search` 조사 | fd · fzf · tree | 패키지 관리자 |
-| `cpp` C/C++ | gcc · g++ · make · cmake · gdb · valgrind · strace · ltrace · perf · cppcheck · clang-format | 패키지 관리자 |
+| `cpp` C/C++ | gcc · g++ · make · cmake · gdb · valgrind · strace · ltrace · perf · cppcheck · clang-format · clang · clang-tidy | 패키지 관리자 |
 | `go` Go | go · goimports · staticcheck · golangci-lint · govulncheck | go 는 go.dev 공식 tarball(sha256 검증, 구버전이면 업그레이드 확인), 린터는 `go install` |
-| `rust` Rust | cargo (rustup) | rustup 공식 스크립트를 파일로 받아 실행 |
+| `rust` Rust | cargo (rustup) · rustfmt · cargo-clippy | rustup 공식 스크립트를 파일로 받아 실행, rustfmt·clippy 는 `rustup component add` |
 | `python` 린터 | ruff · mypy | pipx 우선, 없으면 `pip --user` |
 | `container` | docker · docker compose | 공식 Docker CE 저장소. podman-docker·docker.io 충돌 시 제거 여부를 따로 묻고, docker 그룹 추가도 따로 묻는다 |
 | `db` 클라이언트 | psql · sqlite3 | 패키지 관리자 |

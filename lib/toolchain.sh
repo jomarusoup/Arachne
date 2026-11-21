@@ -11,7 +11,8 @@
 # 도구 카탈로그 — "그룹|명령|dnf 패키지|apt 패키지|brew 패키지|방식"
 #   명령  : command -v 로 검사할 이름. a/b 는 둘 중 하나만 있어도 설치됨으로 본다
 #   패키지: 공백 구분 다중 패키지, "-" 는 해당 패키지 관리자 미지원
-#   방식  : pkg(패키지 관리자) · go:<모듈> · pip:<패키지> · special:<이름> · manual:<안내>
+#   방식  : pkg(패키지 관리자) · go:<모듈> · pip:<패키지> · rustup:<컴포넌트>
+#           · special:<이름> · manual:<안내>
 # 테스트용 override: ARACHNE_TOOLS_CATALOG_FILE (같은 형식의 줄 목록 파일)
 #-------------------------------------------------------------------------------
 readonly TOOL_CATALOG=(
@@ -42,12 +43,16 @@ readonly TOOL_CATALOG=(
     "cpp|perf|perf|@perf|-|pkg"
     "cpp|cppcheck|cppcheck|cppcheck|cppcheck|pkg"
     "cpp|clang-format|clang-tools-extra|clang-format|clang-format|pkg"
+    "cpp|clang|clang|clang|-|pkg"
+    "cpp|clang-tidy|clang-tools-extra|clang-tidy|-|pkg"
     "go|go|-|-|go|special:go"
     "go|goimports|-|-|-|go:golang.org/x/tools/cmd/goimports@latest"
     "go|staticcheck|-|-|-|go:honnef.co/go/tools/cmd/staticcheck@latest"
     "go|golangci-lint|-|-|-|go:github.com/golangci/golangci-lint/v2/cmd/golangci-lint@latest"
     "go|govulncheck|-|-|-|go:golang.org/x/vuln/cmd/govulncheck@latest"
     "rust|cargo|-|-|-|special:rustup"
+    "rust|rustfmt|-|-|-|rustup:rustfmt"
+    "rust|cargo-clippy|-|-|-|rustup:clippy"
     "python|ruff|-|-|-|pip:ruff"
     "python|mypy|-|-|-|pip:mypy"
     "container|docker|-|-|-|special:docker"
@@ -604,6 +609,39 @@ InstallRustup() {
 }
 
 #===============================================================================
+# FUNCTION    : InstallRustupComponents
+# DESCRIPTION : rustup 컴포넌트(rustfmt·clippy 등)를 한 번의 component add 로 설치.
+#               rustup 이 없으면 설치하지 않는다 — 배포판 cargo 는 안내만 하고 실패로
+#               세지 않으며, 같은 실행의 rustup 설치가 실패했으면 중복 집계하지 않는다
+# PARAMETERS  : string components     - 공백 구분 컴포넌트 목록
+#               int    rustup_planned - 같은 실행에서 rustup 설치를 시도했으면 1
+# RETURNED    : 0(성공·dry-run·설치 불가 안내) / 1(component add 실패)
+#===============================================================================
+InstallRustupComponents() {
+    local components="$1"
+    local rustup_planned="$2"
+    local rustup_bin
+
+    rustup_bin=$(command -v rustup 2>/dev/null || true)
+    if [ -z "${rustup_bin}" ] && [ -x "${HOME}/.cargo/bin/rustup" ]; then
+        rustup_bin="${HOME}/.cargo/bin/rustup"
+    fi
+    if [ -z "${rustup_bin}" ]; then
+        if [ "${rustup_planned}" -eq 1 ]; then
+            # dry-run 은 앞의 rustup 설치 다음 명령을 보여 주고, 실제 실행에서
+            # rustup 설치가 실패했다면 그 실패가 이미 집계됐다
+            # shellcheck disable=SC2086 # 컴포넌트 목록은 의도적으로 단어 분할
+            [ "${TOOLS_DRY_RUN}" -eq 1 ] && RunToolCmd rustup component add ${components}
+            return 0
+        fi
+        ArachneLog "WARN" "tools: rustup 이 없어 ${components} 를 설치하지 않았습니다 — rustup 으로 옮기거나 배포판 패키지를 설치하세요 (dnf: rustfmt clippy · apt: rustfmt rust-clippy)"
+        return 0
+    fi
+    # shellcheck disable=SC2086 # 컴포넌트 목록은 의도적으로 단어 분할
+    RunToolCmd "${rustup_bin}" component add ${components}
+}
+
+#===============================================================================
 # FUNCTION    : ResolveDockerConflict
 # DESCRIPTION : docker-ce 와 충돌하는 패키지(podman-docker·docker.io 등) 확인 후
 #               제거 동의를 받는다
@@ -760,6 +798,8 @@ InstallToolGroup() {
     local pkg
     local pkgs=""
     local go_mods=""
+    local components=""
+    local rustup_planned
     local specials=""
     local go_bin
     local mod
@@ -786,6 +826,7 @@ InstallToolGroup() {
                 ;;
             go:*)      go_mods="${go_mods} ${method#go:}" ;;
             pip:*)     InstallPipTool "${method#pip:}" || TOOLS_FAIL_COUNT=$((TOOLS_FAIL_COUNT + 1)) ;;
+            rustup:*)  components="${components} ${method#rustup:}" ;;
             special:*)
                 case " ${specials} " in *" ${method#special:} "*) ;; *) specials="${specials} ${method#special:}" ;; esac
                 ;;
@@ -805,6 +846,13 @@ InstallToolGroup() {
             claude) ArachneLog "WARN" "tools: claude 수동 설치 필요 — https://claude.com/claude-code (설치 후 갱신은 arachne -t --update)" ;;
         esac || TOOLS_FAIL_COUNT=$((TOOLS_FAIL_COUNT + 1))
     done
+
+    if [ -n "${components}" ]; then
+        rustup_planned=0
+        case " ${specials} " in *" rustup "*) rustup_planned=1 ;; esac
+        InstallRustupComponents "${components# }" "${rustup_planned}" \
+            || TOOLS_FAIL_COUNT=$((TOOLS_FAIL_COUNT + 1))
+    fi
 
     if [ -n "${pkgs# }" ]; then
         InstallSystemPackages "${pkgs# }" || TOOLS_FAIL_COUNT=$((TOOLS_FAIL_COUNT + 1))

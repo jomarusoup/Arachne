@@ -37,6 +37,19 @@ FROM:: [[2026-11-20-harness-direction-plan]]
 | 웹 | 모니터링 전용 — Prometheus `/metrics` + Grafana, 웹 코드 0줄 |
 | 범위 밖 (아카이브 대상) | GC 런타임 언어 전반(Go, Python, Java, Node·TypeScript), FastAPI, React, Electron, 디자인 계열 |
 
+### 범위 밖 언어를 쓰는 사용 프로젝트
+
+- **범위 밖 = 하네스가 그 언어의 자산을 유지하지 않는다**는 뜻이다. 사용 프로젝트가 그 언어를 쓰는 것을
+  막지 않고, 막는 검사도 없다.
+- 지원 수준(계획 2-1 아카이브 이후): 언어 무관 자산 — 범용 `code-reviewer`, `rules/common`, 가드 훅,
+  비밀값 검사, `minimal` profile — 만 적용된다. 그 언어의 전용 리뷰어·규칙·스킬·profile은 없다.
+  필요한 규칙은 프로젝트 `AGENTS.md`에 두고, 아카이브된 자산은 `archive/` 묶음 README의 복원 절차로
+  프로젝트에 복사해 쓸 수 있다.
+- §3 공통 제약 "GC 런타임 언어 금지"는 이 하네스가 목표로 하는 시스템(§1 북극성)의 설계 기준이다.
+  **핫패스 밖 배치·systemd 타이머 프로세스도 §3의 유틸 계층이라 예외가 없다** — 메인과 같은 장비에서 도는
+  한 근거 예산은 `server.util.main_latency_delta_while_running`이다. 메인 지연 예산이 없는 프로젝트나
+  다른 장비에서 도는 프로세스에 이 제약을 적용할지는 그 프로젝트의 ADR이 정한다.
+
 ## 3. 계층 정의
 
 ### 서버
