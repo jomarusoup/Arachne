@@ -948,6 +948,8 @@ ToolsCommand() {
     TOOLS_ROLLBACK=""
 
     while [ $# -gt 0 ]; do
+        # TOOLS_ALLOW_MAJOR·TOOLS_ALL_SYSTEM 은 lib/toolchain-update.sh 에서 읽는다 (source 공유)
+        # shellcheck disable=SC2034
         case "$1" in
             --check)    TOOLS_CHECK_ONLY=1 ;;
             --yes|-y)   TOOLS_ASSUME_YES=1 ;;
