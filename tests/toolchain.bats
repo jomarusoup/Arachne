@@ -170,3 +170,41 @@ write_catalog() {
     [ "$status" -eq 0 ]
     [[ "$output" == *"대상 도구 모두 설치됨"* ]] || false
 }
+
+@test "tools 기본 카탈로그: C 그룹에 clang·clang-tidy, Rust 그룹에 rustfmt·clippy" {
+    unset ARACHNE_TOOLS_CATALOG_FILE
+    run bash "${REPO_DIR}/install.sh" -t --check --group cpp,rust
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"clang-tidy"* ]] || false
+    grep -Eq '(^|[: ])clang( |$)' <<< "$output"
+    [[ "$output" == *"rustfmt"* ]] || false
+    [[ "$output" == *"cargo-clippy"* ]] || false
+}
+
+@test "tools --yes --dry-run: rustup 컴포넌트는 rustup component add 한 번으로 묶어 설치" {
+    mkdir -p "${HOME}/.cargo/bin"
+    printf '#!/bin/sh\n' > "${HOME}/.cargo/bin/rustup"
+    chmod +x "${HOME}/.cargo/bin/rustup"
+    write_catalog "rust|zz_fmt|-|-|-|rustup:rustfmt" "rust|zz_clippy|-|-|-|rustup:clippy"
+    run bash "${REPO_DIR}/install.sh" -t --yes --dry-run
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"rustup component add rustfmt clippy"* ]] || false
+}
+
+@test "tools --yes --dry-run: rustup 이 없고 설치 예정도 없으면 안내만 하고 실패로 세지 않음" {
+    # dry-run 이라 호스트를 바꾸지 않는다. rustup 이 PATH 에 있는 장비는 전제가 깨져 건너뛴다
+    command -v rustup >/dev/null 2>&1 && skip "호스트에 rustup 존재"
+    write_catalog "rust|zz_fmt|-|-|-|rustup:rustfmt"
+    run bash "${REPO_DIR}/install.sh" -t --yes --dry-run
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"rustup 이 없어"* ]] || false
+    [[ "$output" != *"component add"* ]] || false
+}
+
+@test "tools --yes --dry-run: 같은 실행에 rustup 설치가 있으면 설치 다음에 component add" {
+    command -v rustup >/dev/null 2>&1 && skip "호스트에 rustup 존재"
+    write_catalog "rust|zz_cargo|-|-|-|special:rustup" "rust|zz_fmt|-|-|-|rustup:rustfmt"
+    run bash "${REPO_DIR}/install.sh" -t --yes --dry-run
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"rustup-init.sh -y"*"rustup component add rustfmt"* ]] || false
+}

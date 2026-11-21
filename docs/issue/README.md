@@ -43,15 +43,17 @@ FROM:: [[arachne-docs]]
 | `data-handling-*` | 데이터 취급과 보안 경계 관련 gap |
 | `macos-*`, `windows-*` | 플랫폼별 동작 차이와 검증 이슈 |
 | `*-scan`, `*-result`, `*-verification` | 로드맵 실행 중 남긴 점검·실측·검증 결과 |
+| `*-arachne-feedback` | 사용 프로젝트가 `arachne` 피드백 양식으로 남긴 보고(파일명에 시각 포함) |
 
-## 현재 인벤토리 (2026-10-06)
+## 현재 인벤토리 (2026-11-21)
 
-현재 `docs/issue/`에는 README를 제외하고 31개 기록이 있다. 열린 issue는 없다.
+현재 `docs/issue/`에는 README를 제외하고 37개 기록이 있다. 열린 issue는 4개(사용 프로젝트 피드백)다.
 
 | 상태 | 개수 | 의미 |
 | --- | ---: | --- |
 | `done` | 29 | 해결됐거나 감사 스냅샷으로 종료된 기록 |
 | frontmatter 없음 | 2 | 루트에서 옮겨 온 감사 기록물(아래 표). 원문을 그대로 보존한다 |
+| `draft` | 4 | 사용 프로젝트 피드백 초안(아래 열린 issue). 원문은 보존한다 |
 | `in progress`·`to do` | 0 | 없음 |
 
 ### 2026-09 이후 추가된 기록
@@ -71,6 +73,9 @@ FROM:: [[arachne-docs]]
 
 | 심각도 | 상태 | 문서 | 연결 task |
 | --- | --- | --- | --- |
-| 없음 | - | - | - |
+| medium | 처리 중 | [범위 밖 언어 사용 프로젝트 정책 공백](2026-11-21-155122-arachne-feedback.md) | [피드백 분류](../task/2026-11-21-project-feedback-triage.md) |
+| low | 결정 대기 (D-18) | [CI profile이 혼합 구조에 맞지 않음](2026-11-21-155123-arachne-feedback.md) | [피드백 분류](../task/2026-11-21-project-feedback-triage.md) |
+| low | 일부 반영 | [`-t --check`가 clang·rustfmt·clippy·프로젝트 요구 도구를 점검하지 못함](2026-11-21-155125-arachne-feedback.md) | [피드백 분류](../task/2026-11-21-project-feedback-triage.md) |
+| medium | 결정·수확 대기 (D-14·D-17) | [C 서버·Rust+egui 클라이언트 스킬·리뷰어 공백](2026-11-21-155126-arachne-feedback.md) | [피드백 분류](../task/2026-11-21-project-feedback-triage.md) |
 
 닫힌 issue라도 삭제하지 않는다. 해결 근거, 관련 task, 검증 결과가 이후 회귀 분석의 기준점이다.
