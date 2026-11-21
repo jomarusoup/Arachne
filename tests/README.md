@@ -66,7 +66,9 @@ macOS 기본 bash 3.2에서는 마지막 줄이 아닌 `[[ ]]` 단언이 실패�
 | `feedback.bats` | `arachne feedback` — 프로젝트 피드백 채널 | bats |
 | `worktree_command.bats` | `/worktree` 커맨드 문서 계약 | bats |
 | `objectives.bats` | `docs/OBJECTIVES.md`·`objectives/budgets.yaml` — 예산 항목 필수 필드·"실측 대기" null 규칙 | bats |
-| `freeze.bats` | 규칙·스킬 추가 동결 — `objectives/freeze-manifest.txt` 밖 항목 거부 | bats |
+| `freeze.bats` | 규칙·스킬·에이전트·커맨드 추가 동결 — `objectives/freeze-manifest.txt` 밖 항목 거부 | bats |
+| `freeze_adr.bats` | `check_freeze_adr.sh` 판정 — 임시 저장소에서 행 추가·삭제·교체 × ADR 동반 조합 | bats |
+| `check_freeze_adr.sh` | 기준 커밋 대비 매니페스트 항목 추가 시 같은 diff 에 `docs/decisions/NNNN-*.md` 신규 파일 필수 (CI `verify-freeze`) | bash |
 | `ua_stale.bats` | `hooks/ua-stale-check.sh` — UA 지식그래프 stale 감지 (최신/뒤처짐/해시 유실/임계값) | bats |
 | `check_index.sh` | 인덱스 ↔ 실제 파일 일치 + 문서 "(N개)" 개수 표기 + 상대 .md 링크 해소 검증 (skills·commands·agents·rules·docs) | bash |
 | `check_sensitive_text.sh` | 추적 파일의 개인 경로·비밀값·개인정보 (값은 출력하지 않음) | bash |

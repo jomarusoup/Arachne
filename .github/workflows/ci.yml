@@ -73,6 +73,21 @@ jobs:
           docker compose run --rm schema-pg   # 재실행 — 적용된 버전은 건너뛰어야 한다
           docker compose down -v
 
+  # 동결 해제 절차 — 매니페스트 행 추가는 같은 diff 의 신규 ADR 을 요구 (docs/OBJECTIVES.md §5)
+  verify-freeze:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout (전체 이력 — merge-base 계산)
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: 매니페스트 행 추가 ↔ 신규 ADR 동반
+        env:
+          # PR 은 대상 브랜치, push 는 직전 커밋을 기준으로 한다 (값은 env 로만 전달)
+          BASE_REF: ${{ github.event_name == 'pull_request' && format('origin/{0}', github.base_ref) || github.event.before }}
+        run: bash tests/check_freeze_adr.sh "$BASE_REF"
+
   # 데이터 계약 게이트 — uv 가용 환경에서 alembic·pytest 실행 검증까지 수행
   # (다른 job 의 bats 는 uv 가 없어 정적 계약 검사만 수행)
   verify-data-contract:

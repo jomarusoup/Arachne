@@ -1,8 +1,9 @@
 #!/usr/bin/env bats
 ################################################################################
 # FILE NAME   : freeze.bats
-# DESCRIPTION : 규칙·스킬 추가 동결 강제 — rules/ 아래 모든 파일과 skills/ 최상위
-#               항목이 objectives/freeze-manifest.txt 에 있는 항목만 존재하는지 검사한다.
+# DESCRIPTION : 하네스 자산 추가 동결 강제 — rules/·agents/·commands/ 아래 모든 파일과
+#               skills/ 최상위 항목이 objectives/freeze-manifest.txt 에 있는 항목만
+#               존재하는지 검사한다. 매니페스트 행 추가 ↔ ADR 동반은 check_freeze_adr.sh.
 #               삭제(아카이브)는 허용, 추가는 ADR + 매니페스트 갱신으로만 한다
 #               (docs/OBJECTIVES.md §5).
 ################################################################################
@@ -12,7 +13,8 @@ MANIFEST="${REPO_DIR}/objectives/freeze-manifest.txt"
 
 #===============================================================================
 # FUNCTION    : ListCurrentAssets
-# DESCRIPTION : 현재 트리의 규칙 파일·스킬 최상위 항목을 매니페스트 형식으로 출력
+# DESCRIPTION : 현재 트리의 규칙·에이전트·커맨드 파일과 스킬 최상위 항목을
+#               매니페스트 형식으로 출력
 #               (디렉터리는 끝에 /, 숨김 항목 포함. skills/archive/ 와 gitignore
 #               대상 skills/synced/ 는 제외)
 #===============================================================================
@@ -22,7 +24,7 @@ ListCurrentAssets() {
         find skills -mindepth 1 -maxdepth 1 -type d \
             ! -name archive ! -name synced | sed 's|$|/|'
         find skills -mindepth 1 -maxdepth 1 ! -type d
-        find rules -type f
+        find rules agents commands -type f
     )
 }
 
@@ -40,7 +42,7 @@ ListManifest() {
     [ "$(ListManifest | wc -l)" -gt 0 ]
 }
 
-@test "freeze: 매니페스트 밖의 규칙·스킬이 없다" {
+@test "freeze: 매니페스트 밖의 규칙·스킬·에이전트·커맨드가 없다" {
     local current
     local listed
     current="$(ListCurrentAssets)"

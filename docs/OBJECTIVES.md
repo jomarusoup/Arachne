@@ -1,7 +1,7 @@
 ---
 Title: "Arachne 목표 정본 — 북극성·범위·계층·운영 원칙"
 creation: 2026-11-20
-modification: 2026-11-20
+modification: 2026-11-21
 status: "in progress"
 tags:
  - "arachne"
@@ -61,6 +61,13 @@ FROM:: [[2026-11-20-harness-direction-plan]]
   보조 계층이 공유메모리를 읽는 cgo 리더는 읽기 전용 매핑이고 메인의 진행을 막지 않으면 핫패스가 아니다.
 - **의존 방향은 메인 ← 보조 ← 유틸.** 보조·유틸이 메인에 의존하고, 메인은 보조·유틸 없이 동작한다.
   보조·유틸의 장애가 메인의 정확성이나 지연 예산을 침범하면 결함이다.
+- **핫패스 할당 0.** 워밍업 이후 메인 계층의 지연 예산 경로에서 동적 할당을 하지 않는다
+  (예산 `server.main.hotpath_alloc`).
+- **클라이언트는 서버를 막지 않는다.** 느린 클라이언트 때문에 서버 메인의 송신 경로가 블로킹되는
+  시간은 0이다(예산 `client.main.server_send_block_time`). 따라잡지 못하는 클라이언트의 처리는
+  서버의 진행을 멈추지 않는 방식으로만 한다.
+- **유틸은 메인을 늦추지 않는다.** 유틸 실행 중 메인 지연 증가분은 실측 후 예산으로 정한다
+  (예산 `server.util.main_latency_delta_while_running`).
 - **계약 정본은 메인 소유**: 공유메모리 C 헤더, `frame_codec`, REST. 보조·유틸·클라이언트는 정본에서
   생성하거나 정본의 테스트 벡터로 검증한다.
 - **상태 변경 유틸의 의무**: 조회가 기본 동작, 변경은 `--apply`로만, dry-run 제공, 락, 감사 로그.
@@ -75,10 +82,13 @@ FROM:: [[2026-11-20-harness-direction-plan]]
 
 ## 5. 동결 (2026-11-20부터)
 
-- **신규 규칙(`rules/` 아래 모든 파일)과 신규 스킬(`skills/` 최상위 항목) 추가를 동결한다.**
-  강제: [`tests/freeze.bats`](../tests/freeze.bats)가 [`objectives/freeze-manifest.txt`](../objectives/freeze-manifest.txt)
-  밖의 항목을 거부한다. 아카이브(삭제)는 허용된다 — 매니페스트에서 해당 행을 지운다.
-- 해제·예외는 ADR로만 하고, 같은 PR에서 매니페스트를 갱신한다.
+- **신규 규칙(`rules/`)·에이전트(`agents/`)·커맨드(`commands/`) 아래 모든 파일과 신규 스킬(`skills/` 최상위 항목)
+  추가를 동결한다.** 강제: [`tests/freeze.bats`](../tests/freeze.bats)가
+  [`objectives/freeze-manifest.txt`](../objectives/freeze-manifest.txt) 밖의 항목을 거부한다.
+  아카이브(삭제)는 허용된다 — 매니페스트에서 해당 행을 지운다.
+- 해제·예외는 ADR로만 하고, 같은 PR에서 매니페스트를 갱신한다. 강제:
+  [`tests/check_freeze_adr.sh`](../tests/check_freeze_adr.sh)(CI `verify-freeze`)가 매니페스트 항목 행이 추가된
+  diff에 `docs/decisions/` 신규 ADR이 없으면 실패한다.
 - 2단계(시스템 루프) 동안 허용되는 하네스 변경은 범위 밖 자산 아카이브뿐이다.
 
 ## 6. 금지와 경계

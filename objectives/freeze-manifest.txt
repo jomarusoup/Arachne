@@ -1,6 +1,42 @@
 # FILE NAME   : freeze-manifest.txt
-# DESCRIPTION : 동결(2026-11-20) 시점의 규칙·스킬 목록. tests/freeze.bats 가 이 밖의 항목 추가를 거부한다.
-#               아카이브(삭제)는 해당 행을 지운다. 추가는 ADR + 같은 PR 에서 행 추가로만 한다.
+# DESCRIPTION : 동결(2026-11-20) 시점의 규칙·스킬·에이전트·커맨드 목록. tests/freeze.bats 가 이 밖의 항목 추가를 거부한다.
+#               아카이브(삭제)는 해당 행을 지운다. 추가는 ADR + 같은 PR 에서 행 추가로만 한다 (tests/check_freeze_adr.sh).
+agents/code-reviewer.md
+agents/database-reviewer.md
+agents/debugger.md
+agents/fastapi-reviewer.md
+agents/go-build-resolver.md
+agents/go-reviewer.md
+agents/planner.md
+agents/python-reviewer.md
+agents/react-reviewer.md
+agents/rust-reviewer.md
+agents/tdd.md
+agents/typescript-reviewer.md
+commands/add.md
+commands/codegraph.md
+commands/database-review.md
+commands/design.md
+commands/e2e.md
+commands/fastapi-review.md
+commands/fix.md
+commands/git.md
+commands/go-build.md
+commands/go-review.md
+commands/go-test.md
+commands/handoff.md
+commands/issue.md
+commands/learn.md
+commands/python-review.md
+commands/react-review.md
+commands/refactor.md
+commands/rust-review.md
+commands/save-session.md
+commands/status.md
+commands/tdd.md
+commands/ts-review.md
+commands/verify.md
+commands/worktree.md
 rules/README.md
 rules/bash/coding-style.md
 rules/bash/hooks.md

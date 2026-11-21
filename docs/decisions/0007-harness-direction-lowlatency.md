@@ -1,7 +1,7 @@
 ---
 Title: "ADR-0007 하네스 방향 전환 — 저지연 시스템 북극성, 네이티브 클라이언트, 동결과 평가 우선"
 creation: 2026-11-20
-modification: 2026-11-20
+modification: 2026-11-21
 tags:
  - "arachne"
  - "decision"
@@ -35,7 +35,10 @@ Accepted (2026-11-20 사용자 확정 — 방향·범위·계층·운영 원칙�
    예산 수치는 [`objectives/budgets.yaml`](../../objectives/budgets.yaml)에만 둔다. rules·eval·CI는 참조만 한다.
 2. **우선순위는 정확성 > 장애 격리 > 성능 > 개발 효율.** 성능을 위해 검증을 덜어내는 변경은 기각한다.
 3. **클라이언트는 네이티브 직접 개발한다.** 툴킷은 계획 결정 D-01에서 정한다.
-4. **신규 규칙·스킬 추가를 동결한다.** `tests/freeze.bats`가 강제한다. 해제는 ADR로만 한다.
+4. **신규 규칙·스킬·에이전트·커맨드 추가를 동결한다.** 범위는 `rules/`·`agents/`·`commands/` 아래 모든 파일과
+   `skills/` 최상위 항목이며, `tests/freeze.bats`가 `objectives/freeze-manifest.txt` 밖의 항목을 거부한다.
+   해제는 ADR로만 한다 — 매니페스트에 항목 행을 추가하는 diff에 `docs/decisions/` 신규 ADR이 없으면
+   `tests/check_freeze_adr.sh`(CI `verify-freeze` 잡)가 실패한다. 행 삭제(아카이브)는 ADR 없이 허용한다.
 5. **변경은 측정 후에.** eval 기준선(계획 3-6) 이후 기존 자산 변경·삭제는 eval 전후 비교를 거친다.
 6. **push는 사용자 확인 후에만** 한다. main 자동 병합은 금지, 개선 작업은 worktree에서만 한다.
 
@@ -64,14 +67,16 @@ ADR-0003(dynamic workflows 미도입)은 이 ADR과 독립이다. 5단계 개선
 
 - 실행 계획과 결정 레지스터: [하네스 방향 계획](../task/2026-11-20-harness-direction-plan.md).
 - 1단계 산출물: `docs/OBJECTIVES.md`, `objectives/budgets.yaml`(수치는 "실측 대기"),
-  `objectives/freeze-manifest.txt`, `tests/objectives.bats`, `tests/freeze.bats`, `docs/template/failure.md`,
+  `objectives/freeze-manifest.txt`, `tests/objectives.bats`, `tests/freeze.bats`, `tests/freeze_adr.bats`,
+  `tests/check_freeze_adr.sh`, `docs/template/failure.md`,
   `rules/common` 3개·`commands/git.md`의 push 전 확인 전환.
 - ADR-0005·0006 본문은 기록이므로 고치지 않는다. 대체 관계는 이 ADR이 정본이다.
 
 ## 검증
 
 ```bash
-bats tests/objectives.bats tests/freeze.bats
+bats tests/objectives.bats tests/freeze.bats tests/freeze_adr.bats
+bash tests/check_freeze_adr.sh origin/main
 bash tests/check_index.sh && bash tests/check_convention_sync.sh
 grep -rnE '자동 (git )?push|자동 푸시' rules commands   # 0건
 ```

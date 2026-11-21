@@ -1,7 +1,7 @@
 ---
 Title: "[plan] 하네스 방향 전환 — 저지연 시스템 북극성·평가 체계·축소"
 creation: 2026-11-20
-modification: 2026-11-20
+modification: 2026-11-21
 status: "in progress"
 tags:
  - "arachne"
@@ -51,7 +51,7 @@ FROM:: [[2026-10-06-harness-inventory]]
 - 회사 시스템(FEP/OMS 등)의 소스·수치·구조 반입. 참조는 오픈소스(Aeron, LMAX Disruptor,
   Chronicle Queue, Seastar 등)의 설계 패턴·측정 방법론·실패 사례로 한정한다.
 - main 자동 병합. 개선 작업은 worktree에서만 한다.
-- 1단계 이후 신규 규칙·스킬 추가(동결 — `tests/freeze.bats`가 강제).
+- 1단계 이후 신규 규칙·스킬·에이전트·커맨드 추가(동결 — `tests/freeze.bats`·`tests/check_freeze_adr.sh`가 강제).
 
 ---
 
@@ -144,7 +144,7 @@ FROM:: [[2026-10-06-harness-inventory]]
 | 1-2 | 목표·예산 정본 | `docs/OBJECTIVES.md`, `objectives/budgets.yaml` | `bats tests/objectives.bats` 통과 — 모든 항목에 `status`·`source`, "실측 대기" 항목은 `value: null` | 1-1 | S | done |
 | 1-3 | ADR-0007 | `docs/decisions/0007-harness-direction-lowlatency.md`, ADR 인덱스 | 인덱스 표에 0007, 다음 번호 0008 | 1-2 | S | done |
 | 1-4 | push 전 확인 전환 | `rules/common/{workflow,development-workflow,git-workflow}.md`, `commands/git.md` | `grep -rnE '자동 (git )?push\|자동 푸시' rules commands` 0건, `check_convention_sync.sh` 통과 | — | S | done |
-| 1-5 | 동결 + 실패 기록 양식 | `objectives/freeze-manifest.txt`, `tests/freeze.bats`, `docs/template/failure.md` | `bats tests/freeze.bats` 통과, 신규 스킬 디렉터리를 임시로 만들면 실패(수동 확인) | 1-2 | S | done |
+| 1-5 | 동결 + 실패 기록 양식 | `objectives/freeze-manifest.txt`, `tests/freeze.bats`, `tests/check_freeze_adr.sh`, `tests/freeze_adr.bats`, `docs/template/failure.md` | `bats tests/freeze.bats tests/freeze_adr.bats` 통과 — 범위는 rules·agents·commands·skills, 매니페스트 행 추가에 신규 ADR 없으면 CI `verify-freeze` 실패 | 1-2 | S | done |
 | 1-6 | 상시 로드 토큰 실측 | `budgets.yaml`의 `context.always_loaded_tokens.measured` | 아래 명령 2조건 × 3회, input 토큰 차분 중앙값 기록 | 1-2, 사용자 실행(과금) | S | to do |
 
 1-6 측정 명령(사용자가 실행 — 과금·인증 필요):
@@ -236,7 +236,7 @@ CLAUDE_CONFIG_DIR="$(mktemp -d)" claude -p "ok" --output-format json --max-turns
 | R2 | **holdout 오염** — 실험자·공개 저장소·학습 데이터에 holdout이 노출되면 과적합 | holdout은 별도 사용자 `0700` 디렉터리(D-10), 실험자 사용자 접근 불가(5-2 권한 테스트). 공개 저장소에는 과제 ID·결과 요약만. 노출 의심 시 해당 과제 폐기·재수확. 과제 원문을 PR·이슈에 붙이지 않는다 |
 | R3 | **심볼릭 링크 자기 수정** — `~/.claude`의 7개 항목이 main 체크아웃을 가리켜 main 작업 트리 수정이 즉시 라이브 하네스(훅 포함)를 바꾼다 | 개선 작업은 worktree에서만. 실험자는 자기 worktree를 가리키는 `CLAUDE_CONFIG_DIR`로 실행하고 main 체크아웃에 쓰기 권한 없음. 실험 중 가드 훅(`guard-bash.sh`·`guard-secrets.sh`)은 제거 실험 대상에서 제외. main 자동 병합 금지 + 브랜치 보호 |
 | R4 | **비용 폭주** — 반복 eval·주간 루프가 무제한 토큰 소비 | `--max-turns`, `timeout`, systemd `RuntimeMaxSec`, 주간 지출 한도(D-12), 연속 기각 N회 정지, 실행마다 usage를 append-only 원장에 기록하고 한도 초과 시 타이머 비활성화 |
-| R5 | **동결 누수** — 1단계 이후 문장 규칙이 다시 늘어남 | `tests/freeze.bats`가 CI에서 추가를 차단. 해제는 ADR로 매니페스트 갱신 |
+| R5 | **동결 누수** — 1단계 이후 문장 규칙이 다시 늘어남 | `tests/freeze.bats`가 CI에서 추가를 차단, `tests/check_freeze_adr.sh`가 신규 ADR 없는 매니페스트 행 추가를 차단 |
 | R6 | **회사 정보 반입** — 공개 저장소에 회사 소스·수치·구조 유입 | 참조는 오픈소스 한정, 예산 출처는 홈랩 실측만(D-03). `check_sensitive_text.sh`·`guard-secrets.sh` 유지. 실패 기록 양식에 반입 점검 체크리스트 |
 | R7 | **Goodhart** — eval 과제에 맞춘 하네스 과적합 | holdout 1/3 판정 필수, 공개 과제만 개선되고 holdout이 안 오르면 기각 |
 | R8 | **제거 실험이 안전 자산 제거** | 정확성·보안 자산(가드 훅, 비밀 검사, sanitizer 게이트)은 ablation 대상에서 제외하거나 holdout + 보안 과제 통과를 추가 조건으로 |
@@ -247,7 +247,7 @@ CLAUDE_CONFIG_DIR="$(mktemp -d)" claude -p "ok" --output-format json --max-turns
 - [x] 1-2 `docs/OBJECTIVES.md`·`objectives/budgets.yaml` 골격 + `tests/objectives.bats`
 - [x] 1-3 ADR-0007 + ADR 인덱스
 - [x] 1-4 "자동 push" → "push 전 확인" 전환 (rules 3개 + `/git`)
-- [x] 1-5 동결 매니페스트 + `tests/freeze.bats` + 실패 기록 양식 `docs/template/failure.md`
+- [x] 1-5 동결 매니페스트 + `tests/freeze.bats` + `tests/check_freeze_adr.sh` + 실패 기록 양식 `docs/template/failure.md`
 - [ ] 1-6 상시 로드 토큰 실측 (사용자 실행 — 과금)
 - [ ] 결정 요청: D-01·D-02·D-03·D-05·D-07·D-08·D-11 (2단계 착수 선행)
 
@@ -266,3 +266,4 @@ CLAUDE_CONFIG_DIR="$(mktemp -d)" claude -p "ok" --output-format json --max-turns
 | 날짜       | 요약 |
 | ---------- | ---- |
 | 2026-11-20 | 초안 — 현황 실측, 단계 분해, 결정 레지스터 D-01~D-16, 위험 R1~R8 |
+| 2026-11-21 | PR #57 보완 — 확정 불변식(핫패스 할당 0·클라이언트 송신 블로킹 0)·유틸 지연 예산 추가, 동결 범위에 agents·commands 포함, 매니페스트 행 추가 ↔ ADR 동반 CI 검사 |

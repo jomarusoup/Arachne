@@ -64,6 +64,12 @@ budgets:
     value: null
     status: 실측 대기
     source: null
+  - id: server.main.hotpath_alloc
+    layer: server-main
+    unit: count
+    value: 0
+    status: 확정
+    source: "docs/OBJECTIVES.md §3 공통 제약 — 핫패스 할당 0 (워밍업 이후 지연 예산 경로의 동적 할당 횟수)"
 
   # --- 서버 보조 (Go exporter) ---
   - id: server.aux.exporter_cpu
@@ -79,7 +85,21 @@ budgets:
     status: 실측 대기
     source: null
 
+  # --- 서버 유틸 (단발 운영 도구) ---
+  - id: server.util.main_latency_delta_while_running
+    layer: server-util
+    unit: us
+    value: null
+    status: 실측 대기
+    source: null
+
   # --- 클라이언트 메인 (네이티브) ---
+  - id: client.main.server_send_block_time
+    layer: client-main
+    unit: us
+    value: 0
+    status: 확정
+    source: "docs/OBJECTIVES.md §3 공통 제약 — 클라이언트는 서버를 막지 않는다 (느린 클라이언트로 인한 서버 메인 송신 블로킹 시간)"
   - id: client.main.frame_time.p99
     layer: client-main
     unit: ms

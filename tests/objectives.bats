@@ -88,4 +88,20 @@ CheckBudgetEntries() {
     grep -qF "Go는 핫패스 금지" "$doc"
     grep -qF "메인 ← 보조 ← 유틸" "$doc"
     grep -qF "budgets.yaml" "$doc"
+    grep -qF "핫패스 할당 0" "$doc"
+    grep -qF "클라이언트는 서버를 막지 않는다" "$doc"
+}
+
+@test "objectives: 확정 불변식 예산이 0 으로 고정돼 있다" {
+    local id
+    for id in server.main.loss server.main.hotpath_alloc client.main.server_send_block_time; do
+        run awk -v want="$id" '
+            /^[[:space:]]*- id:/ { cur = $0; sub(/^[[:space:]]*- id:[[:space:]]*/, "", cur); next }
+            cur == want && /^[[:space:]]+value:/  { v = $2 }
+            cur == want && /^[[:space:]]+status:/ { s = $2 }
+            END { exit !(v == "0" && s == "확정") }
+        ' "$BUDGETS"
+        echo "$id"
+        [ "$status" -eq 0 ]
+    done
 }
