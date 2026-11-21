@@ -105,6 +105,8 @@ EOF
 }
 
 @test "쉼표_소수점_로케일에서도_비용_표시" {
+    # 로케일이 설치되지 않은 러너에서는 bash 시작 경고가 stderr 로 나오므로 건너뛴다
+    locale -a 2>/dev/null | grep -qix 'de_DE.utf-\?8' || skip "de_DE.UTF-8 로케일 없음"
     run --separate-stderr env LC_ALL=de_DE.UTF-8 bash "$SCRIPT" <<< '{"cost":{"total_cost_usd":0.5}}'
     [ "$status" -eq 0 ]
     [ -z "$stderr" ]
