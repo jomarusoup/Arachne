@@ -166,7 +166,7 @@ CLAUDE_CONFIG_DIR="$(mktemp -d)" claude -p "ok" --output-format json --max-turns
 
 | ID | 작업 | 산출물 | 완료 조건 | 선행 | 규모 |
 |---|---|---|---|---|---|
-| 2-1 | 범위 밖 자산 아카이브 | `archive/out-of-scope/`, §1.5 전 항목 수정, ADR-0004 부분 supersede(D-08 결과에 따라), 사용 프로젝트 공지(MINOR 버전 커밋 제목 + PR 본문에 아카이브 자산 목록·대체 자산·복원 절차) | CI 4개 잡 통과, `check_index.sh` 통과, freeze-manifest 갱신 | D-07·D-08·D-17 결정 | L |
+| 2-1 | 범위 밖 자산 아카이브 | `archive/out-of-scope/`, §1.5 전 항목 수정, ADR-0004 부분 supersede(D-08 결과에 따라), 사용 프로젝트 공지(MINOR 버전 커밋 제목 + PR 본문에 아카이브 자산 목록·대체 자산·복원 절차) | CI 4개 잡 통과, `check_index.sh` 통과, freeze-manifest 갱신. `desktop-data-client`는 대상에서 뺀다(D-17 — 2-7 대체 후 아카이브) | D-07·D-08·D-17 결정 | L |
 | 2-2 | 파이프라인 프로젝트 생성 + 툴체인 | `arachne -n <이름> --profile c-system`, `arachne -t`로 cargo·cmake | `.arachne/commands` 실행 통과, `cargo --version`·`cmake --version` | D-11 결정 | S |
 | 2-3 | C 송신기 + 계약 정본 | `sender/`(throughput-poc 재사용), `contract/`(stream_msg.h·frame_codec·vectors) | 개방 루프 목표 레이트 달성률 ≥ 99.9% (값은 budgets), ASan·UBSan 통과 | 2-2 | M |
 | 2-4 | C 수신기 + 공유메모리 갱신 (메인) | `receiver/`, `shm/`(단일 작성자 + 시퀀스 락) | 목표 레이트에서 유실·갭 0, TSan 통과, 수신기 kill -9 후 재기동 시 shm 불변식 검사 통과 | 2-3 | L |
@@ -227,8 +227,8 @@ CLAUDE_CONFIG_DIR="$(mktemp -d)" claude -p "ok" --output-format json --max-turns
 | D-12 | 5단계 한도 수치 | 주간 지출 한도·`--max-turns`·timeout·연속 기각 N | 사람이 지정, 정본은 `budgets.yaml` `loop` | 비용 폭주(R4) |
 | D-13 | ADR-0003 지위 | (a) Accepted(A)로 확정 (b) 0007로 supersede | **(a)** | 3개월간 (A)로 운용됨. 5단계 루프는 systemd + `claude -p`이며 dynamic workflows가 아니다 |
 | D-14 | C·C++ 전용 리뷰어 | (a) 신설 (b) 보류 | **(b)** — 2단계 실패 기록에서 C/C++ 리뷰 누락이 2회 이상이면 신설 | 수확 원칙. 동결 중  요청 집계: 1회 ([F4](../issue/2026-11-21-155126-arachne-feedback.md), 2026-11-21) |
-| D-17 | `desktop-data-client`(TS) 아카이브 시점 | (a) 2-1에서 다른 범위 밖 자산과 함께 (b) 2-7 `client/core`가 수신 구조(수신 스레드·병합·갭 재요청)를 대체한 뒤 | **(b)** — D-15·D-16과 같은 "대체 전 제거 금지". Rust + egui판은 2-7 산출물을 4-4에서 승격 | 사용 프로젝트 요청([F4](../issue/2026-11-21-155126-arachne-feedback.md)). 수신 구조 설계는 네이티브에 재사용된다(§1.2) |
-| D-18 | 혼합 언어 프로젝트의 CI profile·도구 선언 | (a) profile 복수 지정·`commands.d/` 합성, `init-ci --no-kit`·`--kit-map`, `.arachne/tools` 선언 (b) 보류 | **(b)** — 2-2 파이프라인 프로젝트(C + Rust)에서 같은 문제가 기록되면 4-4에서 (a)의 필요한 부분만 | 사용 프로젝트 요청([F2](../issue/2026-11-21-155123-arachne-feedback.md)·[F3](../issue/2026-11-21-155125-arachne-feedback.md)) 1회. 수확 원칙 |
+| D-17 | `desktop-data-client`(TS) 아카이브 시점 | (a) 2-1에서 다른 범위 밖 자산과 함께 (b) 2-7 `client/core`가 수신 구조(수신 스레드·병합·갭 재요청)를 대체한 뒤 | **확정 (2026-11-21): (b)** — D-15·D-16과 같은 "대체 전 제거 금지". Rust + egui판은 2-7 산출물을 4-4에서 승격 | 사용 프로젝트 요청([F4](../issue/2026-11-21-155126-arachne-feedback.md)). 수신 구조 설계는 네이티브에 재사용된다(§1.2) |
+| D-18 | 혼합 언어 프로젝트의 CI profile·도구 선언 | (a) profile 복수 지정·`commands.d/` 합성, `init-ci --no-kit`·`--kit-map`, `.arachne/tools` 선언 (b) 보류 | **확정 (2026-11-21): (b)** — 2-2 파이프라인 프로젝트(C + Rust)에서 같은 문제가 기록되면 4-4에서 (a)의 필요한 부분만 | 사용 프로젝트 요청([F2](../issue/2026-11-21-155123-arachne-feedback.md)·[F3](../issue/2026-11-21-155125-arachne-feedback.md)) 1회. 수확 원칙 |
 | D-15 | throughput-poc Node 자산 대체 | `report.mjs`·`receiver-node` | **`report.mjs` → Shell(awk) 우선, 부족하면 Rust로 2-3에서 재작성 후 아카이브 ([ADR-0008](../decisions/0008-language-scope-rust-path.md))**, receiver-node는 PoC 기록용으로 아카이브 | 대체 전 제거 금지(정확성 우선). Python은 범위 밖 |
 | D-16 | C↔TS 계약 벡터 검증 대체 | `contract/ts` | **Rust 디코더 crate(2-5 유틸·2-7 클라이언트 공유)가 같은 vectors를 통과한 뒤 아카이브 ([ADR-0008](../decisions/0008-language-scope-rust-path.md))** | 검증을 먼저 대체하고 나중에 제거 |
 
@@ -275,4 +275,5 @@ CLAUDE_CONFIG_DIR="$(mktemp -d)" claude -p "ok" --output-format json --max-turns
 | 2026-11-21 | 클라이언트 우선순위(최적화 > 성능 > 디자인)·코어/UI 분리·플랫폼 단계(macOS·Windows → Android·iOS) 반영, 2-7 갱신·2-7m 추가, 클라이언트 자원 예산 2개 |
 | 2026-11-21 | 결정 확정(ADR-0008) — 서버 C 중심·클라이언트·보조·유틸 Rust, Go·Python 범위 밖, Rust 경계 이식. D-01·02·03·05·07·08·11 확정, D-06 해소, D-09·15·16 언어 대체, 2-2·2-5~2-8·4-4 갱신 |
 | 2026-11-21 | 사용 프로젝트 피드백 4건 반영([분류 task](2026-11-21-project-feedback-triage.md)) — 2-1 공지 산출물, D-14 집계, D-17·D-18 추가 |
+| 2026-11-21 | D-17·D-18 권장안 확정 — `desktop-data-client`는 2-7 대체 후 아카이브(2-1 대상 제외), 혼합 프로젝트 CI profile 확장 보류 |
 | 2026-11-21 | PR #57 보완 — 확정 불변식(핫패스 할당 0·클라이언트 송신 블로킹 0)·유틸 지연 예산 추가, 동결 범위에 agents·commands 포함, 매니페스트 행 추가 ↔ ADR 동반 CI 검사 |

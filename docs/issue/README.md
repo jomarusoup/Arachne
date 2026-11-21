@@ -74,8 +74,8 @@ FROM:: [[arachne-docs]]
 | 심각도 | 상태 | 문서 | 연결 task |
 | --- | --- | --- | --- |
 | medium | 처리 중 | [범위 밖 언어 사용 프로젝트 정책 공백](2026-11-21-155122-arachne-feedback.md) | [피드백 분류](../task/2026-11-21-project-feedback-triage.md) |
-| low | 결정 대기 (D-18) | [CI profile이 혼합 구조에 맞지 않음](2026-11-21-155123-arachne-feedback.md) | [피드백 분류](../task/2026-11-21-project-feedback-triage.md) |
+| low | 보류 확정 (D-18 — 2-2 재발 시 4-4) | [CI profile이 혼합 구조에 맞지 않음](2026-11-21-155123-arachne-feedback.md) | [피드백 분류](../task/2026-11-21-project-feedback-triage.md) |
 | low | 일부 반영 | [`-t --check`가 clang·rustfmt·clippy·프로젝트 요구 도구를 점검하지 못함](2026-11-21-155125-arachne-feedback.md) | [피드백 분류](../task/2026-11-21-project-feedback-triage.md) |
-| medium | 결정·수확 대기 (D-14·D-17) | [C 서버·Rust+egui 클라이언트 스킬·리뷰어 공백](2026-11-21-155126-arachne-feedback.md) | [피드백 분류](../task/2026-11-21-project-feedback-triage.md) |
+| medium | 수확 대기 (D-14), D-17 확정 | [C 서버·Rust+egui 클라이언트 스킬·리뷰어 공백](2026-11-21-155126-arachne-feedback.md) | [피드백 분류](../task/2026-11-21-project-feedback-triage.md) |
 
 닫힌 issue라도 삭제하지 않는다. 해결 근거, 관련 task, 검증 결과가 이후 회귀 분석의 기준점이다.
