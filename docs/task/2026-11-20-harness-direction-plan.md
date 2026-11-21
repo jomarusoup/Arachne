@@ -146,6 +146,7 @@ FROM:: [[2026-10-06-harness-inventory]]
 | 1-4 | push 전 확인 전환 | `rules/common/{workflow,development-workflow,git-workflow}.md`, `commands/git.md` | `grep -rnE '자동 (git )?push\|자동 푸시' rules commands` 0건, `check_convention_sync.sh` 통과 | — | S | done |
 | 1-5 | 동결 + 실패 기록 양식 | `objectives/freeze-manifest.txt`, `tests/freeze.bats`, `tests/check_freeze_adr.sh`, `tests/freeze_adr.bats`, `docs/template/failure.md` | `bats tests/freeze.bats tests/freeze_adr.bats` 통과 — 범위는 rules·agents·commands·skills, 매니페스트 행 추가에 신규 ADR 없으면 CI `verify-freeze` 실패 | 1-2 | S | done |
 | 1-6 | 상시 로드 토큰 실측 | `budgets.yaml`의 `context.always_loaded_tokens.measured` | 아래 명령 2조건 × 3회, input 토큰 차분 중앙값 기록 | 1-2, 사용자 실행(과금) | S | to do |
+| 1-7 | 관리 규칙 정본 + 문서 지도 재구성 | `docs/MANAGEMENT.md`, `docs/README.md`, 루트 `README.md`, 범위 밖 문서 상단 표시 | `check_index.sh`·`docs_cli_contract.bats` 통과, 관리 규칙마다 강제 수단(또는 "미강제") 명시 | 1-2 | S | done |
 
 1-6 측정 명령(사용자가 실행 — 과금·인증 필요):
 
@@ -248,6 +249,7 @@ CLAUDE_CONFIG_DIR="$(mktemp -d)" claude -p "ok" --output-format json --max-turns
 - [x] 1-3 ADR-0007 + ADR 인덱스
 - [x] 1-4 "자동 push" → "push 전 확인" 전환 (rules 3개 + `/git`)
 - [x] 1-5 동결 매니페스트 + `tests/freeze.bats` + `tests/check_freeze_adr.sh` + 실패 기록 양식 `docs/template/failure.md`
+- [x] 1-7 관리 규칙 정본 `docs/MANAGEMENT.md` + 문서 지도 재구성 (버전 규칙 적용 1.5.0은 PR #57)
 - [ ] 1-6 상시 로드 토큰 실측 (사용자 실행 — 과금)
 - [ ] 결정 요청: D-01·D-02·D-03·D-05·D-07·D-08·D-11 (2단계 착수 선행)
 
@@ -266,4 +268,5 @@ CLAUDE_CONFIG_DIR="$(mktemp -d)" claude -p "ok" --output-format json --max-turns
 | 날짜       | 요약 |
 | ---------- | ---- |
 | 2026-11-20 | 초안 — 현황 실측, 단계 분해, 결정 레지스터 D-01~D-16, 위험 R1~R8 |
+| 2026-11-21 | 1-7 — 관리 규칙 정본(MANAGEMENT)·독자 경로 문서 지도·루트 README 축소·범위 밖 표시, 버전 규칙(SemVer) 확정 후 1.5.0 |
 | 2026-11-21 | PR #57 보완 — 확정 불변식(핫패스 할당 0·클라이언트 송신 블로킹 0)·유틸 지연 예산 추가, 동결 범위에 agents·commands 포함, 매니페스트 행 추가 ↔ ADR 동반 CI 검사 |

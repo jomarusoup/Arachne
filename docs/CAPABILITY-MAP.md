@@ -1,7 +1,7 @@
 ---
 Title: "Arachne 역량 지도"
 creation: 2026-06-20
-modification: 2026-10-06
+modification: 2026-11-21
 tags:
  - "arachne"
  - "capability"
@@ -12,6 +12,8 @@ MOC:: [[Arachne]]
 FROM:: [[README]]
 
 # Arachne 역량 지도
+
+> **범위 밖 표시 (2026-11-21)** — 이 지도의 Python·Web(FastAPI·React)·Java·Electron 영역는 [OBJECTIVES](OBJECTIVES.md#2-범위) §2의 범위 밖이다. 해당 자산은 [계획](task/2026-11-20-harness-direction-plan.md) 2-1에서 아카이브할 예정이고, 그때까지 이 문서는 현재 동작 설명으로 남긴다.
 
 이 문서는 "이 일을 할 때 Arachne의 어떤 자산을 쓰는가"를 영역별 표로 정리한 지도다.
 새 업무를 시작할 때나 자산이 빠진 영역을 찾을 때 읽는다. 구조와 흐름은 [ARCHITECTURE](ARCHITECTURE.md)에 있다.

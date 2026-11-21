@@ -1,9 +1,9 @@
 ---
 Title: README
-description: 📚 Documentation Map · 🚀 Installation · macOS / Linux
+description: Arachne — Claude Code 하네스 · 설치 · 문서 지도
 creation: 2026-05-05
-modification: 2026-06-09
-Description: Python·Web과 시스템 개발을 위한 멀티 CLI 엔지니어링 하네스
+modification: 2026-11-21
+Description: 리눅스 저지연 시스템을 위한 Claude Code 엔지니어링 하네스
 tags:
 aliases:
 ---
@@ -12,235 +12,99 @@ aliases:
 
 # Arachne
 
-Python·Web과 C/C++·Go·Rust 시스템 개발에 공통 규약, 역할 분담, 프로젝트 검증을 제공하는
-**멀티 CLI 엔지니어링 하네스**다. 현재 우선 profile은 Python·Web이며 systems·network 자산도
-선택적으로 사용할 수 있다.
+**Claude Code가 모든 프로젝트에서 같은 규율로 일하게 만드는 설정 묶음(하네스)**이다.
+규칙(`rules/`), 스킬(`skills/`), 서브에이전트(`agents/`), 슬래시 커맨드(`commands/`), 이벤트 훅(`hooks/`)을
+한 저장소에 두고, 설치기가 `~/.claude/`에 연결한다. 사용 프로젝트에는 profile 기반 CI 키트를 만들어 준다.
 
-하나의 공통 규약(`AGENTS.md`, SSOT)을 **Claude Code · Gemini CLI · Codex CLI · GitHub Copilot**이
-동시에 따른다. Claude와 Gemini는 레포 심볼릭 링크를 읽고, Codex는 `AGENTS.md`를 마커 병합한
-사본을 읽는다. 따라서 Claude/Gemini 자산은 레포 수정 후 다음 로드부터 반영되지만, Codex 규약은
-`arachne -i --target codex` 재실행이 필요하다. `git push/pull`로 여러 머신의 원본 레포를 동기화한다.
+- **목표**: 리눅스에서 정확하고 장애가 격리된 저지연 시스템(C·C++·Rust·Go)과, 그 성능을 받쳐 주는
+  네이티브 클라이언트. 우선순위는 정확성 > 장애 격리 > 성능 > 개발 효율 ([OBJECTIVES](docs/OBJECTIVES.md)).
+- **현재 상태**: 방향 전환 1단계. 새 규칙·스킬·에이전트·커맨드 추가는 동결 중이고, 범위 밖 자산(웹·Java·
+  Electron·멀티-CLI)은 아카이브 예정이다 ([계획](docs/task/2026-11-20-harness-direction-plan.md)).
+- **버전**: [`VERSION`](VERSION) — 규칙은 [MANAGEMENT §1](docs/MANAGEMENT.md#1-버전).
 
-## 📚 Documentation Map
+## 시작하기 — 3단계
 
-전체 문서 인덱스와 독자별 진입점은 **[docs/README.md](docs/README.md)** 가 정본이다.
-목적별 진입점:
-
-| 알고 싶은 것 | 문서 |
-|---|---|
-| 하네스 구조 다이어그램 — 설치 배선·훅·보안 계층·규칙 로딩·프로젝트 키트·3티어 지원 지도 | [ARCHITECTURE](docs/ARCHITECTURE.md) |
-| 일상 사용법(skills·agents·커맨드·hooks) · 약어 풀이 | [USAGE](docs/USAGE.md) · [GLOSSARY](docs/GLOSSARY.md) |
-| 멀티 CLI(Claude·Codex·Gemini·Copilot) 역할·위임 | [MULTI-CLI](docs/MULTI-CLI.md) |
-| 프로젝트 적용 — CI 계약·profile·데이터·디자인 문서 | [PROJECT-CI](docs/PROJECT-CI.md) · [PYTHON-WEB-PROFILE](docs/PYTHON-WEB-PROFILE.md) · [DATA-HANDLING](docs/DATA-HANDLING.md) · [DESIGN-DOCS.md](docs/DESIGN-DOCS.md) |
-| 확장 도구 — Understand-Anything·taste-skill·codegraph | [tools/README](docs/tools/README.md) |
-| 플랫폼·동기화 — Windows·호환성·다중 머신·문서 | [WINDOWS-SETUP](docs/WINDOWS-SETUP.md) · [COMPATIBILITY](docs/COMPATIBILITY.md) · [SYNCTHING-SETUP](docs/SYNCTHING-SETUP.md) · [DOCS-SYNC](docs/DOCS-SYNC.md) |
-| 학습 — 익히는 순서·역량 지도·AI 엔지니어링 노트 | [HARNESS-LEARNING-GUIDE](docs/HARNESS-LEARNING-GUIDE.md) · [CAPABILITY-MAP](docs/CAPABILITY-MAP.md) · [AI-ENGINEERING-NOTES](docs/AI-ENGINEERING-NOTES.md) |
-| 저장소 자체 CI·UI/UX 기준·장기 설계 결정(ADR) | [CI](docs/CI.md) · [ui-ux/README](docs/ui-ux/README.md) · [decisions/](docs/decisions/README.md) |
-
-## 🚀 Installation
-
-### macOS / Linux
-
-> 기본 설치기는 macOS BSD 도구로 동작한다. 전체 저장소 테스트와 일부 상태표시줄 기능은 GNU
-> coreutils를 사용하므로 기여자는 `brew install coreutils`가 필요하다. 기능별 범위는
-> [호환성 표](docs/COMPATIBILITY.md)를 참고한다.
+**1. 설치** (macOS·Linux)
 
 ```bash
 git clone https://github.com/jomarusoup/Arachne.git ~/Arachne
 cd ~/Arachne
-./install.sh      # 최초 1회 — 이후 arachne 커맨드 사용 가능
+./install.sh        # 최초 1회 — 이후 arachne 명령 사용 가능
 ```
 
-### Windows (PowerShell)
+설치기는 기존 `~/.claude/` 파일을 `.bak`으로 백업하고, 저장소 항목을 `~/.claude/`에 심볼릭 링크로
+연결한다. `settings.template.json`으로 `settings.json`을 만들고, `~/.local/bin/`에 `arachne`·`tws`·`docs-sync`를 등록한다.
+Windows는 [WINDOWS-SETUP](docs/WINDOWS-SETUP.md)을 따른다(`install.ps1 -Install`).
 
-먼저 Claude Code·Codex CLI·Gemini CLI와 Git for Windows, Node.js를 설치합니다.
-명령별 인증·업데이트·WSL2 대안은
-[Windows 상세 설치 가이드](docs/WINDOWS-SETUP.md)를 따릅니다.
+**2. 확인**
 
-```powershell
-git clone https://github.com/jomarusoup/Arachne.git "$HOME\Arachne"
-Set-Location "$HOME\Arachne"
-powershell -ExecutionPolicy Bypass -File .\install.ps1 -Install
+```bash
+arachne -v          # 버전
+arachne -c          # 연결 상태 점검
+arachne -t          # 개발 도구(C/C++·Go·Rust·Python 등) 점검·설치
 ```
 
-Windows 설치기는 관리자 권한 없이 디렉터리 junction과 파일 hard link를 우선 사용하고,
-불가능하면 복사로 폴백합니다. Claude 훅은 Bash 스크립트이므로
-[Git for Windows](https://gitforwindows.org/)의 `bash.exe`가 PATH에 있어야 합니다.
-`tws`는 Windows 네이티브에서 지원하지 않으며 WSL 등 tmux 환경에서 사용합니다.
+Claude Code를 새로 열면 `CLAUDE.md`와 `rules/common/`이 자동으로 로드된다. `/verify`, `/git` 같은 커맨드를 바로 쓸 수 있다.
 
-최초 설치 후 재설치 또는 설정 동기화는 `arachne -i`를 사용합니다.
-
-설치 스크립트가 하는 일:
-1. 기존 `~/.claude/` 파일 자동 백업 (`.bak`)
-2. 레포 → `~/.claude/` 심볼릭 링크 생성
-3. `settings.template.json`의 `__HOME__` → 실제 홈 경로로 치환해 `settings.json` 생성
-4. **dotfiles 병합**: `~/.bash_profile`, `~/.vimrc`에 Arachne 설정을 안전하게 병합 (기존 내용 보존)
-5. **Copilot 지침**: `arachne -i --target copilot`으로 Copilot CLI와 VS Code 사용자 프로필에 전역 규약 설치
-6. **CLI 등록**: `~/.local/bin/`에 `arachne`, `tws`, `docs-sync` 커맨드 등록
-7. **확장 도구 자동 설치·갱신**: 설치 시 UA·taste-skill·codegraph를 함께 설치하고,
-   이미 있으면 최신으로 갱신한다 (`--with-ua`로 Understand-Anything만으로 한정 가능)
-
-Windows 네이티브 PowerShell에서는 `.\install.ps1 -Install -Target copilot`을 실행합니다.
-독립 설치 경로가 필요하면 `.\install-copilot.ps1`도 사용할 수 있습니다. macOS/Linux/WSL/Git
-Bash에서는 `./install.sh -i --target copilot`을 사용합니다. 모든 경로는 심볼릭 링크 권한 없이
-일반 파일로 `~/.copilot/`에 설치합니다.
-
-### Core CLI Commands
-| 커맨드 | 설명 |
-|---|---|
-| `arachne`, `arachne -h` | 도움말 출력 |
-| `arachne -i` (`--install`) | 재설치 및 설정 동기화 |
-| `arachne -i --with-ua` | 설치와 함께 Understand-Anything 플러그인 세팅 |
-| `arachne -u` (`--update`) | 대화형 선택: Arachne 업데이트/재설치, Understand-Anything 갱신, codegraph 갱신, 개발 도구 점검·설치 |
-| `arachne -u --with-ua` | 업데이트와 함께 Understand-Anything 갱신 |
-| `arachne -t` (`--tools`) | 개발 도구(필수·mise·조사·C/C++·Go·Rust·Python·Docker·DB) 그룹별 점검 → 누락 그룹마다 확인 후 설치. `--update` 는 프로젝트 고정을 존중하는 버전 갱신(패치 Y·마이너/메이저 N), `--rollback` 되돌리기 |
-| `arachne -a` (`--audit`) | 읽기 전용 보안 점검 — OS 보안 공지·저장소 서명·재부팅 필요·CPU 취약점·커널 하드닝·SELinux·포트, `--full` Lynis, `--binary` annocheck |
-| `arachne -c` (`--check`) | Claude·Gemini·Codex·Copilot 연결 상태 점검 |
-| `arachne -n <P> [DIR] --profile <P>` | 신규 프로젝트 스캐폴딩. profile 기본값은 `minimal` |
-| `arachne init-ci [DIR] --profile <P>` | 기존 프로젝트에 profile 기반 검증과 GitHub Actions 생성/갱신 |
-| `arachne project-check [DIR]` | `.arachne/commands`에 정의한 프로젝트 검증을 로컬에서 실행 |
-| `arachne feedback new/list/submit` | 사용 프로젝트에서 Arachne 개선 의견을 로컬 기록 후 GitHub Issue로 명시 제출 |
-| `arachne -s` (`--session`) | **TWS (Tmux Workspace Manager)**: 대화형 세션 매니저 (`tws`와 동일) |
-| `arachne -e` (`--export-settings`) | settings.json → 템플릿 내보내기 |
-| `arachne -d` (`--export-dotfiles`) | dotfiles → 레포 내보내기 |
-| `arachne -v` | 버전 정보 |
-| `docs-sync` | 원격 프로젝트 README/docs/Markdown 문서 ↔ Obsidian Vault 동기화 |
-
-### Project CI
-
-Arachne 저장소의 CI는 하네스 자체를 검증한다. Arachne를 사용하는 각 프로젝트는 별도의 프로젝트 CI를
-가져야 하며, 다음 명령으로 생성한다.
+**3. 내 프로젝트에 적용**
 
 ```bash
 cd /path/to/project
-arachne init-ci --profile python-web
-arachne project-check
+arachne init-ci --profile cpp      # 또는 rust · python · minimal · python-web
+arachne project-check              # .arachne/commands 의 검증을 로컬에서 실행
 ```
 
-생성되는 `.github/workflows/arachne.yml`은 `main` push와 `main` 대상 PR에서
-`bash .arachne/verify.sh`를 실행한다. Claude Code의 `/git`도 같은 runner를 커밋 전에 실행하므로
-로컬과 GitHub의 검증 기준이 일치한다. `minimal`, `python`, `web`, `python-web`, `cpp`, `rust`의 도구·소유권·
-갱신 정책은 [PROJECT-CI.md](docs/PROJECT-CI.md)가 정본이다. Web 계열 profile의 제품 디자인 문서
-위치와 `/design` 탐색 계약은 [DESIGN-DOCS.md](docs/DESIGN-DOCS.md)가 정본이다.
+`.github/workflows/arachne.yml`이 `main` push·PR에서 `bash .arachne/verify.sh`를 실행하고, `/git`도 커밋 전에
+같은 runner를 쓴다. profile별 도구와 소유권은 [docs/PROJECT-CI.md](docs/PROJECT-CI.md),
+디자인 문서 위치는 [DESIGN-DOCS.md](docs/DESIGN-DOCS.md)가 정본이다.
+새 프로젝트는 `arachne -n <이름> [DIR] --profile <P>`로 만든다.
 
-## 📁 Structure
+## 무엇이 언제 동작하나
 
-```
-Arachne/
-├── CLAUDE.md                    # Claude 전용 보충 지시서 (rules/는 네이티브 자동 로드)
-├── AGENTS.md                    # 공통 규약 SSOT (Claude·Gemini·Codex·Copilot 공유)
-├── .github/copilot-instructions.md # Copilot 저장소 어댑터
-├── settings.template.json       # ~/.claude/settings.json 템플릿
-├── install.sh / install.ps1     # Unix / Windows 통합 관리 도구 (CLI: arachne)
-├── lib/                         # install.sh 도메인 라이브러리 (project-ci · feedback · toolchain · naming-check)
-├── install-copilot.ps1          # Windows PowerShell용 Copilot 설치기
-├── tmux.sh                      # tmux 워크스페이스 매니저 (CLI: tws)
-├── archive/                     # 제거된 현역 외 자산 (multi-cli 런타임 — ADR-0004)
-├── docs-sync.sh                 # 원격 프로젝트 문서 ↔ Obsidian 동기화 (CLI: docs-sync)
-├── statusline-command.sh        # Claude Code 상태표시줄 렌더러
-│
-├── rules/                       # Claude 전역 행동 규칙
-│   ├── common/                  # 언어 공통 (workflow, coding-style, patterns 등 10개)
-│   ├── ...                      # 언어별 규칙 (c, cpp, golang, rust, java, python, javascript, bash, docker)
-│   ├── systems/                 # C·C++·Rust 공통 설계 철학·결정 기준
-│   ├── react/ · electron/       # TypeScript 클라이언트 (React·Electron)
-│   └── web/                     # 웹 디자인 품질·UI 배치·보안·성능
-│
-├── skills/                      # 워크플로·도메인 스킬 (65개 현역 + archive)
-├── commands/                    # 슬래시 커맨드 (24개)
-├── agents/                      # 서브에이전트 12개 (planner · code-reviewer · tdd · debugger
-│                                #   · python-reviewer · fastapi-reviewer · react-reviewer · typescript-reviewer · rust-reviewer
-│                                #   · database-reviewer · go-reviewer · go-build-resolver)
-├── hooks/                       # 이벤트 훅 (session-start/end, pre-compact, git-bus-check,
-│                                #   doc-drift-check, ua-stale-check, 보안 가드 guard-bash·guard-secrets)
-├── mcp-configs/                 # MCP (Model Context Protocol) 서버 설정 템플릿
-├── docs/CI.md                   # GitHub Actions CI 운영·로컬 재현 가이드
-├── docs/PROJECT-CI.md           # Arachne 사용 프로젝트의 CI 계약
-├── docs/DESIGN-DOCS.md          # 사용 프로젝트 디자인 문서 위치와 /design 탐색 계약
-├── docs/HARNESS-LEARNING-GUIDE.md # 하네스 학습 순서
-├── docs/CAPABILITY-MAP.md       # 역량 지도
-├── docs/ui-ux/                  # UI/UX 예시와 기준
-├── docs/PYTHON-WEB-PROFILE.md   # Python·Web profile 기술 기준
-├── docs/COMPATIBILITY.md        # 기능별 플랫폼 지원표
-├── docs/ARCHITECTURE.md         # 하네스 구조 다이어그램 (설치·훅·보안 계층·규칙 로딩·프로젝트 키트·3티어 지도)
-├── docs/OBJECTIVES.md           # 목표 정본 — 북극성·범위·계층·운영 원칙 (예산은 objectives/budgets.yaml)
-├── docs/decisions/              # Architecture Decision Record
-├── docs/task/                   # 승인된 실행 작업과 진행 상태 기록
-├── docs/template/               # idea · issue · task · audit · feedback · failure 기록 템플릿
-├── objectives/                  # 예산 정본 · 규칙/스킬 동결 매니페스트
-├── tests/                       # 검증 스크립트 (bats + shell)
-├── templates/project/           # 사용 프로젝트 키트 — profile별 CI·검증 명령, c-system 골격, sql 적용기, 예제
-└── dotfiles/                    # bash_profile, vimrc (병합 원본)
-```
+| 자산 | 위치 | 언제 동작하나 |
+|---|---|---|
+| 지시서 | `CLAUDE.md`, `rules/common/*` | 매 세션 자동 로드 |
+| 언어 규칙 | `rules/<언어>/*` | 해당 확장자 파일을 편집할 때 자동 로드 |
+| 스킬 | `skills/<이름>/SKILL.md` | 작업이 description과 맞으면 Claude가 호출, `/이름`으로 직접 호출 |
+| 에이전트 | `agents/*.md` | 리뷰·설계·디버깅 시점에 자동 활성화 (`rules/common/agents.md`) |
+| 커맨드 | `commands/*.md` | 채팅에 `/이름` 입력 |
+| 훅 | `hooks/*.sh` | 세션 시작·종료, 명령 실행 전, 커밋 전 등 이벤트 |
 
-## ⌨️ Slash Commands
+전체 목록과 사용법은 [USAGE](docs/USAGE.md), 구조도는 [ARCHITECTURE](docs/ARCHITECTURE.md)에 있다.
 
-| 커맨드 | 설명 |
+## 주요 명령
+
+| 명령 | 설명 |
 |---|---|
-| `/add` | 기능 추가 — planner 설계 후 단계적 구현 |
-| `/fix` | 버그 수정 — 재현 조건 파악 후 최소 범위 수정 |
-| `/refactor` | SRP(Single Responsibility Principle, 단일 책임 원칙) 기반 리팩터링 — 역할 분석 → 단계적 이동 |
-| `/design` | UI·컴포넌트 설계 문서 작성 및 디자인 개선 계획 제안 |
-| `/tdd` | TDD(Test-Driven Development, 테스트 주도 개발) 사이클 — RED→GREEN→REFACTOR + 메모리 검사 |
-| `/verify` | 수정 후 2단계 검증 (정적 검사 + 동작) + `.arachne/reports/` 리포트 기록 |
-| `/e2e` | E2E(End-to-End, 종단 간) 테스트 — 데몬·IPC(시스템) 및 Playwright(웹) 공통 |
-| `/python-review` | Python 코드 리뷰 — PEP 8·타입 힌트·보안·이디엄 (python-reviewer 에이전트) |
-| `/fastapi-review` | FastAPI 리뷰 — async 정확성·DI(Dependency Injection, 의존성 주입)·스키마·OpenAPI |
-| `/react-review` | React/Next 리뷰 — 렌더·Hooks·a11y(accessibility, 접근성)·XSS·성능 |
-| `/database-review` | DB schema·쿼리·migration·ORM 리뷰 (database-reviewer 에이전트) |
-| `/go-review` | Go 코드 리뷰 — 이디엄·에러 처리·동시성·보안 (go-reviewer 에이전트) |
-| `/go-build` | Go 빌드·vet·lint 오류를 하나씩 최소 수정 (go-build-resolver 에이전트) |
-| `/go-test` | Go TDD 사이클 — 테이블 드리븐 테스트 먼저, `-race`·커버리지 80%+ |
-| `/issue` | GitHub 오픈 이슈 확인 후 순차 처리 |
-| `/git` | 커밋·푸시 |
-| `/worktree` | 병렬 세션용 worktree 생성·상태확인·정리 |
-| `/status` | 프로젝트 현황 빠르게 파악 |
-| `/handoff` | AI 전환 전 작업 상태 저장 |
-| `/save-session` | 세션 요약 저장 (컨텍스트 70% 시 실행) |
-| `/learn` | 세션 발견 패턴을 rules에 저장 |
-| `/codegraph` | 코드 그래프·심볼·영향 범위 분석 (확장 도구 codegraph) |
+| `arachne -i` | 재설치·설정 동기화 (`--with-ua`: Understand-Anything 함께) |
+| `arachne -u` | 업데이트(git pull + 재설치)와 확장 도구·개발 도구 갱신을 대화형으로 선택 |
+| `arachne -t` | 개발 도구 그룹별 점검·설치 (`--update` 버전 갱신, `--rollback` 되돌리기) |
+| `arachne -a` | 읽기 전용 보안 점검 (`--full` Lynis, `--binary` annocheck) |
+| `arachne -c` | 연결 상태 점검 |
+| `arachne -n <P> [DIR] --profile <P>` | 새 프로젝트 만들기 |
+| `arachne init-ci [DIR] --profile <P>` | 기존 프로젝트에 CI·검증 생성·갱신 |
+| `arachne project-check [DIR]` | 프로젝트 검증 로컬 실행 |
+| `arachne feedback new/list/submit` | 사용 프로젝트에서 Arachne 개선 의견 기록·제출 |
+| `arachne -s` (`tws`) | tmux 워크스페이스 매니저 |
+| `arachne -e` / `arachne -d` | `settings.json` → 템플릿 / dotfiles → 저장소 내보내기 |
+| `docs-sync` | 원격 프로젝트 문서 ↔ Obsidian 동기화 |
 
-## 🏗️ Workspace Management (`-s`)
+자주 쓰는 슬래시 커맨드: `/add` 기능 추가 · `/fix` 버그 수정 · `/tdd` · `/verify` 수정 후 검증 ·
+`/git` 커밋 · `/worktree` 병렬 작업 폴더. 전체 24개는 [USAGE §1](docs/USAGE.md#1-slash-commands-commands).
 
-`arachne -s` (또는 `tws`) 로
- Claude Code 세션을 효율적으로 관리할 수 있습니다.
-- **템플릿 지원**: 기본 터미널 / Claude Code 자동 실행(dev) / 테스트용 2분할 화면
-- **세션 관리**: 생성, 접속(Attach), 삭제(Kill), 일괄 종료 지원
+## 문서
 
-## 🤝 Multi-CLI — 공통 규약 배포
+**어디서부터 읽을지는 [docs/README.md](docs/README.md)의 독자 경로 표를 본다.** 처음 설치, 매일 사용,
+내 프로젝트에 적용, 하네스 고치기, 플랫폼·동기화 다섯 경로로 나눠 읽는 순서를 정해 두었다.
 
-Arachne는 **Claude Code 단독 운용**입니다. 공통 규약(`AGENTS.md`)은 SSOT로 유지되어
-Gemini(심볼릭)·Codex(마커 병합)·Copilot(지침 생성) 어댑터로 배포됩니다 — 미감지 도구는
-설치기가 자동으로 건너뜁니다(graceful skip). 상세: [MULTI-CLI.md](docs/MULTI-CLI.md).
+## 하네스를 고치려면
 
-> 과거의 3-레인 협업 런타임(위임 래퍼 `gtask`/`ctask`·가용성 폴백 `atask`)은
-> [ADR-0004](docs/decisions/0004-remove-3lane-runtime.md)로 [`archive/multi-cli/`](archive/multi-cli/)에
-> 보존·제거됐습니다. 재도입 절차는 archive README 참고.
+1. [OBJECTIVES](docs/OBJECTIVES.md)에서 목표와 동결 범위를 확인한다.
+2. [MANAGEMENT](docs/MANAGEMENT.md)의 규칙을 따른다 — worktree에서 작업, `/verify` 후 커밋,
+   **push는 사람 확인 후**, main 자동 병합 금지, 동작이 바뀌면 `VERSION`을 올린다.
+3. 로컬 검증: `bats tests/*.bats && bash tests/check_index.sh && bash tests/check_convention_sync.sh`
+   (CI 전체는 [CI](docs/CI.md)).
 
-- **git-bus 감지 (보조)**: `git-bus-check.sh`가 업스트림 브랜치의 새 커밋을 감지한다. 작성 CLI는 판별하지
-  않으며, 업스트림이 설정된 경우 다른 로컬 터미널의 미푸시 커밋은 감지하지 않는다.
+## Git에 올리지 않는 경로
 
-> 상세 역할·비용 라우팅은 [docs/MULTI-CLI.md](docs/MULTI-CLI.md)·[docs/USAGE.md](docs/USAGE.md) 6장 참고.
-> 정책 SSOT(Single Source of Truth, 단일 진실 공급원)는 [`rules/common/workflow.md`](rules/common/workflow.md).
-
-## 🔄 Sync & Update
-
-Arachne은 심볼릭 링크를 기반으로 하며, `-u` 옵션으로 소스 동기화와 재설치를 한 번에 처리합니다.
-
-```bash
-# 최신 상태로 업데이트 (표준 방식)
-arachne -u
-
-# 설정 내보내기
-arachne -e   # settings.json → settings.template.json
-arachne -d   # ~/.bash_profile, ~/.vimrc → dotfiles/ 내보내기
-```
-
-## 🚫 Git-Ignored Paths
-
-| 항목 | 이유 |
-|---|---|
-| `projects/` | 대화 기록·세션 데이터 |
-| `cache/`, `sessions/`, `backups/` | 런타임 생성 파일 |
-| `.credentials.json` | API 키 등 민감 정보 |
-| `*.bak` | 설치 시 생성되는 백업 |
+`projects/`(대화 기록), `cache/`·`sessions/`·`backups/`(런타임 생성), `.credentials.json`(인증 정보), `*.bak`(설치 백업).

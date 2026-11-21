@@ -4,6 +4,18 @@
 **Syncthing**으로 양방향 자동 동기화한다. 변경된 파일은 양쪽이 온라인일 때 즉시
 전파되며, 충돌 발생 시 양쪽 모두 보존된다.
 
+### 이 문서 읽는 순서
+
+| 상황 | 읽을 곳 |
+| --- | --- |
+| 서버에 SSH로 들어가지도 못한다 | [0단계 — SSH 접속 준비](#0단계--ssh-접속-준비-mac--rocky-9-서버) |
+| 서버 계정 하나와 Mac 폴더 하나를 처음 연결한다 | 빠른 시작 → 1~5단계 |
+| 서버 계정 여러 개를 Mac의 여러 폴더와 연결한다 | 1~5단계로 첫 계정을 끝낸 뒤 [다중 계정 구성](#다중-계정-구성--한-서버의-여러-계정--mac의-여러-폴더) |
+| 이미 쓰다가 문제가 생겼다 | [트러블슈팅](#트러블슈팅) |
+
+기준 환경은 **Rocky Linux 9**(서버)와 **macOS**(클라이언트)다.
+서버 쪽 명령과 `syncthing cli` 하위 명령은 **Syncthing v2.1.2**(Rocky 9, tarball 설치)에서 존재와 동작을 확인했다(2026-11-21).
+
 ---
 
 ## Syncthing 개요 (Overview)
@@ -143,6 +155,8 @@ brew install --cask syncthing && open -a Syncthing      # 메뉴바 아이콘 �
 | `<REPO_DIR>` | 동기화할 프로젝트 루트 | `/home/Arachne/Arachne` |
 | `<folder-id>` | Syncthing이 자동 생성한 폴더 ID | 페어링 후 확인 |
 | `<mac-device-id>` | Mac의 Device ID | Mac GUI → Actions → Show ID |
+| `<ssh-port>` | 서버 sshd 포트 | 22가 아니면 반드시 지정 (0단계) |
+| `<acct-a>`, `<acct-b>` … | 다중 계정 구성에서 각 리눅스 계정 | 계획표에 적은 값 (다중 계정 구성) |
 
 > 예: `sudo systemctl enable --now syncthing@<user>.service`
 > → 이 서버에서는 `sudo systemctl enable --now syncthing@Arachne.service`
@@ -155,10 +169,140 @@ brew install --cask syncthing && open -a Syncthing      # 메뉴바 아이콘 �
 | 패키지 관리자              | `dnf` / `apt`                         | Homebrew                        |
 | sudo 권한                  | 필요 (방화벽·systemd)                 | 불필요                          |
 | 양방향 TCP 22000           | 서버에서 열기 (방화벽)                | 클라이언트 발신만 가능하면 됨   |
-| `~/.ssh/authorized_keys`   | `chmod 600` 필수 (사전 등록)          | -                               |
+| `~/.ssh/authorized_keys`   | Mac 공개키 등록 + `chmod 600` 필수 (0단계) | 개인키 `~/.ssh/id_ed25519` 보관 |
 
 > 원격 서버는 GUI가 없는 헤드리스 환경이라 **CLI 전용**으로 설정하고,
 > Mac은 메뉴바 앱 + 브라우저 GUI를 사용한다.
+
+---
+
+## 0단계 — SSH 접속 준비 (Mac → Rocky 9 서버)
+
+Syncthing 설정은 서버에 SSH로 들어가서 한다. **서버 계정마다 한 번씩** 이 단계를 거친다.
+이미 `ssh <계정>@<host>`로 비밀번호 없이 들어가진다면 0.5(별칭)만 보고 넘어간다.
+
+### 0.1 원리 — 키는 기기마다, 공개키만 상대에게
+
+| 파일 | 어디에 있나 | 하는 일 | 규칙 |
+| --- | --- | --- | --- |
+| 개인키 `~/.ssh/id_ed25519` | 접속하는 쪽(Mac) | "나는 이 Mac이다"를 증명 | **기기 밖으로 절대 내보내지 않는다** |
+| 공개키 `~/.ssh/id_ed25519.pub` | Mac에서 만들어 서버에 등록 | 개인키와 짝이 맞는지 확인하는 자물쇠 | 접속 대상 계정의 `authorized_keys`에 한 줄로 넣는다 |
+| `~/.ssh/authorized_keys` | 서버의 **각 계정** 홈 | 이 계정에 들어올 수 있는 공개키 목록 | 계정마다 따로 있다. 권한 `600` |
+
+> - 같은 Mac 공개키를 여러 계정의 `authorized_keys`에 등록해도 된다. 키는 기기마다 하나, 등록처는 여러 곳이다.
+> - 서버에 있는 `~/.ssh/id_ed25519`는 **서버가 바깥(GitHub 등)으로 나갈 때** 쓰는 별개의 키다.
+>   Mac → 서버 접속과는 관계없다.
+
+### 0.2 Mac — 키 확인 (없으면 만든다)
+
+```bash
+ls -l ~/.ssh/id_ed25519 ~/.ssh/id_ed25519.pub
+```
+
+| 결과 | 할 일 |
+| --- | --- |
+| 둘 다 있다 | 그대로 쓴다 |
+| 개인키만 있고 `.pub`이 없다 | `ssh-keygen -y -f ~/.ssh/id_ed25519 > ~/.ssh/id_ed25519.pub` (개인키에서 공개키를 다시 뽑는다) |
+| 둘 다 없다 | `ssh-keygen -t ed25519 -C "mac"` → 묻는 패스프레이즈는 비워 두지 말고 설정 권장 (0.5) |
+
+### 0.3 서버 — 공개키 등록
+
+Mac에서 공개키 한 줄을 화면에 띄워 복사한다.
+
+```bash
+cat ~/.ssh/id_ed25519.pub
+# ssh-ed25519 AAAA...(한 줄) mac
+```
+
+**방법 1 — 비밀번호 로그인이 아직 열려 있을 때** (Mac에서 한 줄로 끝난다)
+
+```bash
+ssh-copy-id -i ~/.ssh/id_ed25519.pub -p <ssh-port> <계정>@<host>
+```
+
+**방법 2 — 비밀번호 로그인이 막혀 있을 때** (콘솔이나 sudo 가능한 다른 계정으로 서버에 들어가서)
+
+```bash
+# sudo 가능한 계정에서 <계정> 대신 등록해 준다
+sudo install -d -m 700 -o <계정> -g <계정> /home/<계정>/.ssh
+echo '<복사한 공개키 한 줄>' | sudo tee -a /home/<계정>/.ssh/authorized_keys >/dev/null
+sudo chown <계정>:<계정> /home/<계정>/.ssh/authorized_keys
+sudo chmod 600 /home/<계정>/.ssh/authorized_keys      # ← 빠뜨리면 sshd가 이 파일을 무시한다
+sudo restorecon -Rv /home/<계정>/.ssh                  # SELinux 라벨(ssh_home_t) 맞추기
+```
+
+> **왜 `chmod 600`을 꼭 붙이나** — Rocky의 일반 계정은 umask가 `002`라서 새로 만든 파일이
+> `664`(그룹 쓰기 가능)로 생긴다. sshd는 `StrictModes` 때문에 남이 고칠 수 있는
+> `authorized_keys`를 **조용히 무시**하고, 클라이언트에는 `Permission denied (publickey)`만 보인다.
+> `~/.ssh` 아래에 파일을 만든 직후에는 습관적으로 `chmod 600`을 붙인다.
+
+등록 후 권한을 한 번에 확인한다 (서버, 해당 계정으로).
+
+```bash
+ls -ldZ ~ ~/.ssh ~/.ssh/authorized_keys
+```
+
+| 대상 | 정상 권한 | 소유자 | SELinux 라벨 |
+| --- | --- | --- | --- |
+| 홈 디렉터리 `~` | 그룹·기타 **쓰기 없음** (`700`·`750`·`755`) | 본인 | `user_home_dir_t` |
+| `~/.ssh` | `700` (`drwx------`) | 본인 | `ssh_home_t` |
+| `~/.ssh/authorized_keys` | `600` (`-rw-------`) | 본인 | `ssh_home_t` |
+
+### 0.4 sshd 포트가 22가 아닐 때
+
+서버 sshd가 22가 아닌 포트(`<ssh-port>`)를 쓰면 클라이언트에서 항상 포트를 지정해야 한다.
+
+```bash
+ssh -p <ssh-port> <계정>@<host>
+```
+
+`ssh: connect to host ... port 22: Connection refused`는 포트를 빼먹었을 때 나는 **정상 반응**이다.
+키 문제가 아니다.
+
+> 서버 포트를 **직접 바꾸는 경우에만** 아래가 필요하다 (이미 바꿔서 쓰고 있다면 건너뛴다).
+> Rocky는 SELinux가 sshd의 포트를 제한하므로 방화벽과 SELinux 둘 다 열어야 한다.
+>
+> ```bash
+> sudo semanage port -a -t ssh_port_t -p tcp <ssh-port>
+> sudo firewall-cmd --permanent --add-port=<ssh-port>/tcp && sudo firewall-cmd --reload
+> ```
+
+### 0.5 Mac — 별칭(`~/.ssh/config`)과 키체인
+
+매번 `-p`, 계정, 키 경로를 치지 않도록 계정마다 별칭을 만든다.
+
+```sshconfig
+# ~/.ssh/config  (만든 뒤 chmod 600 ~/.ssh/config)
+Host srv-<계정>
+    HostName <host>
+    Port <ssh-port>
+    User <계정>
+    IdentityFile ~/.ssh/id_ed25519
+    IdentitiesOnly yes        # 이 키만 시도 (키가 많을 때 "Too many authentication failures" 방지)
+    AddKeysToAgent yes
+    UseKeychain yes           # 패스프레이즈를 macOS 키체인에 저장
+```
+
+계정이 여러 개면 `Host` 블록을 계정마다 하나씩 추가한다(`srv-<acct-a>`, `srv-<acct-b>` …).
+
+키에 패스프레이즈를 걸고 키체인에 한 번 저장해 두면, 이후에는 묻지 않는다.
+
+```bash
+ssh-keygen -p -f ~/.ssh/id_ed25519              # 패스프레이즈 설정·변경 (이미 있으면 건너뜀)
+ssh-add --apple-use-keychain ~/.ssh/id_ed25519   # 키체인에 저장
+```
+
+### 0.6 접속 확인
+
+```bash
+ssh srv-<계정>                       # 비밀번호 없이 들어가지면 성공
+ssh -v srv-<계정> exit 2>&1 | grep -i 'authenticated'
+# Authenticated to <host> ([...]:<ssh-port>) using "publickey".
+```
+
+> 별칭은 GUI 터널에도 그대로 쓴다: `ssh -N -L 18384:127.0.0.1:8384 srv-<계정>`
+
+실패하면 [트러블슈팅 — SSH `Permission denied (publickey)`](#ssh-permission-denied-publickey--진단-순서와-실제-사례)로 간다.
 
 ---
 
@@ -591,6 +735,325 @@ Syncthing은 `.stignore` 자체를 동기화하므로 Prod에서 만들면 Mac�
 
 ---
 
+## 다중 계정 구성 — 한 서버의 여러 계정 ↔ Mac의 여러 폴더
+
+한 대의 Rocky 9 서버에 계정을 여러 개 두고, 계정마다 특정 위치를 Mac의 특정 폴더와 동기화하는 구성이다.
+**1~5단계로 첫 계정 하나를 먼저 끝낸 뒤** 이 절을 읽는다.
+
+### 먼저 알아 둘 개념 세 가지
+
+1. **인스턴스** — 리눅스 계정 하나로 실행되는 Syncthing 프로세스 하나. 인스턴스마다 Device ID,
+   설정 파일(`config.xml`), GUI 포트, 데이터 포트가 **따로** 있다. Mac 입장에서는 인스턴스 하나가
+   "원격 기기(Remote Device)" 하나다.
+2. **소유권** — 인스턴스는 자기를 실행한 계정이 쓸 수 있는 폴더에만 쓸 수 있고, 내려받은 파일은
+   **그 계정 소유**로 만들어진다.
+3. **짝짓기** — Mac 폴더와 서버 폴더는 **Folder ID**로 짝지어진다. 경로 이름은 달라도 된다.
+   하나의 Folder ID를 여러 기기와 동시에 공유할 수 있다.
+
+```mermaid
+flowchart LR
+    subgraph MAC["Mac (Syncthing.app 1개)"]
+        M1["~/…/폴더 A"]
+        M2["~/…/폴더 B"]
+        M3["~/…/폴더 C"]
+    end
+    subgraph SRV["Rocky 9 서버"]
+        subgraph IA["syncthing@acct-a<br/>GUI 8384 · 데이터 22000"]
+            A1["acct-a 홈 아래 폴더"]
+        end
+        subgraph IB["syncthing@acct-b<br/>GUI 8385 · 데이터 22001"]
+            B1["acct-b 홈 아래 폴더 1"]
+            B2["acct-b 홈 아래 폴더 2"]
+        end
+    end
+    M1 <-->|"Folder ID 1"| A1
+    M2 <-->|"Folder ID 2"| B1
+    M3 <-->|"Folder ID 3"| B2
+```
+
+> 위가 권장 구성(계정별 인스턴스 + 1:1 연결)이다. 아래에서 다른 경우의 수와 함께 정리한다.
+
+### 경우의 수 — 네 가지 축
+
+구성은 아래 네 축의 조합으로 정해진다. 축마다 하나씩 고르면 된다.
+
+#### 축 1. 서버에 인스턴스를 어떻게 둘까
+
+| 방식 | 모양 | 장점 | 단점 | 판단 |
+| --- | --- | --- | --- | --- |
+| **A. 계정별 인스턴스** | `syncthing@<acct-a>`, `syncthing@<acct-b>` … 계정마다 하나 | 파일 소유자가 그 계정으로 정확히 맞는다. 계정끼리 격리된다. 한 계정의 설정 실수가 다른 계정에 번지지 않는다 | 포트를 계정마다 다르게 잡아야 한다. Mac에 원격 기기가 계정 수만큼 생긴다 | **기본 권장** |
+| **B. 공용 인스턴스 하나** | 동기화 전용 계정(예: `syncthing`) 하나가 여러 계정의 폴더를 맡는다 | 포트·Device ID가 하나라 설정이 단순하다 | 파일이 전부 동기화 전용 계정 소유로 생긴다. 각 계정 폴더에 공유 그룹 쓰기 권한을 따로 열어야 한다 | 계정이 아주 많고 소유자가 중요하지 않을 때만 |
+| **X. root로 실행** | `syncthing@root` | — | 모든 파일이 root 소유가 되고, 원격 기기가 보낸 파일을 root 권한으로 쓴다 | **금지** |
+
+#### 축 2. 폴더를 어떤 모양으로 연결할까
+
+| 모양 | 뜻 | Mac에서 | 서버에서 | 쓰임새 |
+| --- | --- | --- | --- | --- |
+| **1:1** | Mac 폴더 하나 ↔ 한 계정의 폴더 하나 | 폴더를 추가하고 **그 계정의 기기 하나만** 공유 체크 | 그 계정 인스턴스가 수락 | 가장 흔한 경우. 프로젝트별·계정별 분리 |
+| **N:1** | Mac 폴더 여러 개 ↔ 한 계정의 서로 다른 폴더들 | 폴더마다 따로 추가하고 같은 기기에 공유 | 같은 인스턴스가 폴더마다 다른 경로로 수락 | 한 계정이 여러 작업 폴더를 가질 때 |
+| **1:N** | Mac 폴더 하나 ↔ 여러 계정에 각각 사본 | 폴더 하나를 추가하고 **여러 기기를 함께** 공유 체크 | 각 계정 인스턴스가 **같은 Folder ID**를 자기 경로로 수락 | 공통 설정·자료를 여러 계정에 배포 |
+| **공유 디렉터리** | 서버의 폴더 하나를 여러 계정이 **같이** 읽고 쓴다 | 폴더를 한 기기에만 공유 | 인스턴스 하나가 받고, 계정들은 공유 그룹 권한으로 접근 | 사본을 여러 개 두기 싫을 때 (아래 "공유 디렉터리 만들기") |
+
+> **1:N 주의** — 서버 계정끼리는 서로 기기로 등록하지 않는 한 직접 동기화하지 않는다. Mac이 중계 역할을 하므로
+> Mac이 꺼져 있으면 계정 간 사본은 서로 맞춰지지 않는다. 서버 안에서도 바로 맞추고 싶으면 두 인스턴스를
+> 서로의 원격 기기로 등록하고 같은 폴더를 공유한다.
+
+#### 축 3. 방향을 어떻게 둘까 (Folder Type 조합)
+
+폴더마다 따로 정한다. 폴더 Edit → **Advanced → Folder Type**.
+
+| Mac 쪽 | 서버 쪽 | 결과 | 쓰임새 |
+| --- | --- | --- | --- |
+| Send & Receive | Send & Receive | 양방향. 어느 쪽에서 고쳐도 반영 | 문서·노트 공동 편집 (기본) |
+| Send Only | Receive Only | Mac → 서버 한 방향. 서버에서 고친 내용은 퍼지지 않는다 | 설정·스크립트 배포, Mac이 원본일 때 |
+| Receive Only | Send Only | 서버 → Mac 한 방향 | 서버가 만든 보고서·로그·결과물을 Mac으로 수집 |
+| Send & Receive | Receive Encrypted | 서버에는 암호화된 블록만 저장 | 서버를 믿지 않는 백업 보관소 (서버에서 내용을 읽을 수 없다) |
+
+> - **Receive Only 쪽에서 파일을 고치면** 그 변경은 퍼지지 않고 "로컬 변경"으로 표시된다. GUI의
+>   **Revert Local Changes**로 원본 상태로 되돌린다.
+> - 한쪽만 Receive Encrypted로 잘못 두면 동기화가 실패한다 (트러블슈팅 "Failed to verify encryption consistency").
+
+#### 축 4. 서버 폴더를 어디에 둘까
+
+| 위치 | 예 | 추가로 할 일 |
+| --- | --- | --- |
+| **그 계정의 홈 안** | `/home/<acct-a>/notes` | 없음 (권장) |
+| **홈 밖** | `/srv/sync/<이름>`, `/data/<이름>` | 디렉터리 소유자·권한을 인스턴스 계정에 맞추고, SELinux 라벨을 확인한다 ("추가 서버 설정 (b)") |
+
+### 어떤 조합을 고를까 — 질문 네 개
+
+1. **그 폴더의 파일이 특정 계정 소유여야 하나?** → 예: 축 1은 **A(계정별 인스턴스)**.
+2. **Mac 폴더 하나를 여러 계정에 똑같이 두어야 하나?**
+   → 사본이 계정마다 있어도 되면 **1:N**, 사본 하나를 같이 써야 하면 **공유 디렉터리**.
+3. **원본이 어느 쪽인가?** → 양쪽에서 고치면 Send & Receive, 한쪽이 원본이면 Send Only / Receive Only.
+4. **서버 경로가 홈 밖인가?** → 그렇다면 권한·SELinux를 먼저 맞춘다.
+
+대부분은 **A + 1:1 + Send & Receive + 홈 안**이다. 아래 따라하기는 이 조합 기준이다.
+
+### 따라하기 — 계정별 인스턴스(A) + 1:1
+
+#### 1) 계획표부터 쓴다
+
+포트가 겹치면 두 번째 인스턴스부터 데이터 연결이 안 된다. 시작 전에 표로 정한다.
+
+| 계정 | GUI 포트 (서버 안에서만) | 데이터 포트 (방화벽 개방) | Mac 폴더 | 서버 폴더 | 방향 |
+| --- | --- | --- | --- | --- | --- |
+| `<acct-a>` | 8384 | 22000 | `~/…/폴더 A` | `/home/<acct-a>/…` | 양방향 |
+| `<acct-b>` | 8385 | 22001 | `~/…/폴더 B` | `/home/<acct-b>/…` | 서버 → Mac |
+| `<acct-c>` | 8386 | 22002 | `~/…/폴더 C` | `/home/<acct-c>/…` | 양방향 |
+
+> 규칙: 계정이 하나 늘 때마다 GUI 포트와 데이터 포트를 **1씩** 올린다.
+
+#### 2) 계정을 준비한다
+
+새 계정이 필요하면 만든다 (이미 있으면 건너뛴다).
+
+```bash
+sudo useradd -m <acct-b>
+```
+
+그리고 **계정마다 0단계(SSH 키 등록)** 를 한 번씩 한다. Mac의 `~/.ssh/config`에도 `Host srv-<acct-b>` 블록을 추가한다.
+
+#### 3) 첫 번째 계정 — 기본 포트 그대로
+
+첫 계정(`<acct-a>`)은 1~5단계 그대로 진행한다. 기본 포트(GUI 8384, 데이터 22000)를 쓴다.
+
+#### 4) 두 번째 계정부터 — 포트를 바꾼 뒤 기동
+
+**기동하기 전에** 설정 파일을 먼저 만들고 포트를 바꾼다. 기본 포트로 먼저 띄우면 첫 계정과 충돌한다.
+
+```bash
+ACCT=<acct-b>      # 계획표의 계정
+GUI_PORT=8385      # 계획표의 GUI 포트
+DATA_PORT=22001    # 계획표의 데이터 포트
+
+# (1) 서비스를 띄우지 않고 설정 파일만 생성
+sudo -u "$ACCT" syncthing generate
+
+# (2) 설정 파일 위치 확인 — 보통 /home/<계정>/.local/state/syncthing/config.xml
+CFG=$(sudo -u "$ACCT" syncthing paths | grep -m1 'config.xml' | awk '{print $NF}')
+echo "$CFG"
+
+# (3) 포트 변경 + 로컬 디스커버리 끄기 (같은 서버의 여러 인스턴스가 UDP 21027을 두고 다투지 않게)
+#     첫 계정이 8384·22000 을 쓰고 있으면 generate 는 임의 포트를 고르고 <listenAddress> 를
+#     tcp·relay·quic 3줄로 쓴다. 첫 줄만 새 데이터 포트로 바꾸고 나머지 listenAddress 줄은 지운다.
+sudo -u "$ACCT" sed -i -E \
+  -e "s|<address>127\.0\.0\.1:[0-9]+</address>|<address>127.0.0.1:${GUI_PORT}</address>|" \
+  -e "0,/<listenAddress>/s|<listenAddress>[^<]*</listenAddress>|<listenAddress>tcp://0.0.0.0:${DATA_PORT}</listenAddress>|" \
+  -e "/<listenAddress>/{/tcp:\/\/0\.0\.0\.0:${DATA_PORT}</!d}" \
+  -e "s|<localAnnounceEnabled>true</localAnnounceEnabled>|<localAnnounceEnabled>false</localAnnounceEnabled>|" \
+  "$CFG"
+
+# (4) 바뀌었는지 눈으로 확인 — 세 줄 모두 새 값이어야 한다
+sudo grep -E '<address>127|<listenAddress>|<localAnnounceEnabled>' "$CFG"
+```
+
+기대 출력:
+
+```
+<address>127.0.0.1:8385</address>
+<listenAddress>tcp://0.0.0.0:22001</listenAddress>
+<localAnnounceEnabled>false</localAnnounceEnabled>
+```
+
+> `syncthing paths` 출력에 `config.xml`이 안 보이거나 (4)에서 값이 기대와 다르면, 버전에 따라 기본값
+> 표기가 다른 것이다. `sudo -u "$ACCT" vi "$CFG"`로 위 세 줄을 직접 고친다.
+>
+> v2.1.2에서 실측한 `generate` 결과 (2026-11-21):
+>
+> | 상황 | 생성되는 값 |
+> | --- | --- |
+> | 8384·22000이 비어 있다 | GUI `127.0.0.1:8384`, `<listenAddress>default</listenAddress>` 한 줄 |
+> | 첫 계정이 8384·22000을 쓰고 있다 (두 번째 계정부터 — 이 절의 경우) | GUI·데이터 모두 **임의 포트**, `<listenAddress>`가 `tcp://`·`dynamic+https://relays…`·`quic://` **3줄** |
+>
+> 위 `sed`는 두 경우 모두 기대 출력 3줄로 만든다. `syncthing paths`는 `Configuration file:` 다음 줄에 경로를
+> 들여 써서 출력하므로 `grep -m1 'config.xml' | awk '{print $NF}'`가 경로를 집는다.
+> 데이터 주소를 `tcp://` 한 줄로 두면 QUIC(UDP)과 이 인스턴스의 릴레이 수신은 쓰지 않는다 — 방화벽에서 TCP만
+> 열고 Mac이 `tcp://<host>:<포트>`로 직접 붙는 구성이라 의도된 동작이다.
+
+방화벽에 데이터 포트를 열고 서비스를 켠다.
+
+```bash
+sudo firewall-cmd --permanent --add-port=${DATA_PORT}/tcp && sudo firewall-cmd --reload
+sudo systemctl enable --now "syncthing@${ACCT}.service"
+sudo systemctl status "syncthing@${ACCT}.service" --no-pager
+```
+
+인스턴스별 포트가 제대로 잡혔는지 확인한다. 계정마다 GUI 한 줄, 데이터 한 줄씩 보여야 한다.
+
+```bash
+sudo ss -tlnp | grep syncthing
+# LISTEN 0 128  127.0.0.1:8384  0.0.0.0:*  users:(("syncthing",pid=…))   ← acct-a GUI
+# LISTEN 0 128          *:22000       *:*  users:(("syncthing",pid=…))   ← acct-a 데이터 (listenAddress default)
+# LISTEN 0 128  127.0.0.1:8385  0.0.0.0:*  users:(("syncthing",pid=…))   ← acct-b GUI
+# LISTEN 0 128    0.0.0.0:22001 0.0.0.0:*  users:(("syncthing",pid=…))   ← acct-b 데이터 (tcp://0.0.0.0:22001)
+```
+
+> 기본값(`default`)으로 둔 인스턴스는 데이터 포트가 `*:22000`(IPv4·IPv6 모두)으로, `tcp://0.0.0.0:<포트>`로 고친
+> 인스턴스는 `0.0.0.0:<포트>`(IPv4만)로 보인다. 둘 다 정상이다. `pid`가 계정마다 다른지도 함께 본다.
+
+#### 5) 계정별 Device ID를 확인한다
+
+```bash
+sudo -u <acct-a> syncthing device-id
+sudo -u <acct-b> syncthing device-id
+```
+
+> 반드시 `sudo -u <계정>`으로 실행한다. 다른 계정으로 실행하면 **그 계정의** ID가 나온다.
+
+#### 6) Mac — 계정마다 원격 기기를 하나씩 추가한다
+
+Mac GUI(`http://localhost:8384`) → **Add Remote Device**를 계정 수만큼 반복한다.
+
+| 항목 | `<acct-a>` | `<acct-b>` |
+| --- | --- | --- |
+| Device ID | 5)에서 나온 acct-a ID | 5)에서 나온 acct-b ID |
+| Device Name | `srv-<acct-a>` | `srv-<acct-b>` |
+| Advanced → Addresses | `tcp://<host>:22000` | `tcp://<host>:22001` |
+
+서버 쪽에도 Mac을 등록한다 (계정마다).
+
+```bash
+sudo -u <acct-b> syncthing cli config devices add --device-id <mac-device-id> --name Mac
+```
+
+> `sudo -u <계정> syncthing cli`는 그 계정의 `config.xml`에서 GUI 주소(8385 등)와 API 키를 읽어 오므로
+> 포트를 따로 지정하지 않아도 된다.
+
+#### 7) Mac — 폴더를 추가하고 **해당 계정 기기에만** 공유한다
+
+Mac GUI → **Add Folder**:
+
+1. **Folder Path**: 계획표의 Mac 폴더
+2. **Sharing** 탭: 계획표에서 짝지은 기기(`srv-<acct-b>`)**만** 체크
+3. **Advanced** 탭: 계획표의 방향대로 Folder Type 설정 (서버 → Mac이면 Mac 쪽은 **Receive Only**)
+4. Save
+
+서버에서 그 계정 인스턴스로 수락한다. 서버 경로는 이때 정한다.
+
+```bash
+# 대기 중인 폴더 확인 → Folder ID 메모
+sudo -u <acct-b> syncthing cli show pending folders
+#   (v2.1.2 에는 있다. 이 하위 명령이 없는 구버전이면 Mac GUI 폴더 Edit → General 의 Folder ID 를 그대로 쓴다)
+
+# 경로를 지정해 폴더 추가 (Folder ID는 위에서 확인한 값)
+sudo -u <acct-b> syncthing cli config folders add \
+  --id <folder-id> --label <이름> --path /home/<acct-b>/<서버 폴더>
+sudo -u <acct-b> syncthing cli config folders <folder-id> devices add --device-id <mac-device-id>
+
+# 서버 → Mac 한 방향이면 서버 쪽을 Send Only 로
+sudo -u <acct-b> syncthing cli config folders <folder-id> type set sendonly
+```
+
+> CLI가 번거로우면 SSH 터널로 그 계정의 GUI를 열어 **Add** 버튼으로 수락해도 된다.
+> 계정마다 터널 포트를 다르게 잡는다: `ssh -N -L 18385:127.0.0.1:8385 srv-<acct-b>` → 브라우저 `http://localhost:18385`
+
+#### 8) 검증
+
+계정마다 "동기화 확인"(검증 절)을 한 번씩 한다. Mac GUI 오른쪽 기기 목록에서 계정별 기기가 모두
+**연결됨**, 폴더가 **최신**이면 끝이다.
+
+### 1:N 만들기 — Mac 폴더 하나를 여러 계정에 배포
+
+7)에서 **Sharing** 탭에 여러 계정 기기(`srv-<acct-a>`, `srv-<acct-b>`)를 **함께** 체크한다.
+그다음 계정마다 서버에서 **같은 Folder ID**로 수락하되, 경로는 각자의 홈으로 준다.
+
+```bash
+sudo -u <acct-a> syncthing cli config folders add --id <folder-id> --label common --path /home/<acct-a>/common
+sudo -u <acct-b> syncthing cli config folders add --id <folder-id> --label common --path /home/<acct-b>/common
+# 각 계정에서 Mac 기기를 폴더에 연결
+sudo -u <acct-a> syncthing cli config folders <folder-id> devices add --device-id <mac-device-id>
+sudo -u <acct-b> syncthing cli config folders <folder-id> devices add --device-id <mac-device-id>
+```
+
+> 배포용이면 Mac 쪽을 **Send Only**, 서버 쪽들을 **Receive Only**로 두어 서버에서의 실수가 Mac 원본을
+> 덮지 않게 한다.
+
+### 공유 디렉터리 만들기 — 서버 폴더 하나를 여러 계정이 같이 쓰기
+
+인스턴스 하나(예: `<acct-a>`)가 동기화를 맡고, 다른 계정들은 **공유 그룹** 권한으로 같은 폴더를 읽고 쓴다.
+
+```bash
+# 1) 공유 그룹을 만들고 필요한 계정을 넣는다
+sudo groupadd syncshare
+sudo usermod -aG syncshare <acct-a>
+sudo usermod -aG syncshare <acct-b>
+
+# 2) 공유 디렉터리 — setgid(2)로 새 파일이 그룹을 물려받게 한다
+sudo mkdir -p /srv/sync/common
+sudo chown <acct-a>:syncshare /srv/sync/common
+sudo chmod 2775 /srv/sync/common
+
+# 3) 기본 ACL — 누가 만들든 그룹이 쓸 수 있게 한다 (umask 차이를 흡수)
+sudo setfacl -R -m g:syncshare:rwX /srv/sync/common
+sudo setfacl -R -d -m g:syncshare:rwX /srv/sync/common
+
+# 4) 홈 밖이므로 SELinux 라벨 확인 ("추가 서버 설정 (b)")
+ls -ldZ /srv/sync/common
+
+# 5) 그룹 변경은 새 프로세스부터 적용된다 — 동기화 담당 인스턴스를 재시작
+sudo systemctl restart syncthing@<acct-a>.service
+```
+
+그다음 그 폴더를 `<acct-a>` 인스턴스에서 `--path /srv/sync/common`으로 수락하고, 폴더 Edit →
+**Advanced → Ignore Permissions**를 켠다(CLI: `syncthing cli config folders <folder-id> ignore-perms set true`).
+켜지 않으면 Mac과 서버의 권한 비트 차이 때문에 Syncthing이 권한을 계속 되돌리려 한다.
+
+> 다른 계정은 그룹 변경이 적용되도록 **다시 로그인**해야 한다. `id <acct-b>`의 groups에 `syncshare`가 보이면 된다.
+
+### 다중 계정에서 자주 하는 실수
+
+| 증상 | 원인 | 해결 |
+| --- | --- | --- |
+| 두 번째 계정 기기가 Mac에서 계속 "연결 끊김" | 데이터 포트가 첫 계정과 겹쳤거나 방화벽을 안 열었다 | `sudo journalctl -u syncthing@<계정> -n 50`에서 `address already in use` 확인 → 4) 다시 |
+| Mac에 붙은 기기가 엉뚱한 계정이다 | Device ID를 다른 계정으로 조회했다 | `sudo -u <계정> syncthing device-id`로 다시 확인 |
+| 동기화된 파일을 다른 계정이 못 고친다 | 파일은 인스턴스 계정 소유로 생긴다 | 같이 써야 하면 "공유 디렉터리 만들기" |
+| 폴더 하나가 다른 동기화 폴더 안에 들어 있다 | 중첩 폴더 — 바깥 폴더와 안쪽 폴더가 같은 파일을 서로 다르게 다룬다 | 동기화 폴더끼리는 **겹치지 않게** 둔다 (Mac·서버 모두) |
+| 같은 Mac 폴더를 두 번 추가했다 | Folder ID가 두 개 생겨 서로 다른 폴더로 취급된다 | 하나를 지우고, 여러 계정에 보내려면 1:N 방식(하나의 폴더에 여러 기기)으로 |
+| Obsidian 폴더에서 충돌 파일이 계속 생긴다 | `.obsidian/workspace*.json`을 양쪽 앱이 계속 고친다 | `.stignore`에 `.obsidian/workspace*` 추가 |
+
+---
+
 ## 설정 레퍼런스 (Settings Reference)
 
 설치·페어링 이후 조정할 수 있는 핵심 설정. 값은 GUI(Actions → Settings / 폴더·device Edit)
@@ -736,15 +1199,57 @@ SSH 세션은 user systemd 인스턴스 D-Bus가 없다.
 sudo systemctl enable --now syncthing@<user>.service
 ```
 
-### SSH publickey 거부 — `authorized_keys` 권한 664
+### SSH `Permission denied (publickey)` — 진단 순서와 실제 사례
 
-`sshd`의 `StrictModes`는 `authorized_keys` 권한이 그룹 쓰기 가능하면 거부한다.
-**해결**:
+**증상**: Mac에서 Rocky 9 서버의 계정(비표준 포트 `<ssh-port>`)으로 접속하면
+`Permission denied (publickey)`가 난다.
+
+**진단 순서** — 클라이언트 메시지는 원인을 알려 주지 않는다. **서버 로그를 먼저** 본다.
 
 ```bash
-chmod 700 ~/.ssh
-chmod 600 ~/.ssh/authorized_keys
+# 1) 서버 (콘솔이나 sudo 가능한 다른 계정으로)
+sudo grep -E 'sshd.*(Authentication refused|bad ownership or modes|Failed publickey)' /var/log/secure | tail -20
+
+# 2) 서버 — 대상 계정의 키 파일 상태
+sudo ls -ldZ /home/<계정> /home/<계정>/.ssh /home/<계정>/.ssh/authorized_keys
+
+# 3) Mac — 어떤 키를 내밀었고 서버가 뭐라고 답했는지
+ssh -v -p <ssh-port> <계정>@<host> 2>&1 | grep -E 'Offering|Authentications that can continue|Authenticated'
 ```
+
+**실제 사례 (2026-11 해결)**
+
+| 순서 | 원인 | 확인 방법 | 조치 |
+| --- | --- | --- | --- |
+| 1 | 서버에 `~/.ssh/authorized_keys` 파일이 **아예 없었다** | 2)에서 `No such file` | Mac 공개키(`ssh-keygen -y -f ~/.ssh/id_ed25519`로 추출)를 넣어 파일을 새로 만들었다 (0.3) |
+| 2 | 새로 만든 파일이 `664`(그룹 쓰기 가능)라 sshd가 **무시**했다 | 1)에서 `bad ownership or modes for file .../authorized_keys` | `chmod 600 ~/.ssh/authorized_keys` |
+
+**문제가 아니었던 것** — 같이 보였지만 로그인과 무관하다.
+
+| 보인 메시지 | 실제 의미 |
+| --- | --- |
+| `port 22: Connection refused` | sshd가 22가 아닌 `<ssh-port>`를 쓰기 때문에 나는 정상 반응 (`-p`를 빼먹었을 때) |
+| 양자내성(post-quantum) 키 교환 경고 | 최신 macOS의 OpenSSH가 띄우는 안내. RHEL 계열 기본 crypto-policy에서 해당 알고리즘이 꺼져 있을 뿐, 로그인과 무관 |
+| SELinux 라벨 `ssh_home_t`, `~/.ssh` `700` | 처음부터 정상이었다. 원인 후보에서 지운다 |
+
+**배운 것**
+
+- 키는 기기마다 따로 둔다. 개인키는 기기 밖으로 내보내지 않고, 공개키만 접속 대상의 `authorized_keys`에 등록한다 (0.1).
+- Rocky의 일반 계정은 umask가 `002`라 새 파일이 그룹 쓰기 권한을 갖는다. `.ssh` 아래 파일을 만든 직후에는 `chmod 600`을 붙인다.
+- 같은 증상이 다시 나면 `/var/log/secure`에서 `bad ownership or modes`부터 찾는다.
+
+**남은 정리**
+
+```bash
+# 서버: ~/.ssh/.ssh/ 처럼 중첩된 디렉터리 — 이미 있는 ~/.ssh 에 디렉터리째 복사하면 생긴다.
+# sshd 는 ~/.ssh/authorized_keys 만 읽으므로 안쪽 파일은 쓰이지 않는다.
+ls -la ~/.ssh/.ssh/                       # 1) 안에 무엇이 있는지 본다
+diff ~/.ssh/.ssh/authorized_keys ~/.ssh/authorized_keys 2>/dev/null   # 2) 바깥에 없는 키가 있나
+# 3) 필요한 파일만 바깥으로 옮긴 뒤 (권한 600 유지) 중첩 디렉터리를 지운다
+rm -r ~/.ssh/.ssh
+```
+
+Mac 쪽은 0.5(별칭 등록, 패스프레이즈 + 키체인)를 마무리한다.
 
 ### `syncthing cli` 실행 시 `cert.pem` not found
 

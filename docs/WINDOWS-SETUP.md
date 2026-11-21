@@ -1,5 +1,7 @@
 # Windows Setup — Claude Code · Codex CLI · Gemini CLI · GitHub Copilot
 
+> **범위 밖 표시 (2026-11-21)** — 이 문서의 Codex CLI·Gemini CLI·GitHub Copilot 설치 부분는 [OBJECTIVES](OBJECTIVES.md#2-범위) §2의 범위 밖이다. 해당 자산은 [계획](task/2026-11-20-harness-direction-plan.md) 2-1에서 아카이브할 예정이고, 그때까지 이 문서는 현재 동작 설명으로 남긴다.
+
 이 문서는 Windows에서 CLI 도구와 Arachne를 처음 설치하는 절차다. Windows 머신에 하네스를 새로 깔거나,
 Windows에서 훅이 돌지 않을 때 읽는다. 기준 환경은 **Windows 11 + PowerShell 7 또는 Windows PowerShell 5.1**이다.
 Windows 10에서는 지원되는 최신 빌드가 필요하다.

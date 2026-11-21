@@ -1,7 +1,7 @@
 ---
 Title: "Arachne 학습 순서"
 creation: 2026-06-20
-modification: 2026-10-06
+modification: 2026-11-21
 tags:
  - "arachne"
  - "learning"
@@ -12,6 +12,8 @@ MOC:: [[Arachne]]
 FROM:: [[100. Project/110. Side-Project/111. Arachne/docs/README]]
 
 # Arachne 학습 순서
+
+> **범위 밖 표시 (2026-11-21)** — Java·웹 프론트엔드 학습 트랙는 [OBJECTIVES](OBJECTIVES.md#2-범위) §2의 범위 밖이다. 해당 자산은 [계획](task/2026-11-20-harness-direction-plan.md) 2-1에서 아카이브할 예정이고, 그때까지 이 문서는 현재 동작 설명으로 남긴다.
 
 이 문서는 Arachne를 업무 능력을 키우는 도구로 익히기 위한 학습 순서다.
 하네스를 처음 쓰는 사람이 무엇을 어떤 순서로 읽고 연습할지 정할 때 읽는다.

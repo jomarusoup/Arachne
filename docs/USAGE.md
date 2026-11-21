@@ -1,5 +1,7 @@
 # Arachne 사용 가이드
 
+> **범위 밖 표시 (2026-11-21)** — `fastapi-reviewer`·`react-reviewer`·`typescript-reviewer`와 관련 커맨드·웹 스킬, 멀티-CLI 배포는 [OBJECTIVES](OBJECTIVES.md#2-범위) §2의 범위 밖이다. 해당 자산은 [계획](task/2026-11-20-harness-direction-plan.md) 2-1에서 아카이브할 예정이고, 그때까지 이 문서는 현재 동작 설명으로 남긴다.
+
 하니스(Claude Code)에서 Arachne의 **skills · agents · 슬래시 커맨드 · hooks · rules**를 실제로 어떻게 쓰는지 정리한 상세 가이드.
 
 > README는 "무엇이 있는지"(카탈로그), CLAUDE.md는 "항상 적용되는 지시서", 이 문서는 "어떻게 쓰는지"(how-to)를 담는다.
@@ -61,6 +63,8 @@ description: /명령어 설명
 | `/codegraph` | 코드 그래프·심볼·영향 분석 (확장 도구 — [docs/tools/](tools/README.md)) |
 
 ### 새 커맨드 추가
+> **동결 중.** 커맨드·에이전트·규칙 추가도 스킬과 같다 — [MANAGEMENT §6](MANAGEMENT.md#6-동결-자산-추가).
+
 1. `commands/새이름.md` 생성
 2. frontmatter에 `description` 작성
 3. 본문에 단계별 절차 작성 → 저장 즉시 `/새이름`으로 사용 가능
@@ -159,6 +163,9 @@ description: >-                    # 자동 발견 매칭 기준 — 경로·키
 | 네트워크·처리량 | `network-interface-health` `data-throughput-accelerator` `stream-pipeline-patterns` `load-testing` |
 
 ### 새 스킬 추가
+> **동결 중(2026-11-20~).** 새 스킬은 ADR과 `objectives/freeze-manifest.txt` 행 추가가 같은 PR에 있어야
+> CI를 통과한다. 절차는 [MANAGEMENT §6](MANAGEMENT.md#6-동결-자산-추가).
+
 `skills/새스킬/SKILL.md` 생성 → `name`(디렉터리명 일치)·`description` frontmatter를 달고
 "언제 / 어떻게 / 예시" 3요소로 작성. `skills/README.md`·`docs/USAGE.md` 표에 행 추가.
 
