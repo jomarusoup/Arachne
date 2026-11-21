@@ -165,7 +165,7 @@ to do -> in progress -> done
 | 2026-10-05 | `done` | [로드맵 W6 최종 정리](2026-10-05-roadmap-w6.md) |
 | 2026-10-05 | `in progress` | [로드맵 W7 최종 검증](2026-10-05-roadmap-w7.md) |
 | 2026-11-20 | `in progress` | [[plan] 하네스 방향 전환 — 저지연 시스템 북극성·평가 체계·축소](2026-11-20-harness-direction-plan.md) |
-| 2026-11-21 | `in progress` | [사용 프로젝트 피드백 4건 분류·반영](2026-11-21-project-feedback-triage.md) |
+| 2026-11-21 | `done` | [사용 프로젝트 피드백 4건 분류·반영](2026-11-21-project-feedback-triage.md) |
 
 로드맵에 통합된 이전 초안 4개는 [입력 시트](2026-10-05-roadmap-input-sheet.md) §3의 8-1 결정에 따라 2026-10-06에 삭제했다.
 철학 이식 착수 프롬프트는 참고 자료로만 남아 있다. 실행 순서는 로드맵 웨이브가 대체했다.
