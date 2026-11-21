@@ -169,7 +169,7 @@ ToolCatalogLines() {
 #===============================================================================
 # FUNCTION    : DetectToolsPlatform
 # DESCRIPTION : 패키지 관리자·배포판·권한 상승 방법을 감지해 TOOLS_* 에 기록.
-#               테스트용 override: ARACHNE_TOOLS_PM, ARACHNE_TOOLS_OS_ID
+#               테스트용 override: ARACHNE_TOOLS_PM, ARACHNE_TOOLS_OS_ID, ARACHNE_TOOLS_OS_LIKE
 #===============================================================================
 DetectToolsPlatform() {
     local os_release="/etc/os-release"
@@ -183,6 +183,7 @@ DetectToolsPlatform() {
         TOOLS_OS_ID="macos"
     fi
     TOOLS_OS_ID="${ARACHNE_TOOLS_OS_ID:-${TOOLS_OS_ID}}"
+    TOOLS_OS_LIKE="${ARACHNE_TOOLS_OS_LIKE:-${TOOLS_OS_LIKE}}"
 
     if [ -n "${ARACHNE_TOOLS_PM:-}" ]; then
         TOOLS_PM="${ARACHNE_TOOLS_PM}"
@@ -948,6 +949,8 @@ ToolsCommand() {
     TOOLS_ROLLBACK=""
 
     while [ $# -gt 0 ]; do
+        # TOOLS_ALLOW_MAJOR·TOOLS_ALL_SYSTEM 은 lib/toolchain-update.sh 에서 읽는다 (source 공유)
+        # shellcheck disable=SC2034
         case "$1" in
             --check)    TOOLS_CHECK_ONLY=1 ;;
             --yes|-y)   TOOLS_ASSUME_YES=1 ;;
