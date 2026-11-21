@@ -138,6 +138,8 @@ write_catalog() {
 
 @test "tools --yes --dry-run: RHEL 계열은 EPEL 패키지 전에 epel-release 설치" {
     export ARACHNE_TOOLS_OS_ID="rocky"
+    # 러너 OS 와 무관하게 dnf 경로를 검사한다 (Ubuntu·macOS 러너는 apt·brew 로 감지됨)
+    export ARACHNE_TOOLS_PM="dnf"
     mkdir -p "${TMP_DIR}/bin"
     printf '#!/bin/bash\nexit 1\n' > "${TMP_DIR}/bin/rpm"
     chmod +x "${TMP_DIR}/bin/rpm"

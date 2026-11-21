@@ -136,12 +136,17 @@ exit 1'
 }
 
 @test "rollback: 되돌리기 기록 줄은 다음 되돌리기 근거에서 제외" {
+    # 러너에 go 가 없어도 dry-run 되돌리기 경로를 검사하도록 가짜 go 를 둔다
+    mkdir -p "${TMP_DIR}/gobin"
+    printf '#!/bin/bash\nexit 0\n' > "${TMP_DIR}/gobin/go"
+    chmod +x "${TMP_DIR}/gobin/go"
     mkdir -p "${HOME}/.claude/arachne"
     printf '%s\n' \
         "2026-11-14 10:00:00	staticcheck	v0.7.0	v0.8.2	go:honnef.co/go/tools/cmd/staticcheck@latest" \
         "2026-11-14 11:00:00	staticcheck	v0.8.2	v0.7.0	rollback:go:honnef.co/go/tools/cmd/staticcheck@latest" \
         > "${HOME}/.claude/arachne/toolchain-history.log"
-    ARACHNE_TOOLS_DRYRUN=1 run bash "${REPO_DIR}/install.sh" -t --rollback staticcheck
+    PATH="${TMP_DIR}/gobin:${PATH}" ARACHNE_TOOLS_DRYRUN=1 \
+        run bash "${REPO_DIR}/install.sh" -t --rollback staticcheck
     [ "$status" -eq 0 ]
     [[ "$output" == *"staticcheck@v0.7.0"* ]] || false
     [[ "$output" != *"@rollback"* ]] || false
