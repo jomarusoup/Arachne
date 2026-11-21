@@ -85,7 +85,7 @@ CheckBudgetEntries() {
 @test "objectives: OBJECTIVES.md 가 핵심 제약을 담는다" {
     local doc="${REPO_DIR}/docs/OBJECTIVES.md"
     grep -qF "정확성 > 장애 격리 > 성능 > 개발 효율" "$doc"
-    grep -qF "Go는 핫패스 금지" "$doc"
+    grep -qF "GC 런타임 언어 금지" "$doc"
     grep -qF "메인 ← 보조 ← 유틸" "$doc"
     grep -qF "budgets.yaml" "$doc"
     grep -qF "핫패스 할당 0" "$doc"

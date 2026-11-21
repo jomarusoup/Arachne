@@ -1,6 +1,6 @@
 # Claude Code 글로벌 지시서
 
-리눅스 저지연 시스템(C·C++·Rust·Go)을 북극성으로 하는 Harness의 글로벌 Claude Code 설정.
+리눅스 저지연 시스템(C·Rust)을 북극성으로 하는 Harness의 글로벌 Claude Code 설정.
 목표는 `docs/OBJECTIVES.md`, 버전·계획·결정·폐기·동결 규칙은 `docs/MANAGEMENT.md`가 정본이다.
 
 <!--

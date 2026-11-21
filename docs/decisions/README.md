@@ -43,12 +43,13 @@ FROM:: [[arachne-docs]]
 | [0005-programming-philosophy](0005-programming-philosophy.md) | Accepted | 시스템 프로그래밍 철학 결정(D01~D23)을 확정한다. 대부분 권장안이며, 동시성·매크로·커밋 언어·기존 관례는 하네스 사용 방식에 맞춰 조정했다. |
 | [0006-roadmap-2026q4](0006-roadmap-2026q4.md) | Accepted | 2026 Q4 보강 로드맵의 결정을 확정한다. C 서버와 Pro*C·ecpg를 유지하고, 공유메모리·운영 도구·네이밍·로그·보안 강제를 보강한다. |
 | [0007-harness-direction-lowlatency](0007-harness-direction-lowlatency.md) | Accepted | 저지연 시스템 북극성과 목표 정본(OBJECTIVES·budgets)을 두고, 클라이언트를 네이티브로 바꾸며(0006 D-02 대체), 규칙·스킬 추가 동결·push 전 확인·eval 우선을 정한다. |
+| [0008-language-scope-rust-path](0008-language-scope-rust-path.md) | Accepted | 서버는 C 중심(객체 지향은 패턴), 클라이언트·보조·유틸은 Rust(+Shell), GC 런타임 언어(Go·Python)는 범위 밖으로 두고, Rust는 디코더 → 보조·유틸 → 측정 통과 메인 모듈 순서로 경계부터 이식한다(0007 범위·계층 대체). |
 
 상태 열은 각 ADR의 "상태" 절을 옮긴 것이다. ADR의 상태가 바뀌면 이 표도 함께 갱신한다.
 
 ## 번호 규칙
 
-다음 신규 ADR 번호는 `0008`이다.
+다음 신규 ADR 번호는 `0009`이다.
 
 번호 `0002`는 두 ADR이 함께 쓴다. 번호를 잘못 부여한 결과지만, 기록은 재작성하지 않는다는 원칙에
 따라 번호를 바꾸지 않는다. 두 ADR을 참조할 때는 전체 파일명으로 구분한다.
