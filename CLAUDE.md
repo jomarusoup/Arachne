@@ -1,6 +1,7 @@
 # Claude Code 글로벌 지시서
 
-웹·MVP부터 저수준 시스템 프로그래밍까지 아우르는 Harness의 글로벌 Claude Code 설정.
+리눅스 저지연 시스템(C·C++·Rust·Go)을 북극성으로 하는 Harness의 글로벌 Claude Code 설정.
+목표는 `docs/OBJECTIVES.md`, 버전·계획·결정·폐기·동결 규칙은 `docs/MANAGEMENT.md`가 정본이다.
 
 <!--
 규칙은 @import 하지 않는다. install.sh가 rules/를 ~/.claude/rules/로 심볼릭하며,
@@ -15,7 +16,7 @@ Claude Code가 이를 네이티브로 자동 로드한다:
 ## Architecture
 
 ```
-~/.claude/  (→ Arachne/ 심볼릭 링크)
+~/.claude/  (항목별로 → Arachne/ main 체크아웃 심볼릭 링크)
 │
 ├── agents/                          # Claude Code 서브에이전트
 │   ├── planner.md                   # 구현 설계 전담 (model: opus)
@@ -124,7 +125,7 @@ Claude Code가 이를 네이티브로 자동 로드한다:
 ├── mcp-configs/                     # MCP 서버 설정 템플릿 (github·filesystem)
 ├── lib/                             # install.sh 라이브러리 (project-ci·feedback·naming-check)
 ├── templates/project/               # 사용 프로젝트용 키트 — profiles·c-system 골격·sql·예제
-├── docs/                            # 문서 — 구조도는 docs/ARCHITECTURE.md, 결정은 docs/decisions/, 목표는 docs/OBJECTIVES.md
+├── docs/                            # 문서 — 구조도는 docs/ARCHITECTURE.md, 결정은 docs/decisions/, 목표는 docs/OBJECTIVES.md, 관리 규칙은 docs/MANAGEMENT.md
 ├── objectives/                      # 예산 정본(budgets.yaml)·규칙/스킬 동결 매니페스트
 ├── archive/                         # 현역에서 뺀 자산 보존 (multi-cli — ADR-0004)
 └── tests/                           # Arachne 자체 테스트 (bats + 인덱스 검사)

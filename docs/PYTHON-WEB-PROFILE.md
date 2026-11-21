@@ -1,7 +1,7 @@
 ---
 Title: "Python·Web profile"
 creation: 2026-06-09
-modification: 2026-10-06
+modification: 2026-11-21
 tags:
  - "arachne"
  - "python"
@@ -14,6 +14,8 @@ MOC:: [[Arachne]]
 FROM:: [[0001-python-web-profile]]
 
 # Python·Web Profile
+
+> **범위 밖 표시 (2026-11-21)** — `web`·`python-web` profile의 웹 프론트엔드 부분(React·Vite)과 FastAPI는 [OBJECTIVES](OBJECTIVES.md#2-범위) §2의 범위 밖이다. 해당 자산은 [계획](task/2026-11-20-harness-direction-plan.md) 2-1에서 아카이브할 예정이고, 그때까지 이 문서는 현재 동작 설명으로 남긴다.
 
 이 문서는 프로젝트 CI profile 중 `minimal`·`python`·`web`·`python-web` 4개의 기본 도구와 명령을 설명한다.
 Python 백엔드나 웹 프론트엔드 프로젝트에 CI를 붙이기 전에 읽는다. 시스템 profile(`cpp`·`rust`·`c-system`)과

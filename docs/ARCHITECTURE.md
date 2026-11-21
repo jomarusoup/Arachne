@@ -1,7 +1,7 @@
 ---
 Title: ARCHITECTURE
 creation: 2026-06-06
-modification: 2026-10-06
+modification: 2026-11-21
 Description: Arachne 하네스 구조 다이어그램 (Mermaid) — 설정 배선 · 훅 · 보안 계층 · 규칙 로딩 · 워크플로 · 프로젝트 키트 · 3티어 지원 지도
 tags:
 aliases:
@@ -9,7 +9,8 @@ aliases:
 
 # 🕷️ Arachne 하네스 구조
 
-Arachne는 Claude Code를 웹·MVP부터 저수준 시스템 프로그래밍까지 같은 규율로 쓰기 위한 개인 하네스(harness)다.
+Arachne는 Claude Code로 리눅스의 정확하고 장애가 격리된 저지연 시스템(C·C++·Rust·Go)을 만들기 위한 개인 하네스(harness)다
+([OBJECTIVES](OBJECTIVES.md)). 범위 밖 자산(웹·Java·Electron·멀티-CLI)은 아카이브 전까지 이 문서에 남아 있다.
 하네스는 규칙(rules), 스킬(skills), 슬래시 커맨드(commands), 서브에이전트(agents), 이벤트 훅(hooks), 설정 템플릿을
 묶은 것이며, 저장소 하나를 `~/.claude/`에 연결해 모든 프로젝트에 적용한다.
 
@@ -217,7 +218,7 @@ Arachne/
 │   ├── throughput-poc/ · desktop-data-client/ · compose-3tier/   # 측정·클라이언트·3티어 예제
 │   └── verify.sh · arachne.yml · AGENTS.md · CLAUDE.md · design/
 ├── tests/                       # 하네스 자체 검증 (bats · 셸 검사)
-├── docs/                        # 문서 — 지도(ARCHITECTURE·README) · 결정(decisions) · 이력(issue) · 목표(OBJECTIVES)
+├── docs/                        # 문서 — 지도(ARCHITECTURE·README) · 결정(decisions) · 이력(issue) · 목표(OBJECTIVES) · 관리 규칙(MANAGEMENT)
 ├── objectives/                  # 예산 정본(budgets.yaml) · 규칙/스킬 동결 매니페스트(freeze-manifest.txt)
 │                                #   · 상태(task) · 아이디어(idea) · 도구(tools) · 양식(template)
 ├── archive/                     # 현역에서 뺀 자산 보존 (multi-cli — ADR-0004)

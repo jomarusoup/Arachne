@@ -1,13 +1,15 @@
 ---
 Title: MULTI-CLI
 creation: 2026-06-05
-modification: 2026-10-06
+modification: 2026-11-21
 Description: 공통 규약(AGENTS.md) 다중 CLI 배포 가이드 — Claude·Gemini·Codex·Copilot 어댑터
 tags:
 aliases:
 ---
 
 # Multi-CLI Guide — 공통 규약(AGENTS.md) 배포
+
+> **범위 밖 표시 (2026-11-21)** — 멀티-CLI 배포(Gemini·Codex·Copilot 어댑터)는 [OBJECTIVES](OBJECTIVES.md#2-범위) §2의 범위 밖이다. 해당 자산은 [계획](task/2026-11-20-harness-direction-plan.md) 2-1에서 처리를 결정 D-08로 정한 뒤 아카이브할 예정이고, 그때까지 이 문서는 현재 동작 설명으로 남긴다.
 
 이 문서는 Arachne의 공통 규약(`AGENTS.md`)을 Claude Code 밖의 CLI(Gemini CLI·Codex CLI·GitHub Copilot)에
 배포하는 방법이다. Claude Code와 함께 다른 CLI를 쓰거나, 다른 CLI에서 규약이 보이지 않을 때 읽는다.
