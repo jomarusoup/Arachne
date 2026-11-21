@@ -172,7 +172,8 @@ CLAUDE_CONFIG_DIR="$(mktemp -d)" claude -p "ok" --output-format json --max-turns
 | 2-4 | C 수신기 + 공유메모리 갱신 (메인) | `receiver/`, `shm/`(단일 작성자 + 시퀀스 락) | 목표 레이트에서 유실·갭 0, TSan 통과, 수신기 kill -9 후 재기동 시 shm 불변식 검사 통과 | 2-3 | L |
 | 2-5 | Rust 조회·덤프 유틸 + 디코더 crate | `tools/shmdump-rs/`, `decoder/`(외부 입력 디코더 — 2-7과 공유) | PROT_READ 매핑(쓰기 시도 시 SIGSEGV 테스트), vectors 교차 검증, 상태 변경 기능이 생기면 조회 기본·`--apply`·dry-run·락·감사 로그 테스트 | 2-4 | M |
 | 2-6 | Rust exporter + 모니터링 | `exporter/`(Rust, shm PROT_READ + 시퀀스 락 리더, `/metrics`), Prometheus·Grafana 설정 | exporter kill·지연 주입 시 메인 지연 예산 불변(장애 격리), `cargo test` + Miri(unsafe 리더) 통과 | 2-4, D-02·D-09 | M |
-| 2-7 | Rust 네이티브 클라이언트 (egui) | 스파이크 → `client/` | 목표 레이트에서 프레임 시간 p99·신선도·1시간 RSS 추세가 예산 이내, 2-5 디코더 crate로 vectors 디코딩 일치, 수신 스레드가 렌더와 분리 | 2-4, D-01 | L |
+| 2-7 | Rust 네이티브 클라이언트 (egui, macOS·Windows) | 스파이크 → `client/core`(UI 의존 없는 수신·디코더·병합·상태 crate) + `client/desktop`(egui) | 최적화 → 성능 → 디자인 순으로 판정: CPU·수신 경로 할당 → 프레임 시간 p99·신선도·1시간 RSS 추세가 예산 이내, 2-5 디코더 crate로 vectors 디코딩 일치, 수신 스레드가 렌더와 분리, `client/core`가 UI crate에 의존하지 않음 | 2-4, D-01 | L |
+| 2-7m | 모바일 클라이언트 (Android·iOS) | 같은 `client/core` + egui 모바일 셸 | 2-7 예산 통과 후 착수. 백그라운드 복귀 시 스냅샷 + 증분 재동기화 통과, 변경 시에만 다시 그림. 네이티브 화면이 필요하면 새 ADR | 2-7 | L |
 | 2-8 | 파이프라인 CI | 프로젝트 CI에 C(ASan·UBSan·TSan)·Rust(clippy·`cargo-deny`·`cargo-audit`·디코더 `cargo-fuzz`·Miri) 단계 | 프로젝트 CI 통과 | 2-5~2-7 | S |
 | 2-9 | 실패 기록 축적 | `docs/failures/*.md` | 서로 다른 실패 30건 이상(3단계 과제 10~15개 수확용) | 2-3~2-8 진행 중 | — |
 
@@ -269,5 +270,6 @@ CLAUDE_CONFIG_DIR="$(mktemp -d)" claude -p "ok" --output-format json --max-turns
 | ---------- | ---- |
 | 2026-11-20 | 초안 — 현황 실측, 단계 분해, 결정 레지스터 D-01~D-16, 위험 R1~R8 |
 | 2026-11-21 | 1-7 — 관리 규칙 정본(MANAGEMENT)·독자 경로 문서 지도·루트 README 축소·범위 밖 표시, 버전 규칙(SemVer) 확정 후 1.5.0 |
+| 2026-11-21 | 클라이언트 우선순위(최적화 > 성능 > 디자인)·코어/UI 분리·플랫폼 단계(macOS·Windows → Android·iOS) 반영, 2-7 갱신·2-7m 추가, 클라이언트 자원 예산 2개 |
 | 2026-11-21 | 결정 확정(ADR-0008) — 서버 C 중심·클라이언트·보조·유틸 Rust, Go·Python 범위 밖, Rust 경계 이식. D-01·02·03·05·07·08·11 확정, D-06 해소, D-09·15·16 언어 대체, 2-2·2-5~2-8·4-4 갱신 |
 | 2026-11-21 | PR #57 보완 — 확정 불변식(핫패스 할당 0·클라이언트 송신 블로킹 0)·유틸 지연 예산 추가, 동결 범위에 agents·commands 포함, 매니페스트 행 추가 ↔ ADR 동반 CI 검사 |

@@ -101,6 +101,19 @@ budgets:
     value: 0
     status: 확정
     source: "docs/OBJECTIVES.md §3 공통 제약 — 클라이언트는 서버를 막지 않는다 (느린 클라이언트로 인한 서버 메인 송신 블로킹 시간)"
+  # 우선순위 최적화(자원) > 성능(속도) > 디자인 — OBJECTIVES §3 클라이언트
+  - id: client.main.cpu_percent
+    layer: client-main
+    unit: percent
+    value: null
+    status: 실측 대기
+    source: null
+  - id: client.main.recv_hotpath_alloc
+    layer: client-main
+    unit: count
+    value: null
+    status: 실측 대기
+    source: null
   - id: client.main.frame_time.p99
     layer: client-main
     unit: ms
