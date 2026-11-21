@@ -124,7 +124,8 @@ Claude Code가 이를 네이티브로 자동 로드한다:
 ├── mcp-configs/                     # MCP 서버 설정 템플릿 (github·filesystem)
 ├── lib/                             # install.sh 라이브러리 (project-ci·feedback·naming-check)
 ├── templates/project/               # 사용 프로젝트용 키트 — profiles·c-system 골격·sql·예제
-├── docs/                            # 문서 — 구조도는 docs/ARCHITECTURE.md, 결정은 docs/decisions/
+├── docs/                            # 문서 — 구조도는 docs/ARCHITECTURE.md, 결정은 docs/decisions/, 목표는 docs/OBJECTIVES.md
+├── objectives/                      # 예산 정본(budgets.yaml)·규칙/스킬 동결 매니페스트
 ├── archive/                         # 현역에서 뺀 자산 보존 (multi-cli — ADR-0004)
 └── tests/                           # Arachne 자체 테스트 (bats + 인덱스 검사)
 ```

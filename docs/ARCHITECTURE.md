@@ -217,7 +217,8 @@ Arachne/
 │   ├── throughput-poc/ · desktop-data-client/ · compose-3tier/   # 측정·클라이언트·3티어 예제
 │   └── verify.sh · arachne.yml · AGENTS.md · CLAUDE.md · design/
 ├── tests/                       # 하네스 자체 검증 (bats · 셸 검사)
-├── docs/                        # 문서 — 지도(ARCHITECTURE·README) · 결정(decisions) · 이력(issue)
+├── docs/                        # 문서 — 지도(ARCHITECTURE·README) · 결정(decisions) · 이력(issue) · 목표(OBJECTIVES)
+├── objectives/                  # 예산 정본(budgets.yaml) · 규칙/스킬 동결 매니페스트(freeze-manifest.txt)
 │                                #   · 상태(task) · 아이디어(idea) · 도구(tools) · 양식(template)
 ├── archive/                     # 현역에서 뺀 자산 보존 (multi-cli — ADR-0004)
 └── .github/workflows/ci.yml     # CI job 5개 (Ubuntu·Rocky·macOS·Windows + 데이터 계약)

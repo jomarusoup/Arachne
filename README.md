@@ -163,9 +163,11 @@ Arachne/
 ├── docs/PYTHON-WEB-PROFILE.md   # Python·Web profile 기술 기준
 ├── docs/COMPATIBILITY.md        # 기능별 플랫폼 지원표
 ├── docs/ARCHITECTURE.md         # 하네스 구조 다이어그램 (설치·훅·보안 계층·규칙 로딩·프로젝트 키트·3티어 지도)
+├── docs/OBJECTIVES.md           # 목표 정본 — 북극성·범위·계층·운영 원칙 (예산은 objectives/budgets.yaml)
 ├── docs/decisions/              # Architecture Decision Record
 ├── docs/task/                   # 승인된 실행 작업과 진행 상태 기록
-├── docs/template/               # idea · issue · task · audit · feedback 기록 템플릿
+├── docs/template/               # idea · issue · task · audit · feedback · failure 기록 템플릿
+├── objectives/                  # 예산 정본 · 규칙/스킬 동결 매니페스트
 ├── tests/                       # 검증 스크립트 (bats + shell)
 ├── templates/project/           # 사용 프로젝트 키트 — profile별 CI·검증 명령, c-system 골격, sql 적용기, 예제
 └── dotfiles/                    # bash_profile, vimrc (병합 원본)

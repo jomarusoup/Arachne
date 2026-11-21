@@ -102,6 +102,7 @@ Arachne를 특정 프로젝트 유형에 적용할 때의 기준 문서다.
 | [ARCHITECTURE](ARCHITECTURE.md) | 설치 배선, 훅 흐름, 보안 계층, 규칙 로딩, 개발 파이프라인, 프로젝트 키트, 3티어 지원 지도 |
 | [MULTI-CLI](MULTI-CLI.md) | Claude·Codex·Gemini·Copilot 역할 분담·연계 |
 | [AI-ENGINEERING-NOTES](AI-ENGINEERING-NOTES.md) | 에이전틱 엔지니어링 설계 노트 |
+| [OBJECTIVES](OBJECTIVES.md) | 목표 정본 — 북극성·우선순위·범위·계층·운영 원칙·동결 (예산은 `objectives/budgets.yaml`) |
 | [decisions/README](decisions/README.md) | ADR 작성 기준과 현재 결정 목록 |
 
 ## 5. Tools & UI/UX — 확장 도구와 예시
@@ -127,5 +128,5 @@ Arachne를 특정 프로젝트 유형에 적용할 때의 기준 문서다.
 | [issue/](issue/) | 문제 재현, 원인 분석, 영향 범위를 기록할 때 | [issue/README](issue/README.md) |
 | [idea/](idea/) | 실행 확정 전인 개선 후보나 감사 결과를 둘 때 | [idea/README](idea/README.md) |
 | [task/](task/) | 실행하기로 결정한 작업과 실제 상태를 추적할 때 | [task/README](task/README.md) |
-| [template/](template/) | issue·idea·task·audit·feedback 문서 초안을 만들 때 | [template/](template/) |
+| [template/](template/) | issue·idea·task·audit·feedback·failure 문서 초안을 만들 때 | [template/](template/) |
 | [decisions/](decisions/) | 장기 설계 결정과 트레이드오프를 보존할 때 | [decisions/README](decisions/README.md) |

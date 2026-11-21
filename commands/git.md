@@ -41,7 +41,7 @@ git rev-parse --show-toplevel
 
 ### 2. 브랜치 가드
 - 현재 브랜치가 의도한 브랜치인지 확인. **의도치 않은 브랜치면 중단·보고**한다.
-- 기본 브랜치(main) 직접 푸시는 그대로 진행하되, 대규모·실험 변경은 feat 브랜치 권장
+- 기본 브랜치(main) 직접 푸시는 사용자 확인 후에만, 대규모·실험 변경은 feat 브랜치 권장
   (`rules/common/git-workflow.md`).
 
 ### 3. 검증 선행 (커밋 전 가드)
@@ -74,6 +74,8 @@ git rev-parse --show-toplevel
 ```bash
 git add -A          # 단, 1단계에서 무관한 변경이 있으면 해당 파일만: git add <이번 작업 파일들>
 git commit -m "[커밋 메시지]"
+# push 전 확인 — 커밋 해시·브랜치·push 대상을 보고하고 사용자 확인을 받은 뒤 실행한다
+# (rules/common/workflow.md "push 전 확인"). 확인 없이 push 하지 않는다.
 git push
 ```
 - `git push`가 **non-fast-forward**로 거부되면(병렬 세션이 origin을 진전시킨 경우):
