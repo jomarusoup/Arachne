@@ -10,13 +10,14 @@
 #   - 수치 출처는 홈랩 기준 장비 실측 또는 사람이 정한 요구뿐이다 (회사 수치·공개 벤치 수치 반입 금지).
 
 environment:
-  # 홈랩 기준 장비 — 결정 D-05 후 기록
-  host: null
-  cpu: null
-  kernel: null
-  cpu_governor: null
-  isolcpus: null
-  status: 실측 대기
+  # 홈랩 기준 장비 — 결정 D-05(ADR-0008): 현재 작업 서버. 호스트 이름은 공개 저장소라 기록하지 않는다.
+  host: "홈랩 작업 서버 (Rocky Linux 9.8)"
+  cpu: "Intel Core i5-8400 @ 2.80GHz, 6코어 6스레드 (SMT 없음)"
+  kernel: "5.14.0-687.26.1.el9_8.x86_64"
+  cpu_governor: performance
+  isolcpus: none
+  status: 실측
+  source: "2026-11-21 lscpu · uname -r · /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor · /sys/devices/system/cpu/isolated — 커널 갱신·isolcpus 설정 시 다시 기록"
 
 budgets:
   # --- 하네스 ---
@@ -71,7 +72,7 @@ budgets:
     status: 확정
     source: "docs/OBJECTIVES.md §3 공통 제약 — 핫패스 할당 0 (워밍업 이후 지연 예산 경로의 동적 할당 횟수)"
 
-  # --- 서버 보조 (Go exporter) ---
+  # --- 서버 보조 (Rust exporter) ---
   - id: server.aux.exporter_cpu
     layer: server-aux
     unit: percent

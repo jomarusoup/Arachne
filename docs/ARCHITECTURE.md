@@ -9,7 +9,7 @@ aliases:
 
 # 🕷️ Arachne 하네스 구조
 
-Arachne는 Claude Code로 리눅스의 정확하고 장애가 격리된 저지연 시스템(C·C++·Rust·Go)을 만들기 위한 개인 하네스(harness)다
+Arachne는 Claude Code로 리눅스의 정확하고 장애가 격리된 저지연 시스템(C 서버·Rust 클라이언트와 유틸)을 만들기 위한 개인 하네스(harness)다
 ([OBJECTIVES](OBJECTIVES.md)). 범위 밖 자산(웹·Java·Electron·멀티-CLI)은 아카이브 전까지 이 문서에 남아 있다.
 하네스는 규칙(rules), 스킬(skills), 슬래시 커맨드(commands), 서브에이전트(agents), 이벤트 훅(hooks), 설정 템플릿을
 묶은 것이며, 저장소 하나를 `~/.claude/`에 연결해 모든 프로젝트에 적용한다.

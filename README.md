@@ -16,10 +16,10 @@ aliases:
 규칙(`rules/`), 스킬(`skills/`), 서브에이전트(`agents/`), 슬래시 커맨드(`commands/`), 이벤트 훅(`hooks/`)을
 한 저장소에 두고, 설치기가 `~/.claude/`에 연결한다. 사용 프로젝트에는 profile 기반 CI 키트를 만들어 준다.
 
-- **목표**: 리눅스에서 정확하고 장애가 격리된 저지연 시스템(C·C++·Rust·Go)과, 그 성능을 받쳐 주는
-  네이티브 클라이언트. 우선순위는 정확성 > 장애 격리 > 성능 > 개발 효율 ([OBJECTIVES](docs/OBJECTIVES.md)).
+- **목표**: 리눅스에서 정확하고 장애가 격리된 저지연 시스템(C 중심, Rust로 경계부터 이식)과, 그 성능을 받쳐 주는
+  Rust 네이티브 클라이언트. 우선순위는 정확성 > 장애 격리 > 성능 > 개발 효율 ([OBJECTIVES](docs/OBJECTIVES.md)).
 - **현재 상태**: 방향 전환 1단계. 새 규칙·스킬·에이전트·커맨드 추가는 동결 중이고, 범위 밖 자산(웹·Java·
-  Electron·멀티-CLI)은 아카이브 예정이다 ([계획](docs/task/2026-11-20-harness-direction-plan.md)).
+  Electron·Go·Python·멀티-CLI)은 아카이브 예정이다 ([계획](docs/task/2026-11-20-harness-direction-plan.md)).
 - **버전**: [`VERSION`](VERSION) — 규칙은 [MANAGEMENT §1](docs/MANAGEMENT.md#1-버전).
 
 ## 시작하기 — 3단계

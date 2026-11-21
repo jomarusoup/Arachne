@@ -33,7 +33,7 @@ FROM:: [[2026-10-06-harness-inventory]]
 
 성공 기준(모두 실행으로 확인한다):
 
-1. 최소 파이프라인(C 송신 → C 수신·공유메모리 → Rust 유틸 → Go exporter·모니터링 → C++ 클라이언트)이
+1. 최소 파이프라인(C 송신 → C 수신·공유메모리 → Rust 유틸 → Rust exporter·모니터링 → Rust 클라이언트)이
    홈랩 기준 장비에서 `budgets.yaml` 예산을 충족한다.
 2. eval 기준선이 있고, 하네스 적용 조건이 빈 설정 조건보다 노이즈 범위 밖에서 낫다
    (낫지 않은 자산은 제거 대상이다).
@@ -41,7 +41,7 @@ FROM:: [[2026-10-06-harness-inventory]]
 
 ## 범위 (What)
 
-- 메인 언어 C·C++·Rust·Go, 유틸 Python·Shell, 웹은 모니터링 전용, 성능 클라이언트는 네이티브 직접 개발.
+- 서버는 C 중심(객체 지향은 패턴), 클라이언트·보조·유틸은 Rust, 조회·조립은 Shell, 웹은 모니터링 전용(Prometheus + Grafana). Go·Python은 범위 밖(ADR-0008, 초안의 C·C++·Rust·Go / Python·Shell을 대체).
 - 계층 정의·공통 제약·운영 원칙은 [`docs/OBJECTIVES.md`](../OBJECTIVES.md)가 정본이다.
 - 단계 1~5의 작업 단위는 아래 [§2](#2-단계별-작업-분해)에 있다. 확정된 단위는 실행 시 개별 task로 승격한다.
 
@@ -167,13 +167,13 @@ CLAUDE_CONFIG_DIR="$(mktemp -d)" claude -p "ok" --output-format json --max-turns
 | ID | 작업 | 산출물 | 완료 조건 | 선행 | 규모 |
 |---|---|---|---|---|---|
 | 2-1 | 범위 밖 자산 아카이브 | `archive/out-of-scope/`, §1.5 전 항목 수정, ADR-0004 부분 supersede(D-08 결과에 따라) | CI 4개 잡 통과, `check_index.sh` 통과, freeze-manifest 갱신 | D-07·D-08 결정 | L |
-| 2-2 | 파이프라인 프로젝트 생성 + 툴체인 | `arachne -n <이름> --profile c-system`, `arachne -t`로 cargo·go·cmake | `.arachne/commands` 실행 통과, `cargo --version`·`go version`·`cmake --version` | D-11 결정 | S |
+| 2-2 | 파이프라인 프로젝트 생성 + 툴체인 | `arachne -n <이름> --profile c-system`, `arachne -t`로 cargo·cmake | `.arachne/commands` 실행 통과, `cargo --version`·`cmake --version` | D-11 결정 | S |
 | 2-3 | C 송신기 + 계약 정본 | `sender/`(throughput-poc 재사용), `contract/`(stream_msg.h·frame_codec·vectors) | 개방 루프 목표 레이트 달성률 ≥ 99.9% (값은 budgets), ASan·UBSan 통과 | 2-2 | M |
 | 2-4 | C 수신기 + 공유메모리 갱신 (메인) | `receiver/`, `shm/`(단일 작성자 + 시퀀스 락) | 목표 레이트에서 유실·갭 0, TSan 통과, 수신기 kill -9 후 재기동 시 shm 불변식 검사 통과 | 2-3 | L |
-| 2-5 | Rust 조회·덤프 유틸 | `tools/shmdump-rs/` | PROT_READ 매핑(쓰기 시도 시 SIGSEGV 테스트), vectors 교차 검증, 상태 변경 기능이 생기면 조회 기본·`--apply`·dry-run·락·감사 로그 테스트 | 2-4 | M |
-| 2-6 | Go exporter + 모니터링 | `exporter/`(cgo 시퀀스 락 읽기, `/metrics`), D-02 결과물 | exporter kill·지연 주입 시 메인 지연 예산 불변(장애 격리), `go test -race` 통과 | 2-4, D-02·D-09 | M |
-| 2-7 | C++ 네이티브 클라이언트 | 툴킷 스파이크 → `client/` | 목표 레이트에서 프레임 시간 p99·신선도·1시간 RSS 추세가 예산 이내, vectors 디코딩 일치 | 2-4, D-01 | L |
-| 2-8 | 파이프라인 CI | 프로젝트 CI에 C++(cmake+ASan)·Go(`-race`)·Rust(clippy) 단계 | 프로젝트 CI 통과 | 2-5~2-7 | S |
+| 2-5 | Rust 조회·덤프 유틸 + 디코더 crate | `tools/shmdump-rs/`, `decoder/`(외부 입력 디코더 — 2-7과 공유) | PROT_READ 매핑(쓰기 시도 시 SIGSEGV 테스트), vectors 교차 검증, 상태 변경 기능이 생기면 조회 기본·`--apply`·dry-run·락·감사 로그 테스트 | 2-4 | M |
+| 2-6 | Rust exporter + 모니터링 | `exporter/`(Rust, shm PROT_READ + 시퀀스 락 리더, `/metrics`), Prometheus·Grafana 설정 | exporter kill·지연 주입 시 메인 지연 예산 불변(장애 격리), `cargo test` + Miri(unsafe 리더) 통과 | 2-4, D-02·D-09 | M |
+| 2-7 | Rust 네이티브 클라이언트 (egui) | 스파이크 → `client/` | 목표 레이트에서 프레임 시간 p99·신선도·1시간 RSS 추세가 예산 이내, 2-5 디코더 crate로 vectors 디코딩 일치, 수신 스레드가 렌더와 분리 | 2-4, D-01 | L |
+| 2-8 | 파이프라인 CI | 프로젝트 CI에 C(ASan·UBSan·TSan)·Rust(clippy·`cargo-deny`·`cargo-audit`·디코더 `cargo-fuzz`·Miri) 단계 | 프로젝트 CI 통과 | 2-5~2-7 | S |
 | 2-9 | 실패 기록 축적 | `docs/failures/*.md` | 서로 다른 실패 30건 이상(3단계 과제 10~15개 수확용) | 2-3~2-8 진행 중 | — |
 
 ### 3단계 — 평가 체계
@@ -194,7 +194,7 @@ CLAUDE_CONFIG_DIR="$(mktemp -d)" claude -p "ok" --output-format json --max-turns
 | 4-1 | 컨텍스트 다이어트 | CLAUDE.md 트리 → `docs/ARCHITECTURE.md` 이전, `rules/common` 압축, description 축약 | 1-6 방식 실측 ≤ 8k, eval 통과율 노이즈 밴드 이내 | 3-6, D-04 | M |
 | 4-2 | 반복 실패 → 실행 자산 | 2회 이상 반복 실패마다 훅·검사·템플릿 1개와 해당 문장 규칙 삭제 | 해당 실패 재현 과제에서 통과, 규칙 문장 삭제 | 3-6 | M |
 | 4-3 | 제거 실험(ablation) | 자산 묶음별 제거 조건 eval 결과 표 | 차이가 노이즈 밴드 이내인 묶음은 아카이브 PR | 3-6 | M |
-| 4-4 | 템플릿 승격 | 파이프라인에서 효과 확인된 실행 자산 → `templates/project/` | 하네스 CI에 C++·Go 빌드 단계 추가, 통과 | 2-8 | M |
+| 4-4 | 템플릿 승격 | 파이프라인에서 효과 확인된 실행 자산 → `templates/project/` | 하네스 CI에 Rust 빌드 단계(cargo 필수화)와 2-8에서 효과 확인된 검증 도구 추가, 통과 | 2-8 | M |
 
 ### 5단계 — 개선 루프 (홈랩, 주 1회)
 
@@ -212,22 +212,22 @@ CLAUDE_CONFIG_DIR="$(mktemp -d)" claude -p "ok" --output-format json --max-turns
 
 | ID | 질문 | 선택지 | 권장안 | 근거 |
 |---|---|---|---|---|
-| D-01 | 네이티브 클라이언트 툴킷 | (a) Qt 6 (b) Dear ImGui (c) Rust egui·Slint | **(b) Dear ImGui (C++20) + 2-7 스파이크로 확정**. 폼·텍스트 입력·접근성 요구가 커지면 (a) | 화면 주기 프레임 구동이 "화면 주기 병합"(desktop-data-client 설계)과 그대로 맞고, 프레임 시간 측정이 쉽다. 의존성이 작고 MIT. Qt는 위젯이 풍부하지만 model/view 갱신 비용·moc·LGPL 조건이 있다. (c)는 확정 사항의 "C++ 네이티브 클라이언트"와 언어가 달라 계층 정의 변경이 필요 |
-| D-02 | 모니터링 웹 구성 | (a) Prometheus `/metrics` + Grafana (b) Go 내장(net/http + embed 정적 페이지) | **(a)** — Go 내장은 Grafana로 안 되는 화면이 2회 이상 필요할 때 | 웹 코드 0줄 → `javascript/`·`web/` 규칙 아카이브 가능(축소 지향). `/metrics`가 REST 계약 정본 역할. Grafana가 죽어도 메인 무관(장애 격리) |
-| D-03 | `budgets.yaml` 초기 수치 출처 | (a) 요구 기반(사람이 목표 레이트 정의) (b) 홈랩 실측 기준선 × 여유율 (c) 공개 벤치 수치 | **처리량 목표는 (a), 지연·자원 예산은 (b)**. (c)는 방법론만 참조, 수치 반입 금지 | 회사 수치 반입 금지. PoC 수치는 macOS M1이라 기준 장비와 다름. 공개 벤치는 장비가 달라 예산으로 부적합 |
+| D-01 | 네이티브 클라이언트 툴킷 | (a) Qt 6 (b) Dear ImGui (c) Rust egui·Slint | **확정 (2026-11-21, [ADR-0008](../decisions/0008-language-scope-rust-path.md)): (c) Rust + egui**, 2-7 스파이크로 최종 확인. 폼·텍스트 입력·접근성 요구가 커지면 재판정 | 유실은 언어가 아니라 수신 구조(수신·렌더 스레드 분리, 버퍼 재사용, 시퀀스 갭 재요청)가 결정한다. Rust는 C++과 같은 수준이고, 2-5 유틸과 디코더 crate를 공유하며 외부 입력 해석의 메모리 안전성을 얻는다. egui는 즉시 모드라 화면 주기 병합과 맞는다 |
+| D-02 | 모니터링 웹 구성 | (a) Prometheus `/metrics` + Grafana (b) 내장 웹 페이지 | **확정 ([ADR-0008](../decisions/0008-language-scope-rust-path.md)): (a)** | 웹 코드 0줄 → `javascript/`·`web/` 규칙 아카이브(축소 지향). `/metrics`가 REST 계약 정본 역할. Grafana가 죽어도 메인 무관(장애 격리). 15초 단위 추세용이고 개별 지연값 분석은 측정 도구로 한다 |
+| D-03 | `budgets.yaml` 초기 수치 출처 | (a) 요구 기반(사람이 목표 레이트 정의) (b) 홈랩 실측 기준선 × 여유율 (c) 공개 벤치 수치 | **확정 ([ADR-0008](../decisions/0008-language-scope-rust-path.md)): 처리량 목표는 (a), 지연·자원 예산은 (b)**. (c)는 방법론만 참조, 수치 반입 금지 | 회사 수치 반입 금지. PoC 수치는 macOS M1이라 기준 장비와 다름. 공개 벤치는 장비가 달라 예산으로 부적합 |
 | D-04 | 8k 목표의 측정 범위 | (a) 지시 파일만 (b) `claude -p` usage 차분 전체(지시 + description) | **(b)** — 단일 실측 수치, 조작 불가 | (a)는 추정·누락 위험. 단 (b)는 현재 ≈ 20k 추정이라 4-1 규모가 커진다 → 4단계 진입 시 재확인 |
-| D-05 | 홈랩 기준 장비 | (a) 현재 작업 장비(i5-8400 6C) (b) 별도 서버 | 사람이 지정. 지정 후 `budgets.yaml` `environment`에 CPU·커널·governor·isolcpus 기록 | 예산은 장비 고정 없이는 비교 불가 |
-| D-06 | "Go 핫패스 금지" 위치 | (a) OBJECTIVES.md (b) `rules/golang` (c) 검사 스크립트 | **(a) 지금, (c) 위반 2회 시** | 1단계 규칙 추가 동결 + 실행 우선 원칙 |
-| D-07 | §1.2 "판단 필요" 자산 | 항목별 아카이브 / 유지 | 권장: python-reviewer·python-review **아카이브**(유틸 언어, 실패 2회 시 복귀), database-reviewer·database-review **유지**(공유메모리⇄DB 계층), `e2e` **유지·Playwright 절 삭제**, `learn` **아카이브**(수확 원칙과 충돌), desktop-data-client **아카이브**(설계는 2-7에서 C++로 재수확), backend-patterns·json-contracts·product-*·hexagonal·redis **아카이브**, distributed-tracing **유지·TS 절은 2-1에서 분리**, `javascript/`·`web/*` D-02가 (a)면 **아카이브**, `python/data-handling`·`docker/` **유지** | 범위·계층 정의 대조 |
-| D-08 | AGENTS.md·타 CLI 어댑터 | (a) 전부 유지 (b) 어댑터·`install-copilot.ps1` 아카이브, AGENTS.md는 공용 규약 문서로 유지 (c) 전부 아카이브 | **(b)** | 재도입 금지와 정합. AGENTS.md는 업계 표준 파일이고 컨텍스트 비용 0. `check_convention_sync.sh`는 유지 |
-| D-09 | exporter의 데이터 접근 | (a) cgo로 shm 읽기 전용 매핑 + 시퀀스 락 리더 (b) 메인이 통계 엔드포인트 제공 | **(a)** | (b)는 메인 프로세스에 HTTP 경로를 추가해 장애 격리를 해친다. (a)는 PROT_READ라 exporter 장애가 메인을 오염시키지 못한다. 단 cgo 리더는 핫패스가 아님을 OBJECTIVES 계층 정의로 명시 |
+| D-05 | 홈랩 기준 장비 | (a) 현재 작업 장비(i5-8400 6C) (b) 별도 서버 | **확정 ([ADR-0008](../decisions/0008-language-scope-rust-path.md)): (a)** — `budgets.yaml` `environment`에 CPU·커널·governor(performance)·isolcpus(none) 기록 | 예산은 장비 고정 없이는 비교 불가 |
+| D-06 | "Go 핫패스 금지" 위치 | (a) OBJECTIVES.md (b) `rules/golang` (c) 검사 스크립트 | **해소 ([ADR-0008](../decisions/0008-language-scope-rust-path.md))** — OBJECTIVES §3 "GC 런타임 언어 금지"로 일반화, Go는 범위 밖 | 언어 범위에서 빠져 별도 위치가 필요 없다 |
+| D-07 | §1.2 "판단 필요" 자산 + Go·Python 자산 | 항목별 아카이브 / 유지 | **확정 ([ADR-0008](../decisions/0008-language-scope-rust-path.md))** — **아카이브**: python-reviewer·`/python-review`, `/learn`, desktop-data-client, backend-patterns·json-contracts·product-*·hexagonal·redis, `javascript/`·`web/*`, `python/` 전체(data-handling 포함), Go 자산(go-reviewer·go-build-resolver·`/go-review`·`/go-build`·`/go-test`·`rules/golang/`·golang-patterns·golang-testing·go-http-patterns), Python profile(`python`·`python-web`). **유지**: database-reviewer·`/database-review`(공유메모리⇄DB 계층), `docker/`. **유지·일부 삭제**: `/e2e`(Playwright 절), distributed-tracing(TS 절). 하네스 자체 테스트가 의존하는 Python fixture는 2-1에서 CI 통과 조건으로 판정 | 범위·계층 정의 대조. GC 런타임 언어 제외(ADR-0008 결정 3) |
+| D-08 | AGENTS.md·타 CLI 어댑터 | (a) 전부 유지 (b) 어댑터·`install-copilot.ps1` 아카이브, AGENTS.md는 공용 규약 문서로 유지 (c) 전부 아카이브 | **확정 ([ADR-0008](../decisions/0008-language-scope-rust-path.md)): (b)** | 재도입 금지와 정합. AGENTS.md는 업계 표준 파일이고 컨텍스트 비용 0. `check_convention_sync.sh`는 유지 |
+| D-09 | exporter의 데이터 접근 | (a) shm 읽기 전용 매핑 + 시퀀스 락 리더 (b) 메인이 통계 엔드포인트 제공 | **(a) 유지, 구현 언어는 cgo → Rust ([ADR-0008](../decisions/0008-language-scope-rust-path.md))** | (b)는 메인 프로세스에 HTTP 경로를 추가해 장애 격리를 해친다. (a)는 PROT_READ라 exporter 장애가 메인을 오염시키지 못한다. 리더는 핫패스가 아님을 OBJECTIVES 계층 정의로 명시 |
 | D-10 | eval·holdout 저장 위치 | (a) 공개 저장소 안 (b) 별도 사용자 소유 비공개 디렉터리, 결과 요약만 저장소 | **(b)** | holdout 오염 방지(R2). 공개 저장소는 학습·실험자 노출 |
-| D-11 | 파이프라인 프로젝트 저장소 | (a) 이 저장소 `templates/` 안 (b) 별도 저장소(비공개 시작) | **(b)** | 확정 "프로젝트에서 먼저 쓰고 승격". 실패 기록에 환경 정보가 섞일 수 있어 비공개로 시작 |
+| D-11 | 파이프라인 프로젝트 저장소 | (a) 이 저장소 `templates/` 안 (b) 별도 저장소(비공개 시작) | **확정 ([ADR-0008](../decisions/0008-language-scope-rust-path.md)): (b)** | 확정 "프로젝트에서 먼저 쓰고 승격". 실패 기록에 환경 정보가 섞일 수 있어 비공개로 시작 |
 | D-12 | 5단계 한도 수치 | 주간 지출 한도·`--max-turns`·timeout·연속 기각 N | 사람이 지정, 정본은 `budgets.yaml` `loop` | 비용 폭주(R4) |
 | D-13 | ADR-0003 지위 | (a) Accepted(A)로 확정 (b) 0007로 supersede | **(a)** | 3개월간 (A)로 운용됨. 5단계 루프는 systemd + `claude -p`이며 dynamic workflows가 아니다 |
 | D-14 | C·C++ 전용 리뷰어 | (a) 신설 (b) 보류 | **(b)** — 2단계 실패 기록에서 C/C++ 리뷰 누락이 2회 이상이면 신설 | 수확 원칙. 동결 중 |
-| D-15 | throughput-poc Node 자산 대체 | `report.mjs`·`receiver-node` | **`report.mjs` → Python(유틸 계층 "가공")으로 2-3에서 재작성 후 아카이브**, receiver-node는 PoC 기록용으로 아카이브 | 대체 전 제거 금지(정확성 우선) |
-| D-16 | C↔TS 계약 벡터 검증 대체 | `contract/ts` | **Rust 유틸(2-5)·C++ 클라이언트(2-7) 디코더가 같은 vectors를 통과한 뒤 아카이브** | 검증을 먼저 대체하고 나중에 제거 |
+| D-15 | throughput-poc Node 자산 대체 | `report.mjs`·`receiver-node` | **`report.mjs` → Shell(awk) 우선, 부족하면 Rust로 2-3에서 재작성 후 아카이브 ([ADR-0008](../decisions/0008-language-scope-rust-path.md))**, receiver-node는 PoC 기록용으로 아카이브 | 대체 전 제거 금지(정확성 우선). Python은 범위 밖 |
+| D-16 | C↔TS 계약 벡터 검증 대체 | `contract/ts` | **Rust 디코더 crate(2-5 유틸·2-7 클라이언트 공유)가 같은 vectors를 통과한 뒤 아카이브 ([ADR-0008](../decisions/0008-language-scope-rust-path.md))** | 검증을 먼저 대체하고 나중에 제거 |
 
 ## 4. 위험과 대응
 
@@ -251,7 +251,7 @@ CLAUDE_CONFIG_DIR="$(mktemp -d)" claude -p "ok" --output-format json --max-turns
 - [x] 1-5 동결 매니페스트 + `tests/freeze.bats` + `tests/check_freeze_adr.sh` + 실패 기록 양식 `docs/template/failure.md`
 - [x] 1-7 관리 규칙 정본 `docs/MANAGEMENT.md` + 문서 지도 재구성 (버전 규칙 적용 1.5.0은 PR #57)
 - [ ] 1-6 상시 로드 토큰 실측 (사용자 실행 — 과금)
-- [ ] 결정 요청: D-01·D-02·D-03·D-05·D-07·D-08·D-11 (2단계 착수 선행)
+- [x] 결정: D-01·D-02·D-03·D-05·D-07·D-08·D-11 확정, 언어 범위 재정의 ([ADR-0008](../decisions/0008-language-scope-rust-path.md))
 
 ## 로드맵
 
@@ -269,4 +269,5 @@ CLAUDE_CONFIG_DIR="$(mktemp -d)" claude -p "ok" --output-format json --max-turns
 | ---------- | ---- |
 | 2026-11-20 | 초안 — 현황 실측, 단계 분해, 결정 레지스터 D-01~D-16, 위험 R1~R8 |
 | 2026-11-21 | 1-7 — 관리 규칙 정본(MANAGEMENT)·독자 경로 문서 지도·루트 README 축소·범위 밖 표시, 버전 규칙(SemVer) 확정 후 1.5.0 |
+| 2026-11-21 | 결정 확정(ADR-0008) — 서버 C 중심·클라이언트·보조·유틸 Rust, Go·Python 범위 밖, Rust 경계 이식. D-01·02·03·05·07·08·11 확정, D-06 해소, D-09·15·16 언어 대체, 2-2·2-5~2-8·4-4 갱신 |
 | 2026-11-21 | PR #57 보완 — 확정 불변식(핫패스 할당 0·클라이언트 송신 블로킹 0)·유틸 지연 예산 추가, 동결 범위에 agents·commands 포함, 매니페스트 행 추가 ↔ ADR 동반 CI 검사 |
